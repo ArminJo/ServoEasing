@@ -1,0 +1,32 @@
+#######################################
+# Syntax Coloring Map for SmoothServo
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+SmoothServo	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+attach	KEYWORD2
+setSyncronizedServo	KEYWORD3
+write	KEYWORD2
+writeSyncronized	KEYWORD2
+writeMicroseconds	KEYWORD2
+moveTo	KEYWORD2
+moveToSyncronized	KEYWORD2
+startMoveTo	KEYWORD2
+startMoveToSyncronized	KEYWORD2
+update	KEYWORD2
+updateSyncronized	KEYWORD2
+isMoving	KEYWORD2
+MicrosecondsToDegree	KEYWORD2
+DegreeToMicroseconds	KEYWORD2
+print	KEYWORD2
+disableSmoothServoInterrupt	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################

@@ -1,0 +1,23 @@
+language: c
+sudo: false
+cache:
+  directories:
+  - ~/arduino_ide
+  - ~/.arduino15/packages/
+git:
+  depth: false
+  quiet: true
+env:
+  global:
+  - PRETTYNAME="SmoothServo"
+before_install:
+- source <(curl -SLs https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/install.sh)
+script:
+- build_platform uno
+- build_platform leonardo
+- build_platform cplayClassic
+#- build_platform zero
+notifications:
+  email:
+    on_success: change
+    on_failure: always
