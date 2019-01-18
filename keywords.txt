@@ -24,7 +24,6 @@ updateSyncronized	KEYWORD2
 isMoving	KEYWORD2
 MicrosecondsToDegree	KEYWORD2
 DegreeToMicroseconds	KEYWORD2
-print	KEYWORD2
 disableSmoothServoInterrupt	KEYWORD2
 
 #######################################

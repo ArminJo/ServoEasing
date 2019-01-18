@@ -37,7 +37,8 @@
 
 #include "SmoothServo.h"
 
-// enable this to see information on each call
+// Enable this to see information on each call
+// There should be no library which uses Serial, so enable it only for debugging purposes
 //#define TRACE
 //#define DEBUG
 
@@ -151,6 +152,7 @@ bool SmoothServo::startMoveTo(uint8_t aDegree, int aDegreesPerSecond, bool doUpd
     }
 
 #ifdef DEBUG
+    // There should be no library which uses Serial, so enable it only for debugging purposes
     Serial.print(F("Current="));
     Serial.print(tCurrentAngle);
     Serial.print(F(" New="));
@@ -249,6 +251,8 @@ bool SmoothServo::isMoving() {
     return servoMoves;
 }
 
+#ifdef DEBUG
+// There should be no library which uses Serial, so enable it only for debugging purposes
 void SmoothServo::print() {
     Serial.print(F("Current="));
     Serial.print(MicrosecondsToDegree(currentMicroseconds));
@@ -279,6 +283,7 @@ void SmoothServo::print() {
     Serial.print((uint16_t) SyncronizedServo, HEX);
     Serial.println();
 }
+#endif
 
 void disableSmoothServoInterrupt() {
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)

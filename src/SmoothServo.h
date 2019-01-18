@@ -35,7 +35,7 @@ public:
     uint8_t MicrosecondsToDegree(uint16_t aMicroseconds);
     uint16_t DegreeToMicroseconds(uint8_t aDegree);
 
-    void print();
+//    void print(); only available for debug purposes
 
     SmoothServo * SyncronizedServo; // The other servo to move synchronized - for more server see description in SmoothServo.cpp
 
