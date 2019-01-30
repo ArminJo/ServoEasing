@@ -9,14 +9,17 @@ git:
   quiet: true
 env:
   global:
-  - PRETTYNAME="SmoothServo"
+  - PRETTYNAME="ServoEasing Arduino Library"
 before_install:
 - source <(curl -SLs https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/install.sh)
+install:
+# do not know why this is needed here, for Talkie and other repos it works without this line
+  - ln -s $PWD /home/travis/arduino_ide/libraries/ServoEasing
 script:
 - build_platform uno
 - build_platform leonardo
 - build_platform cplayClassic
-#- build_platform zero
+- build_platform mega2560
 notifications:
   email:
     on_success: change

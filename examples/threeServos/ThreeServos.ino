@@ -6,8 +6,9 @@
  *  Copyright (C) 2019  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
- *  This file is part of SmoothServo.
- *  SmoothServo is free software: you can redistribute it and/or modify
+ *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
+ *
+ *  ServoEasing is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
@@ -23,7 +24,7 @@
 
 #include <Arduino.h>
 
-#include <SmoothServo.h>
+#include "ServoEasing.h"
 
 #define VERSION_EXAMPLE "1.0"
 
@@ -31,25 +32,27 @@ const int SERVO1_PIN = 9;
 const int SERVO2_PIN = 10;
 const int SERVO3_PIN = 11;
 
-SmoothServo Servo1;
-SmoothServo Servo2;
-SmoothServo Servo3;
+ServoEasing Servo1;
+ServoEasing Servo2;
+ServoEasing Servo3;
 
 void setup() {
-// initialize the digital pin as an output.
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
-    // attach servos to pins
+    // Attach servos to pins
     Serial.println(F("Attach servos"));
     Servo1.attach(SERVO1_PIN);
     Servo2.attach(SERVO2_PIN);
     Servo3.attach(SERVO3_PIN);
-    // set servos to start position.
+
+    // Set servos to start position.
     Servo1.write(0);
     Servo2.write(0);
     Servo3.write(0);
+
+    // Just wait for servos to reach position
     delay(500);
 }
 
@@ -61,7 +64,7 @@ void blinkLED() {
 }
 
 /*
- * For more than 2 servos you need your own interrupt handler, but is is quite simple :-)
+ * For more than 2 servos you need your own interrupt handler, but it is quite simple :-)
  */
 void handleTimer_COMPB_Interrupt() {
     bool tServosStopped = Servo1.update();
@@ -69,7 +72,7 @@ void handleTimer_COMPB_Interrupt() {
     tServosStopped = Servo3.update() && tServosStopped;
     if (tServosStopped) {
         // disable only if all servos stopped. This enables independent movements of all servos with this interrupt handler.
-        disableSmoothServoInterrupt();
+        disableServoEasingInterrupt();
     }
 }
 
@@ -78,12 +81,12 @@ void loop() {
     /*
      * Move three servos synchronously without interrupt handler
      */
-    Serial.print(F("Move to 90/90/180 degree with 20 degree per second"));
-    Servo1.startMoveTo(90, 20);
-    Servo2.startMoveTo(90, 20);
-    Servo3.startMoveTo(180, 20);
+    Serial.println(F("Move to 90/90/180 degree with 20 degree per second with own update loop"));
+    Servo1.startEaseTo(90, 20);
+    Servo2.startEaseTo(90, 20);
+    Servo3.startEaseTo(180, 20);
     /*
-     * General formula. Take the longest duration in order to move all servos synchronously
+     * Copy the longest duration in order to move all servos synchronously.
      */
     //  In this case I know that Servo3.millisForCompleteMove is the maximum
     Servo1.millisForCompleteMove = Servo2.millisForCompleteMove = Servo3.millisForCompleteMove = max(
@@ -94,18 +97,24 @@ void loop() {
         delay(REFRESH_INTERVAL / 1000); // optional 20ms delay - REFRESH_INTERVAL is in Microseconds
         Servo1.update();
         Servo2.update();
-    } while (!Servo3.update()); // since all servos stops at the same time I have to check only one here
+        /*
+         * Since all servos stops at the same time I have to check only one for while()
+         * ATTENTION You can not use while (Servo1.update() || Servo2.update() || Servo3.update())
+         * since then the second & third will NOT be evaluated if the first one returns true
+         */
+    } while (!Servo3.update());
+
     delay(1000);
 
     /*
      * Move three servos synchronously with interrupt handler
      */
-    Serial.print(F("Move to 180/180/0 degree with 30 degree per second"));
-    Servo1.startMoveTo(180, 30);
-    Servo2.startMoveTo(180, 30);
-    Servo3.startMoveTo(0, 30, true);
-    Servo1.millisForCompleteMove = Servo2.millisForCompleteMove = Servo3.millisForCompleteMove = max(
-            max(Servo1.millisForCompleteMove,Servo2.millisForCompleteMove), Servo3.millisForCompleteMove);
+    Serial.println(F("Move to 180/180/0 degree with 30 degree per second using interrupts"));
+    Servo3.startEaseTo(0, 30);
+    Servo1.startEaseToD(180, Servo3.millisForCompleteMove);
+    Servo2.startEaseToD(180, Servo3.millisForCompleteMove, true);
+    // In this case I know that all durations are the same
+
     /*
      * Now you can run your program while the servos are moving.
      * Just let the LED blink until servos stop.
@@ -114,38 +123,41 @@ void loop() {
     while (Servo1.isMoving()) {
         blinkLED();
     }
+
     delay(1000);
 
     /*
-     * Move only first and second servo synchronously with interrupt handler
+     * Move first and second servo synchronously with interrupt handler
      */
-    Serial.print(F("Move to 90/90 degree with 40 degree per second"));
-    Servo1.startMoveTo(90, 80);
-    Servo2.startMoveTo(90, 40, true);
-    // new formula since we have only 2 servos to move
-    Servo1.millisForCompleteMove = Servo2.millisForCompleteMove = max(Servo1.millisForCompleteMove, Servo2.millisForCompleteMove);
+    Serial.println(F("Move to 90/90 degree with 40 degree per second using interrupts"));
+    Servo1.startEaseTo(90, 80);
+    Servo2.startEaseToD(90, Servo1.millisForCompleteMove, true);
+    // No timing synchronization needed :-)
     // blink until servo stops
     while (Servo1.isMoving()) {
         blinkLED();
     }
+
     delay(1000);
 
-    // move only third servo
-    Serial.print(F("Move third to 90 degree with 80 degree per second"));
-    Servo3.moveTo(90, 80);
+    // Move only third servo
+    Serial.println(F("Move third to 90 degree with 80 degree per second blocking"));
+    Servo3.easeTo(90, 80);
+
     delay(1000);
 
     /*
-     * Move all independently
+     * Move all 3 servos independently
      */
-    Serial.print(F("Move to 0/0/0 degree with 80/40/20 degree per second"));
-    Servo1.startMoveTo(0, 80);
-    Servo2.startMoveTo(0, 40);
-    Servo3.startMoveTo(0, 20, true);
-    // blink until servos stops
+    Serial.println(F("Move independently to 0/0/0 degree with 80/40/20 degree per second using interrupts"));
+    Servo1.startEaseTo(0, 80);
+    Servo2.startEaseTo(0, 40);
+    Servo3.startEaseTo(0, 20, true);
+    // Blink until servos stops
     while (Servo1.isMoving() || Servo2.isMoving() || Servo3.isMoving()) {
         blinkLED();
     }
+
     delay(2000);
 
 }

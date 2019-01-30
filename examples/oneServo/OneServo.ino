@@ -1,13 +1,14 @@
 /*
  * OneServo.cpp
  *
- *  Shows smooth movement from one servo position to another.
+ *  Shows smooth linear movement from one servo position to another.
  *
  *  Copyright (C) 2019  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
- *  This file is part of SmoothServo.
- *  SmoothServo is free software: you can redistribute it and/or modify
+ *  This file is part of ServoEasing.
+ *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
+ *
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
@@ -23,25 +24,28 @@
 
 #include <Arduino.h>
 
-#include <SmoothServo.h>
+#include "ServoEasing.h"
 
 #define VERSION_EXAMPLE "1.0"
 
 const int SERVO1_PIN = 9;
 
-SmoothServo Servo1;
+ServoEasing Servo1;
 
 void setup() {
-// initialize the digital pin as an output.
+
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
-    // attach servo to pin
+    // Attach servo to pin
     Serial.println(F("Attach servo"));
-    Servo1.attach(SERVO1_PIN);
-    // set servo to start position.
+    Servo1.attach(SERVO1_PIN, SG_90_MICROSECONDS_FOR_0_DEGREE, SG_90_MICROSECONDS_FOR_180_DEGREE);
+
+    // Set servo to start position.
     Servo1.write(0);
+
+    // Just wait for servos to reach position
     delay(500);
 }
 
@@ -54,12 +58,12 @@ void blinkLED() {
 
 void loop() {
     // Move slow
-    Serial.print(F("Move to 90 degree with 10 degree per second"));
-    Servo1.moveTo(90, 10);
+    Serial.println(F("Move to 90 degree with 10 degree per second blocking"));
+    Servo1.easeTo(90, 10);
 
-    // Now move faster
-    Serial.print(F("Move to 180 degree with 30 degree per second"));
-    Servo1.startMoveTo(180, 30, true);
+    // Now move faster without any delay between the moves
+    Serial.println(F("Move to 180 degree with 30 degree per second using interrupts"));
+    Servo1.startEaseTo(180, 30, true);
     /*
      * Now you can run your program while the servo is moving.
      * Just let the LED blink for 3 seconds (90 degrees moving by 30 degrees per second).
@@ -67,23 +71,46 @@ void loop() {
     for (int i = 0; i < 15; ++i) {
         blinkLED();
     }
+
     delay(1000);
 
-    Serial.print(F("Move to 90 degree with 80 degree per second"));
-    Servo1.startMoveTo(90, 80, true);
-    // blink until servo stops
+    Serial.println(F("Move to 45 degree in one second using interrupts"));
+    Servo1.startEaseToD(45, 1000, true);
+    // Blink until servo stops
     while (Servo1.isMoving()) {
         blinkLED();
     }
+
+    delay(1000);
+
+    Serial.println(F("Move to 135 degree and back nonlinear in one second using interrupts"));
+    Servo1.setEasingType(EASE_CUBIC);
+
+    for (int i = 0; i < 2; ++i) {
+        Servo1.startEaseToD(135, 1000, true);
+        // Blink until servo stops
+        while (Servo1.isMoving()) {
+            ; // no delays here to avoid break between forth and back movement
+        }
+        Servo1.startEaseToD(45, 1000, true);
+        // Blink until servo stops
+        while (Servo1.isMoving()) {
+            ; // no delays here to avoid break between forth and back movement
+        }
+    }
+    Servo1.setEasingType(EASE_LINEAR);
+
     delay(1000);
 
     /*
-     * Now measure how fast the servo can move. The LED goes off when servo reaches 90 degree
+     * Very fast move. The LED goes off when servo reaches 90 degree
      */
-    Serial.print(F("Move to 0 degree with 360 degree per second"));
-    Servo1.startMoveTo(0, 360, true);
+    Serial.println(F("Move to 0 degree with 360 degree per second using interrupts"));
+    Servo1.startEaseTo(0, 360, true);
     digitalWrite(LED_BUILTIN, HIGH);
+    // Wait for 250 ms. The servo should have moved 90 degree.
     delay(250);
     digitalWrite(LED_BUILTIN, LOW);
+
     delay(1000);
 }

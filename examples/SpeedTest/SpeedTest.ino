@@ -8,18 +8,19 @@
  *  If the servo makes no breaks, but reaches 0 and 180 degree then you have specified the smallest delay / fastest speed for this stepping
  *
  * These are the fastest values for my SG90 servos at 5V (4.2 with servo active)
- *   180 degree 400 ms
- *   90 degree 300 ms
+ *   180 degree 400 ms  -> 450 degree per second
+ *   90 degree 300 ms   -> 300 degree per second
  *   45 degree 180 ms
  *   30 degree 150 ms
  *   20 degree 130 ms
- *   10 degree 80 ms
+ *   10 degree 80 ms    -> 125 degree per second
  *
  *  Copyright (C) 2019  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
- *  This file is part of SmoothServo.
- *  SmoothServo is free software: you can redistribute it and/or modify
+ *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
+ *
+ *  ServoEasing is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
@@ -36,6 +37,8 @@
 #include <Arduino.h>
 
 #include <Servo.h>
+
+#include "ADCUtils.h" // for get getVCCVoltageMillivolt
 
 #define VERSION_EXAMPLE "1.0"
 
@@ -73,6 +76,10 @@ void setup() {
 
 void loop() {
     int tPulseMicros;
+
+    int tVoltageMillivolts = getVCCVoltageMillivolt();
+    Serial.print(tVoltageMillivolts);
+    Serial.println(" millivolts");
 
     int tMode = analogRead(MODE_ANALOG_INPUT_PIN);
     int tSpeedOrPosition = analogRead(SPEED_OR_POSITION_ANALOG_INPUT_PIN);

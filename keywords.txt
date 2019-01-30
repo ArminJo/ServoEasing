@@ -1,31 +1,55 @@
 #######################################
-# Syntax Coloring Map for SmoothServo
+# Syntax Coloring Map for ServoEasing
 #######################################
 
 #######################################
 # Datatypes (KEYWORD1)
 #######################################
-SmoothServo	KEYWORD1
+ServoEasing	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
 attach	KEYWORD2
-setSyncronizedServo	KEYWORD3
+setSyncronizedServo	KEYWORD2
+setEasingType	KEYWORD2
 write	KEYWORD2
 writeSyncronized	KEYWORD2
 writeMicroseconds	KEYWORD2
-moveTo	KEYWORD2
-moveToSyncronized	KEYWORD2
-startMoveTo	KEYWORD2
-startMoveToSyncronized	KEYWORD2
+easeTo	KEYWORD2
+easeToD	KEYWORD2
+easeToSynchronized	KEYWORD2
+easeToDSynchronized	KEYWORD2
+startEaseTo	KEYWORD2
+startEaseToD	KEYWORD2
+startEaseToSynchronized	KEYWORD2
+startEaseToDSynchronized	KEYWORD2
 update	KEYWORD2
 updateSyncronized	KEYWORD2
+getCurrentAngle	KEYWORD2
+getMillisForCompleteMove	KEYWORD2
 isMoving	KEYWORD2
 MicrosecondsToDegree	KEYWORD2
 DegreeToMicroseconds	KEYWORD2
-disableSmoothServoInterrupt	KEYWORD2
+QuadraticEaseIn	KEYWORD2
+CubicEaseIn	KEYWORD2
+QuarticEaseIn	KEYWORD2
+SineEaseIn	KEYWORD2
+CircularEaseIn	KEYWORD2
+BackEaseIn	KEYWORD2
+ElasticEaseIn	KEYWORD2
+EaseOutBounce	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
 #######################################
+EASE_LINEAR LITERAL1
+EASE_QUADRATIC LITERAL1
+EASE_CUBIC LITERAL1
+EASE_QUARTIC LITERAL1
+EASE_SINE LITERAL1
+EASE_CIRCULAR LITERAL1
+EASE_BACK LITERAL1
+EASE_ELASTIC LITERAL1
+EASE_BOUNCE LITERAL1
+EASE_USER LITERAL1

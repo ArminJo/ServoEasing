@@ -6,8 +6,9 @@
  *  Copyright (C) 2019  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
- *  This file is part of SmoothServo.
- *  SmoothServo is free software: you can redistribute it and/or modify
+ *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
+ *
+ *  ServoEasing is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
@@ -23,31 +24,34 @@
 
 #include <Arduino.h>
 
-#include <SmoothServo.h>
+#include "ServoEasing.h"
 
 #define VERSION_EXAMPLE "1.0"
 
 const int SERVO1_PIN = 9;
 const int SERVO2_PIN = 10;
 
-SmoothServo Servo1;
-SmoothServo Servo2;
+ServoEasing Servo1;
+ServoEasing Servo2;
 
 void setup() {
-// initialize the digital pin as an output.
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
-    // attach servos to pins
+    // Attach servos to pins
     Serial.println(F("Attach servos"));
-    Servo1.attach(SERVO1_PIN);
-    Servo2.attach(SERVO2_PIN);
-    // set servo to synchronize for servo1
-    Servo1.setSyncronizedServo(&Servo2);
-    // set servos to start position.
+    Servo1.attach(SERVO1_PIN, SG_90_MICROSECONDS_FOR_0_DEGREE, SG_90_MICROSECONDS_FOR_180_DEGREE);
+    Servo2.attach(SERVO2_PIN, SG_90_MICROSECONDS_FOR_0_DEGREE, SG_90_MICROSECONDS_FOR_180_DEGREE);
+
+    // Set servo to synchronize for servo1
+    Servo1.setSynchronizedServo(&Servo2);
+
+    // Set servos to start position.
     Servo1.write(0);
     Servo2.write(0);
+
+    // Just wait for servos to reach position
     delay(500);
 }
 
@@ -60,13 +64,12 @@ void blinkLED() {
 
 void loop() {
     // Move both servos blocking
-    Serial.print(F("Move to 90/90 degree with 20 degree per second"));
-    Servo1.moveToSyncronized(90, 90, 20);
-    delay(1000);
+    Serial.println(F("Move to 90/90 degree with 30 degree per second blocking"));
+    Servo1.easeToSynchronized(90, 90, 30);
 
-    // Now move faster. The first servo moves with the specified speed, the second must move slower in order to be synchronized.    Serial.print(F("Move to 90/90 degree with 20 degree per second"));
-    Serial.print(F("Move to 180/180 degree with 40 degree per second"));
-    Servo1.startMoveToSyncronized(180, 135, 40, true);
+    // Now move faster. The first servo moves with the specified speed, the second must move slower in order to be synchronized.
+    Serial.println(F("Move to 180/10 degree with 60 degree per second using interrupts"));
+    Servo1.startEaseToSynchronized(180, 10, 60, true);
     /*
      * Now you can run your program while the servos are moving.
      * Just let the LED blink until servos stop.
@@ -74,30 +77,27 @@ void loop() {
     while (Servo1.isMoving()) {
         blinkLED();
     }
-    delay(1000);
 
-    // move only first servo in interrupt mode
-    Serial.print(F("Move first to 90 degree with 80 degree per second"));
-    Servo1.startMoveTo(90, 80, true);
-    // blink until servo stops
+    Servo1.setEasingType(EASE_CUBIC);
+    // Move servo1 using cubic easing. Use interrupts for update
+    Serial.println(F("Move to 90/90 degree with 90 degree per second using interrupts. Use cubic easing for first servo."));
+    Servo1.startEaseToSynchronized(90, 90, 90, true);
     while (Servo1.isMoving()) {
+        ;
+    }
+    Servo1.setEasingType(EASE_LINEAR);
+
+    delay(300);
+
+    // Move both servos independently
+    Serial.println(F("Move independently to 0/0 degree with 80/60 degree per second using interrupts"));
+    Servo1.startEaseTo(0, 80);
+    Servo2.startEaseTo(0, 60, true); // Interrupts work here for both, because Servo2 it is specified in setSynchronizedServo(). -> see ThreeServos example.
+    // blink until both servos stop
+    while (Servo1.isMoving() || Servo2.isMoving()) {
         blinkLED();
     }
-    delay(1000);
 
-    // move only second servo in blocking mode
-    Serial.print(F("Move second to 90 degree with 80 degree per second"));
-    Servo2.moveTo(90, 80);
-    delay(1000);
-
-    // move both independently
-    Serial.print(F("Move to 0/0 degree with 40/20 degree per second"));
-    Servo1.startMoveTo(0, 40);
-    Servo2.startMoveTo(0, 20, true); // Interrupts work here, because Servo2 it is specified in setSyncronizedServo(). -> see ThreeServos example.
-    // blink until servos stops
-    while (Servo2.isMoving()) {
-        blinkLED();
-    }
-    delay(2000);
+    delay(500);
 
 }
