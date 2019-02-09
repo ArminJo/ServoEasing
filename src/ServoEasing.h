@@ -12,7 +12,7 @@
  * If you have only one or two servos, then you can save program space by defining symbol `USE_LEIGHTWEIGHT_SERVO_LIB`.
  * This saves 742 bytes FLASH and 42 bytes RAM.
  * Using Lightweight Servo Library makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
- * In the Arduino IDE use `Sketch/Show Sketch Folder ( Ctrl+K)` then navigate to the `src` folder, open ServoEasing.h and outcomment line 20.
+ * In the Arduino IDE use `Sketch/Show Sketch Folder ( Ctrl+K)` then navigate to the `src` folder, open ServoEasing.h and comment out line 20.
  * If not using the Arduino IDE take care that Arduino Servo library sources are not compiled / included in the project.
  *
  */

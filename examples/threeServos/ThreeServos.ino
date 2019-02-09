@@ -39,6 +39,8 @@ ServoEasing Servo3;
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
+    while (!Serial); //delay for Leonardo
+    // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
     // Attach servos to pins
