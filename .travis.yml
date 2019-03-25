@@ -13,7 +13,8 @@ env:
 before_install:
 - source <(curl -SLs https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/install.sh)
 install:
-# do not know why this is needed here, for Talkie and other repos it works without this line
+- arduino --install-library "PinChangeInterrupt"
+# do not know why this is needed here, for Talkie and other repos it works without the next line
   - ln -s $PWD /home/travis/arduino_ide/libraries/ServoEasing
 script:
 - build_platform uno

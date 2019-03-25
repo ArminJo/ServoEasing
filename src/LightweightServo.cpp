@@ -31,7 +31,7 @@
 
 #if defined (__AVR_ATmega328P__) || defined (__AVR_ATmega328__)
 /*
- * Outcommenting this saves 70 bytes flash memory. You must then use the init function initLightweightServoPin9And10() manually.
+ * Commenting out this saves 70 bytes flash memory. You must then use the init function initLightweightServoPin9And10() manually.
  */
 //#define DISABLE_SERVO_TIMER_AUTO_INITIALIZE
 

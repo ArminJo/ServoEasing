@@ -9,11 +9,16 @@
  *
  * These are the fastest values for my SG90 servos at 5V (4.2 with servo active)
  *   180 degree 400 ms  -> 450 degree per second
- *   90 degree 300 ms   -> 300 degree per second
- *   45 degree 180 ms
- *   30 degree 150 ms
- *   20 degree 130 ms
- *   10 degree 80 ms    -> 125 degree per second
+ *    90 degree 300 ms   -> 300 degree per second
+ *    45 degree 180 ms
+ *    30 degree 150 ms
+ *    20 degree 130 ms
+ *    10 degree 80 ms    -> 125 degree per second
+ *
+ *  MG90Sservo
+ *   180 degree 330 ms -> 540 degree per second
+ *    90 degree 220 ms
+ *    45 degree 115 ms
  *
  *  Copyright (C) 2019  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
@@ -51,11 +56,10 @@ Servo ServoUnderTest;
 /*
  * CHANGE THESE TO REFLECT THE CORRECT VALUES OF YOUR SERVO
  *
- * 620 and 2400 are the values for my sg90 servos determined with EndPositionTest example
+ * 620 and 2400 are the values for some of my sg90 servos determined with EndPositionTest example
  * 544 suits better for standard servos
  */
-#define ZERO_DEGREE_VALUE_MICROS 610
-//#define ZERO_DEGREE_VALUE_MICROS 544
+#define ZERO_DEGREE_VALUE_MICROS 544
 //#define ZERO_DEGREE_VALUE_MICROS 620
 #define AT_180_DEGREE_VALUE_MICROS 2400
 
@@ -66,9 +70,16 @@ void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
 
     Serial.begin(115200);
-    while (!Serial); //delay for Leonardo
+    while (!Serial)
+        ; //delay for Leonardo
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
+
+    Serial.print(F("Value for 0 degree="));
+    Serial.print(ZERO_DEGREE_VALUE_MICROS);
+    Serial.print(F("us. Value for 180 degree="));
+    Serial.print(AT_180_DEGREE_VALUE_MICROS);
+    Serial.println(F("us."));
 
     // attach servo to pin 9
     ServoUnderTest.attach(SERVO_UNDER_TEST_PIN, ZERO_DEGREE_VALUE_MICROS, AT_180_DEGREE_VALUE_MICROS);
@@ -80,14 +91,16 @@ void loop() {
     int tPulseMicros;
 
     int tVoltageMillivolts = getVCCVoltageMillivolt();
+
+    Serial.print(F("VCC="));
     Serial.print(tVoltageMillivolts);
-    Serial.println(" millivolts");
+    Serial.print(" mV");
 
     int tMode = analogRead(MODE_ANALOG_INPUT_PIN);
     int tSpeedOrPosition = analogRead(SPEED_OR_POSITION_ANALOG_INPUT_PIN);
 
     tMode = tMode >> 7; // gives values 0-7
-    Serial.print("Mode=");
+    Serial.print(" Mode=");
     Serial.print(tMode);
     Serial.print(' ');
 
@@ -95,10 +108,12 @@ void loop() {
     case 0:
         // direct position from 0 to 180 degree
         tPulseMicros = map(tSpeedOrPosition, 0, 1023, 500, 2500);
-        Serial.print("direct position: micros=");
-        Serial.println(tPulseMicros);
         ServoUnderTest.writeMicroseconds(tPulseMicros);
-        delay(100);
+        Serial.print("direct position: micros=");
+        Serial.print(tPulseMicros);
+        Serial.print(" degree=");
+        Serial.println(ServoUnderTest.read());
+        delay(200);
         break;
 
     case 1:
@@ -147,13 +162,18 @@ void loop() {
     }
 }
 
+int readDelay(uint8_t aDegreePerStep) {
+    int tDelayMillis = analogRead(SPEED_OR_POSITION_ANALOG_INPUT_PIN);
+    // speed is 1/delay so invert map function
+    return (map(tDelayMillis, 1023, 0, aDegreePerStep, aDegreePerStep * 10));
+}
+
 /*
  * Do a swipe and use different intervals
  */
 void doSwipe(uint8_t aDegreePerStep) {
-    // print delay once for info here, but be aware, it can be changed during the sweep to fasten the measurement process
-    int tDelayMillis = analogRead(SPEED_OR_POSITION_ANALOG_INPUT_PIN);
-    tDelayMillis = map(tDelayMillis, 0, 1023, aDegreePerStep, aDegreePerStep * 10);
+    // print delay once for info here, but be aware that it can be changed during the sweep to fasten the measurement process
+    int tDelayMillis = readDelay(aDegreePerStep);
     Serial.print("swipe: degree per step=");
     Serial.print(aDegreePerStep);
     Serial.print(" , delay=");
@@ -163,14 +183,14 @@ void doSwipe(uint8_t aDegreePerStep) {
     uint8_t tDegree = 0;
     while (tDegree < 180) {
         ServoUnderTest.write(tDegree); // starts with 0
-        tDelayMillis = analogRead(SPEED_OR_POSITION_ANALOG_INPUT_PIN);
-        delay(map(tDelayMillis, 0, 1023, aDegreePerStep, aDegreePerStep * 10));
+        // read again to enable fast reaction to changed value
+        delay(readDelay(aDegreePerStep));
         tDegree += aDegreePerStep;
     }
     while (tDegree > 0) {
         ServoUnderTest.write(tDegree);
-        tDelayMillis = analogRead(SPEED_OR_POSITION_ANALOG_INPUT_PIN);
-        delay(map(tDelayMillis, 0, 1023, aDegreePerStep, aDegreePerStep * 10));
+        // read again to enable fast reaction to changed value
+        delay(readDelay(aDegreePerStep));
         tDegree -= aDegreePerStep;
     }
 }

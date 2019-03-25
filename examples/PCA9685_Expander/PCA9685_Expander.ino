@@ -1,7 +1,13 @@
 /*
- * OneServo.cpp
+ * PCA9685_Expander.cpp
  *
- *  Shows smooth linear movement from one servo position to another.
+ *  Shows smooth linear movement from one servo position to another using PCA9685 Expander Board.
+ *
+ ***********************************************************************************************************************
+ *  Comment out line 32 in ServoEasing.h to make the expander example work !!!
+ *  Otherwise you will see errors like: "PCA9685_Expander:44:46: error: 'Wire' was not declared in this scope"
+ *  Use `Sketch/Show Sketch Folder (Ctrl+K)` in the Arduino IDE, navigate to the `src` folder, and open ServoEasing.h
+ ***********************************************************************************************************************
  *
  *  Copyright (C) 2019  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
@@ -24,19 +30,36 @@
 
 #include <Arduino.h>
 
+/*
+ * !!! Comment out line 32 in ServoEasing.h to make the expander example work !!!
+ * Otherwise you will see errors like: "PCA9685_Expander:44:46: error: 'Wire' was not declared in this scope"
+ * Use `Sketch/Show Sketch Folder (Ctrl+K)` in the Arduino IDE, navigate to the `src` folder, and open ServoEasing.h
+ */
 #include "ServoEasing.h"
 
 #define VERSION_EXAMPLE "1.0"
 
 const int SERVO1_PIN = 9;
 
-ServoEasing Servo1;
+/*
+ * Constructor to specify the expander address (needed at least if you use more than one expander board)
+ * and to specify the I2C implementation library.
+ * This can be done for each servo separately, but you can not (yet) mix the 3 different
+ * Servo implementation libraries (Arduino Servo, Lightweight Servo and I2C Expansion Board)
+ */
+ServoEasing Servo1(PCA9685_DEFAULT_ADDRESS, &Wire);
+/*
+ * If you have only one Expander at default address and want to use the Arduino Wire library,
+ * you can use the short constructor below instead, so that there is no difference to the OneServo example!
+ */
+//ServoEasing Servo1;
 
 void setup() {
 
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
-    while (!Serial); //delay for Leonardo
+    while (!Serial)
+        ; //delay for Leonardo
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 

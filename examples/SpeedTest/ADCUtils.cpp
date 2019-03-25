@@ -168,15 +168,18 @@ float getVCCVoltage(void) {
     return (getVCCVoltageMillivolt() / 1000.0);
 }
 
+/*
+ * Read value of 1.1 Volt internal channel using VCC as reference.
+ */
 uint16_t getVCCVoltageMillivolt(void) {
     // use AVCC with external capacitor at AREF pin as reference
     uint8_t tOldADMUX = ADMUX;
     /*
      * Must wait >= 200 us if reference has to be switched to VSS
-     * Must wait >= 400 us if channel has to be switched to ADC_1_1_VOLT_CHANNEL_MUX from channel with 5 Volt input
+     * Must wait >= 400 us if channel has to be switched to 1.1 Volt internal channel from channel with 5 Volt input
      */
     if ((ADMUX & (INTERNAL << SHIFT_VALUE_FOR_REFERENCE)) || ((ADMUX & 0x0F) != ADC_1_1_VOLT_CHANNEL_MUX)) {
-        // switch AREF
+        // Switch to 1.1 Volt channel and AREF to VCC
         ADMUX = ADC_1_1_VOLT_CHANNEL_MUX | (DEFAULT << SHIFT_VALUE_FOR_REFERENCE);
         // and wait for settling
         delayMicroseconds(400); // experimental value is >= 400 us

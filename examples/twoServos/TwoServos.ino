@@ -37,17 +37,15 @@ ServoEasing Servo2;
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
-    while (!Serial); //delay for Leonardo
+    while (!Serial)
+        ; //delay for Leonardo
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
     // Attach servos to pins
     Serial.println(F("Attach servos"));
-    Servo1.attach(SERVO1_PIN, SG_90_MICROSECONDS_FOR_0_DEGREE, SG_90_MICROSECONDS_FOR_180_DEGREE);
-    Servo2.attach(SERVO2_PIN, SG_90_MICROSECONDS_FOR_0_DEGREE, SG_90_MICROSECONDS_FOR_180_DEGREE);
-
-    // Set servo to synchronize for servo1
-    Servo1.setSynchronizedServo(&Servo2);
+    Servo1.attach(SERVO1_PIN);
+    Servo2.attach(SERVO2_PIN);
 
     // Set servos to start position.
     Servo1.write(0);
@@ -65,13 +63,24 @@ void blinkLED() {
 }
 
 void loop() {
-    // Move both servos blocking
+    /*
+     * Move both servos blocking
+     */
     Serial.println(F("Move to 90/90 degree with 30 degree per second blocking"));
-    Servo1.easeToSynchronized(90, 90, 30);
+    Servo1.setEaseTo(90, 30);
+    Servo2.setEaseTo(90, 30);
+    synchronizeAllServosStartAndWaitForAllServosToStop();
 
-    // Now move faster. The first servo moves with the specified speed, the second must move slower in order to be synchronized.
+    /*
+     * Now continue faster.
+     */
     Serial.println(F("Move to 180/10 degree with 60 degree per second using interrupts"));
-    Servo1.startEaseToSynchronized(180, 10, 60, true);
+    Servo1.setEaseTo(180, 60);
+    /*
+     * An alternative method to synchronize and start
+     * Synchronize by simply using the same duration
+     */
+    Servo2.startEaseToD(10, Servo1.mMillisForCompleteMove); // This start interrupt for all servos
     /*
      * Now you can run your program while the servos are moving.
      * Just let the LED blink until servos stop.
@@ -80,10 +89,21 @@ void loop() {
         blinkLED();
     }
 
-    Servo1.setEasingType(EASE_CUBIC);
-    // Move servo1 using cubic easing. Use interrupts for update
+    /*
+     * Move servo1 using cubic easing. Use interrupts for update.
+     *  The first servo moves with the specified speed.
+     *  The second will be synchronized to slower speed (longer duration, than specified) because it has to move only 80 degree.
+     */
     Serial.println(F("Move to 90/90 degree with 90 degree per second using interrupts. Use cubic easing for first servo."));
-    Servo1.startEaseToSynchronized(90, 90, 90, true);
+    Servo1.setEasingType(EASE_CUBIC_IN_OUT);
+    /*
+     * Another method to specify moves
+     * Use the sServoNextPositionArray and then call the appropriate function
+     */
+    sServoNextPositionArray[0] = 90;
+    sServoNextPositionArray[1] = 90;
+    setEaseToForAllServosSynchronizeAndStartInterrupt(90);
+
     while (Servo1.isMoving()) {
         ;
     }
@@ -91,10 +111,12 @@ void loop() {
 
     delay(300);
 
-    // Move both servos independently
+    /*
+     * Move both servos independently
+     */
     Serial.println(F("Move independently to 0/0 degree with 80/60 degree per second using interrupts"));
-    Servo1.startEaseTo(0, 80);
-    Servo2.startEaseTo(0, 60, true); // Interrupts work here for both, because Servo2 it is specified in setSynchronizedServo(). -> see ThreeServos example.
+    Servo1.setEaseTo(0, 80);
+    Servo2.startEaseTo(0, 60); // This start interrupt for all servos
     // blink until both servos stop
     while (Servo1.isMoving() || Servo2.isMoving()) {
         blinkLED();

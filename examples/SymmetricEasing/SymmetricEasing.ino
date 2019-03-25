@@ -47,9 +47,9 @@ void setup() {
 
     // Attach servos to pins
     Serial.println(F("Attach servos"));
-    Servo1.attach(SERVO1_PIN, SG_90_MICROSECONDS_FOR_0_DEGREE, SG_90_MICROSECONDS_FOR_180_DEGREE);
-    Servo2.attach(SERVO2_PIN, SG_90_MICROSECONDS_FOR_0_DEGREE, SG_90_MICROSECONDS_FOR_180_DEGREE);
-    Servo3.attach(SERVO3_PIN, SG_90_MICROSECONDS_FOR_0_DEGREE, SG_90_MICROSECONDS_FOR_180_DEGREE);
+    Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
+    Servo2.attach(SERVO2_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
+    Servo3.attach(SERVO3_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
 
     // Set servos to start position.
     Servo1.write(90);
@@ -62,24 +62,10 @@ void setup() {
     Servo3.startEaseToD(45, 1000);
 
     Servo1.setEasingType(EASE_LINEAR);
-    Servo2.setEasingType(EASE_QUADRATIC);
-    Servo3.setEasingType(EASE_CUBIC);
+    Servo2.setEasingType(EASE_QUADRATIC_IN_OUT);
+    Servo3.setEasingType(EASE_CUBIC_IN_OUT);
 
     delay(500);
-}
-
-/*
- * For more than 2 servos you need your own interrupt handler, but it is quite simple :-)
- * For 3 nonlinear servos it needs 260 us
- */
-void handleTimer_COMPB_Interrupt() {
-    bool tServosStopped = Servo1.update();
-    tServosStopped = Servo2.update() && tServosStopped;
-    tServosStopped = Servo3.update() && tServosStopped;
-    if (tServosStopped) {
-        // disable only if all servos stopped. This enables independent movements of all servos with this interrupt handler.
-        disableServoEasingInterrupt();
-    }
 }
 
 void loop() {
@@ -93,22 +79,15 @@ void loop() {
     Serial.print(F("Move to 135 degree with "));
     Serial.print(tSpeed);
     Serial.println(F(" degree per second with own update loop"));
-    Servo1.startEaseTo(135, tSpeed);
-    Servo2.startEaseToD(135, Servo1.millisForCompleteMove);
-    Servo3.startEaseToD(135, Servo1.millisForCompleteMove);
-    // In this case I know that all durations are the same
+    Servo1.setEaseTo(135, tSpeed);
+    Servo2.setEaseToD(135, Servo1.mMillisForCompleteMove);
+    Servo3.setEaseToD(135, Servo1.mMillisForCompleteMove);
+    // No need to call synchronizeAllServosAndStartInterrupt(false), since in this case I know that all durations are the same
 
     do {
         // here you can call your own program
         delay(REFRESH_INTERVAL / 1000); // optional 20ms delay - REFRESH_INTERVAL is in Microseconds
-        Servo1.update();
-        Servo2.update();
-        /*
-         * Since all servos stops at the same time I have to check only one for while()
-         * ATTENTION You can not use while (Servo1.update() || Servo2.update() || Servo3.update())
-         * since then the second & third will NOT be evaluated if the first one returns true
-         */
-    } while (!Servo3.update());
+    } while (!updateAllServos());
 
     /*
      * Move three servos synchronously with interrupt handler
@@ -116,12 +95,12 @@ void loop() {
     Serial.print(F("Move to 45 degree with "));
     Serial.print(tSpeed);
     Serial.println(F(" degree per second using interrupts"));
-    Servo1.startEaseTo(45, tSpeed);
-    Servo2.startEaseToD(45, Servo1.millisForCompleteMove);
-    Servo3.startEaseToD(45, Servo1.millisForCompleteMove, true);
-    // In this case I know that all durations are the same
+    Servo1.setEaseTo(45, tSpeed);
+    Servo2.setEaseToD(45, Servo1.mMillisForCompleteMove);
+    Servo3.startEaseToD(45, Servo1.mMillisForCompleteMove);
+    // No need to call synchronizeAllServosAndStartInterrupt(), since in this case I know that all durations are the same
     // Since all servos stops at the same time I have to check only one
-    while (Servo1.isMoving()) {
+    while (Servo3.isMoving()) {
         ; // no delays here to avoid break between forth and back movement
     }
 
