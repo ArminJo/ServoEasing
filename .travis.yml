@@ -15,7 +15,7 @@ before_install:
 install:
 - arduino --install-library "PinChangeInterrupt"
 # do not know why this is needed here, for Talkie and other repos it works without the next line
-  - ln -s $PWD /home/travis/arduino_ide/libraries/ServoEasing
+- ln -s $PWD /home/travis/arduino_ide/libraries/ServoEasing
 script:
 - build_platform uno
 - build_platform leonardo
