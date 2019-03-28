@@ -66,14 +66,14 @@ void setup() {
     Servo2.startEaseToD(45, 1000);
     Servo3.startEaseToD(45, 1000);
 
-    Servo1.setEasingType(EASE_USER);
-    Servo2.setEasingType(EASE_USER);
-    Servo1.registerUserEaseInOutFunction(EaseQuarticInAndBackOut);
-    Servo2.registerUserEaseInOutFunction(EaseQuarticInAndElasticOut);
+    Servo1.setEasingType(EASE_USER_DIRECT);
+    Servo2.setEasingType(EASE_USER_DIRECT);
+    Servo1.registerUserEaseInFunction(EaseQuarticInAndBackOut);
+    Servo2.registerUserEaseInFunction(EaseQuarticInAndElasticOut);
 #ifndef KEEP_LIBRARY_SMALL
-    Servo3.setEasingType(EASE_BOUNCE);
+    Servo3.setEasingType(EASE_BOUNCE_OUT);
 #else
-    Servo3.setEasingType(EASE_USER);
+    Servo3.setEasingType(EASE_USER_DIRECT);
     Servo3.registerUserEaseInOutFunction(EaseOutBounce);
 #endif
 

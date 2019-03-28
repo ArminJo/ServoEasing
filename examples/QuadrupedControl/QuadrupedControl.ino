@@ -2,6 +2,10 @@
  * QuadrupedControl.cpp
  *
  * Program for controlling a mePed Robot V2 using an IR Remote
+ *
+ * To run this example need to install "ServoEasing", "IRLremote" and "PinChangeInterrupt" libraries under Sketch -> Include Library -> Manage Librarys...
+ * Use "ServoEasing", "IRLremote" and "PinChangeInterrupt" as filter string.
+ *
  */
 
 #include <Arduino.h>
@@ -60,10 +64,9 @@ bool delayAndCheckInput(uint16_t aDelayMillis);
 void setEasingTypeToLinear();
 void setEasingTypeForMoving();
 
-bool centerServos(bool aDoMove = true);
+bool centerServos();
 bool setBodyHeight(int8_t aBodyHeight, bool aDoMove = true);
-bool setAllServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP, uint8_t aFLL, uint8_t aBLL, uint8_t aBRL, uint8_t aFRL,
-        bool aDoMove = true);
+bool setAllServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP, uint8_t aFLL, uint8_t aBLL, uint8_t aBRL, uint8_t aFRL);
 bool setPivotServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP);
 bool setLiftServos(uint8_t aFLL, uint8_t aBLL, uint8_t aBRL, uint8_t aFRL);
 
@@ -463,13 +466,13 @@ bool doWave() {
 }
 
 bool doCenterServos() {
-    return centerServos(true);
+    return centerServos();
 }
 
-bool centerServos(bool aDoMove) {
+bool centerServos() {
     Serial.print(F("Center. Speed="));
     Serial.println(sServoSpeed);
-    return setAllServos(90, 90, 90, 90, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle, aDoMove);
+    return setAllServos(90, 90, 90, 90, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle);
 }
 
 bool doBow() {
@@ -979,8 +982,7 @@ bool setLiftServos(uint8_t aFLL, uint8_t aBLL, uint8_t aBRL, uint8_t aFRL) {
     return synchronizeMoveAllServosAndCheckInputAndWait(sServoSpeed);
 }
 
-bool setAllServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP, uint8_t aFLL, uint8_t aBLL, uint8_t aBRL, uint8_t aFRL,
-        bool aDoMove) {
+bool setAllServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP, uint8_t aFLL, uint8_t aBLL, uint8_t aBRL, uint8_t aFRL) {
     sServoNextPositionArray[FRONT_LEFT_PIVOT] = aFLP;
     sServoNextPositionArray[BACK_LEFT_PIVOT] = aBLP;
     sServoNextPositionArray[BACK_RIGHT_PIVOT] = aBRP;
