@@ -19,15 +19,16 @@
 #define MOVE_DIRECTION_LEFT     0x01
 #define MOVE_DIRECTION_BACKWARD 0x02
 #define MOVE_DIRECTION_RIGHT    0x03
+#define MOVE_DIRECTION_SIDE_MASK    0x01
 
 /*
  * Specification for basic creep
  * Angles are defined for front right leg
  */
-#define Y_POSITION_OPEN_ANGLE  80 // the angle of both legs which are NOT together / upper part of Y
-#define CREEP_BODY_MOVE_ANGLE  (Y_POSITION_OPEN_ANGLE - Y_POSITION_CLOSE_ANGLE)  // 70 the angle to move body
-#define Y_POSITION_CLOSE_ANGLE 10 // the angle when both legs are together
-#define Y_POSITION_FRONT_ANGLE (Y_POSITION_OPEN_ANGLE + CREEP_BODY_MOVE_ANGLE) // 150 the angle for the front leg after leg move forward
+#define Y_POSITION_OPEN_ANGLE  70 // the angle of both legs which are NOT together / upper part of Y
+#define CREEP_BODY_MOVE_ANGLE  (Y_POSITION_OPEN_ANGLE - Y_POSITION_CLOSE_ANGLE)  // 50 the angle to move body
+#define Y_POSITION_CLOSE_ANGLE 20 // the angle when both legs are together
+#define Y_POSITION_FRONT_ANGLE (Y_POSITION_OPEN_ANGLE + CREEP_BODY_MOVE_ANGLE) // 120 the angle for the front leg after leg move forward
 
 /*
  * Specification for basic turn
