@@ -38,12 +38,18 @@ The latter is useful, if you have only one or two servos since it uses only the 
 - [C functions on Github](https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c)
 - [Interactive cubic-bezier](http://cubic-bezier.com)
 
+# Modifying library properties
+To access the Arduino library files from a sketch, you have to first use `Sketch/Show Sketch Folder (Ctrl+K)` in the Arduino IDE.<br/>
+Then navigate to the parallel `libraries` folder and select the library you want to access.<br/>
+The library files itself are located in the `src` sub-directory.<br/>
+If you did not yet store the example as your own sketch, then with Ctrl+K you are instantly in the right library folder.
+        
 ## Using PCA9685 16-Channel Servo Expander
-To enable it, use `Sketch/Show Sketch Folder (Ctrl+K)` in the Arduino IDE, navigate to the `src` folder, open ServoEasing.h and comment out line 32 or define global symbol `USE_PCA9685_SERVO_EXPANDER` which is yet not possible in Arduini IDE:-(.
+To enable it, open the library file ServoEasing.h and comment out line 37 or define global symbol `USE_PCA9685_SERVO_EXPANDER` which is yet not possible in Arduini IDE:-(.
 
 ## Using the included Lightweight Servo library
 Using the **Lightweight Servo Library** reduces sketch size and makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
-To enable it, use `Sketch/Show Sketch Folder (Ctrl+K)` in the Arduino IDE, navigate to the `src` folder, open ServoEasing.h and comment out line 43 or define global symbol `USE_LEIGHTWEIGHT_SERVO_LIB` which is yet not possible in Arduini IDE:-(.<br/>
+To enable it, open the library file ServoEasing.h and comment out line 46 or define global symbol `USE_LEIGHTWEIGHT_SERVO_LIB` which is yet not possible in Arduini IDE:-(.<br/>
 If not using the Arduino IDE take care that Arduino Servo library sources are not compiled / included in the project.
 
 ## Reducing library size
@@ -51,6 +57,8 @@ If you have only one or two servos, then you can save program space by using Lig
 This saves 742 bytes FLASH and 42 bytes RAM.<br/>
 If you do not need the more complex easing functions like `Sine` etc., which in turn need sin(), cos(), sqrt() and pow(), you can shrink library size by approximately 2100 bytes by defining the symbol KEEP_LIBRARY_SMALL or comment out line 34 in ServoEasing.h.
  
+# Examples
+
 ## SymmetricEasing example
 This example shows symmetric (end movement is mirror of start movement) linear, quadratic and cubic movements for 3 servos synchronously.
 
@@ -66,7 +74,13 @@ This example does not use the ServoEasing functions.
 ## SpeedTest example
 This example gives you a feeling how fast your servo can move.<br/>This example does not use the ServoEasing functions.
 
-## Travis CI
+## CatMover example
+Demo of using two servos in a pan tilt housing to move a laser pointer.
+        
+## QuadrupedControl example
+Program for controlling a mePed Robot V2 with 8 servos using an IR Remote.
+
+# Travis CI
 The ServoEasing library examples are built on Travis CI for the following boards:
 
 - Arduino Uno

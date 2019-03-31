@@ -1,9 +1,9 @@
 /*
  * QuadrupedControl.cpp
  *
- * Program for controlling a mePed Robot V2 using an IR Remote
+ * Program for controlling a mePed Robot V2 with 8 servos using an IR Remote
  *
- * To run this example need to install "ServoEasing", "IRLremote" and "PinChangeInterrupt" libraries under Sketch -> Include Library -> Manage Librarys...
+ * To run this example need to install the "ServoEasing", "IRLremote" and "PinChangeInterrupt" libraries under Sketch -> Include Library -> Manage Librarys...
  * Use "ServoEasing", "IRLremote" and "PinChangeInterrupt" as filter string.
  *
  */
@@ -16,7 +16,8 @@
 #include "QuadrupedServoConfiguration.h"
 #include "ServoEasing.h"    // include servo library
 
-#define VERSION_EXAMPLE "1.0"
+#define VERSION_EXAMPLE "1.1"
+// 1.1 mirror computation at transformAndSetPivotServos and transformOneServoIndex
 
 // Define 8 servos in exact this order!
 ServoEasing frontLeftPivotServo;    // 0 - Front Left Pivot Servo
@@ -644,14 +645,14 @@ bool doTrot() {
          * first move right front and left back leg up and forward
          */
         if (transformAndSetAllServos(TROT_BASE_ANGLE_FL_BR + TROT_MOVE_ANGLE, TROT_BASE_ANGLE_BL_FR - TROT_MOVE_ANGLE,
-        TROT_BASE_ANGLE_FL_BR - TROT_MOVE_ANGLE, TROT_BASE_ANGLE_BL_FR + TROT_MOVE_ANGLE, sBodyHeightAngle,
-        LiftMaxAngle, sBodyHeightAngle, LiftMaxAngle, tCurrentDirection)) {
+        TROT_BASE_ANGLE_FL_BR - TROT_MOVE_ANGLE, TROT_BASE_ANGLE_BL_FR + TROT_MOVE_ANGLE, sBodyHeightAngle, LiftMaxAngle,
+                sBodyHeightAngle, LiftMaxAngle, tCurrentDirection)) {
             return true;
         }
         // and the the other legs
         if (transformAndSetAllServos(TROT_BASE_ANGLE_FL_BR - TROT_MOVE_ANGLE, TROT_BASE_ANGLE_BL_FR + TROT_MOVE_ANGLE,
         TROT_BASE_ANGLE_FL_BR + TROT_MOVE_ANGLE, TROT_BASE_ANGLE_BL_FR - TROT_MOVE_ANGLE, LiftMaxAngle, sBodyHeightAngle,
-        LiftMaxAngle, sBodyHeightAngle, tCurrentDirection)) {
+                LiftMaxAngle, sBodyHeightAngle, tCurrentDirection)) {
             return true;
         }
         if (sMovingDirection != tCurrentDirection) {
@@ -849,19 +850,25 @@ void setEasingTypeForMoving() {
  * Direction left increases index by 1 and right by 3.
  * Mirroring swaps left and right (XOR with 0x06) and invert all angles.
  */
+
+uint8_t getMirrorXorMask(uint8_t aDirection) {
+    // XOR the index with this value to get the mirrored index
+    if (aDirection & MOVE_DIRECTION_SIDE_MASK) {
+        return 0x2;
+    } else {
+        return 0x6;
+    }
+}
+
 bool transformAndSetAllServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP, uint8_t aFLL, uint8_t aBLL, uint8_t aBRL,
         uint8_t aFRL, uint8_t aDirection, bool doMirror, bool aDoMove) {
     uint8_t tIndexToAdd = aDirection * SERVOS_PER_LEG;
     uint8_t tXorToGetMirroredIndex = 0x0;
-    // Invert angles
+    // Invert angles for pivot servos
     bool doInvert = false;
     if (doMirror) {
         // XOR the index with this value to get the mirrored index
-        if (aDirection & MOVE_DIRECTION_SIDE_MASK) {
-            tXorToGetMirroredIndex = 0x2;
-        } else {
-            tXorToGetMirroredIndex = 0x6;
-        }
+        tXorToGetMirroredIndex = getMirrorXorMask(aDirection);
         doInvert = true;
     }
 
@@ -900,37 +907,41 @@ bool transformAndSetAllServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t 
     return false;
 }
 
+/*
+ * A subset of the functionality of transformAndSetAllServos() -> less arguments needed :-)
+ */
 bool transformAndSetPivotServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP, uint8_t aDirection, bool doMirror,
         bool aDoMove) {
     uint8_t tIndexToAdd = aDirection * SERVOS_PER_LEG;
-    uint8_t tIndexXor = 0x0;
+    uint8_t tXorToGetMirroredIndex = 0x0;
+    // Invert angles for pivot servos
     bool doInvert = false;
     if (doMirror) {
         // XOR the index with this value to get the mirrored index
-        tIndexXor = 0x6;
+        tXorToGetMirroredIndex = getMirrorXorMask(aDirection);
         doInvert = true;
     }
 
     uint8_t tEffectivePivotServoIndex;
-    tEffectivePivotServoIndex = ((FRONT_LEFT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tIndexXor;
+    tEffectivePivotServoIndex = ((FRONT_LEFT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
         aFLP = 180 - aFLP;
     }
     sServoNextPositionArray[tEffectivePivotServoIndex] = aFLP;
 
-    tEffectivePivotServoIndex = ((BACK_LEFT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tIndexXor;
+    tEffectivePivotServoIndex = ((BACK_LEFT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
         aBLP = 180 - aBLP;
     }
     sServoNextPositionArray[tEffectivePivotServoIndex] = aBLP;
 
-    tEffectivePivotServoIndex = ((BACK_RIGHT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tIndexXor;
+    tEffectivePivotServoIndex = ((BACK_RIGHT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
         aBRP = 180 - aBRP;
     }
     sServoNextPositionArray[tEffectivePivotServoIndex] = aBRP;
 
-    tEffectivePivotServoIndex = ((FRONT_RIGHT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tIndexXor;
+    tEffectivePivotServoIndex = ((FRONT_RIGHT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
         aFRP = 180 - aFRP;
     }
@@ -943,13 +954,14 @@ bool transformAndSetPivotServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_
 }
 
 uint8_t transformOneServoIndex(uint8_t aServoIndexToTransform, uint8_t aDirection, bool doMirror) {
-    uint8_t tIndexXor = 0x0;
+    uint8_t tXorToGetMirroredIndex = 0x0;
     if (doMirror) {
         // XOR the index with this value to get the mirrored index
-        tIndexXor = 0x6;
+        tXorToGetMirroredIndex = getMirrorXorMask(aDirection);
     }
-    return ((aServoIndexToTransform + (aDirection * SERVOS_PER_LEG)) % NUMBER_OF_SERVOS) ^ tIndexXor;
+    return ((aServoIndexToTransform + (aDirection * SERVOS_PER_LEG)) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
 }
+
 void testTransform() {
 // left legs are close together, right legs are in straight right direction
     transformAndSetAllServos(180, 1, 135, 30, 111, 0, 0, 0, MOVE_DIRECTION_FORWARD, false, false);

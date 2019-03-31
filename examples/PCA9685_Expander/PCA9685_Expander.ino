@@ -3,11 +3,15 @@
  *
  *  Shows smooth linear movement from one servo position to another using PCA9685 Expander Board.
  *
- ***********************************************************************************************************************
- *  Comment out line 32 in ServoEasing.h to make the expander example work !!!
+ *  *****************************************************************************************************************************
+ *  Comment out line 37 in ServoEasing.h to make the expander example work !!!
  *  Otherwise you will see errors like: "PCA9685_Expander:44:46: error: 'Wire' was not declared in this scope"
- *  Use `Sketch/Show Sketch Folder (Ctrl+K)` in the Arduino IDE, navigate to the `src` folder, and open ServoEasing.h
- ***********************************************************************************************************************
+ *
+ *  To access the library files from your sketch, you have to first use `Sketch/Show Sketch Folder (Ctrl+K)` in the Arduino IDE.
+ *  Then navigate to the parallel `libraries` folder and select the library you want to access.
+ *  The library files itself are located in the `src` sub-directory.
+ *  If you did not yet store the example as your own sketch, then with Ctrl+K you are instantly in the right library folder.
+ *  *****************************************************************************************************************************
  *
  *  Copyright (C) 2019  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
@@ -31,9 +35,8 @@
 #include <Arduino.h>
 
 /*
- * !!! Comment out line 32 in ServoEasing.h to make the expander example work !!!
+ * !!! Comment out line 37 in ServoEasing.h to make the expander example work !!!
  * Otherwise you will see errors like: "PCA9685_Expander:44:46: error: 'Wire' was not declared in this scope"
- * Use `Sketch/Show Sketch Folder (Ctrl+K)` in the Arduino IDE, navigate to the `src` folder, and open ServoEasing.h
  */
 #include "ServoEasing.h"
 

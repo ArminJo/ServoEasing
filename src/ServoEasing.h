@@ -24,10 +24,15 @@
 #ifndef SERVOEASING_H_
 #define SERVOEASING_H_
 
+/*  *****************************************************************************************************************************
+ *  To access the library files from your sketch, you have to first use `Sketch/Show Sketch Folder (Ctrl+K)` in the Arduino IDE.
+ *  Then navigate to the parallel `libraries` folder and select the library you want to access.
+ *  The library files itself are located in the `src` sub-directory.
+ *  If you did not yet store the example as your own sketch, then with Ctrl+K you are instantly in the right library folder.
+ *  *****************************************************************************************************************************/
 /*
  * For use with e.g. the Adafruit PCA9685 16-Channel Servo Driver aOffUnits.
- * To enable it, use `Sketch/Show Sketch Folder (Ctrl+K)` in the Arduino IDE, navigate to the `src` folder, open ServoEasing.h and comment out line 32.
- *
+ * To enable it, open the library file ServoEasing.h and comment out line 32.
  */
 //#define USE_PCA9685_SERVO_EXPANDER
 
@@ -36,9 +41,7 @@
  * This saves 742 bytes FLASH and 42 bytes RAM.
  * Using Lightweight Servo library (or PCA9685 servo expander) makes the servo pulse generating immune
  * to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
- * To enable it, use `Sketch/Show Sketch Folder (Ctrl+K)` in the Arduino IDE, navigate to the `src` folder, open ServoEasing.h and comment out line 43.
  * If not using the Arduino IDE take care that Arduino Servo library sources are not compiled / included in the project.
- *
  */
 //#define USE_LEIGHTWEIGHT_SERVO_LIB
 #if defined(USE_PCA9685_SERVO_EXPANDER) && defined(USE_LEIGHTWEIGHT_SERVO_LIB)

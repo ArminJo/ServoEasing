@@ -1,6 +1,6 @@
 /*
  *  CatMover.cpp
- *  Demo of using two servos in a pan tilt housing to move e laser pointer
+ *  Demo of using two servos in a pan tilt housing to move a laser pointer
  *
  *
  *  Copyright (C) 2019  Armin Joachimsmeyer
