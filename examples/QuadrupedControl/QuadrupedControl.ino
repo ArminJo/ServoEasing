@@ -38,11 +38,11 @@ int8_t sServoTrimAngles[NUMBER_OF_SERVOS]; // RAM copy for easy setting trim ang
  */
 uint8_t sMovingDirection = MOVE_DIRECTION_FORWARD;
 uint16_t sServoSpeed = 60;      // in degree/second
-uint8_t sBodyHeightAngle = 80;  // From LIFT_MIN_ANGLE to LIFT_MAX_ANGLE !!! The bigger the angle, the lower the body !!!
+uint8_t sBodyHeightAngle = 60;  // From LIFT_MIN_ANGLE to LIFT_MAX_ANGLE !!! The bigger the angle, the lower the body !!!
 
 uint8_t sCurrentCommand; // to decide if we must change movement
-bool justExecutingCommand;
-uint8_t sNextCommand;    // if != 0 do not wait for IR just take this command as next
+bool sJustExecutingCommand;
+uint8_t sNextCommand = COMMAND_EMPTY;    // if != 0 do not wait for IR just take this command as next
 
 #if (IR_CONTROL_CODING == 'P')
 CPanasonic IRLremote;
@@ -53,6 +53,8 @@ CNec IRLremote;
 /*
  * Function declarations
  */
+void printTrimAngles();
+void resetServosTo90Degree();
 void eepromReadAndSetServoTrim();
 void eepromWriteServoTrim();
 uint8_t getIRCommand(bool doWait = true);
@@ -66,7 +68,7 @@ void setEasingTypeToLinear();
 void setEasingTypeForMoving();
 
 bool centerServos();
-bool setBodyHeight(int8_t aBodyHeight, bool aDoMove = true);
+void setLiftServosToBodyHeight(bool aDoMove);
 bool setAllServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP, uint8_t aFLL, uint8_t aBLL, uint8_t aBRL, uint8_t aFRL);
 bool setPivotServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP);
 bool setLiftServos(uint8_t aFLL, uint8_t aBLL, uint8_t aBRL, uint8_t aFRL);
@@ -82,6 +84,8 @@ bool basicTwist(uint8_t aTwistAngle, bool aTurnLeft = false);
 bool basicQuarterTurn(uint8_t aMoveLegIndex, bool aTurnLeft = false);
 bool turn();
 bool creep();
+
+void checkIfBodyHeightHasChanged();
 
 /*
  * Code starts here
@@ -109,12 +113,14 @@ void setup() {
     frontRightLiftServo.setReverseOperation(true);
 
     // set servo to 90 degree without trim and wait
-    for (uint8_t i = 0; i < NUMBER_OF_SERVOS; ++i) {
-        sServoArray[i]->write(90);
-    }
+    resetServosTo90Degree();
     delay(2000);
 
     eepromReadAndSetServoTrim();
+    // set servo to 90 degree wit trim and wait
+    resetServosTo90Degree();
+    delay(2000);
+
     centerServos();
 
     // Start reading the remote. PinInterrupt or PinChangeInterrupt* will automatically be selected
@@ -125,18 +131,18 @@ void setup() {
 
 void loop() {
     uint8_t tIRCode;
-    if (sNextCommand != COMMAND_EMPTY) {
+    if (sNextCommand == COMMAND_EMPTY) {
+        tIRCode = getIRCommand();
+    } else {
         tIRCode = sNextCommand;
         sNextCommand = COMMAND_EMPTY;
-    } else {
-        tIRCode = getIRCommand();
     }
 
     setEasingTypeToLinear();
 
 // search IR code and call associated function
 
-    bool tCommandFound = false;
+    bool tIRCodeFound = false;
     for (uint8_t i = 0; i < sizeof(IRMW10Mapping) / sizeof(struct IRToCommandMapping); ++i) {
         if (tIRCode == IRMW10Mapping[i].IRCode) {
             sCurrentCommand = tIRCode;
@@ -145,18 +151,17 @@ void loop() {
             /*
              * Call the Quadruped function specified in IR mapping
              */
-            justExecutingCommand = true;
+            sJustExecutingCommand = true;
             IRMW10Mapping[i].CommandToCall();
-            justExecutingCommand = false;
-            tCommandFound = true;
+            sJustExecutingCommand = false;
+            tIRCodeFound = true;
+            break;
         }
-        if (!tCommandFound) {
-            // must be after IRMW10Mapping search
-            checkAndCallInstantCommands(tIRCode);
-        }
-        IRLremote.read(); // empty command buffer from command received in the meantime.
     }
-
+    if (!tIRCodeFound) {
+        // must be after IRMW10Mapping search
+        checkAndCallInstantCommands(tIRCode);
+    }
     delay(50); // Pause for 50ms before executing next movement
 }  //loop
 
@@ -196,7 +201,7 @@ bool checkAndCallInstantCommands(uint8_t aIRCode) {
  */
 uint8_t getIRCommand(bool doWait) {
     static uint8_t sLastIRValue = 0;
-    static uint16_t sReferenceAddress = 0; // store first received address here for better error handling
+    static uint16_t sReferenceAddress = 0; // store first received address here for better IR-receive error handling
 
     uint8_t tIRValue = COMMAND_EMPTY;
 
@@ -205,9 +210,9 @@ uint8_t getIRCommand(bool doWait) {
             // Get the new data from the remote
             auto tIRData = IRLremote.read();
 
-            Serial.print(F("IRCode=0x"));
+            Serial.print(F("A=0x"));
             Serial.print(tIRData.address, HEX);
-            Serial.print(F(" Command=0x"));
+            Serial.print(F(" C=0x"));
             Serial.println(tIRData.command, HEX);
             tIRValue = tIRData.command;
             if (sReferenceAddress == 0) {
@@ -357,14 +362,16 @@ bool doDecreaseSpeed() {
  */
 bool doIncreaseHeight() {
     if (sBodyHeightAngle > LIFT_MIN_ANGLE) {
-        setBodyHeight(sBodyHeightAngle - 2);
+        sBodyHeightAngle -= 2;
+        setLiftServosToBodyHeight(!sJustExecutingCommand);
     }
     return false;
 }
 
 bool doDecreaseHeight() {
     if (sBodyHeightAngle < LIFT_MAX_ANGLE) {
-        setBodyHeight(sBodyHeightAngle + 2);
+        sBodyHeightAngle += 2;
+        setLiftServosToBodyHeight(!sJustExecutingCommand);
     }
     return false;
 }
@@ -515,22 +522,13 @@ bool doLeanRight() {
     return setLiftServos(LIFT_MIN_ANGLE, LIFT_MIN_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE);
 }
 
-bool setBodyHeight(int8_t aBodyHeightAngle, bool aDoMove) {
-    sBodyHeightAngle = aBodyHeightAngle;
+void setLiftServosToBodyHeight(bool aDoMove) {
     if (aDoMove) {
-        if (justExecutingCommand) {
-            updateAndWaitForAllServosToStop();
-        }
-        for (uint8_t i = LIFT_SERVO_OFFSET; i < NUMBER_OF_SERVOS; i += SERVOS_PER_LEG) {
-            sServoNextPositionArray[i] = sBodyHeightAngle;
-        }
-        return synchronizeMoveAllServosAndCheckInputAndWait(sServoSpeed);
-        // Set values also direct, since when using EASE_QUADRATIC_BOUNCING the sServoNextPositionArray will not work as expected
+        // Set values direct, since we have only a change of 2 degree
         for (uint8_t i = LIFT_SERVO_OFFSET; i < NUMBER_OF_SERVOS; i += SERVOS_PER_LEG) {
             sServoArray[i]->write(sBodyHeightAngle);
         }
     }
-    return false;
 }
 
 /*
@@ -539,7 +537,7 @@ bool setBodyHeight(int8_t aBodyHeightAngle, bool aDoMove) {
 void signalLeg(uint8_t aPivotServoIndex) {
     sServoArray[aPivotServoIndex + LIFT_SERVO_OFFSET]->easeTo(LIFT_MAX_ANGLE, 60);
     sServoArray[aPivotServoIndex]->easeTo(90, 60);
-    sServoArray[aPivotServoIndex + LIFT_SERVO_OFFSET]->easeTo(sBodyHeightAngle, 60);
+    sServoArray[aPivotServoIndex + LIFT_SERVO_OFFSET]->easeTo(90, 60);
 }
 
 /*
@@ -549,7 +547,7 @@ void signalLeg(uint8_t aPivotServoIndex) {
 bool doCalibration() {
     uint8_t tPivotServoIndex = 0; // start with front left i.e. sServoArray[0]
     bool tGotExitCommand = false;
-    centerServos();
+    resetServosTo90Degree();
     delay(500);
     signalLeg(tPivotServoIndex);
     Serial.println(F("Entered calibration. Use the forward/backward right/left buttons to set the servo position to 90 degree."));
@@ -649,12 +647,16 @@ bool doTrot() {
                 sBodyHeightAngle, LiftMaxAngle, tCurrentDirection)) {
             return true;
         }
+        checkIfBodyHeightHasChanged();
+
         // and the the other legs
         if (transformAndSetAllServos(TROT_BASE_ANGLE_FL_BR - TROT_MOVE_ANGLE, TROT_BASE_ANGLE_BL_FR + TROT_MOVE_ANGLE,
         TROT_BASE_ANGLE_FL_BR + TROT_MOVE_ANGLE, TROT_BASE_ANGLE_BL_FR - TROT_MOVE_ANGLE, LiftMaxAngle, sBodyHeightAngle,
                 LiftMaxAngle, sBodyHeightAngle, tCurrentDirection)) {
             return true;
         }
+        checkIfBodyHeightHasChanged();
+
         if (sMovingDirection != tCurrentDirection) {
             tCurrentDirection = sMovingDirection;
         }
@@ -791,10 +793,23 @@ bool creep() {
     return false;
 }
 
+void checkIfBodyHeightHasChanged() {
+    static uint8_t tCurrentBodyHeightAngle = 0;
+    // init static variable manually
+    if (tCurrentBodyHeightAngle == 0) {
+        tCurrentBodyHeightAngle = sBodyHeightAngle;
+    }
+
+    if (sBodyHeightAngle != tCurrentBodyHeightAngle) {
+        setLiftServosToBodyHeight(true);
+        tCurrentBodyHeightAngle = sBodyHeightAngle;
+    }
+}
 /*
  * moves one leg forward and down, then moves body, then moves diagonal leg.
  */
 bool basicHalfCreep(uint8_t aDirection, bool doMirror) {
+
     Serial.print(F("BasicHalfCreep Direction="));
     Serial.print(aDirection);
     Serial.print(F(" doMirror="));
@@ -805,6 +820,8 @@ bool basicHalfCreep(uint8_t aDirection, bool doMirror) {
     Y_POSITION_FRONT_ANGLE, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle, LIFT_MAX_ANGLE, aDirection, doMirror)) {
         return true;
     }
+    // check if body height has changed
+    checkIfBodyHeightHasChanged();
 // reset lift value
     sServoNextPositionArray[transformOneServoIndex(FRONT_RIGHT_PIVOT) + LIFT_SERVO_OFFSET] = sBodyHeightAngle;
 
@@ -815,6 +832,7 @@ bool basicHalfCreep(uint8_t aDirection, bool doMirror) {
             sBodyHeightAngle, aDirection, doMirror)) {
         return true;
     }
+    checkIfBodyHeightHasChanged();
 
 // 3. Move back right leg up, forward and down
     Serial.println(F("Move back leg to close position"));
@@ -823,6 +841,8 @@ bool basicHalfCreep(uint8_t aDirection, bool doMirror) {
     Y_POSITION_OPEN_ANGLE, sBodyHeightAngle, LIFT_MAX_ANGLE, sBodyHeightAngle, sBodyHeightAngle, aDirection, doMirror)) {
         return true;
     }
+    checkIfBodyHeightHasChanged();
+
 // reset lift value
     sServoNextPositionArray[transformOneServoIndex(BACK_LEFT_PIVOT) + LIFT_SERVO_OFFSET] = sBodyHeightAngle;
     return false;
@@ -1020,6 +1040,12 @@ void printTrimAngles() {
     }
 }
 
+void resetServosTo90Degree(){
+    for (uint8_t i = 0; i < NUMBER_OF_SERVOS; ++i) {
+        sServoArray[i]->write(90);
+    }
+}
+
 /*
  * Copy calibration array from EEPROM to RAM and set uninitialized values to 0
  */
@@ -1035,7 +1061,7 @@ void eepromWriteServoTrim() {
 }
 
 /*
- * Just as an example to see the principle of movement
+ * Just as an unused example to see the principle of movement
  */
 bool basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
     Serial.print(F("LeftLegIndex="));
