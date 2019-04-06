@@ -35,7 +35,6 @@
  * To enable it, open the library file ServoEasing.h and comment out line 32.
  */
 //#define USE_PCA9685_SERVO_EXPANDER
-
 /*
  * If you have only one or two servos, then you can save program space by defining symbol `USE_LEIGHTWEIGHT_SERVO_LIB`.
  * This saves 742 bytes FLASH and 42 bytes RAM.
@@ -99,6 +98,17 @@
 #ifdef WARN
 #define ERROR
 #endif
+
+#define VERSION_SERVO_EASING 1.1.0
+/*
+ * Version 1.1
+ * - easeTo stores its degree parameter now also in sServoNextPositionArray.
+ * - added setSpeed(), getSpeed(), setSpeedForAllServos().
+ * - added easeTo(uint8_t aDegree) and setEaseTo(uint8_t aDegree).
+ * - added setEaseToForAllServos(), setEaseToForAllServosSynchronizeAndStartInterrupt(), synchronizeAndEaseToArrayPositions().
+ * - added getEndMicrosecondsOrUnits(), getDeltaMicrosecondsOrUnits().
+ * - added  setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues),setDegreeForAllServos(uint8_t aNumberOfValues, uint8_t aDegreeForFirstServo, ...)
+ */
 
 #define DEFAULT_MICROSECONDS_FOR_0_DEGREE 544
 #define DEFAULT_MICROSECONDS_FOR_180_DEGREE 2400
@@ -193,7 +203,7 @@
 
 class ServoEasing
 #if not defined(USE_LEIGHTWEIGHT_SERVO_LIB) && not defined(USE_PCA9685_SERVO_EXPANDER)
-: public Servo
+        : public Servo
 #endif
 {
 public:
@@ -223,9 +233,13 @@ public:
     void write(int aValue); // write value direct to servo
     void writeMicrosecondsOrUnits(int aValue);
 
+    void setSpeed(uint16_t aDegreesPerSecond);
+    uint16_t getSpeed();
+    void easeTo(uint8_t aDegree); // blocking move to new position using mLastSpeed
     void easeTo(uint8_t aDegree, uint16_t aDegreesPerSecond); // blocking move to new position using speed
     void easeToD(uint8_t aDegree, uint16_t aMillisForMove); // blocking move to new position using duration
 
+    bool setEaseTo(uint8_t aDegree); // shortcut for startEaseTo(..,..,false)
     bool setEaseTo(uint8_t aDegree, uint16_t aDegreesPerSecond); // shortcut for startEaseTo(..,..,false)
     bool startEaseTo(uint8_t aDegree, uint16_t aDegreesPerSecond, bool aStartUpdateByInterrupt = true);
     bool setEaseToD(uint8_t aDegree, uint16_t aDegreesPerSecond); // shortcut for startEaseToD(..,..,false)
@@ -234,6 +248,8 @@ public:
     float callEasingFunction(float aPercentageOfCompletion); // used in update()
 
     uint8_t getCurrentAngle();
+    uint16_t getEndMicrosecondsOrUnits();
+    uint16_t getDeltaMicrosecondsOrUnits();
     uint16_t getMillisForCompleteMove();
     bool isMoving();
 
@@ -254,6 +270,8 @@ public:
     uint16_t mStartMicrosecondsOrUnits;  // used with millisAtStartMove to compute currentMicrosecondsOrUnits
     uint16_t mEndMicrosecondsOrUnits;    // used once as last value just if movement was finished
     int16_t mDeltaMicrosecondsOrUnits;   // end - start
+
+    uint16_t mSpeed; // in DegreesPerSecond only set by setSpeed(int16_t aSpeed);
 
     uint8_t mEasingType; // EASE_LINEAR, EASE_QUADRATIC_IN_OUT, EASE_CUBIC_IN_OUT, EASE_QUARTIC_IN_OUT
 
@@ -290,9 +308,17 @@ extern uint8_t sServoNextPositionArray[MAX_SERVOS];
 /*
  * Functions working on all servos in the list
  */
+void setSpeedForAllServos(uint16_t aDegreesPerSecond);
+void setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues);
+void setDegreeForAllServos(uint8_t aNumberOfValues, ...);
+
+bool setEaseToForAllServos();
 bool setEaseToForAllServos(uint16_t aDegreesPerSecond);
+void setEaseToForAllServosSynchronizeAndStartInterrupt();
 void setEaseToForAllServosSynchronizeAndStartInterrupt(uint16_t aDegreesPerSecond);
+void synchronizeAndEaseToArrayPositions();
 void synchronizeAndEaseToArrayPositions(uint16_t aDegreesPerSecond);
+
 void printArrayPositions(Stream * aSerial);
 void setEasingTypeForAllServos(uint8_t aEasingType);
 bool isOneServoMoving();

@@ -79,6 +79,9 @@ Demo of using two servos in a pan tilt housing to move a laser pointer.
         
 ## QuadrupedControl example
 Program for controlling a mePed Robot V2 with 8 servos using an IR Remote.
+        
+## RobotArmControl example
+Program for controlling a robot arm with 4 servos using 4 potentiometers and/or an IR Remote.
 
 # Travis CI
 The ServoEasing library examples are built on Travis CI for the following boards:

@@ -72,9 +72,10 @@ void loop() {
      * Move three servos synchronously without interrupt handler
      */
     Serial.println(F("Move to 90/90/180 degree with 20 degree per second with own update loop"));
-    Servo1.setEaseTo(90, 20);
-    Servo2.setEaseTo(90, 20);
-    Servo3.setEaseTo(180, 20);
+    setSpeedForAllServos(20);
+    Servo1.setEaseTo(90);
+    Servo2.setEaseTo(90);
+    Servo3.setEaseTo(180);
     synchronizeAllServosAndStartInterrupt(false); // do not start interrupt
 
     do {

@@ -106,8 +106,8 @@ void loop() {
 
     switch (tMode) {
     case 0:
-        // direct position from 0 to 180 degree
-        tPulseMicros = map(tSpeedOrPosition, 0, 1023, 500, 2500);
+        // direct position from 0 to 180 degree. Choose bigger range just to be sure both ends are reached.
+        tPulseMicros = map(tSpeedOrPosition, 0, 1023, ZERO_DEGREE_VALUE_MICROS - 100, AT_180_DEGREE_VALUE_MICROS + 200);
         ServoUnderTest.writeMicroseconds(tPulseMicros);
         Serial.print("direct position: micros=");
         Serial.print(tPulseMicros);

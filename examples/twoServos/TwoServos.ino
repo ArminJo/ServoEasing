@@ -50,6 +50,7 @@ void setup() {
     // Set servos to start position.
     Servo1.write(0);
     Servo2.write(0);
+    setSpeedForAllServos(30);
 
     // Just wait for servos to reach position
     delay(500);
@@ -63,12 +64,14 @@ void blinkLED() {
 }
 
 void loop() {
+
     /*
      * Move both servos blocking
      */
     Serial.println(F("Move to 90/90 degree with 30 degree per second blocking"));
-    Servo1.setEaseTo(90, 30);
-    Servo2.setEaseTo(90, 30);
+    setSpeedForAllServos(30);
+    Servo1.setEaseTo(90);
+    Servo2.setEaseTo(90);
     synchronizeAllServosStartAndWaitForAllServosToStop();
 
     /*

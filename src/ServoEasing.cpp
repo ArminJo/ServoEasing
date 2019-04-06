@@ -90,16 +90,16 @@ ServoEasing::ServoEasing(uint8_t aPCA9685I2CAddress, TwoWire *aI2CClass) { // @s
 void ServoEasing::PCA9685Init() {
     // initialize I2C
     mI2CClass->begin();
-    mI2CClass->setClock(800000); // 1000000 does not work - maybe because of parasitic breadboard capacities
+    mI2CClass->setClock(800000);// 1000000 does not work - maybe because of parasitic breadboard capacities
     // Send software reset to expander
     mI2CClass->beginTransmission(PCA9685_GENERAL_CALL_ADDRESS);
     mI2CClass->write(PCA9685_SOFTWARE_RESET);
     mI2CClass->endTransmission();
     // set to 20 ms period
-    I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_SLEEP)); // go to sleep
-    I2CWriteByte(PCA9685_PRESCALE_REGISTER, PCA9685_PRESCALER_FOR_20_MS); // set the prescaler
-    I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_AUTOINCREMENT)); // reset sleep and enable auto increment
-    delay(2); // 500 us according to datasheet
+    I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_SLEEP));// go to sleep
+    I2CWriteByte(PCA9685_PRESCALE_REGISTER, PCA9685_PRESCALER_FOR_20_MS);// set the prescaler
+    I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_AUTOINCREMENT));// reset sleep and enable auto increment
+    delay(2);// 500 us according to datasheet
 }
 
 void ServoEasing::I2CWriteByte(uint8_t aAddress, uint8_t aData) {
@@ -127,10 +127,10 @@ uint16_t ServoEasing::MicrosecondsToPCA9685Units(uint16_t aMicroseconds) {
 
 #else
 // Constructor without I2C address
-ServoEasing::ServoEasing()// @suppress("Class members should be properly initialized")
+ServoEasing::ServoEasing() // @suppress("Class members should be properly initialized")
 #if not defined(USE_LEIGHTWEIGHT_SERVO_LIB) && not defined(USE_PCA9685_SERVO_EXPANDER)
 :
-Servo()
+        Servo()
 #endif
 {
     mServo0DegreeMicrosecondsOrUnits = DEFAULT_MICROSECONDS_FOR_0_DEGREE;
@@ -206,6 +206,16 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServo0Degree, int aMic
 // Set a flag which is only used at writeMicrosecondsOrUnits
 void ServoEasing::setReverseOperation(bool aOperateServoReverse) {
     mOperateServoReverse = aOperateServoReverse;
+}
+
+uint16_t ServoEasing::getSpeed() {
+    return mSpeed;
+}
+
+void ServoEasing::setSpeed(uint16_t aDegreesPerSecond) {
+    if (aDegreesPerSecond >= 0) {
+        mSpeed = aDegreesPerSecond;
+    }
 }
 
 void ServoEasing::setTrim(int8_t aTrim) {
@@ -315,6 +325,10 @@ uint16_t ServoEasing::DegreeToMicrosecondsOrUnits(uint8_t aDegree) {
     return map(aDegree, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
 }
 
+void ServoEasing::easeTo(uint8_t aDegree) {
+    easeTo(aDegree, mSpeed);
+}
+
 /*
  * Blocking move without interrupt
  * aDegreesPerSecond can range from 1 to the physically maximum value of 450
@@ -332,6 +346,10 @@ void ServoEasing::easeToD(uint8_t aDegree, uint16_t aMillisForMove) {
     do {
         delay(REFRESH_INTERVAL / 1000); // 20ms - REFRESH_INTERVAL is in Microseconds
     } while (!update());
+}
+
+bool ServoEasing::setEaseTo(uint8_t aDegree) {
+    return startEaseTo(aDegree, mSpeed, false);
 }
 
 /*
@@ -371,6 +389,8 @@ bool ServoEasing::setEaseToD(uint8_t aDegree, uint16_t aMillisForMove) {
  * returns false if servo was still moving
  */
 bool ServoEasing::startEaseToD(uint8_t aDegree, uint16_t aMillisForMove, bool aStartUpdateByInterrupt) {
+    // writw the position also to sServoNextPositionArray
+    sServoNextPositionArray[mServoIndex] = aDegree;
     mEndMicrosecondsOrUnits = DegreeToMicrosecondsOrUnits(aDegree);
     uint16_t tCurrentMicroseconds = mCurrentMicrosecondsOrUnits;
     mDeltaMicrosecondsOrUnits = mEndMicrosecondsOrUnits - tCurrentMicroseconds;
@@ -526,6 +546,14 @@ uint8_t ServoEasing::getCurrentAngle() {
     return MicrosecondsOrUnitsToDegree(mCurrentMicrosecondsOrUnits);
 }
 
+uint16_t ServoEasing::getEndMicrosecondsOrUnits() {
+    return mEndMicrosecondsOrUnits;
+}
+
+uint16_t ServoEasing::getDeltaMicrosecondsOrUnits() {
+    return mDeltaMicrosecondsOrUnits;
+}
+
 uint16_t ServoEasing::getMillisForCompleteMove() {
     return mMillisForCompleteMove;
 }
@@ -632,9 +660,9 @@ void enableServoEasingInterrupt() {
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 //    // set timer 1 to 20 ms
-    TCCR1A = _BV(WGM11); // FastPWM Mode mode TOP (20ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
-    TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);    // set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
-    ICR1 = 40000;  // set period to 20 ms
+    TCCR1A = _BV(WGM11);// FastPWM Mode mode TOP (20ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
+    TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);// set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
+    ICR1 = 40000;// set period to 20 ms
 #endif
 
     TIFR1 |= _BV(OCF1B);     // clear any pending interrupts;
@@ -701,9 +729,19 @@ void setEasingTypeForAllServos(uint8_t aEasingType) {
     }
 }
 
+void setEaseToForAllServosSynchronizeAndStartInterrupt() {
+    setEaseToForAllServos();
+    synchronizeAllServosAndStartInterrupt();
+}
+
 void setEaseToForAllServosSynchronizeAndStartInterrupt(uint16_t aDegreesPerSecond) {
     setEaseToForAllServos(aDegreesPerSecond);
     synchronizeAllServosAndStartInterrupt();
+}
+
+void synchronizeAndEaseToArrayPositions() {
+    setEaseToForAllServos();
+    synchronizeAllServosStartAndWaitForAllServosToStop();
 }
 
 void synchronizeAndEaseToArrayPositions(uint16_t aDegreesPerSecond) {
@@ -722,10 +760,42 @@ void printArrayPositions(Stream * aSerial) {
     aSerial->println();
 }
 
+void setSpeedForAllServos(uint16_t aDegreesPerSecond) {
+    uint8_t tServoIndex = 0;
+    while (sServoArray[tServoIndex] != NULL && tServoIndex < MAX_SERVOS) {
+        sServoArray[tServoIndex]->mSpeed = aDegreesPerSecond;
+        tServoIndex++;
+    }
+}
+
+void setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues) {
+    for (uint8_t tServoIndex = 0; tServoIndex < aNumberOfValues; ++tServoIndex) {
+        sServoNextPositionArray[tServoIndex] = va_arg(*aDegreeValues, uint16_t);
+    }
+}
+
+void setDegreeForAllServos(uint8_t aNumberOfValues, ...) {
+    va_list aDegreeValues;
+    va_start(aDegreeValues, aNumberOfValues);
+    setDegreeForAllServos(aNumberOfValues, &aDegreeValues);
+    va_end(aDegreeValues);
+}
+
 /*
  * Sets target position using content of sServoNextPositionArray
  * returns false if one servo was still moving
  */
+bool setEaseToForAllServos() {
+    uint8_t tServoIndex = 0;
+    bool tOneServoIsMoving = false;
+    while (sServoArray[tServoIndex] != NULL && tServoIndex < MAX_SERVOS) {
+        tOneServoIsMoving = sServoArray[tServoIndex]->setEaseTo(sServoNextPositionArray[tServoIndex],
+                sServoArray[tServoIndex]->mSpeed) || tOneServoIsMoving;
+        tServoIndex++;
+    }
+    return tOneServoIsMoving;
+}
+
 bool setEaseToForAllServos(uint16_t aDegreesPerSecond) {
     uint8_t tServoIndex = 0;
     bool tOneServoIsMoving = false;

@@ -6,6 +6,23 @@
  * To run this example need to install the "ServoEasing", "IRLremote" and "PinChangeInterrupt" libraries under Sketch -> Include Library -> Manage Librarys...
  * Use "ServoEasing", "IRLremote" and "PinChangeInterrupt" as filter string.
  *
+ *  Copyright (C) 2019  Armin Joachimsmeyer
+ *  armin.joachimsmeyer@gmail.com
+ *
+ *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
+ *
+ *  ServoEasing is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/gpl.html>.
  */
 
 #include <Arduino.h>
@@ -59,7 +76,7 @@ void eepromReadAndSetServoTrim();
 void eepromWriteServoTrim();
 uint8_t getIRCommand(bool doWait = true);
 
-bool synchronizeMoveAllServosAndCheckInputAndWait(uint16_t aDegreesPerSecond);
+bool synchronizeMoveAllServosAndCheckInputAndWait();
 bool moveOneServoAndCheckInput(uint8_t aServoIndex, uint8_t aDegree, uint16_t aDegreesPerSecond);
 bool updateCheckInputAndWaitForAllServosToStop();
 bool delayAndCheckInput(uint16_t aDelayMillis);
@@ -115,6 +132,8 @@ void setup() {
     // set servo to 90 degree without trim and wait
     resetServosTo90Degree();
     delay(2000);
+
+    setSpeedForAllServos(sServoSpeed);
 
     eepromReadAndSetServoTrim();
     // set servo to 90 degree wit trim and wait
@@ -223,7 +242,7 @@ uint8_t getIRCommand(bool doWait) {
                 // new code for right address
                 sLastIRValue = tIRValue;
                 break;
-            } else if (tIRData.address == IR_REPEAT_ADDRESS && tIRData.command == IR_REPEAT_CODE && sLastIRValue != 0) {
+            } else if (tIRData.address == IR_NEC_REPEAT_ADDRESS && tIRData.command == IR_NEC_REPEAT_CODE && sLastIRValue != 0) {
                 // received repeat code
                 tIRValue = sLastIRValue;
                 break;
@@ -303,8 +322,8 @@ bool updateCheckInputAndWaitForAllServosToStop() {
     return false;
 }
 
-bool synchronizeMoveAllServosAndCheckInputAndWait(uint16_t aDegreesPerSecond) {
-    setEaseToForAllServos(aDegreesPerSecond);
+bool synchronizeMoveAllServosAndCheckInputAndWait() {
+    setEaseToForAllServos();
     synchronizeAllServosAndStartInterrupt(false);
     return updateCheckInputAndWaitForAllServosToStop();
 }
@@ -340,6 +359,7 @@ bool doIncreaseSpeed() {
     if (sServoSpeed > 0xBF) {
         sServoSpeed = 0xBF;
     }
+    setSpeedForAllServos(sServoSpeed);
     return false;
 }
 
@@ -353,6 +373,7 @@ bool doDecreaseSpeed() {
             sServoSpeed = 4;
         }
     }
+    setSpeedForAllServos(sServoSpeed);
     return false;
 }
 
@@ -735,7 +756,7 @@ bool basicQuarterTurn(uint8_t aMoveLegIndex, bool aTurnLeft) {
         tServoIndex += SERVOS_PER_LEG;
     }
 //    printArrayPositions(&Serial);
-    if (synchronizeMoveAllServosAndCheckInputAndWait(sServoSpeed)) {
+    if (synchronizeMoveAllServosAndCheckInputAndWait()) {
         return true;
     }
     return false;
@@ -922,7 +943,7 @@ bool transformAndSetAllServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t 
     sServoNextPositionArray[tEffectivePivotServoIndex + LIFT_SERVO_OFFSET] = aFRL;
 
     if (aDoMove) {
-        return synchronizeMoveAllServosAndCheckInputAndWait(sServoSpeed);
+        return synchronizeMoveAllServosAndCheckInputAndWait();
     }
     return false;
 }
@@ -968,7 +989,7 @@ bool transformAndSetPivotServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_
     sServoNextPositionArray[tEffectivePivotServoIndex] = aFRP;
 
     if (aDoMove) {
-        return synchronizeMoveAllServosAndCheckInputAndWait(sServoSpeed);
+        return synchronizeMoveAllServosAndCheckInputAndWait();
     }
     return false;
 }
@@ -1003,7 +1024,7 @@ bool setPivotServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP) {
     sServoNextPositionArray[BACK_LEFT_PIVOT] = aBLP;
     sServoNextPositionArray[BACK_RIGHT_PIVOT] = aBRP;
     sServoNextPositionArray[FRONT_RIGHT_PIVOT] = aFRP;
-    return synchronizeMoveAllServosAndCheckInputAndWait(sServoSpeed);
+    return synchronizeMoveAllServosAndCheckInputAndWait();
 }
 
 bool setLiftServos(uint8_t aFLL, uint8_t aBLL, uint8_t aBRL, uint8_t aFRL) {
@@ -1011,7 +1032,7 @@ bool setLiftServos(uint8_t aFLL, uint8_t aBLL, uint8_t aBRL, uint8_t aFRL) {
     sServoNextPositionArray[BACK_LEFT_LIFT] = aBLL;
     sServoNextPositionArray[BACK_RIGHT_LIFT] = aBRL;
     sServoNextPositionArray[FRONT_RIGHT_LIFT] = aFRL;
-    return synchronizeMoveAllServosAndCheckInputAndWait(sServoSpeed);
+    return synchronizeMoveAllServosAndCheckInputAndWait();
 }
 
 bool setAllServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP, uint8_t aFLL, uint8_t aBLL, uint8_t aBRL, uint8_t aFRL) {
@@ -1024,7 +1045,7 @@ bool setAllServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP, uint8_
     sServoNextPositionArray[BACK_LEFT_LIFT] = aBLL;
     sServoNextPositionArray[BACK_RIGHT_LIFT] = aBRL;
     sServoNextPositionArray[FRONT_RIGHT_LIFT] = aFRL;
-    return synchronizeMoveAllServosAndCheckInputAndWait(sServoSpeed);
+    return synchronizeMoveAllServosAndCheckInputAndWait();
 }
 
 /*******************************************
@@ -1040,7 +1061,7 @@ void printTrimAngles() {
     }
 }
 
-void resetServosTo90Degree(){
+void resetServosTo90Degree() {
     for (uint8_t i = 0; i < NUMBER_OF_SERVOS; ++i) {
         sServoArray[i]->write(90);
     }
@@ -1131,7 +1152,7 @@ bool basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
         sServoNextPositionArray[tIndex] = 180 - Y_POSITION_CLOSE_ANGLE;
     }
 //    printArrayPositions(&Serial);
-    synchronizeMoveAllServosAndCheckInputAndWait(sServoSpeed);
+    synchronizeMoveAllServosAndCheckInputAndWait();
 
 // 3. Move back right leg up, forward and down
     Serial.println(F("Move back leg to close position"));

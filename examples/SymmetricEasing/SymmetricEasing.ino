@@ -71,15 +71,15 @@ void setup() {
 void loop() {
 
     uint16_t tSpeed = analogRead(SPEED_IN_PIN);
-    tSpeed = map(tSpeed, 0, 1023, 5, 150);
+    setSpeedForAllServos(map(tSpeed, 0, 1023, 5, 150));
 
     /*
      * Move three servos synchronously without interrupt handler
      */
     Serial.print(F("Move to 135 degree with "));
-    Serial.print(tSpeed);
+    Serial.print(Servo1.getSpeed());
     Serial.println(F(" degree per second with own update loop"));
-    Servo1.setEaseTo(135, tSpeed);
+    Servo1.setEaseTo(135);
     Servo2.setEaseToD(135, Servo1.mMillisForCompleteMove);
     Servo3.setEaseToD(135, Servo1.mMillisForCompleteMove);
     // No need to call synchronizeAllServosAndStartInterrupt(false), since in this case I know that all durations are the same
@@ -93,9 +93,9 @@ void loop() {
      * Move three servos synchronously with interrupt handler
      */
     Serial.print(F("Move to 45 degree with "));
-    Serial.print(tSpeed);
+    Serial.print(Servo1.getSpeed());
     Serial.println(F(" degree per second using interrupts"));
-    Servo1.setEaseTo(45, tSpeed);
+    Servo1.setEaseTo(45);
     Servo2.setEaseToD(45, Servo1.mMillisForCompleteMove);
     Servo3.startEaseToD(45, Servo1.mMillisForCompleteMove);
     // No need to call synchronizeAllServosAndStartInterrupt(), since in this case I know that all durations are the same
