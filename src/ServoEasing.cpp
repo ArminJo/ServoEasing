@@ -213,9 +213,7 @@ uint16_t ServoEasing::getSpeed() {
 }
 
 void ServoEasing::setSpeed(uint16_t aDegreesPerSecond) {
-    if (aDegreesPerSecond >= 0) {
-        mSpeed = aDegreesPerSecond;
-    }
+    mSpeed = aDegreesPerSecond;
 }
 
 void ServoEasing::setTrim(int8_t aTrim) {

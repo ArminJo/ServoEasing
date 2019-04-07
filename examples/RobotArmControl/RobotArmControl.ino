@@ -1,7 +1,7 @@
 /*
  * RobotArmControl.cpp
  *
- * Program for controlling a RobotArm with 4 servos using 4 potentiometers and/or an IR Remote
+ * Program for controlling a RobotArm with 4 servos using 4 potentiometers and/or an IR Remote at pin A0
  *
  * To run this example need to install the "ServoEasing", "IRLremote" and "PinChangeInterrupt" libraries under Sketch -> Include Library -> Manage Librarys...
  * Use "ServoEasing", "IRLremote" and "PinChangeInterrupt" as filter string.
@@ -27,10 +27,14 @@
 
 #include <Arduino.h>
 
-#include "RobotArmIRConfiguration.h" // must be before IRLremote.h if we use not pin 2 or 3
+#include "RobotArmIRConfiguration.h" // must be before IRLremote.h. Specifies the IR input pin at A0
 #include <IRLremote.h>      // include IR Remote library
 
 #include "ServoEasing.h"    // include servo library
+
+#define USE_BUTTON_0
+#define USE_ATTACH_INTERRUPT // to be compatible with IRLremote
+#include "EasyButtonAtInt01.h" // for switching easing modes
 
 #include "ADCUtils.h" // for get getVCCVoltageMillivolt
 
@@ -70,6 +74,7 @@ ServoEasing ClawServo;      // 3 - Back Left Lift Servo
  * Global control parameters
  */
 uint16_t sServoSpeed = 40;      // in degree/second
+uint8_t sEasingType = EASE_LINEAR;
 
 uint8_t sBodyPivotAngle = PIVOT_START_ANGLE;
 uint8_t sHorizontalServoAngle = HORIZONTAL_START_ANGLE;
@@ -87,20 +92,24 @@ uint8_t sMode = MODE_MANUAL;
 
 CNec IRLremote;
 
+void changeEasingType(bool aButtonToggleState);
+EasyButton Button0AtPin2(true, &changeEasingType);
+
 /*
  * Function declarations
  */
 uint8_t getIRCommand(bool doWait = true);
 
 bool synchronizeMoveAllServosAndCheckInputAndWait();
-bool moveOneServoAndCheckInput(uint8_t aServoIndex, uint8_t aDegree, uint16_t aDegreesPerSecond);
+bool moveOneServoAndCheckInput(uint8_t aServoIndex, uint8_t aDegree, uint16_t aDegreesPerSecond = sServoSpeed);
 bool updateCheckInputAndWaitForAllServosToStop();
 bool delayAndCheckInput(uint16_t aDelayMillis);
 
-void setEasingTypeToLinear();
+void setEasingType(uint8_t aEasingType);
 
 bool setAllServos(uint8_t aNumberOfValues, ...);
 
+void handleManualControl();
 void doDelay();
 /*
  * Code starts here
@@ -122,9 +131,16 @@ void setup() {
 
     setSpeedForAllServos(sServoSpeed);
 
+    /*
+     * delay() to avoid uncontrolled servo moving after power on.
+     * Then the Arduino is reseted many times which may lead to invalid servo signals.
+     */
+    delay(500);
     // Set to start position. Must be done with write()
     BasePivotServo.write(PIVOT_START_ANGLE);
+    delay(200);
     HorizontalServo.write(HORIZONTAL_START_ANGLE);
+    delay(200);
     LiftServo.write(LIFT_START_ANGLE);
     ClawServo.write(CLAW_START_ANGLE);
     delay(2000);
@@ -139,17 +155,17 @@ void setup() {
     Serial.print(F("us. Value for 180 degree="));
     Serial.print(AT_180_DEGREE_VALUE_MICROS);
     Serial.println(F("us."));
+
+    // Output VCC Voltage
+    int tVoltageMillivolts = getVCCVoltageMillivolt();
+    Serial.print(F("VCC="));
+    Serial.print(tVoltageMillivolts);
+    Serial.println(" mV");
+
 } //setup
 
 #define IR_LOCK_TIME_MILLIS 10000 // 10 seconds lock of manual input
 void loop() {
-
-    static bool sManualActionHappened;
-    static bool isInitialized = false;
-    static int sLastPivot;
-    static int sLastHorizontal;
-    static int sLastLift;
-    static int sLastClaw;
 
     uint8_t tIRCode;
     if (sNextCommand == COMMAND_EMPTY) {
@@ -158,8 +174,6 @@ void loop() {
         tIRCode = sNextCommand;
         sNextCommand = COMMAND_EMPTY;
     }
-
-    setEasingTypeToLinear();
 
 // search IR code and call associated function
     if (tIRCode != COMMAND_EMPTY) {
@@ -189,86 +203,10 @@ void loop() {
         }
         delay(20); // Pause before executing next movement
     } else if (sMode == MODE_AUTO) {
-        setAllServos(4, 90, 120, 20, 50);
-        doDelay();
-
-        ClawServo.easeTo(CLAW_CLOSE_ANGLE);
-        doDelay();
-
-        setAllServos(3, 40, 40, 120);
-        doDelay();
-
-        ClawServo.easeTo(CLAW_CLOSE_ANGLE - 30);
-        doDelay();
-
-        setAllServos(3, 140, 40, 165);
-        doDelay();
-
-        ClawServo.easeTo(CLAW_CLOSE_ANGLE);
-        doDelay();
+        doAutoMove();
 
     } else if (sMode == MODE_MANUAL) {
-//        int tVoltageMillivolts = getVCCVoltageMillivolt();
-
-//        Serial.print(F("VCC="));
-//        Serial.print(tVoltageMillivolts);
-//        Serial.println(" mV");
-
-        int tTargetAngle;
-#define ANALOG_HYSTERESIS 6
-        int tPivot = analogRead(PIVOT_INPUT_PIN);
-        if (abs(sLastPivot - tPivot) > ANALOG_HYSTERESIS) {
-            sLastPivot = tPivot;
-            tTargetAngle = map(tPivot, 0, 1023, 0, 180);
-            BasePivotServo.easeTo(tTargetAngle);
-            Serial.print("BasePivotServo: micros=");
-            Serial.print(BasePivotServo.getEndMicrosecondsOrUnits());
-            Serial.print(" degree=");
-            Serial.println(tTargetAngle);
-            sManualActionHappened = true;
-        }
-        int tHorizontal = analogRead(HORIZONTAL_INPUT_PIN);
-        if (abs(sLastHorizontal - tHorizontal) > ANALOG_HYSTERESIS) {
-            sLastHorizontal = tHorizontal;
-            tTargetAngle = map(tHorizontal, 0, 1023, 0, 180);
-            HorizontalServo.easeTo(tTargetAngle);
-            Serial.print("HorizontalServo: micros=");
-            Serial.print(HorizontalServo.getEndMicrosecondsOrUnits());
-            Serial.print(" degree=");
-            Serial.println(tTargetAngle);
-            sManualActionHappened = true;
-        }
-        int tLift = analogRead(LIFT_INPUT_PIN);
-        if (abs(sLastLift - tLift) > ANALOG_HYSTERESIS) {
-            sLastLift = tLift;
-            tTargetAngle = map(tLift, 0, 1023, 0, LIFT_MAX_ANGLE);
-            LiftServo.easeTo(tTargetAngle);
-            Serial.print("LiftServo: micros=");
-            Serial.print(LiftServo.getEndMicrosecondsOrUnits());
-            Serial.print(" degree=");
-            Serial.println(tTargetAngle);
-            sManualActionHappened = true;
-        }
-        int tClaw = analogRead(CLAW_INPUT_PIN);
-        if (abs(sLastClaw - tClaw) > ANALOG_HYSTERESIS) {
-            sLastClaw = tClaw;
-            tTargetAngle = map(tClaw, 0, 1023, 0, CLAW_MAX_ANGLE);
-            ClawServo.easeTo(tTargetAngle);
-            Serial.print("ClawServo: micros=");
-            Serial.print(ClawServo.getEndMicrosecondsOrUnits());
-            Serial.print(" degree=");
-            Serial.println(tTargetAngle);
-            sManualActionHappened = true;
-        }
-        // reset manual action after the first move to manual start position
-        if (!isInitialized) {
-            isInitialized = true;
-            sManualActionHappened = false;
-        }
-        if (!sManualActionHappened && (millis() > 10000)) {
-            sMode = MODE_AUTO;
-            Serial.println("Switch to auto mode");
-        }
+        handleManualControl();
     }
 }  //loop
 
@@ -452,6 +390,28 @@ bool doDecreaseSpeed() {
  * The Commands to execute
  ******************************************/
 
+bool doAutoMove() {
+    setAllServos(4, 90, 120, 20, 50);
+    doDelay();
+
+    ClawServo.easeTo(CLAW_CLOSE_ANGLE);
+    doDelay();
+
+    setAllServos(3, 40, 40, 120);
+    doDelay();
+
+    ClawServo.easeTo(CLAW_CLOSE_ANGLE - 30);
+    doDelay();
+
+    setAllServos(3, 140, 40, 165);
+    doDelay();
+
+    ClawServo.easeTo(CLAW_CLOSE_ANGLE);
+    doDelay();
+
+    return false;
+}
+
 bool doFolded() {
     return setAllServos(4, 90, 0, 100, 70);
 }
@@ -529,9 +489,10 @@ bool doSwitchToManual() {
     return false;
 }
 
-void setEasingTypeToLinear() {
+void setEasingType(uint8_t aEasingType) {
+    sEasingType = aEasingType;
     for (uint8_t tServoIndex = 0; tServoIndex < NUMBER_OF_SERVOS; ++tServoIndex) {
-        sServoArray[tServoIndex]->setEasingType(EASE_LINEAR);
+        sServoArray[tServoIndex]->setEasingType(aEasingType);
     }
 }
 
@@ -547,5 +508,89 @@ bool setAllServos(uint8_t aNumberOfValues, ...) {
 }
 
 /*******************************************
- * Trimming stuff
+ * Other stuff
  ******************************************/
+void changeEasingType(__attribute__((unused)) bool aButtonToggleState) {
+    Serial.print(F("Set easing type to "));
+    if (sEasingType == EASE_LINEAR) {
+        setEasingType(EASE_QUADRATIC_IN_OUT);
+        Serial.print(F("quadratic"));
+    } else if (sEasingType == EASE_QUADRATIC_IN_OUT) {
+        setEasingType(EASE_SINE_IN_OUT);
+        Serial.print(F("sine"));
+    } else if (sEasingType == EASE_SINE_IN_OUT) {
+        setEasingType(EASE_CUBIC_IN_OUT);
+        Serial.print(F("cubic"));
+    } else if (sEasingType == EASE_CUBIC_IN_OUT) {
+        setEasingType(EASE_LINEAR);
+        Serial.print(F("linear"));
+    }
+    Serial.println();
+
+}
+
+void handleManualControl() {
+    static bool sManualActionHappened;
+    static bool isInitialized = false;
+
+    static int sLastPivot;
+    static int sLastHorizontal;
+    static int sLastLift;
+    static int sLastClaw;
+
+    int tTargetAngle;
+#define ANALOG_HYSTERESIS 6
+    int tPivot = analogRead(PIVOT_INPUT_PIN);
+    if (abs(sLastPivot - tPivot) > ANALOG_HYSTERESIS) {
+        sLastPivot = tPivot;
+        tTargetAngle = map(tPivot, 0, 1023, 0, 180);
+        moveOneServoAndCheckInput(SERVO_BASE_PIVOT, tTargetAngle);
+        Serial.print("BasePivotServo: micros=");
+        Serial.print(BasePivotServo.getEndMicrosecondsOrUnits());
+        Serial.print(" degree=");
+        Serial.println(tTargetAngle);
+        sManualActionHappened = true;
+    }
+    int tHorizontal = analogRead(HORIZONTAL_INPUT_PIN);
+    if (abs(sLastHorizontal - tHorizontal) > ANALOG_HYSTERESIS) {
+        sLastHorizontal = tHorizontal;
+        tTargetAngle = map(tHorizontal, 0, 1023, 0, 180);
+        moveOneServoAndCheckInput(SERVO_HORIZONTAL, tTargetAngle);
+        Serial.print("HorizontalServo: micros=");
+        Serial.print(HorizontalServo.getEndMicrosecondsOrUnits());
+        Serial.print(" degree=");
+        Serial.println(tTargetAngle);
+        sManualActionHappened = true;
+    }
+    int tLift = analogRead(LIFT_INPUT_PIN);
+    if (abs(sLastLift - tLift) > ANALOG_HYSTERESIS) {
+        sLastLift = tLift;
+        tTargetAngle = map(tLift, 0, 1023, 0, LIFT_MAX_ANGLE);
+        moveOneServoAndCheckInput(SERVO_LIFT, tTargetAngle);
+        Serial.print("LiftServo: micros=");
+        Serial.print(LiftServo.getEndMicrosecondsOrUnits());
+        Serial.print(" degree=");
+        Serial.println(tTargetAngle);
+        sManualActionHappened = true;
+    }
+    int tClaw = analogRead(CLAW_INPUT_PIN);
+    if (abs(sLastClaw - tClaw) > ANALOG_HYSTERESIS) {
+        sLastClaw = tClaw;
+        tTargetAngle = map(tClaw, 0, 1023, 0, CLAW_MAX_ANGLE);
+        moveOneServoAndCheckInput(SERVO_CLAW, tTargetAngle);
+        Serial.print("ClawServo: micros=");
+        Serial.print(ClawServo.getEndMicrosecondsOrUnits());
+        Serial.print(" degree=");
+        Serial.println(tTargetAngle);
+        sManualActionHappened = true;
+    }
+    // reset manual action after the first move to manual start position
+    if (!isInitialized) {
+        isInitialized = true;
+        sManualActionHappened = false;
+    }
+    if (!sManualActionHappened && (millis() > 10000)) {
+        sMode = MODE_AUTO;
+        Serial.println("Switch to auto mode");
+    }
+}

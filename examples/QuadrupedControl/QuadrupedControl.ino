@@ -1,7 +1,7 @@
 /*
  * QuadrupedControl.cpp
  *
- * Program for controlling a mePed Robot V2 with 8 servos using an IR Remote
+ * Program for controlling a mePed Robot V2 with 8 servos using an IR Remote at pin A0
  *
  * To run this example need to install the "ServoEasing", "IRLremote" and "PinChangeInterrupt" libraries under Sketch -> Include Library -> Manage Librarys...
  * Use "ServoEasing", "IRLremote" and "PinChangeInterrupt" as filter string.
@@ -27,7 +27,7 @@
 
 #include <Arduino.h>
 
-#include "QuadrupedIRConfiguration.h" // must be before IRLremote.h if we use not pin 2 or 3
+#include "QuadrupedIRConfiguration.h" // must be before IRLremote.h. Specifies the IR input pin at A0
 #include <IRLremote.h>      // include IR Remote library
 
 #include "QuadrupedServoConfiguration.h"

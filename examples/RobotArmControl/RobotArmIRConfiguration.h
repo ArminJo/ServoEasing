@@ -118,6 +118,7 @@ bool doLiftDown();
 bool doOpenClaw();
 bool doCloseClaw();
 
+bool doAutoMove();
 bool doSwitchToManual();
 /*
  * Instant commandfunctions
