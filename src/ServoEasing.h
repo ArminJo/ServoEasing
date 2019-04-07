@@ -102,12 +102,13 @@
 #define VERSION_SERVO_EASING 1.1.0
 /*
  * Version 1.1
+ * - corrected sine, circular, back and elastic IN functions.
  * - easeTo stores its degree parameter now also in sServoNextPositionArray.
  * - added setSpeed(), getSpeed(), setSpeedForAllServos().
  * - added easeTo(uint8_t aDegree) and setEaseTo(uint8_t aDegree).
  * - added setEaseToForAllServos(), setEaseToForAllServosSynchronizeAndStartInterrupt(), synchronizeAndEaseToArrayPositions().
  * - added getEndMicrosecondsOrUnits(), getDeltaMicrosecondsOrUnits().
- * - added  setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues),setDegreeForAllServos(uint8_t aNumberOfValues, uint8_t aDegreeForFirstServo, ...)
+ * - added  setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues),setDegreeForAllServos(uint8_t aNumberOfValues, ...)
  */
 
 #define DEFAULT_MICROSECONDS_FOR_0_DEGREE 544
@@ -128,16 +129,17 @@
  *      In the first half, call with (1 - (2 * PercentageOfCompletion)) | 1.0 to 0.0. Result = (1 - result) -> call OUT function 2 times faster.
  *      In the second half, call with ((2 * PercentageOfCompletion) - 1) | 0.0 to 1.0. Result = (1- result) -> call OUT function 2 times faster and backwards.
  */
-#define CALL_STYLE_DIRECT           0x00 // == IN
-#define CALL_STYLE_OUT              0x20
-#define CALL_STYLE_IN_OUT           0x40
-#define CALL_STYLE_BOUNCING_OUT_IN  0x60
-#define CALL_STYLE_MASK             0xE0 // for future extensions
 
 /*
  * Values for provided EaseTypes
  * The call style is coded in the upper 3 bits
  */
+#define CALL_STYLE_DIRECT           0x00 // == IN
+#define CALL_STYLE_OUT              0x20
+#define CALL_STYLE_IN_OUT           0x40
+#define CALL_STYLE_BOUNCING_OUT_IN  0x60
+
+#define CALL_STYLE_MASK             0xE0 // for future extensions
 #define EASE_TYPE_MASK          0x0F
 
 #define EASE_LINEAR             0x00

@@ -522,6 +522,9 @@ void changeEasingType(__attribute__((unused)) bool aButtonToggleState) {
         setEasingType(EASE_CUBIC_IN_OUT);
         Serial.print(F("cubic"));
     } else if (sEasingType == EASE_CUBIC_IN_OUT) {
+        setEasingType(EASE_BOUNCE_OUT);
+        Serial.print(F("circular"));
+    } else if (sEasingType == EASE_BOUNCE_OUT) {
         setEasingType(EASE_LINEAR);
         Serial.print(F("linear"));
     }

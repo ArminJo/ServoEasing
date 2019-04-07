@@ -925,7 +925,7 @@ float QuarticEaseIn(float aPercentageOfCompletion) {
  * Is behaves almost like QUADRATIC
  */
 float SineEaseIn(float aPercentageOfCompletion) {
-    return 0.5 * (1 - cos(aPercentageOfCompletion * M_PI));
+    return sin((aPercentageOfCompletion - 1) * M_PI_2) + 1;
 }
 
 /*
@@ -934,7 +934,7 @@ float SineEaseIn(float aPercentageOfCompletion) {
  * and https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c
  */
 float CircularEaseIn(float aPercentageOfCompletion) {
-    return 0.5 * (1 - sqrt(1 - 4 * aPercentageOfCompletion * aPercentageOfCompletion));
+    return 1 - sqrt(1 - (aPercentageOfCompletion * aPercentageOfCompletion));
 }
 
 /*
@@ -942,10 +942,8 @@ float CircularEaseIn(float aPercentageOfCompletion) {
  * and https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c
  */
 float BackEaseIn(float aPercentageOfCompletion) {
-    aPercentageOfCompletion = aPercentageOfCompletion * 2;
-    return 0.5
-            * ((aPercentageOfCompletion * aPercentageOfCompletion * aPercentageOfCompletion)
-                    - (aPercentageOfCompletion * sin(aPercentageOfCompletion * M_PI)));
+    return (aPercentageOfCompletion * aPercentageOfCompletion * aPercentageOfCompletion)
+            - (aPercentageOfCompletion * sin(aPercentageOfCompletion * M_PI));
 }
 
 /*
@@ -953,10 +951,11 @@ float BackEaseIn(float aPercentageOfCompletion) {
  * and https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c
  */
 float ElasticEaseIn(float aPercentageOfCompletion) {
-    return 0.5 * sin(13 * M_PI_2 * (2 * aPercentageOfCompletion)) * pow(2, 10 * ((2 * aPercentageOfCompletion) - 1));
+    return sin(13 * M_PI_2 * aPercentageOfCompletion) * pow(2, 10 * (aPercentageOfCompletion-1));
 }
 
 /*
+ * !!! ATTENTION !!! we have only the out function implemented
  * see: https://easings.net/de#easeOutBounce
  * and https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c
  */

@@ -83,6 +83,17 @@ Program for controlling a mePed Robot V2 with 8 servos using an IR Remote.
 ## RobotArmControl example
 Program for controlling a robot arm with 4 servos using 4 potentiometers and/or an IR Remote.
 
+# Revision History
+### Version 1.1.0
+- Corrected sine, circular, back and elastic IN functions.
+- easeTo stores its degree parameter now also in sServoNextPositionArray.
+- added setSpeed(), getSpeed(), setSpeedForAllServos() and added ease* functions without speed parameter
+- added getEndMicrosecondsOrUnits(), getDeltaMicrosecondsOrUnits().
+- added setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues),setDegreeForAllServos(uint8_t aNumberOfValues, ...)
+
+### Version 1.0.0
+Initial Arduino library version
+
 # Travis CI
 The ServoEasing library examples are built on Travis CI for the following boards:
 
