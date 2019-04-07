@@ -84,7 +84,7 @@
  * Since there should be no library which uses Serial, enable TRACE only for development purposes.
  */
 //#define TRACE
-#define DEBUG
+//#define DEBUG
 // Propagate debug level
 #ifdef TRACE
 #define DEBUG
