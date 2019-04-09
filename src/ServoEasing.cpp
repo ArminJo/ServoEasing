@@ -358,6 +358,10 @@ bool ServoEasing::setEaseTo(uint8_t aDegree, uint16_t aDegreesPerSecond) {
     return startEaseTo(aDegree, aDegreesPerSecond, false);
 }
 
+bool ServoEasing::startEaseTo(uint8_t aDegree) {
+    return startEaseTo(aDegree, mSpeed, true);
+}
+
 /*
  * sets up all the values needed for a smooth move to new value
  * returns false if servo was still moving

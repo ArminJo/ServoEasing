@@ -14,6 +14,9 @@ The latter is useful, if you have only one or two servos since it uses only the 
 - All servos can move **synchronized**.
 - It enables **non blocking** movement for all servos attached to the Arduino Servo library by reusing the interrupts of the servo timer.
 
+## Usage
+Just call **myServo.startEaseTo()** instead of **myServo.write()** and you are done. Or if you want to wait (blocking) until sevo has arrived, use **myServo.easeTo()**. Speed of movement can be set by **myServo.setSpeed()**.
+
 ### Includes the following **easing functions**:
 - Linear
 - Quadratic

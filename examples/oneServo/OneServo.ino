@@ -61,7 +61,8 @@ void blinkLED() {
 void loop() {
     // Move slow
     Serial.println(F("Move to 90 degree with 10 degree per second blocking"));
-    Servo1.easeTo(90, 10);
+    Servo1.setSpeed(10);  // This speed is taken if no speed argument is given.
+    Servo1.easeTo(90);
 
     // Now move faster without any delay between the moves
     Serial.println(F("Move to 180 degree with 30 degree per second using interrupts"));

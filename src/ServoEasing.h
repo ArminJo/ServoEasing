@@ -223,7 +223,7 @@ public:
     uint8_t attach(int aPin);
     // Here no units accepted, only microseconds!
     uint8_t attach(int aPin, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree);
-    void setReverseOperation(bool aOperateServoReverse); // you want to call it before using setTrim
+    void setReverseOperation(bool aOperateServoReverse);            // you want to call it before using setTrim
 
     void setTrim(int8_t aTrim);
     void setTrimMicrosecondsOrUnits(int16_t aTrimMicrosecondsOrUnits);
@@ -232,22 +232,23 @@ public:
 
     void registerUserEaseInFunction(float (*aUserEaseInFunction)(float aPercentageOfCompletion));
 
-    void write(int aValue); // write value direct to servo
+    void write(int aValue);                                         // write value direct to servo
     void writeMicrosecondsOrUnits(int aValue);
 
-    void setSpeed(uint16_t aDegreesPerSecond);
+    void setSpeed(uint16_t aDegreesPerSecond);                      // This speed is taken if no speed argument is given.
     uint16_t getSpeed();
-    void easeTo(uint8_t aDegree); // blocking move to new position using mLastSpeed
-    void easeTo(uint8_t aDegree, uint16_t aDegreesPerSecond); // blocking move to new position using speed
-    void easeToD(uint8_t aDegree, uint16_t aMillisForMove); // blocking move to new position using duration
+    void easeTo(uint8_t aDegree);                                   // blocking move to new position using mLastSpeed
+    void easeTo(uint8_t aDegree, uint16_t aDegreesPerSecond);       // blocking move to new position using speed
+    void easeToD(uint8_t aDegree, uint16_t aMillisForMove);         // blocking move to new position using duration
 
-    bool setEaseTo(uint8_t aDegree); // shortcut for startEaseTo(..,..,false)
-    bool setEaseTo(uint8_t aDegree, uint16_t aDegreesPerSecond); // shortcut for startEaseTo(..,..,false)
+    bool setEaseTo(uint8_t aDegree);                                // shortcut for startEaseTo(..,..,false)
+    bool setEaseTo(uint8_t aDegree, uint16_t aDegreesPerSecond);    // shortcut for startEaseTo(..,..,false)
+    bool startEaseTo(uint8_t aDegree);                              // shortcut for startEaseTo(aDegree, mSpeed, true)
     bool startEaseTo(uint8_t aDegree, uint16_t aDegreesPerSecond, bool aStartUpdateByInterrupt = true);
-    bool setEaseToD(uint8_t aDegree, uint16_t aDegreesPerSecond); // shortcut for startEaseToD(..,..,false)
+    bool setEaseToD(uint8_t aDegree, uint16_t aDegreesPerSecond);   // shortcut for startEaseToD(..,..,false)
     bool startEaseToD(uint8_t aDegree, uint16_t aMillisForMove, bool aStartUpdateByInterrupt = true);
     bool update();
-    float callEasingFunction(float aPercentageOfCompletion); // used in update()
+    float callEasingFunction(float aPercentageOfCompletion);        // used in update()
 
     uint8_t getCurrentAngle();
     uint16_t getEndMicrosecondsOrUnits();
