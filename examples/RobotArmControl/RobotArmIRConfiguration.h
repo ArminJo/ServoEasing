@@ -17,62 +17,93 @@
 #include <PinChangeInterrupt.h> // must be included if we do not use pin 2 or 3
 #endif
 
+#if not( defined(USE_KEYES_REMOTE) || defined(USE_WM10_REMOTE) || defined(USE_MSI_REMOTE) || defined(USE_CAR_MP3_REMOTE))
+#define USE_KEYES_REMOTE // the original remote of he mePed v2
+//#define USE_WM10_REMOTE
+//#define USE_MSI_REMOTE
+//#define USE_CAR_MP3_REMOTE
+#endif
+
+#ifdef USE_KEYES_REMOTE
+/*
+ * FIRST:
+ * IR code to button mapping for better reading. IR codes should only referenced here.
+ */
+// Codes for the KEYES remote control with 17 Keys
+#define IR_ADDRESS 0x00FF
+
+#define IR_UP    0x46
+#define IR_DOWN  0x15
+#define IR_RIGHT 0x43
+#define IR_LEFT  0x44
+#define IR_OK    0x40
+
+#define IR_1    0x16
+#define IR_2    0x19
+#define IR_3    0x0D
+#define IR_4    0x0C
+#define IR_5    0x18
+#define IR_6    0x5E
+#define IR_7    0x08
+#define IR_8    0x1C
+#define IR_9    0x5A
+#define IR_0    0x52
+
+#define IR_STAR 0x42
+#define IR_HASH 0x4A
+/*
+ * SECOND:
+ * IR button to command mapping for better reading. IR buttons should only referenced here.
+ */
+// Mapping from IR buttons to commands for direct use in the code and in the mapping array
+#define COMMAND_EMPTY       0 // no command received
+#define COMMAND_UP          IR_UP
+#define COMMAND_DOWN        IR_DOWN
+#define COMMAND_RIGHT       IR_RIGHT
+#define COMMAND_LEFT        IR_LEFT
+
+#define COMMAND_FORWARD     IR_2
+#define COMMAND_BACKWARD    IR_8
+#define COMMAND_OPEN        IR_4
+#define COMMAND_CLOSE       IR_6
+
+#define COMMAND_INCREASE_SPEED  IR_1
+#define COMMAND_DECREASE_SPEED  IR_3
+
+#define COMMAND_CENTER      IR_OK
+#define COMMAND_FOLD        IR_HASH
+#define COMMAND_MOVE        IR_7
+
+#define COMMAND_STOP        IR_STAR
+
+#endif
+
+#ifdef USE_WM10_REMOTE
 /*
  * FIRST:
  * IR code to button mapping for better reading. IR codes should only referenced here.
  */
 // Codes for the WM010 remote control with 14 Keys
-#define IR_WM010_ADDRESS 0xF708
+#define IR_ADDRESS 0xF708
 
-#define IR_WM010_UP  0x4
-#define IR_WM010_DOWN 0x51
-#define IR_WM010_RIGHT 0x8
-#define IR_WM010_LEFT 0x14
-#define IR_WM010_ENTER 0x7
+#define IR_UP  0x4
+#define IR_DOWN 0x51
+#define IR_RIGHT 0x8
+#define IR_LEFT 0x14
+#define IR_ENTER 0x7
 
-#define IR_WM010_ON_OFF 0xB
-#define IR_WM010_MUTE 0x48
+#define IR_ON_OFF 0xB
+#define IR_MUTE 0x48
 
-#define IR_WM010_SRC 0x1
-#define IR_WM010_RETURN 0x1C
+#define IR_SRC 0x1
+#define IR_RETURN 0x1C
 
-#define IR_WM010_VOL_MINUS 0xD
-#define IR_WM010_VOL_PLUS 0x1D
+#define IR_VOL_MINUS 0xD
+#define IR_VOL_PLUS 0x1D
 
-#define IR_WM010_FAST_FORWARD 0x16
-#define IR_WM010_FAST_BACK 0x59
-#define IR_WM010_PLAY_PAUSE 0x1F
-
-#define IR_NEC_REPEAT_ADDRESS 0xFFFF
-#define IR_NEC_REPEAT_CODE 0x0
-
-/*
- * msi Remote control with numbers 1 to 0 and cursor cross below
- */
-#define IR_MSI_ADDRESS 0xBD02
-
-#define IR_MSI_UP  0x2
-#define IR_MSI_DOWN 0x13
-#define IR_MSI_RIGHT 0x10
-#define IR_MSI_LEFT 0x11
-#define IR_MSI_ENTER 0x7
-
-#define IR_MSI_ON_OFF 0x45
-#define IR_MSI_MUTE 0xA
-
-#define IR_MSI_ESC 0x1C
-#define IR_MSI_RETURN 0x15
-
-#define IR_MSI_1    0x0
-#define IR_MSI_2    0x1
-#define IR_MSI_3    0x2
-#define IR_MSI_4    0x3
-#define IR_MSI_5    0x4
-#define IR_MSI_6    0x5
-#define IR_MSI_7    0x6
-#define IR_MSI_8    0x7
-#define IR_MSI_9    0x8
-#define IR_MSI_0    0x9
+#define IR_FAST_FORWARD 0x16
+#define IR_FAST_BACK 0x59
+#define IR_PLAY_PAUSE 0x1F
 
 /*
  * SECOND:
@@ -80,26 +111,127 @@
  */
 // Mapping from IR buttons to commands for direct use in the code and in the mapping array
 #define COMMAND_EMPTY       0 // no command received
-#define COMMAND_UP          IR_WM010_UP
-#define COMMAND_DOWN        IR_WM010_DOWN
-#define COMMAND_RIGHT       IR_WM010_RIGHT
-#define COMMAND_LEFT        IR_WM010_LEFT
+#define COMMAND_UP          IR_UP
+#define COMMAND_DOWN        IR_DOWN
+#define COMMAND_RIGHT       IR_RIGHT
+#define COMMAND_LEFT        IR_LEFT
 
-#define COMMAND_CALIBRATE   IR_WM010_MUTE
-#define COMMAND_FORWARD     IR_WM010_SRC
-#define COMMAND_BACKWARD    IR_WM010_RETURN
+#define COMMAND_FORWARD     IR_SRC
+#define COMMAND_BACKWARD    IR_RETURN
+#define COMMAND_OPEN        IR_FAST_FORWARD
+#define COMMAND_CLOSE       IR_FAST_BACK
 
-#define COMMAND_INCREASE_SPEED  IR_WM010_VOL_PLUS
-#define COMMAND_DECREASE_SPEED  IR_WM010_VOL_MINUS
-#define COMMAND_OPEN            IR_WM010_FAST_FORWARD
-#define COMMAND_CLOSE           IR_WM010_FAST_BACK
+#define COMMAND_INCREASE_SPEED  IR_VOL_PLUS
+#define COMMAND_DECREASE_SPEED  IR_VOL_MINUS
 
-#define COMMAND_CENTER      IR_WM010_ENTER
-#define COMMAND_STOP        IR_WM010_ON_OFF
-#define COMMAND_FOLD        IR_WM010_PLAY_PAUSE
+#define COMMAND_CENTER      IR_ENTER
+#define COMMAND_FOLD        IR_PLAY_PAUSE
+#define COMMAND_MOVE        IR_MUTE
 
-// locally for doCalibration
-#define COMMAND_ENTER       IR_WM010_ENTER
+#define COMMAND_STOP        IR_ON_OFF
+#endif
+/*
+ * msi Remote control with numbers 1 to 0 and cursor cross below
+ */
+#ifdef USE_MSI_REMOTE
+
+#define IR_ADDRESS 0xBD02
+
+#define IR_UP  0x2
+#define IR_DOWN 0x13
+#define IR_RIGHT 0x10
+#define IR_LEFT 0x11
+#define IR_OK 0x7
+
+#define IR_ON_OFF 0x45
+#define IR_MUTE 0xA
+
+#define IR_ESC 0x1C
+
+#define IR_1    0x0
+#define IR_2    0x1
+#define IR_3    0x2
+#define IR_4    0x3
+#define IR_5    0x4
+#define IR_6    0x5
+#define IR_7    0x6
+#define IR_8    0x7
+#define IR_9    0x8
+#define IR_0    0x9
+
+#define COMMAND_EMPTY       0 // no command received
+#define COMMAND_UP          IR_UP
+#define COMMAND_DOWN        IR_DOWN
+#define COMMAND_RIGHT       IR_RIGHT
+#define COMMAND_LEFT        IR_LEFT
+
+#define COMMAND_FORWARD     IR_2
+#define COMMAND_BACKWARD    IR_8
+#define COMMAND_OPEN        IR_4
+#define COMMAND_CLOSE       IR_6
+
+#define COMMAND_INCREASE_SPEED  IR_0
+#define COMMAND_DECREASE_SPEED  IR_ESC
+
+#define COMMAND_CENTER      IR_OK
+#define COMMAND_FOLD        IR_MUTE
+#define COMMAND_MOVE        IR_7
+
+#define COMMAND_STOP        IR_ON_OFF
+
+#endif
+
+#ifdef USE_CAR_MP3_REMOTE
+#define IR_ADDRESS 0xFF00
+
+#define IR_CH_MINUS 0x45
+#define IR_CH       0x46
+#define IR_CH_PLUS  0x47
+
+#define IR_FAST_BACK    0x44
+#define IR_FAST_FORWARD 0x40
+#define IR_PLAY_PAUSE   0x43
+
+#define IR_MINUS    0x7
+#define IR_PLUS     0x15
+#define IR_EQ       0x9
+
+#define IR_1    0xC
+#define IR_2    0x18
+#define IR_3    0x5E
+#define IR_4    0x8
+#define IR_5    0x1C
+#define IR_6    0x5A
+#define IR_7    0x42
+#define IR_8    0x52
+#define IR_9    0x4A
+#define IR_0    0x16
+#define IR_100  0x19
+#define IR_1000 0xD
+
+#define COMMAND_EMPTY       0 // no command received
+#define COMMAND_UP          IR_2
+#define COMMAND_DOWN        IR_8
+#define COMMAND_RIGHT       IR_4
+#define COMMAND_LEFT        IR_6
+
+#define COMMAND_FORWARD     IR_CH_PLUS
+#define COMMAND_BACKWARD    IR_CH_MINUS
+#define COMMAND_OPEN        IR_FAST_BACK
+#define COMMAND_CLOSE       IR_FAST_FORWARD
+
+#define COMMAND_INCREASE_SPEED  IR_PLUS
+#define COMMAND_DECREASE_SPEED  IR_MINUS
+
+#define COMMAND_CENTER      IR_5
+#define COMMAND_FOLD        IR_EQ
+#define COMMAND_MOVE        IR_CH
+
+#define COMMAND_STOP        IR_PLAY_PAUSE
+#endif
+
+#define IR_NEC_REPEAT_ADDRESS 0xFFFF
+#define IR_NEC_REPEAT_CODE 0x0
 
 /*
  * THIRD:
@@ -121,7 +253,7 @@ bool doCloseClaw();
 bool doAutoMove();
 bool doSwitchToManual();
 /*
- * Instant commandfunctions
+ * Instant command functions
  */
 bool doIncreaseSpeed();
 bool doDecreaseSpeed();
@@ -138,14 +270,9 @@ static const char right[] PROGMEM ="right";
 static const char left[] PROGMEM ="left";
 static const char open[] PROGMEM ="open";
 static const char close[] PROGMEM ="close";
-static const char dirForward[] PROGMEM ="dir forward";
-static const char dirBack[] PROGMEM ="dir back";
-static const char dirRight[] PROGMEM ="dir right";
-static const char dirLeft[] PROGMEM ="dir left";
 static const char volPlus[] PROGMEM ="increase speed";
 static const char volMinus[] PROGMEM ="decrease speed";
-static const char wave[] PROGMEM ="wave";
-static const char mute[] PROGMEM ="calibration";
+static const char move[] PROGMEM ="auto move";
 static const char onOff[] PROGMEM ="on/off";
 static const char manual[] PROGMEM ="manual";
 static const char unknown[] PROGMEM ="unknown";
@@ -163,7 +290,7 @@ struct IRToCommandMapping {
 struct IRToCommandMapping IRMW10Mapping[] = { { COMMAND_FORWARD, &doGoForward, forward }, { COMMAND_BACKWARD, &doGoBack, back }, {
 COMMAND_RIGHT, &doTurnRight, right }, { COMMAND_LEFT, &doTurnLeft, left }, { COMMAND_UP, &doLiftUp, up }, {
 COMMAND_DOWN, &doLiftDown, down }, { COMMAND_OPEN, &doOpenClaw, open }, { COMMAND_CLOSE, &doCloseClaw, close }, { COMMAND_CENTER,
-        &doCenter, center }, { COMMAND_FOLD, &doFolded, fold } };
+        &doCenter, center }, { COMMAND_FOLD, &doFolded, fold }, { COMMAND_MOVE, &doAutoMove, move } };
 
 struct IRToCommandMapping IRMW10MappingInstantCommands[] = { { COMMAND_INCREASE_SPEED, &doIncreaseSpeed, volPlus }, {
 COMMAND_DECREASE_SPEED, &doDecreaseSpeed, volMinus }, { COMMAND_STOP, &doSwitchToManual, manual } };

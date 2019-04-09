@@ -68,7 +68,7 @@ uint16_t readADCChannelWithReferenceOversample(uint8_t aChannelNumber, uint8_t a
 // ADSC-StartConversion ADATE-AutoTriggerEnable ADIF-Reset Interrupt Flag
     ADCSRA = (_BV(ADEN) | _BV(ADSC) | _BV(ADATE) | _BV(ADIF) | ADC_PRESCALE);
 
-    for (uint8_t i = 0; i < (1 << aOversampleExponent); i++) {
+    for (uint8_t i = 0; i < _BV(aOversampleExponent); i++) {
         /*
          * wait for free running conversion to finish.
          * Do not wait for ADSC here, since ADSC is only low for 1 ADC Clock cycle on free running conversion.
@@ -82,6 +82,30 @@ uint16_t readADCChannelWithReferenceOversample(uint8_t aChannelNumber, uint8_t a
     }
     ADCSRA &= ~_BV(ADATE); // Disable auto-triggering (free running mode)
     return (tSumValue >> aOversampleExponent);
+}
+
+uint16_t readADCChannelWithReferenceMultiSamples(uint8_t aChannelNumber, uint8_t aReference, uint8_t aNumberOfSamples) {
+    uint16_t tSumValue = 0;
+    ADMUX = aChannelNumber | (aReference << SHIFT_VALUE_FOR_REFERENCE);
+
+// ADCSRB = 0; // free running mode if ADATE is 1 - is default
+// ADSC-StartConversion ADATE-AutoTriggerEnable ADIF-Reset Interrupt Flag
+    ADCSRA = (_BV(ADEN) | _BV(ADSC) | _BV(ADATE) | _BV(ADIF) | ADC_PRESCALE);
+
+    for (uint8_t i = 0; i < aNumberOfSamples; i++) {
+        /*
+         * wait for free running conversion to finish.
+         * Do not wait for ADSC here, since ADSC is only low for 1 ADC Clock cycle on free running conversion.
+         */
+        loop_until_bit_is_set(ADCSRA, ADIF);
+
+        ADCSRA |= _BV(ADIF); // clear bit to recognize next conversion has finished
+        // Add value
+        tSumValue += ADCL | (ADCH << 8); // using myWord does not save space here
+        // tSumValue += (ADCH << 8) | ADCL; // this does NOT work!
+    }
+    ADCSRA &= ~_BV(ADATE); // Disable auto-triggering (free running mode)
+    return tSumValue;
 }
 
 /*

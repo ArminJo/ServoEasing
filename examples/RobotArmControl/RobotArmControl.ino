@@ -2,6 +2,7 @@
  * RobotArmControl.cpp
  *
  * Program for controlling a RobotArm with 4 servos using 4 potentiometers and/or an IR Remote at pin A0
+ * Sea also: https://www.instructables.com/id/4-DOF-Mechanical-Arm-Robot-Controlled-by-Arduino
  *
  * To run this example need to install the "ServoEasing", "IRLremote" and "PinChangeInterrupt" libraries under Sketch -> Include Library -> Manage Librarys...
  * Use "ServoEasing", "IRLremote" and "PinChangeInterrupt" as filter string.
@@ -53,8 +54,8 @@
 
 #define PIVOT_START_ANGLE       90
 #define HORIZONTAL_START_ANGLE  60
-#define LIFT_START_ANGLE       100
-#define CLAW_START_ANGLE        50
+#define LIFT_START_ANGLE       115
+#define CLAW_START_ANGLE        CLAW_MAX_ANGLE
 #define CLAW_CLOSE_ANGLE        CLAW_MAX_ANGLE
 
 // Index into (external) servo array. Order must be the same as of definitions in main.
@@ -64,7 +65,7 @@
 #define SERVO_CLAW 3
 #define NUMBER_OF_SERVOS 4
 
-// Define 8 servos in exact this order!
+// Define the 4 servos in exact this order!
 ServoEasing BasePivotServo;    // 0 - Front Left Pivot Servo
 ServoEasing HorizontalServo;     // 1 - Front Left Lift Servo
 ServoEasing LiftServo;     // 2 - Back Left Pivot Servo
@@ -85,6 +86,7 @@ uint8_t sCurrentCommand; // to decide if we must change movement
 bool sJustExecutingCommand;
 uint8_t sNextCommand = COMMAND_EMPTY;    // if != 0 do not wait for IR just take this command as next
 
+#define MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE 10000
 #define MODE_MANUAL 0
 #define MODE_IR 1
 #define MODE_AUTO 2
@@ -109,7 +111,7 @@ void setEasingType(uint8_t aEasingType);
 
 bool setAllServos(uint8_t aNumberOfValues, ...);
 
-void handleManualControl();
+bool handleManualControl();
 void doDelay();
 /*
  * Code starts here
@@ -123,24 +125,21 @@ void setup() {
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
-    // Attach servos to Arduino Pins
-    BasePivotServo.attach(4);
-    HorizontalServo.attach(5);
-    LiftServo.attach(7);
-    ClawServo.attach(8);
-
-    setSpeedForAllServos(sServoSpeed);
-
     /*
      * delay() to avoid uncontrolled servo moving after power on.
      * Then the Arduino is reseted many times which may lead to invalid servo signals.
      */
     delay(500);
-    // Set to start position. Must be done with write()
+    setSpeedForAllServos(sServoSpeed);
+    // Attach servos to Arduino Pins and set to start position. Must be done with write()
+    BasePivotServo.attach(4);
     BasePivotServo.write(PIVOT_START_ANGLE);
     delay(200);
+    HorizontalServo.attach(5);
     HorizontalServo.write(HORIZONTAL_START_ANGLE);
     delay(200);
+    LiftServo.attach(7);
+    ClawServo.attach(8);
     LiftServo.write(LIFT_START_ANGLE);
     ClawServo.write(CLAW_START_ANGLE);
     delay(2000);
@@ -164,7 +163,6 @@ void setup() {
 
 } //setup
 
-#define IR_LOCK_TIME_MILLIS 10000 // 10 seconds lock of manual input
 void loop() {
 
     uint8_t tIRCode;
@@ -197,7 +195,7 @@ void loop() {
             // must be after IRMW10Mapping search
             checkAndCallInstantCommands(tIRCode);
         }
-        if (tIRCodeFound) {
+        if (sMode != MODE_IR && tIRCodeFound) {
             sMode = MODE_IR;
             Serial.println("Switch to IR mode");
         }
@@ -206,14 +204,12 @@ void loop() {
         doAutoMove();
 
     } else if (sMode == MODE_MANUAL) {
-        handleManualControl();
+        if (!handleManualControl() && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
+            sMode = MODE_AUTO;
+            Serial.println("Switch to auto mode");
+        }
     }
 }  //loop
-
-void doDelay() {
-    int tDelayValue = analogRead(HORIZONTAL_INPUT_PIN);
-    delayAndCheckInput(2 * tDelayValue);
-}
 
 /*
  * Instant Command are commands that can be executed at each time in movement.
@@ -249,7 +245,7 @@ bool checkAndCallInstantCommands(uint8_t aIRCode) {
  */
 uint8_t getIRCommand(bool doWait) {
     static uint8_t sLastIRValue = 0;
-    static uint16_t sReferenceAddress = 0; // store first received address here for better IR-receive error handling
+//    static uint16_t sReferenceAddress = 0; // store first received address here for better IR-receive error handling
 
     uint8_t tIRValue = COMMAND_EMPTY;
 
@@ -263,11 +259,11 @@ uint8_t getIRCommand(bool doWait) {
             Serial.print(F(" C=0x"));
             Serial.println(tIRData.command, HEX);
             tIRValue = tIRData.command;
-            if (sReferenceAddress == 0) {
-                // store reference address for error detection
-                sReferenceAddress = tIRData.address;
-            }
-            if (sReferenceAddress == tIRData.address) {
+//            if (sReferenceAddress == 0) {
+//                // store reference address for error detection
+//                sReferenceAddress = tIRData.address;
+//            }
+            if (tIRData.address == IR_ADDRESS) {
                 // new code for right address
                 sLastIRValue = tIRValue;
                 break;
@@ -392,22 +388,12 @@ bool doDecreaseSpeed() {
 
 bool doAutoMove() {
     setAllServos(4, 90, 120, 20, 50);
-    doDelay();
-
     ClawServo.easeTo(CLAW_CLOSE_ANGLE);
-    doDelay();
 
     setAllServos(3, 40, 40, 120);
-    doDelay();
-
     ClawServo.easeTo(CLAW_CLOSE_ANGLE - 30);
-    doDelay();
 
     setAllServos(3, 140, 40, 165);
-    doDelay();
-
-    ClawServo.easeTo(CLAW_CLOSE_ANGLE);
-    doDelay();
 
     return false;
 }
@@ -489,9 +475,12 @@ bool doSwitchToManual() {
     return false;
 }
 
+/*
+ * Set easing type for all servos except claw
+ */
 void setEasingType(uint8_t aEasingType) {
     sEasingType = aEasingType;
-    for (uint8_t tServoIndex = 0; tServoIndex < NUMBER_OF_SERVOS; ++tServoIndex) {
+    for (uint8_t tServoIndex = 0; tServoIndex < NUMBER_OF_SERVOS - 1; ++tServoIndex) {
         sServoArray[tServoIndex]->setEasingType(aEasingType);
     }
 }
@@ -531,8 +520,11 @@ void changeEasingType(__attribute__((unused)) bool aButtonToggleState) {
     Serial.println();
 
 }
-
-void handleManualControl() {
+/*
+ * returns true if potentiometers has once been operated
+ */
+#define ANALOG_HYSTERESIS 6
+bool handleManualControl() {
     static bool sManualActionHappened;
     static bool isInitialized = false;
 
@@ -542,7 +534,15 @@ void handleManualControl() {
     static int sLastClaw;
 
     int tTargetAngle;
-#define ANALOG_HYSTERESIS 6
+    // reset manual action after the first move to manual start position
+    if (!isInitialized) {
+        sLastPivot = analogRead(PIVOT_INPUT_PIN);
+        sLastHorizontal = analogRead(HORIZONTAL_INPUT_PIN);
+        sLastLift = analogRead(LIFT_INPUT_PIN);
+        sLastClaw = analogRead(CLAW_INPUT_PIN);
+        isInitialized = true;
+    }
+
     int tPivot = analogRead(PIVOT_INPUT_PIN);
     if (abs(sLastPivot - tPivot) > ANALOG_HYSTERESIS) {
         sLastPivot = tPivot;
@@ -554,6 +554,7 @@ void handleManualControl() {
         Serial.println(tTargetAngle);
         sManualActionHappened = true;
     }
+
     int tHorizontal = analogRead(HORIZONTAL_INPUT_PIN);
     if (abs(sLastHorizontal - tHorizontal) > ANALOG_HYSTERESIS) {
         sLastHorizontal = tHorizontal;
@@ -565,6 +566,7 @@ void handleManualControl() {
         Serial.println(tTargetAngle);
         sManualActionHappened = true;
     }
+
     int tLift = analogRead(LIFT_INPUT_PIN);
     if (abs(sLastLift - tLift) > ANALOG_HYSTERESIS) {
         sLastLift = tLift;
@@ -576,6 +578,7 @@ void handleManualControl() {
         Serial.println(tTargetAngle);
         sManualActionHappened = true;
     }
+
     int tClaw = analogRead(CLAW_INPUT_PIN);
     if (abs(sLastClaw - tClaw) > ANALOG_HYSTERESIS) {
         sLastClaw = tClaw;
@@ -587,13 +590,6 @@ void handleManualControl() {
         Serial.println(tTargetAngle);
         sManualActionHappened = true;
     }
-    // reset manual action after the first move to manual start position
-    if (!isInitialized) {
-        isInitialized = true;
-        sManualActionHappened = false;
-    }
-    if (!sManualActionHappened && (millis() > 10000)) {
-        sMode = MODE_AUTO;
-        Serial.println("Switch to auto mode");
-    }
+
+    return sManualActionHappened;
 }

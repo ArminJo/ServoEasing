@@ -94,13 +94,13 @@ void loop() {
 
     Serial.print(F("VCC="));
     Serial.print(tVoltageMillivolts);
-    Serial.print(" mV");
+    Serial.print(F(" mV"));
 
     int tMode = analogRead(MODE_ANALOG_INPUT_PIN);
     int tSpeedOrPosition = analogRead(SPEED_OR_POSITION_ANALOG_INPUT_PIN);
 
     tMode = tMode >> 7; // gives values 0-7
-    Serial.print(" Mode=");
+    Serial.print(F(" Mode="));
     Serial.print(tMode);
     Serial.print(' ');
 
@@ -109,9 +109,9 @@ void loop() {
         // direct position from 0 to 180 degree. Choose bigger range just to be sure both ends are reached.
         tPulseMicros = map(tSpeedOrPosition, 0, 1023, ZERO_DEGREE_VALUE_MICROS - 100, AT_180_DEGREE_VALUE_MICROS + 200);
         ServoUnderTest.writeMicroseconds(tPulseMicros);
-        Serial.print("direct position: micros=");
+        Serial.print(F("direct position: micros="));
         Serial.print(tPulseMicros);
-        Serial.print(" degree=");
+        Serial.print(F(" degree="));
         Serial.println(ServoUnderTest.read());
         delay(200);
         break;
@@ -143,7 +143,7 @@ void loop() {
     case 7:
         // Test for fast reaction to write
         tSpeedOrPosition = ((tSpeedOrPosition >> 7) * 20) + 20; // gives values 20, 40 - 160
-        Serial.print("fast reaction: 85 -> 90 -> 95 -> 90 delay=");
+        Serial.print(F("fast reaction: 85 -> 90 -> 95 -> 90 delay="));
         Serial.println(tSpeedOrPosition);
 
         ServoUnderTest.write(85);
@@ -157,7 +157,7 @@ void loop() {
         break;
 
     default:
-        Serial.println("invalid mode!");
+        Serial.println(F("invalid mode!"));
         break;
     }
 }
@@ -174,11 +174,11 @@ int readDelay(uint8_t aDegreePerStep) {
 void doSwipe(uint8_t aDegreePerStep) {
     // print delay once for info here, but be aware that it can be changed during the sweep to fasten the measurement process
     int tDelayMillis = readDelay(aDegreePerStep);
-    Serial.print("swipe: degree per step=");
+    Serial.print(F("swipe: degree per step="));
     Serial.print(aDegreePerStep);
-    Serial.print(" , delay=");
+    Serial.print(F(" , delay="));
     Serial.print(tDelayMillis);
-    Serial.println(" ms");
+    Serial.println(F(" ms"));
 
     uint8_t tDegree = 0;
     while (tDegree < 180) {

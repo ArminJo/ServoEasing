@@ -55,6 +55,7 @@ uint16_t readADCChannel(uint8_t aChannelNumber);
 uint16_t readADCChannelWithReference(uint8_t aChannelNumber, uint8_t aReference);
 uint16_t readADCChannelWithOversample(uint8_t aChannelNumber, uint8_t aOversampleExponent);
 uint16_t readADCChannelWithReferenceOversample(uint8_t aChannelNumber, uint8_t aReference, uint8_t aOversampleExponent);
+uint16_t readADCChannelWithReferenceMultiSamples(uint8_t aChannelNumber, uint8_t aReference, uint8_t aNumberOfSamples);
 
 float getVCCVoltageSimple(void);
 uint16_t getVCCVoltageMillivoltSimple(void);

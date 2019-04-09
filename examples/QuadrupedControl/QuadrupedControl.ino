@@ -2,6 +2,8 @@
  * QuadrupedControl.cpp
  *
  * Program for controlling a mePed Robot V2 with 8 servos using an IR Remote at pin A0
+ * Supported IR remote are KEYES (the original mePed remote) and WM10
+ * Select the one you have at line 23 in QuadrupedIRConfiguration.h
  *
  * To run this example need to install the "ServoEasing", "IRLremote" and "PinChangeInterrupt" libraries under Sketch -> Include Library -> Manage Librarys...
  * Use "ServoEasing", "IRLremote" and "PinChangeInterrupt" as filter string.
@@ -220,7 +222,7 @@ bool checkAndCallInstantCommands(uint8_t aIRCode) {
  */
 uint8_t getIRCommand(bool doWait) {
     static uint8_t sLastIRValue = 0;
-    static uint16_t sReferenceAddress = 0; // store first received address here for better IR-receive error handling
+//    static uint16_t sReferenceAddress = 0; // store first received address here for better IR-receive error handling
 
     uint8_t tIRValue = COMMAND_EMPTY;
 
@@ -234,11 +236,11 @@ uint8_t getIRCommand(bool doWait) {
             Serial.print(F(" C=0x"));
             Serial.println(tIRData.command, HEX);
             tIRValue = tIRData.command;
-            if (sReferenceAddress == 0) {
-                // store reference address for error detection
-                sReferenceAddress = tIRData.address;
-            }
-            if (sReferenceAddress == tIRData.address) {
+//            if (sReferenceAddress == 0) {
+//                // store reference address for error detection
+//                sReferenceAddress = tIRData.address;
+//            }
+            if (tIRData.address == IR_ADDRESS) {
                 // new code for right address
                 sLastIRValue = tIRValue;
                 break;
