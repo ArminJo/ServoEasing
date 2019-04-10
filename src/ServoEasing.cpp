@@ -136,10 +136,12 @@ ServoEasing::ServoEasing() // @suppress("Class members should be properly initia
     mServo0DegreeMicrosecondsOrUnits = DEFAULT_MICROSECONDS_FOR_0_DEGREE;
     mServo180DegreeMicrosecondsOrUnits = DEFAULT_MICROSECONDS_FOR_180_DEGREE;
     mTrimMicrosecondsOrUnits = 0;
-    mEasingType = EASE_LINEAR;
     mOperateServoReverse = false;
 
+#ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
+    mEasingType = EASE_LINEAR;
     mUserEaseInFunction = NULL;
+#endif
 
     // Put this object into list of servos
     if (sServoCounter < MAX_SERVOS) {
@@ -229,6 +231,7 @@ void ServoEasing::setTrimMicrosecondsOrUnits(int16_t aTrimMicrosecondsOrUnits) {
     writeMicrosecondsOrUnits(mCurrentMicrosecondsOrUnits);
 }
 
+#ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
 void ServoEasing::setEasingType(uint8_t aEasingType) {
     mEasingType = aEasingType;
 }
@@ -240,6 +243,7 @@ uint8_t ServoEasing::getEasingType() {
 void ServoEasing::registerUserEaseInFunction(float (*aUserEaseInFunction)(float aPercentageOfCompletion)) {
     mUserEaseInFunction = aUserEaseInFunction;
 }
+#endif
 
 void ServoEasing::write(int aValue) {
 #if defined(TRACE)
@@ -373,10 +377,12 @@ bool ServoEasing::startEaseTo(uint8_t aDegree, uint16_t aDegreesPerSecond, bool 
         return !mServoMoves;
     }
     uint16_t tMillisForCompleteMove = abs(aDegree - tCurrentAngle) * 1000L / aDegreesPerSecond;
+#ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
     if ((mEasingType & CALL_STYLE_MASK) == CALL_STYLE_BOUNCING_OUT_IN) {
         // bouncing has double movement
         tMillisForCompleteMove *= 2;
     }
+#endif
     return startEaseToD(aDegree, tMillisForCompleteMove, aStartUpdateByInterrupt);
 }
 
@@ -400,10 +406,12 @@ bool ServoEasing::startEaseToD(uint8_t aDegree, uint16_t aMillisForMove, bool aS
     mMillisForCompleteMove = aMillisForMove;
     mStartMicrosecondsOrUnits = tCurrentMicroseconds;
 
+#ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
     if ((mEasingType & CALL_STYLE_MASK) == CALL_STYLE_BOUNCING_OUT_IN) {
         // bouncing has same end position as start position
         mEndMicrosecondsOrUnits = tCurrentMicroseconds;
     }
+#endif
 
     mMillisAtStartMove = millis();
 
@@ -425,44 +433,40 @@ bool ServoEasing::startEaseToD(uint8_t aDegree, uint16_t aMillisForMove, bool aS
     return tReturnValue;
 }
 
-float ServoEasing::callEasingFunction(float aPercentageOfCompletion) {
-    uint8_t tEasingType = mEasingType & EASE_TYPE_MASK;
-
-    switch (tEasingType) {
-
-    case EASE_USER_DIRECT:
-        if (mUserEaseInFunction != NULL) {
-            return mUserEaseInFunction(aPercentageOfCompletion);
-        } else {
-            return 0.0;
-        }
-
-    case EASE_QUADRATIC_IN:
-        return QuadraticEaseIn(aPercentageOfCompletion);
-    case EASE_CUBIC_IN:
-        return CubicEaseIn(aPercentageOfCompletion);
-    case EASE_QUARTIC_IN:
-        return QuarticEaseIn(aPercentageOfCompletion);
-#ifndef KEEP_LIBRARY_SMALL
-    case EASE_SINE_IN:
-        return SineEaseIn(aPercentageOfCompletion);
-    case EASE_CIRCULAR_IN:
-        return CircularEaseIn(aPercentageOfCompletion);
-    case EASE_BACK_IN:
-        return BackEaseIn(aPercentageOfCompletion);
-    case EASE_ELASTIC_IN:
-        return ElasticEaseIn(aPercentageOfCompletion);
-    case EASE_BOUNCE_OUT:
-        return EaseOutBounce(aPercentageOfCompletion);
-#endif
-    default:
-        return 0.0;
-    }
-}
-
 /*
  * returns true if endAngle was reached / servo stopped
  */
+#ifdef PROVIDE_ONLY_LINEAR_MOVEMENT
+bool ServoEasing::update() {
+
+    if (!mServoMoves) {
+        return true;
+    }
+
+    uint32_t tMillisSinceStart = millis() - mMillisAtStartMove;
+    if (tMillisSinceStart >= mMillisForCompleteMove) {
+        // end of time reached -> write end position and return true
+        writeMicrosecondsOrUnits(mEndMicrosecondsOrUnits);
+        mServoMoves = false;
+        return true;
+    }
+    /*
+     * Use faster non float arithmetic
+     * Linear movement: new position is: start position + total delta * (millis_done / millis_total aka "percentage of completion")
+     * 40 us to compute
+     */
+    uint16_t tNewMicrosecondsOrUnits = mStartMicrosecondsOrUnits
+            + ((mDeltaMicrosecondsOrUnits * (int32_t) tMillisSinceStart) / mMillisForCompleteMove);
+    /*
+     * Write new position only if changed
+     */
+    if (tNewMicrosecondsOrUnits != mCurrentMicrosecondsOrUnits) {
+        writeMicrosecondsOrUnits(tNewMicrosecondsOrUnits);
+    }
+    return false;
+}
+
+#else
 bool ServoEasing::update() {
 
     if (!mServoMoves) {
@@ -485,7 +489,7 @@ bool ServoEasing::update() {
          * 40 us to compute
          */
         tNewMicrosecondsOrUnits = mStartMicrosecondsOrUnits
-                + ((mDeltaMicrosecondsOrUnits * (int32_t) tMillisSinceStart) / mMillisForCompleteMove);
+        + ((mDeltaMicrosecondsOrUnits * (int32_t) tMillisSinceStart) / mMillisForCompleteMove);
     } else {
         /*
          * Non linear movement -> use floats
@@ -539,6 +543,43 @@ bool ServoEasing::update() {
     }
     return false;
 }
+
+float ServoEasing::callEasingFunction(float aPercentageOfCompletion) {
+    uint8_t tEasingType = mEasingType & EASE_TYPE_MASK;
+
+    switch (tEasingType) {
+
+        case EASE_USER_DIRECT:
+        if (mUserEaseInFunction != NULL) {
+            return mUserEaseInFunction(aPercentageOfCompletion);
+        } else {
+            return 0.0;
+        }
+
+        case EASE_QUADRATIC_IN:
+        return QuadraticEaseIn(aPercentageOfCompletion);
+        case EASE_CUBIC_IN:
+        return CubicEaseIn(aPercentageOfCompletion);
+        case EASE_QUARTIC_IN:
+        return QuarticEaseIn(aPercentageOfCompletion);
+#ifndef KEEP_LIBRARY_SMALL
+        case EASE_SINE_IN:
+        return SineEaseIn(aPercentageOfCompletion);
+        case EASE_CIRCULAR_IN:
+        return CircularEaseIn(aPercentageOfCompletion);
+        case EASE_BACK_IN:
+        return BackEaseIn(aPercentageOfCompletion);
+        case EASE_ELASTIC_IN:
+        return ElasticEaseIn(aPercentageOfCompletion);
+        case EASE_BOUNCE_OUT:
+        return EaseOutBounce(aPercentageOfCompletion);
+#endif
+        default:
+        return 0.0;
+    }
+}
+
+#endif
 
 bool ServoEasing::isMoving() {
     return mServoMoves;
@@ -635,8 +676,10 @@ void ServoEasing::printStatic(Stream * aSerial) {
     aSerial->print(F(" reverse="));
     aSerial->print(mOperateServoReverse);
 
+#ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
     aSerial->print(F(" type=0x"));
     aSerial->print(mEasingType, HEX);
+#endif
 
     aSerial->print(F(" MAX_SERVOS="));
     aSerial->print(MAX_SERVOS);
@@ -723,6 +766,7 @@ ISR(TIMER1_COMPB_vect) {
  * ServoEasing list functions
  ***********************************/
 
+#ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
 void setEasingTypeForAllServos(uint8_t aEasingType) {
     uint8_t tServoIndex = 0;
     while (sServoArray[tServoIndex] != NULL && tServoIndex < MAX_SERVOS) {
@@ -730,6 +774,7 @@ void setEasingTypeForAllServos(uint8_t aEasingType) {
         tServoIndex++;
     }
 }
+#endif
 
 void setEaseToForAllServosSynchronizeAndStartInterrupt() {
     setEaseToForAllServos();
@@ -955,7 +1000,7 @@ float BackEaseIn(float aPercentageOfCompletion) {
  * and https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c
  */
 float ElasticEaseIn(float aPercentageOfCompletion) {
-    return sin(13 * M_PI_2 * aPercentageOfCompletion) * pow(2, 10 * (aPercentageOfCompletion-1));
+    return sin(13 * M_PI_2 * aPercentageOfCompletion) * pow(2, 10 * (aPercentageOfCompletion - 1));
 }
 
 /*

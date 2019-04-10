@@ -71,11 +71,16 @@
 #endif // defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 
 /*
- * Define `KEEP_LIBRARY_SMALL` if space (2100 Bytes) matters.
+ * Define `KEEP_LIBRARY_SMALL` if space (1850 Bytes) matters.
  * The saving comes mainly from avoiding the sin() cos() sqrt() and pow() library functions in this code.
  * If you need only one complex easing function and want to save space, you can specify it any time as a user functions. See AsymmetricEasing example line 58.
  */
 //#define KEEP_LIBRARY_SMALL
+//
+/*
+ * If you need only the linear movement you may define `PROVIDE_ONLY_LINEAR_MOVEMENT`. This saves additional 1500 Bytes FLASH.
+ */
+//#define PROVIDE_ONLY_LINEAR_MOVEMENT
 //
 // Enable this if you want to measure timing by toggling pin12 on an arduino
 //#define MEASURE_TIMING
@@ -108,7 +113,8 @@
  * - added easeTo(uint8_t aDegree) and setEaseTo(uint8_t aDegree).
  * - added setEaseToForAllServos(), setEaseToForAllServosSynchronizeAndStartInterrupt(), synchronizeAndEaseToArrayPositions().
  * - added getEndMicrosecondsOrUnits(), getDeltaMicrosecondsOrUnits().
- * - added  setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues),setDegreeForAllServos(uint8_t aNumberOfValues, ...)
+ * - added  setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues),setDegreeForAllServos(uint8_t aNumberOfValues, ...).
+ * - added compile switch PROVIDE_ONLY_LINEAR_MOVEMENT to save additional 1500 bytes FLASH if enabled.
  */
 
 #define DEFAULT_MICROSECONDS_FOR_0_DEGREE 544
@@ -227,10 +233,15 @@ public:
 
     void setTrim(int8_t aTrim);
     void setTrimMicrosecondsOrUnits(int16_t aTrimMicrosecondsOrUnits);
+
+#ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
     void setEasingType(uint8_t aEasingType);
     uint8_t getEasingType();
 
     void registerUserEaseInFunction(float (*aUserEaseInFunction)(float aPercentageOfCompletion));
+
+    float callEasingFunction(float aPercentageOfCompletion);        // used in update()
+#endif
 
     void write(int aValue);                                         // write value direct to servo
     void writeMicrosecondsOrUnits(int aValue);
@@ -248,7 +259,6 @@ public:
     bool setEaseToD(uint8_t aDegree, uint16_t aDegreesPerSecond);   // shortcut for startEaseToD(..,..,false)
     bool startEaseToD(uint8_t aDegree, uint16_t aMillisForMove, bool aStartUpdateByInterrupt = true);
     bool update();
-    float callEasingFunction(float aPercentageOfCompletion);        // used in update()
 
     uint8_t getCurrentAngle();
     uint16_t getEndMicrosecondsOrUnits();
@@ -276,7 +286,11 @@ public:
 
     uint16_t mSpeed; // in DegreesPerSecond only set by setSpeed(int16_t aSpeed);
 
+#ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
     uint8_t mEasingType; // EASE_LINEAR, EASE_QUADRATIC_IN_OUT, EASE_CUBIC_IN_OUT, EASE_QUARTIC_IN_OUT
+
+    float (*mUserEaseInFunction)(float aPercentageOfCompletion);
+#endif
 
     volatile bool mServoMoves;
 
@@ -287,8 +301,6 @@ public:
     uint8_t mServoPin; // pin number - at least needed for Lightweight Servo Lib
 
     uint8_t mServoIndex; // Index in sServoArray
-
-    float (*mUserEaseInFunction)(float aPercentageOfCompletion);
 
     uint32_t mMillisAtStartMove;
     uint16_t mMillisForCompleteMove;
@@ -323,11 +335,14 @@ void synchronizeAndEaseToArrayPositions();
 void synchronizeAndEaseToArrayPositions(uint16_t aDegreesPerSecond);
 
 void printArrayPositions(Stream * aSerial);
-void setEasingTypeForAllServos(uint8_t aEasingType);
 bool isOneServoMoving();
 void stopAllServos();
 bool updateAllServos();
 void synchronizeAllServosAndStartInterrupt(bool aStartUpdateByInterrupt = true);
+
+#ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
+void setEasingTypeForAllServos(uint8_t aEasingType);
+#endif
 
 // blocking wait functions
 void updateAndWaitForAllServosToStop();
