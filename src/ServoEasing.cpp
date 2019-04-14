@@ -252,6 +252,7 @@ void ServoEasing::write(int aValue) {
     Serial.print(' ');
 #endif
     if (aValue < 400) { // treat values less than 400 as angles in degrees (valid values in microseconds are handled as microseconds)
+        sServoNextPositionArray[mServoIndex] = aValue;
         aValue = DegreeToMicrosecondsOrUnits(aValue);
     }
     writeMicrosecondsOrUnits(aValue);
@@ -397,7 +398,7 @@ bool ServoEasing::setEaseToD(uint8_t aDegree, uint16_t aMillisForMove) {
  * returns false if servo was still moving
  */
 bool ServoEasing::startEaseToD(uint8_t aDegree, uint16_t aMillisForMove, bool aStartUpdateByInterrupt) {
-    // writw the position also to sServoNextPositionArray
+    // write the position also to sServoNextPositionArray
     sServoNextPositionArray[mServoIndex] = aDegree;
     mEndMicrosecondsOrUnits = DegreeToMicrosecondsOrUnits(aDegree);
     uint16_t tCurrentMicroseconds = mCurrentMicrosecondsOrUnits;
@@ -456,7 +457,7 @@ bool ServoEasing::update() {
      * 40 us to compute
      */
     uint16_t tNewMicrosecondsOrUnits = mStartMicrosecondsOrUnits
-            + ((mDeltaMicrosecondsOrUnits * (int32_t) tMillisSinceStart) / mMillisForCompleteMove);
+    + ((mDeltaMicrosecondsOrUnits * (int32_t) tMillisSinceStart) / mMillisForCompleteMove);
     /*
      * Write new position only if changed
      */
@@ -489,12 +490,13 @@ bool ServoEasing::update() {
          * 40 us to compute
          */
         tNewMicrosecondsOrUnits = mStartMicrosecondsOrUnits
-        + ((mDeltaMicrosecondsOrUnits * (int32_t) tMillisSinceStart) / mMillisForCompleteMove);
+                + ((mDeltaMicrosecondsOrUnits * (int32_t) tMillisSinceStart) / mMillisForCompleteMove);
     } else {
         /*
          * Non linear movement -> use floats
          * Compute tPercentageOfCompletion - from 0.0 to 1.0
          * The expected result of easing function is from 0.0 to 1.0
+         * or from EASE_FUNCTION_DEGREE_OFFSET to EASE_FUNCTION_DEGREE_OFFSET + 180 for direct degree result
          */
         float tPercentageOfCompletion = (float) tMillisSinceStart / mMillisForCompleteMove;
         float tEaseResult = 0.0;
@@ -531,8 +533,16 @@ bool ServoEasing::update() {
             }
         }
 
-        uint16_t tDeltaMicroseconds = mDeltaMicrosecondsOrUnits * tEaseResult;
-        tNewMicrosecondsOrUnits = mStartMicrosecondsOrUnits + tDeltaMicroseconds;
+#ifndef PROVIDE_ONLY_LINEAR_MOVEMENT // 44 bytes used here for this degree handling
+        if (tEaseResult >= EASE_FUNCTION_DEGREE_OFFSET) {
+            tNewMicrosecondsOrUnits = DegreeToMicrosecondsOrUnits(tEaseResult + (0.5 - EASE_FUNCTION_DEGREE_OFFSET));
+        } else {
+#endif
+            uint16_t tDeltaMicroseconds = mDeltaMicrosecondsOrUnits * tEaseResult;
+            tNewMicrosecondsOrUnits = mStartMicrosecondsOrUnits + tDeltaMicroseconds;
+#ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
+        }
+#endif
     }
 
     /*
@@ -549,32 +559,32 @@ float ServoEasing::callEasingFunction(float aPercentageOfCompletion) {
 
     switch (tEasingType) {
 
-        case EASE_USER_DIRECT:
+    case EASE_USER_DIRECT:
         if (mUserEaseInFunction != NULL) {
             return mUserEaseInFunction(aPercentageOfCompletion);
         } else {
             return 0.0;
         }
 
-        case EASE_QUADRATIC_IN:
+    case EASE_QUADRATIC_IN:
         return QuadraticEaseIn(aPercentageOfCompletion);
-        case EASE_CUBIC_IN:
+    case EASE_CUBIC_IN:
         return CubicEaseIn(aPercentageOfCompletion);
-        case EASE_QUARTIC_IN:
+    case EASE_QUARTIC_IN:
         return QuarticEaseIn(aPercentageOfCompletion);
 #ifndef KEEP_LIBRARY_SMALL
-        case EASE_SINE_IN:
+    case EASE_SINE_IN:
         return SineEaseIn(aPercentageOfCompletion);
-        case EASE_CIRCULAR_IN:
+    case EASE_CIRCULAR_IN:
         return CircularEaseIn(aPercentageOfCompletion);
-        case EASE_BACK_IN:
+    case EASE_BACK_IN:
         return BackEaseIn(aPercentageOfCompletion);
-        case EASE_ELASTIC_IN:
+    case EASE_ELASTIC_IN:
         return ElasticEaseIn(aPercentageOfCompletion);
-        case EASE_BOUNCE_OUT:
+    case EASE_BOUNCE_OUT:
         return EaseOutBounce(aPercentageOfCompletion);
 #endif
-        default:
+    default:
         return 0.0;
     }
 }
@@ -686,6 +696,21 @@ void ServoEasing::printStatic(Stream * aSerial) {
 
     aSerial->print(" this=0x");
     aSerial->println((uint16_t) this, HEX);
+}
+
+/*
+ * Clips the unsigned degree value and handles unsigned underflow.
+ * returns 0 if aDegreeToClip >= 218
+ * returns 180 if 180 <= aDegreeToClip < 218
+ */
+uint8_t clipDegreeSpecial(uint8_t aDegreeToClip){
+    if(aDegreeToClip){
+        return aDegreeToClip;
+    }
+    if(aDegreeToClip < 218){
+        return 180;
+    }
+    return 0;
 }
 
 void enableServoEasingInterrupt() {

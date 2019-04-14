@@ -78,7 +78,7 @@
 //#define KEEP_LIBRARY_SMALL
 //
 /*
- * If you need only the linear movement you may define `PROVIDE_ONLY_LINEAR_MOVEMENT`. This saves additional 1500 Bytes FLASH.
+ * If you need only the linear movement you may define `PROVIDE_ONLY_LINEAR_MOVEMENT`. This saves additional 1540 Bytes FLASH.
  */
 //#define PROVIDE_ONLY_LINEAR_MOVEMENT
 //
@@ -108,13 +108,14 @@
 /*
  * Version 1.1
  * - corrected sine, circular, back and elastic IN functions.
- * - easeTo stores its degree parameter now also in sServoNextPositionArray.
+ * - easeTo() and write() store their degree parameter now also in sServoNextPositionArray.
  * - added setSpeed(), getSpeed(), setSpeedForAllServos().
  * - added easeTo(uint8_t aDegree) and setEaseTo(uint8_t aDegree).
  * - added setEaseToForAllServos(), setEaseToForAllServosSynchronizeAndStartInterrupt(), synchronizeAndEaseToArrayPositions().
  * - added getEndMicrosecondsOrUnits(), getDeltaMicrosecondsOrUnits().
- * - added  setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues),setDegreeForAllServos(uint8_t aNumberOfValues, ...).
+ * - added setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues),setDegreeForAllServos(uint8_t aNumberOfValues, ...).
  * - added compile switch PROVIDE_ONLY_LINEAR_MOVEMENT to save additional 1500 bytes FLASH if enabled.
+ * - added convenience function clipDegreeSpecial().
  */
 
 #define DEFAULT_MICROSECONDS_FOR_0_DEGREE 544
@@ -195,6 +196,8 @@
 #define EASE_USER_OUT           0x2F
 #define EASE_USER_IN_OUT        0x4F
 #define EASE_USER_BOUNCING      0x6F
+#define EASE_FUNCTION_DEGREE_OFFSET 2 // if the use function returns degree instead of 0.0 to 1.0 the value must be offset by 2 (return 2 for 0 degree)
+
 
 // some PCA9685 specific constants
 #define PCA9685_GENERAL_CALL_ADDRESS 0x00
@@ -284,6 +287,9 @@ public:
     uint16_t mEndMicrosecondsOrUnits;    // used once as last value just if movement was finished
     int16_t mDeltaMicrosecondsOrUnits;   // end - start
 
+    /*
+     * max speed is 450 degree/sec for SG90 and 540 degree/second for MG90 servos -> see speedTest.cpp
+     */
     uint16_t mSpeed; // in DegreesPerSecond only set by setSpeed(int16_t aSpeed);
 
 #ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
@@ -350,6 +356,8 @@ void synchronizeAllServosStartAndWaitForAllServosToStop();
 
 void enableServoEasingInterrupt();
 void disableServoEasingInterrupt();
+
+uint8_t clipDegreeSpecial(uint8_t aDegreeToClip);
 
 /*
  * Included easing functions

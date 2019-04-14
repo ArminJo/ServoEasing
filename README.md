@@ -89,11 +89,12 @@ Program for controlling a robot arm with 4 servos using 4 potentiometers and/or 
 # Revision History
 ### Version 1.1.0
 - Corrected sine, circular, back and elastic IN functions.
-- easeTo stores its degree parameter now also in sServoNextPositionArray.
+- easeTo() and write() store their degree parameter now also in sServoNextPositionArray.
 - added setSpeed(), getSpeed(), setSpeedForAllServos() and added ease* functions without speed parameter.
 - added getEndMicrosecondsOrUnits(), getDeltaMicrosecondsOrUnits().
 - added setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues),setDegreeForAllServos(uint8_t aNumberOfValues, ...).
 - added compile switch PROVIDE_ONLY_LINEAR_MOVEMENT to save additional 1500 bytes FLASH if enabled.
+- added convenience function clipDegreeSpecial().
 
 ### Version 1.0.0
 Initial Arduino library version
