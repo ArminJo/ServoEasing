@@ -73,6 +73,8 @@
 #define COMMAND_CENTER      IR_OK
 #define COMMAND_FOLD        IR_HASH
 #define COMMAND_MOVE        IR_7
+#define COMMAND_EASE_TYPE   IR_9
+#define COMMAND_IK_TOGGLE   IR_5
 
 #define COMMAND_STOP        IR_STAR
 
@@ -137,11 +139,11 @@
 
 #define IR_ADDRESS 0xBD02
 
-#define IR_UP  0x2
+#define IR_UP  0x12
 #define IR_DOWN 0x13
 #define IR_RIGHT 0x10
 #define IR_LEFT 0x11
-#define IR_OK 0x7
+#define IR_OK 0x15
 
 #define IR_ON_OFF 0x45
 #define IR_MUTE 0xA
@@ -159,7 +161,7 @@
 #define IR_9    0x8
 #define IR_0    0x9
 
-#define COMMAND_EMPTY       0 // no command received
+#define COMMAND_EMPTY       0xFF // no command received, use 0xFF since 0x00 is a valid key on this remote
 #define COMMAND_UP          IR_UP
 #define COMMAND_DOWN        IR_DOWN
 #define COMMAND_RIGHT       IR_RIGHT
@@ -170,12 +172,16 @@
 #define COMMAND_OPEN        IR_4
 #define COMMAND_CLOSE       IR_6
 
-#define COMMAND_INCREASE_SPEED  IR_0
-#define COMMAND_DECREASE_SPEED  IR_ESC
+#define COMMAND_INCREASE_SPEED  IR_ESC
+#define COMMAND_DECREASE_SPEED  IR_0
 
 #define COMMAND_CENTER      IR_OK
 #define COMMAND_FOLD        IR_MUTE
 #define COMMAND_MOVE        IR_7
+
+#define COMMAND_IK_ON       IR_3
+#define COMMAND_IK_OFF      IR_1
+#define COMMAND_EASE_TYPE   IR_9
 
 #define COMMAND_STOP        IR_ON_OFF
 
@@ -239,24 +245,29 @@
  */
 // list of functions to call at IR command
 // Stationary movements
-bool doCenter();
-bool doFolded();
-bool doGoForward();
-bool doGoBack();
-bool doTurnRight();
-bool doTurnLeft();
-bool doLiftUp();
-bool doLiftDown();
-bool doOpenClaw();
-bool doCloseClaw();
+void doCenter();
+void doFolded();
+void doGoForward();
+void doGoBack();
+void doTurnRight();
+void doTurnLeft();
+void doLiftUp();
+void doLiftDown();
+void doOpenClaw();
+void doCloseClaw();
 
-bool doAutoMove();
-bool doSwitchToManual();
+void doAutoMove();
+void doSwitchToManual();
+void doInverseKinematicOff();
+void doInverseKinematicOn();
+void doToggleInverseKinematic();
+void doSwitchEasingType();
+
 /*
  * Instant command functions
  */
-bool doIncreaseSpeed();
-bool doDecreaseSpeed();
+void doIncreaseSpeed();
+void doDecreaseSpeed();
 
 // IR strings of functions for output
 static const char up[] PROGMEM ="up";
@@ -275,25 +286,36 @@ static const char volMinus[] PROGMEM ="decrease speed";
 static const char move[] PROGMEM ="auto move";
 static const char onOff[] PROGMEM ="on/off";
 static const char manual[] PROGMEM ="manual";
+static const char ik_on[] PROGMEM ="IK on";
+static const char ik_off[] PROGMEM ="IK off";
+static const char ik_toggle[] PROGMEM ="toggle IK";
+static const char type[] PROGMEM ="type";
 static const char unknown[] PROGMEM ="unknown";
 
 // Basic mapping structure
 struct IRToCommandMapping {
     uint8_t IRCode;
-    bool (*CommandToCall)();
+    void (*CommandToCall)();
     const char * CommandString;
 };
 
 /*
  * Main mapping array of commands to C functions and command strings
  */
-struct IRToCommandMapping IRMW10Mapping[] = { { COMMAND_FORWARD, &doGoForward, forward }, { COMMAND_BACKWARD, &doGoBack, back }, {
+struct IRToCommandMapping IRMapping[] = { { COMMAND_FORWARD, &doGoForward, forward }, { COMMAND_BACKWARD, &doGoBack, back }, {
 COMMAND_RIGHT, &doTurnRight, right }, { COMMAND_LEFT, &doTurnLeft, left }, { COMMAND_UP, &doLiftUp, up }, {
 COMMAND_DOWN, &doLiftDown, down }, { COMMAND_OPEN, &doOpenClaw, open }, { COMMAND_CLOSE, &doCloseClaw, close }, { COMMAND_CENTER,
         &doCenter, center }, { COMMAND_FOLD, &doFolded, fold }, { COMMAND_MOVE, &doAutoMove, move } };
 
-struct IRToCommandMapping IRMW10MappingInstantCommands[] = { { COMMAND_INCREASE_SPEED, &doIncreaseSpeed, volPlus }, {
-COMMAND_DECREASE_SPEED, &doDecreaseSpeed, volMinus }, { COMMAND_STOP, &doSwitchToManual, manual } };
+struct IRToCommandMapping IRMappingInstantCommands[] = { { COMMAND_INCREASE_SPEED, &doIncreaseSpeed, volPlus }, {
+COMMAND_DECREASE_SPEED, &doDecreaseSpeed, volMinus }, { COMMAND_STOP, &doSwitchToManual, manual },
+#ifdef COMMAND_IK_ON
+        {   COMMAND_IK_ON, &doInverseKinematicOn, ik_on}, {COMMAND_IK_OFF, &doInverseKinematicOff, ik_off},
+#endif
+#ifdef COMMAND_IK_TOGGLE
+        { COMMAND_IK_TOGGLE, &doToggleInverseKinematic, ik_toggle },
+#endif
+        { COMMAND_EASE_TYPE, &doSwitchEasingType, type } };
 
 // function to search in MappingInstantCommands array
 bool checkAndCallInstantCommands(uint8_t aIRCode);

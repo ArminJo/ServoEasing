@@ -32,6 +32,10 @@
 #include <IRLremote.h>      // include IR Remote library
 
 #include "ServoEasing.h"    // include servo library
+#include "ik.h"
+
+//#define TRACE
+//#define DEBUG
 
 #define USE_BUTTON_0
 #define USE_ATTACH_INTERRUPT // to be compatible with IRLremote
@@ -50,13 +54,11 @@
 #define CLAW_INPUT_PIN          A2
 
 #define LIFT_MAX_ANGLE          150
-#define CLAW_MAX_ANGLE          65
+#define CLAW_MAX_ANGLE          52
 
-#define PIVOT_START_ANGLE       90
-#define HORIZONTAL_START_ANGLE  60
-#define LIFT_START_ANGLE       115
 #define CLAW_START_ANGLE        CLAW_MAX_ANGLE
 #define CLAW_CLOSE_ANGLE        CLAW_MAX_ANGLE
+#define CLAW_OPEN_ANGLE         (CLAW_MAX_ANGLE - 30)
 
 // Index into (external) servo array. Order must be the same as of definitions in main.
 #define SERVO_BASE_PIVOT 0
@@ -74,22 +76,26 @@ ServoEasing ClawServo;      // 3 - Back Left Lift Servo
 /*
  * Global control parameters
  */
-uint16_t sServoSpeed = 40;      // in degree/second
+uint16_t sServoSpeed = 60;      // in degree/second
 uint8_t sEasingType = EASE_LINEAR;
+bool sInverseKinematicModeActive = true;
 
-uint8_t sBodyPivotAngle = PIVOT_START_ANGLE;
-uint8_t sHorizontalServoAngle = HORIZONTAL_START_ANGLE;
-uint8_t sLiftServoAngle = LIFT_START_ANGLE;
+uint8_t sBodyPivotAngle = PIVOT_NEUTRAL_ANGLE;
+uint8_t sHorizontalServoAngle = HORIZONTAL_NEUTRAL_ANGLE;
+uint8_t sLiftServoAngle = LIFT_NEUTRAL_ANGLE;
 uint8_t sClawServoAngle = CLAW_START_ANGLE;
 
 uint8_t sCurrentCommand; // to decide if we must change movement
+bool sCurrentCommandIsRepeat;
 bool sJustExecutingCommand;
+bool sRequestToStop;
+#define RETURN_IF_STOP if (sRequestToStop) return
 uint8_t sNextCommand = COMMAND_EMPTY;    // if != 0 do not wait for IR just take this command as next
 
 #define MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE 10000
-#define MODE_MANUAL 0
-#define MODE_IR 1
-#define MODE_AUTO 2
+#define MODE_IR 0
+#define MODE_AUTO 1
+#define MODE_MANUAL 3
 uint8_t sMode = MODE_MANUAL;
 
 CNec IRLremote;
@@ -100,19 +106,22 @@ EasyButton Button0AtPin2(true, &changeEasingType);
 /*
  * Function declarations
  */
-uint8_t getIRCommand(bool doWait = true);
+uint8_t getIRCommand(bool doWait);
 
-bool synchronizeMoveAllServosAndCheckInputAndWait();
-bool moveOneServoAndCheckInput(uint8_t aServoIndex, uint8_t aDegree, uint16_t aDegreesPerSecond = sServoSpeed);
-bool updateCheckInputAndWaitForAllServosToStop();
-bool delayAndCheckInput(uint16_t aDelayMillis);
+void synchronizeMoveAllServosAndCheckInputAndWait();
+void moveOneServoAndCheckInput(uint8_t aServoIndex, uint8_t aDegree, uint16_t aDegreesPerSecond = sServoSpeed);
+void updateCheckInputAndWaitForAllServosToStop();
+void delayAndCheckInput(uint16_t aDelayMillis);
 
 void setEasingType(uint8_t aEasingType);
 
-bool setAllServos(uint8_t aNumberOfValues, ...);
+void setAllServos(uint8_t aNumberOfValues, ...);
 
 bool handleManualControl();
-void doDelay();
+
+float moveInverseKinematicForBase(float aPercentageOfCompletion);
+float moveInverseKinematicForHorizontal(float aPercentageOfCompletion);
+float moveInverseKinematicForLift(float aPercentageOfCompletion);
 /*
  * Code starts here
  */
@@ -129,20 +138,22 @@ void setup() {
      * delay() to avoid uncontrolled servo moving after power on.
      * Then the Arduino is reseted many times which may lead to invalid servo signals.
      */
-    delay(500);
+    delay(200);
     setSpeedForAllServos(sServoSpeed);
     // Attach servos to Arduino Pins and set to start position. Must be done with write()
     BasePivotServo.attach(4);
-    BasePivotServo.write(PIVOT_START_ANGLE);
+    BasePivotServo.write(PIVOT_NEUTRAL_ANGLE);
+    BasePivotServo.registerUserEaseInFunction(&moveInverseKinematicForBase);
     delay(200);
     HorizontalServo.attach(5);
-    HorizontalServo.write(HORIZONTAL_START_ANGLE);
+    HorizontalServo.write(HORIZONTAL_NEUTRAL_ANGLE);
+    HorizontalServo.registerUserEaseInFunction(&moveInverseKinematicForHorizontal);
     delay(200);
     LiftServo.attach(7);
     ClawServo.attach(8);
-    LiftServo.write(LIFT_START_ANGLE);
+    LiftServo.write(LIFT_NEUTRAL_ANGLE);
     ClawServo.write(CLAW_START_ANGLE);
-    delay(2000);
+    LiftServo.registerUserEaseInFunction(&moveInverseKinematicForLift);
 
     // Start reading the remote. PinInterrupt or PinChangeInterrupt* will automatically be selected
     if (!IRLremote.begin(IR_RECEIVER_PIN)) {
@@ -167,32 +178,40 @@ void loop() {
 
     uint8_t tIRCode;
     if (sNextCommand == COMMAND_EMPTY) {
+        // Get command from remote
         tIRCode = getIRCommand(false);
     } else {
+        // Get command from buffer. It was likely sent from remote before.
         tIRCode = sNextCommand;
         sNextCommand = COMMAND_EMPTY;
     }
 
+    // Reset mode to linear for all movements
+    if (sInverseKinematicModeActive) {
+        setEasingTypeForAllServos(EASE_LINEAR);
+    }
+    sRequestToStop = false;
+
 // search IR code and call associated function
     if (tIRCode != COMMAND_EMPTY) {
         bool tIRCodeFound = false;
-        for (uint8_t i = 0; i < sizeof(IRMW10Mapping) / sizeof(struct IRToCommandMapping); ++i) {
-            if (tIRCode == IRMW10Mapping[i].IRCode) {
+        for (uint8_t i = 0; i < sizeof(IRMapping) / sizeof(struct IRToCommandMapping); ++i) {
+            if (tIRCode == IRMapping[i].IRCode) {
                 sCurrentCommand = tIRCode;
                 Serial.print(F("Calling "));
-                Serial.println(reinterpret_cast<const __FlashStringHelper *>(IRMW10Mapping[i].CommandString));
+                Serial.println(reinterpret_cast<const __FlashStringHelper *>(IRMapping[i].CommandString));
                 /*
                  * Call the Quadruped function specified in IR mapping
                  */
                 sJustExecutingCommand = true;
-                IRMW10Mapping[i].CommandToCall();
+                IRMapping[i].CommandToCall();
                 sJustExecutingCommand = false;
                 tIRCodeFound = true;
                 break;
             }
         }
         if (!tIRCodeFound) {
-            // must be after IRMW10Mapping search
+            // must be after IRMapping search
             checkAndCallInstantCommands(tIRCode);
         }
         if (sMode != MODE_IR && tIRCodeFound) {
@@ -202,7 +221,10 @@ void loop() {
         delay(20); // Pause before executing next movement
     } else if (sMode == MODE_AUTO) {
         doAutoMove();
-
+        if (sRequestToStop) {
+            sMode = MODE_IR;
+            Serial.println("Switch to IR mode");
+        }
     } else if (sMode == MODE_MANUAL) {
         if (!handleManualControl() && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
             sMode = MODE_AUTO;
@@ -217,16 +239,16 @@ void loop() {
  */
 bool checkAndCallInstantCommands(uint8_t aIRCode) {
 // search IR code and call associated function
-    for (uint8_t i = 0; i < sizeof(IRMW10MappingInstantCommands) / sizeof(struct IRToCommandMapping); ++i) {
-        if (aIRCode == IRMW10MappingInstantCommands[i].IRCode) {
+    for (uint8_t i = 0; i < sizeof(IRMappingInstantCommands) / sizeof(struct IRToCommandMapping); ++i) {
+        if (aIRCode == IRMappingInstantCommands[i].IRCode) {
 
             Serial.print(F("Calling "));
-            Serial.print(reinterpret_cast<const __FlashStringHelper *>(IRMW10MappingInstantCommands[i].CommandString));
+            Serial.print(reinterpret_cast<const __FlashStringHelper *>(IRMappingInstantCommands[i].CommandString));
             Serial.println(':');
             /*
              * Call the Quadruped instant function specified in IR mapping
              */
-            IRMW10MappingInstantCommands[i].CommandToCall();
+            IRMappingInstantCommands[i].CommandToCall();
             /*
              * Print info
              */
@@ -252,7 +274,7 @@ uint8_t getIRCommand(bool doWait) {
     do {
         if (IRLremote.available()) {
             // Get the new data from the remote
-            auto tIRData = IRLremote.read();
+            Nec_data_t tIRData = IRLremote.read();
 
             Serial.print(F("A=0x"));
             Serial.print(tIRData.address, HEX);
@@ -266,15 +288,17 @@ uint8_t getIRCommand(bool doWait) {
             if (tIRData.address == IR_ADDRESS) {
                 // new code for right address
                 sLastIRValue = tIRValue;
+                sCurrentCommandIsRepeat = false;
                 break;
             } else if (tIRData.address == IR_NEC_REPEAT_ADDRESS && tIRData.command == IR_NEC_REPEAT_CODE && sLastIRValue != 0) {
                 // received repeat code
+                sCurrentCommandIsRepeat = true;
                 tIRValue = sLastIRValue;
                 break;
             } else {
                 // unknown code - maybe here, because other interrupts interfere with the IR Interrupt
                 // Disable repeat in order not to repeat the wrong command
-                sLastIRValue = 0;
+                sLastIRValue = COMMAND_EMPTY;
             }
         }
     } while (doWait);
@@ -285,28 +309,26 @@ uint8_t getIRCommand(bool doWait) {
 /*
  * Returns true if stop received
  */
-bool checkIRInput() {
+void checkIRInput() {
     uint8_t tIRCode = getIRCommand(false);
     if (tIRCode == COMMAND_EMPTY) {
-        return false;
+        return;
     } else if (tIRCode == sCurrentCommand) {
-        return false;
+        // repeated main (non instant) command
+        return;
     } else if (checkAndCallInstantCommands(tIRCode)) {
-        return false;
-    } else if (tIRCode == COMMAND_STOP) {
-        return true;
+        return;
     } else {
         sNextCommand = tIRCode;
-        return true; // return to loop
+        sRequestToStop = true; // return to loop
     }
-    return false;
 }
 
 void printCommandString(uint8_t aIRCode) {
     Serial.print(F("IRCommand="));
-    for (uint8_t i = 0; i < sizeof(IRMW10Mapping) / sizeof(struct IRToCommandMapping); ++i) {
-        if (aIRCode == IRMW10Mapping[i].IRCode) {
-            Serial.println(reinterpret_cast<const __FlashStringHelper *>(IRMW10Mapping[i].CommandString));
+    for (uint8_t i = 0; i < sizeof(IRMapping) / sizeof(struct IRToCommandMapping); ++i) {
+        if (aIRCode == IRMapping[i].IRCode) {
+            Serial.println(reinterpret_cast<const __FlashStringHelper *>(IRMapping[i].CommandString));
             return;
         }
     }
@@ -316,41 +338,35 @@ void printCommandString(uint8_t aIRCode) {
 /*
  * Returns true if stop received
  */
-bool delayAndCheckInput(uint16_t aDelayMillis) {
+void delayAndCheckInput(uint16_t aDelayMillis) {
     uint32_t tStartMillis = millis();
     do {
-        if (checkIRInput()) {
-            return true;
-        }
-    } while (millis() - tStartMillis > aDelayMillis);
-    return false;
+        checkIRInput();
+        RETURN_IF_STOP;
+    }while (millis() - tStartMillis > aDelayMillis);
 }
 
-bool moveOneServoAndCheckInput(uint8_t aServoIndex, uint8_t aDegree, uint16_t aDegreesPerSecond) {
+void moveOneServoAndCheckInput(uint8_t aServoIndex, uint8_t aDegree, uint16_t aDegreesPerSecond) {
     sServoArray[aServoIndex]->startEaseTo(aDegree, aDegreesPerSecond, false);
     do {
-        if (checkIRInput()) {
-            return true;
-        }
+        checkIRInput();
+        RETURN_IF_STOP;
         delay(REFRESH_INTERVAL / 1000); // 20ms - REFRESH_INTERVAL is in Microseconds
     } while (!sServoArray[aServoIndex]->update());
-    return false;
 }
 
-bool updateCheckInputAndWaitForAllServosToStop() {
+void updateCheckInputAndWaitForAllServosToStop() {
     do {
-        if (checkIRInput()) {
-            return true;
-        }
+        checkIRInput();
+        RETURN_IF_STOP;
         delay(REFRESH_INTERVAL / 1000); // 20ms - REFRESH_INTERVAL is in Microseconds
     } while (!updateAllServos());
-    return false;
 }
 
-bool synchronizeMoveAllServosAndCheckInputAndWait() {
+void synchronizeMoveAllServosAndCheckInputAndWait() {
     setEaseToForAllServos();
     synchronizeAllServosAndStartInterrupt(false);
-    return updateCheckInputAndWaitForAllServosToStop();
+    updateCheckInputAndWaitForAllServosToStop();
 }
 
 /*************************
@@ -359,19 +375,18 @@ bool synchronizeMoveAllServosAndCheckInputAndWait() {
 /*
  * Decrease moving speed by 25%
  */
-bool doIncreaseSpeed() {
+void doIncreaseSpeed() {
     sServoSpeed += sServoSpeed / 4;
     if (sServoSpeed > 0xBF) {
         sServoSpeed = 0xBF;
     }
     setSpeedForAllServos(sServoSpeed);
-    return false;
 }
 
 /*
  * Increase moving speed by 25%
  */
-bool doDecreaseSpeed() {
+void doDecreaseSpeed() {
     if (sServoSpeed > 2) {
         sServoSpeed -= sServoSpeed / 4;
         if (sServoSpeed < 4) {
@@ -379,100 +394,279 @@ bool doDecreaseSpeed() {
         }
     }
     setSpeedForAllServos(sServoSpeed);
-    return false;
 }
 
 /******************************************
  * The Commands to execute
  ******************************************/
+struct ArmPosition sStartPosition, sEndPosition, sCurrentPosition, sPositionDelta;
 
-bool doAutoMove() {
-    setAllServos(4, 90, 120, 20, 50);
+void printPosition(struct ArmPosition * aPositionStruct) {
+    Serial.print("LeftRight=");
+    Serial.print(aPositionStruct->LeftRight);
+    Serial.print("|");
+    Serial.print(aPositionStruct->LeftRightDegree);
+    Serial.print(" BackFront=");
+    Serial.print(aPositionStruct->BackFront);
+    Serial.print("|");
+    Serial.print(aPositionStruct->BackFrontDegree);
+    Serial.print(" DownUp=");
+    Serial.print(aPositionStruct->DownUp);
+    Serial.print("|");
+    Serial.println(aPositionStruct->DownUpDegree);
+}
+//float sDistance;
+
+float sLastPercentageOfCompletion = 2.0;
+
+// Move smoothly from current position to the new position
+bool goToPosition(int aLeftRight, int aBackFront, int aDownUp) {
+    sStartPosition = sEndPosition;
+#ifdef DEBUG
+    Serial.print("Start: ");
+    printPosition(&sStartPosition);
+#endif
+    sEndPosition.LeftRight = aLeftRight;
+    sPositionDelta.LeftRight = aLeftRight - sStartPosition.LeftRight;
+    sEndPosition.BackFront = aBackFront;
+    sPositionDelta.BackFront = aBackFront - sStartPosition.BackFront;
+    sEndPosition.DownUp = aDownUp;
+    sPositionDelta.DownUp = aDownUp - sStartPosition.DownUp;
+//    sDistance = sqrt(
+//            (sStartPosition.LeftRight - aLeftRight) * (sStartPosition.LeftRight - aLeftRight)
+//                    + (sStartPosition.BackFront - aBackFront) * (sStartPosition.BackFront - aBackFront)
+//                    + (sStartPosition.DownUp - aDownUp) * (sStartPosition.DownUp - aDownUp));
+    if (!solve(&sEndPosition)) {
+        Serial.print("Position cannot be solved: ");
+        printPosition(&sEndPosition);
+        return false;
+    }
+#ifdef DEBUG
+    Serial.print("End: ");
+    printPosition(&sEndPosition);
+#endif
+    setAllServos(3, sEndPosition.LeftRightDegree, sEndPosition.BackFrontDegree, sEndPosition.DownUpDegree);
+    return true;
+}
+
+void computeNewCurrentAngles(float aPercentageOfCompletion) {
+    sCurrentPosition.LeftRight = sStartPosition.LeftRight + (sPositionDelta.LeftRight * aPercentageOfCompletion);
+    sCurrentPosition.BackFront = sStartPosition.BackFront + (sPositionDelta.BackFront * aPercentageOfCompletion);
+    sCurrentPosition.DownUp = sStartPosition.DownUp + (sPositionDelta.DownUp * aPercentageOfCompletion);
+    solve(&sCurrentPosition);
+#ifdef TRACE
+    Serial.print("Current: ");
+    printPosition(&sCurrentPosition);
+#endif
+}
+
+float moveInverseKinematicForBase(float aPercentageOfCompletion) {
+    if (sLastPercentageOfCompletion != aPercentageOfCompletion) {
+        sLastPercentageOfCompletion = aPercentageOfCompletion;
+        computeNewCurrentAngles(aPercentageOfCompletion);
+    }
+    return sCurrentPosition.LeftRightDegree + EASE_FUNCTION_DEGREE_OFFSET;
+}
+
+float moveInverseKinematicForHorizontal(float aPercentageOfCompletion) {
+    if (sLastPercentageOfCompletion != aPercentageOfCompletion) {
+        sLastPercentageOfCompletion = aPercentageOfCompletion;
+        computeNewCurrentAngles(aPercentageOfCompletion);
+    }
+    return sCurrentPosition.BackFrontDegree + EASE_FUNCTION_DEGREE_OFFSET;
+}
+
+float moveInverseKinematicForLift(float aPercentageOfCompletion) {
+    if (sLastPercentageOfCompletion != aPercentageOfCompletion) {
+        sLastPercentageOfCompletion = aPercentageOfCompletion;
+        computeNewCurrentAngles(aPercentageOfCompletion);
+    }
+    return sCurrentPosition.DownUpDegree + EASE_FUNCTION_DEGREE_OFFSET;
+}
+
+void testInverseKinematic() {
+    // init start position for first move
+    sEndPosition.LeftRight = 0;
+    sEndPosition.BackFront = 148;
+    sEndPosition.DownUp = 80;
+    // go to start position
+    goToPosition(0, 148, 80);
+    // go forward, backward
+    goToPosition(0, 168, 80);
+    goToPosition(0, 128, 80);
+    goToPosition(0, 148, 80);
+    // go up, down
+    goToPosition(0, 148, 100);
+    goToPosition(0, 148, 60);
+    goToPosition(0, 148, 80);
+    // go right, left
+    goToPosition(40, 148, 80);
+    goToPosition(-40, 148, 80);
+    goToPosition(0, 148, 80);
+}
+
+void doSwitchEasingType() {
+    if (!sInverseKinematicModeActive && !sCurrentCommandIsRepeat) {
+        Serial.print(F("Set easing type to "));
+        if (sEasingType == EASE_LINEAR) {
+            setEasingType(EASE_QUADRATIC_IN_OUT);
+            Serial.print(F("quadratic"));
+        } else if (sEasingType == EASE_QUADRATIC_IN_OUT) {
+            setEasingType(EASE_SINE_IN_OUT);
+            Serial.print(F("sine"));
+        } else if (sEasingType == EASE_SINE_IN_OUT) {
+            setEasingType(EASE_CUBIC_IN_OUT);
+            Serial.print(F("cubic"));
+        } else if (sEasingType == EASE_CUBIC_IN_OUT) {
+            setEasingType(EASE_BOUNCE_OUT);
+            Serial.print(F("bounce out"));
+        } else if (sEasingType == EASE_BOUNCE_OUT) {
+            setEasingType(EASE_LINEAR);
+            Serial.print(F("linear"));
+        }
+        Serial.println();
+    }
+}
+
+/*
+ * Switch mode between Inverse-Kinematic and normal easing
+ */
+void doInverseKinematicOn() {
+    sInverseKinematicModeActive = true;
+}
+
+void doInverseKinematicOff() {
+    sInverseKinematicModeActive = false;
+}
+
+void doToggleInverseKinematic() {
+    if (!sCurrentCommandIsRepeat) {
+        sInverseKinematicModeActive = !sInverseKinematicModeActive;
+    }
+}
+
+void doAutoMove() {
+
+    if (sInverseKinematicModeActive) {
+        setEasingTypeForAllServos(EASE_USER_DIRECT);
+        ClawServo.setEasingType(EASE_LINEAR);
+    }
+
+    // init start position for first move
+    sEndPosition.LeftRight = 0;
+    sEndPosition.BackFront = 148;
+    sEndPosition.DownUp = 80;
+
+//    testInverseKinematic();
+
+    ClawServo.easeTo(CLAW_OPEN_ANGLE);
+
+    // go down and close claw
+    goToPosition(0, 148, -55);
+    RETURN_IF_STOP;
     ClawServo.easeTo(CLAW_CLOSE_ANGLE);
 
-    setAllServos(3, 40, 40, 120);
-    ClawServo.easeTo(CLAW_CLOSE_ANGLE - 30);
+// move up a bit
+    goToPosition(0, 148, 20);
+    RETURN_IF_STOP;
 
-    setAllServos(3, 140, 40, 165);
+// move up, turn right and open claw
+    goToPosition(120, 148, 100);
+    RETURN_IF_STOP;
 
-    return false;
+    ClawServo.easeTo(CLAW_OPEN_ANGLE);
+
+// turn left
+    goToPosition(-120, 0, 40);
+    RETURN_IF_STOP;
+
+    ClawServo.easeTo(CLAW_CLOSE_ANGLE);
+
+// must go back to start
+    goToPosition(0, 148, 80);
+    RETURN_IF_STOP;
+
+    setEasingTypeForAllServos(EASE_LINEAR);
+    delay(1000);
 }
 
-bool doFolded() {
-    return setAllServos(4, 90, 0, 100, 70);
+void doFolded() {
+    setAllServos(4, 90, 0, 100, 70);
 }
 
-bool doCenter() {
-    return setAllServos(4, PIVOT_START_ANGLE, HORIZONTAL_START_ANGLE, LIFT_START_ANGLE, CLAW_START_ANGLE);
+void doCenter() {
+    setAllServos(4, PIVOT_NEUTRAL_ANGLE, HORIZONTAL_NEUTRAL_ANGLE, LIFT_NEUTRAL_ANGLE, CLAW_START_ANGLE);
 }
 
-bool doGoBack() {
+void doGoBack() {
     if (sHorizontalServoAngle > 2) {
         sHorizontalServoAngle -= 2;
         HorizontalServo.easeTo(sHorizontalServoAngle);
     }
-    return false;
+
 }
 
-bool doGoForward() {
+void doGoForward() {
     if (sHorizontalServoAngle < 178) {
         sHorizontalServoAngle += 2;
         HorizontalServo.easeTo(sHorizontalServoAngle);
-    }
-    return false;
+    };
 }
 
-bool doTurnRight() {
+void doTurnRight() {
     if (sBodyPivotAngle > 2) {
         sBodyPivotAngle -= 2;
         BasePivotServo.easeTo(sBodyPivotAngle);
     }
-    return false;
+
 }
 
-bool doTurnLeft() {
+void doTurnLeft() {
     if (sBodyPivotAngle <= 178) {
         sBodyPivotAngle += 2;
         BasePivotServo.easeTo(sBodyPivotAngle);
     }
-    return false;
+
 }
 
-bool doLiftUp() {
+void doLiftUp() {
     if (sLiftServoAngle <= LIFT_MAX_ANGLE - 2) {
         sLiftServoAngle += 2;
         LiftServo.easeTo(sLiftServoAngle);
     }
-    return false;
+
 }
 
-bool doLiftDown() {
+void doLiftDown() {
     if (sLiftServoAngle > 2) {
         sLiftServoAngle -= 2;
         LiftServo.easeTo(sLiftServoAngle);
     }
-    return false;
+
 }
 
-bool doOpenClaw() {
+void doOpenClaw() {
     if (sClawServoAngle > 2) {
         sClawServoAngle -= 2;
         ClawServo.easeTo(sClawServoAngle);
     }
-    return false;
+
 }
 
-bool doCloseClaw() {
+void doCloseClaw() {
     if (sClawServoAngle <= (CLAW_MAX_ANGLE - 2)) {
         sClawServoAngle += 2;
         ClawServo.easeTo(sClawServoAngle);
     }
-    return false;
+
 }
 
-bool doSwitchToManual() {
+/*
+ * return true sets sRequestToStop in turn
+ */
+void doSwitchToManual() {
     sMode = MODE_MANUAL;
-    return false;
+    sRequestToStop = true;
 }
 
 /*
@@ -488,36 +682,25 @@ void setEasingType(uint8_t aEasingType) {
 /*
  *  aBasePivot,  aHorizontal,  aLift,  aClaw
  */
-bool setAllServos(uint8_t aNumberOfValues, ...) {
+void setAllServos(uint8_t aNumberOfValues, ...) {
+#ifdef DEBUG
+    printArrayPositions(&Serial);
+#endif
     va_list aDegreeValues;
     va_start(aDegreeValues, aNumberOfValues);
     setDegreeForAllServos(aNumberOfValues, &aDegreeValues);
     va_end(aDegreeValues);
-    return synchronizeMoveAllServosAndCheckInputAndWait();
+#ifdef DEBUG
+    printArrayPositions(&Serial);
+#endif
+    synchronizeMoveAllServosAndCheckInputAndWait();
 }
 
 /*******************************************
  * Other stuff
  ******************************************/
 void changeEasingType(__attribute__((unused)) bool aButtonToggleState) {
-    Serial.print(F("Set easing type to "));
-    if (sEasingType == EASE_LINEAR) {
-        setEasingType(EASE_QUADRATIC_IN_OUT);
-        Serial.print(F("quadratic"));
-    } else if (sEasingType == EASE_QUADRATIC_IN_OUT) {
-        setEasingType(EASE_SINE_IN_OUT);
-        Serial.print(F("sine"));
-    } else if (sEasingType == EASE_SINE_IN_OUT) {
-        setEasingType(EASE_CUBIC_IN_OUT);
-        Serial.print(F("cubic"));
-    } else if (sEasingType == EASE_CUBIC_IN_OUT) {
-        setEasingType(EASE_BOUNCE_OUT);
-        Serial.print(F("circular"));
-    } else if (sEasingType == EASE_BOUNCE_OUT) {
-        setEasingType(EASE_LINEAR);
-        Serial.print(F("linear"));
-    }
-    Serial.println();
+    doSwitchEasingType();
 
 }
 /*
@@ -534,7 +717,7 @@ bool handleManualControl() {
     static int sLastClaw;
 
     int tTargetAngle;
-    // reset manual action after the first move to manual start position
+// reset manual action after the first move to manual start position
     if (!isInitialized) {
         sLastPivot = analogRead(PIVOT_INPUT_PIN);
         sLastHorizontal = analogRead(HORIZONTAL_INPUT_PIN);
@@ -560,6 +743,9 @@ bool handleManualControl() {
         sLastHorizontal = tHorizontal;
         tTargetAngle = map(tHorizontal, 0, 1023, 0, 180);
         moveOneServoAndCheckInput(SERVO_HORIZONTAL, tTargetAngle);
+        // TODO
+        printArrayPositions(&Serial);
+
         Serial.print("HorizontalServo: micros=");
         Serial.print(HorizontalServo.getEndMicrosecondsOrUnits());
         Serial.print(" degree=");
@@ -580,7 +766,7 @@ bool handleManualControl() {
     }
 
     int tClaw = analogRead(CLAW_INPUT_PIN);
-    if (abs(sLastClaw - tClaw) > ANALOG_HYSTERESIS) {
+    if (abs(sLastClaw - tClaw) > (ANALOG_HYSTERESIS * 2)) {
         sLastClaw = tClaw;
         tTargetAngle = map(tClaw, 0, 1023, 0, CLAW_MAX_ANGLE);
         moveOneServoAndCheckInput(SERVO_CLAW, tTargetAngle);

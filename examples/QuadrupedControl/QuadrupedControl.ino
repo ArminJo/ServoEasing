@@ -56,12 +56,19 @@ int8_t sServoTrimAngles[NUMBER_OF_SERVOS]; // RAM copy for easy setting trim ang
  * Global control parameters
  */
 uint8_t sMovingDirection = MOVE_DIRECTION_FORWARD;
-uint16_t sServoSpeed = 60;      // in degree/second
+uint16_t sServoSpeed = 90;      // in degree/second
 uint8_t sBodyHeightAngle = 60;  // From LIFT_MIN_ANGLE to LIFT_MAX_ANGLE !!! The bigger the angle, the lower the body !!!
 
 uint8_t sCurrentCommand; // to decide if we must change movement
 bool sJustExecutingCommand;
+bool sRequestToStop;
+#define RETURN_IF_STOP if (sRequestToStop) return
 uint8_t sNextCommand = COMMAND_EMPTY;    // if != 0 do not wait for IR just take this command as next
+
+#define MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE 20000
+#define MODE_IR 0
+#define MODE_AUTO 1
+uint8_t sMode = MODE_AUTO;
 
 #if (IR_CONTROL_CODING == 'P')
 CPanasonic IRLremote;
@@ -76,33 +83,34 @@ void printTrimAngles();
 void resetServosTo90Degree();
 void eepromReadAndSetServoTrim();
 void eepromWriteServoTrim();
-uint8_t getIRCommand(bool doWait = true);
+uint8_t getIRCommand(bool doWait);
 
-bool synchronizeMoveAllServosAndCheckInputAndWait();
-bool moveOneServoAndCheckInput(uint8_t aServoIndex, uint8_t aDegree, uint16_t aDegreesPerSecond);
-bool updateCheckInputAndWaitForAllServosToStop();
-bool delayAndCheckInput(uint16_t aDelayMillis);
+void synchronizeMoveAllServosAndCheckInputAndWait();
+void moveOneServoAndCheckInput(uint8_t aServoIndex, uint8_t aDegree, uint16_t aDegreesPerSecond);
+void updateCheckInputAndWaitForAllServosToStop();
+void delayAndCheckInput(uint16_t aDelayMillis);
 
 void setEasingTypeToLinear();
 void setEasingTypeForMoving();
 
-bool centerServos();
+void centerServos();
 void setLiftServosToBodyHeight(bool aDoMove);
-bool setAllServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP, uint8_t aFLL, uint8_t aBLL, uint8_t aBRL, uint8_t aFRL);
-bool setPivotServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP);
-bool setLiftServos(uint8_t aFLL, uint8_t aBLL, uint8_t aBRL, uint8_t aFRL);
+void setAllServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP, uint8_t aFLL, uint8_t aBLL, uint8_t aBRL, uint8_t aFRL);
+void setPivotServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP);
+void setLiftServos(uint8_t aFLL, uint8_t aBLL, uint8_t aBRL, uint8_t aFRL);
 
-bool transformAndSetAllServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP, uint8_t aFLL, uint8_t aBLL, uint8_t aBRL,
+void transformAndSetAllServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP, uint8_t aFLL, uint8_t aBLL, uint8_t aBRL,
         uint8_t aFRL, uint8_t aDirection = MOVE_DIRECTION_FORWARD, bool doMirror = false, bool aDoMove = true);
-bool transformAndSetPivotServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP, uint8_t aDirection = MOVE_DIRECTION_FORWARD,
+void transformAndSetPivotServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP, uint8_t aDirection = MOVE_DIRECTION_FORWARD,
         bool doMirror = false, bool aDoMove = true);
 uint8_t transformOneServoIndex(uint8_t aServoIndexToTransform, uint8_t aDirection = MOVE_DIRECTION_FORWARD, bool doMirror = false);
 
-bool basicHalfCreep(uint8_t aDirection = MOVE_DIRECTION_FORWARD, bool doMirror = false);
-bool basicTwist(uint8_t aTwistAngle, bool aTurnLeft = false);
-bool basicQuarterTurn(uint8_t aMoveLegIndex, bool aTurnLeft = false);
-bool turn();
-bool creep();
+void basicHalfCreep(uint8_t aDirection = MOVE_DIRECTION_FORWARD, bool doMirror = false);
+void basicTwist(uint8_t aTwistAngle, bool aTurnLeft = false);
+void basicQuarterTurn(uint8_t aMoveLegIndex, bool aTurnLeft = false);
+void moveTurn(uint8_t aNumberOfTurns = 0);          // 0 -> 256 turns
+void moveTrot(uint8_t aNumberOfTrots = 0);      // 0 -> 256 trots
+void moveCreep(uint8_t aNumberOfCreeps = 0);    // 0 -> 256 creeps
 
 void checkIfBodyHeightHasChanged();
 
@@ -153,36 +161,50 @@ void setup() {
 void loop() {
     uint8_t tIRCode;
     if (sNextCommand == COMMAND_EMPTY) {
-        tIRCode = getIRCommand();
+        tIRCode = getIRCommand(false);
     } else {
         tIRCode = sNextCommand;
         sNextCommand = COMMAND_EMPTY;
     }
 
     setEasingTypeToLinear();
+    sRequestToStop = false;
 
 // search IR code and call associated function
-
-    bool tIRCodeFound = false;
-    for (uint8_t i = 0; i < sizeof(IRMW10Mapping) / sizeof(struct IRToCommandMapping); ++i) {
-        if (tIRCode == IRMW10Mapping[i].IRCode) {
-            sCurrentCommand = tIRCode;
-            Serial.print(F("Calling "));
-            Serial.println(reinterpret_cast<const __FlashStringHelper *>(IRMW10Mapping[i].CommandString));
-            /*
-             * Call the Quadruped function specified in IR mapping
-             */
-            sJustExecutingCommand = true;
-            IRMW10Mapping[i].CommandToCall();
-            sJustExecutingCommand = false;
-            tIRCodeFound = true;
-            break;
+    if (tIRCode != COMMAND_EMPTY) {
+        bool tIRCodeFound = false;
+        for (uint8_t i = 0; i < sizeof(IRMapping) / sizeof(struct IRToCommandMapping); ++i) {
+            if (tIRCode == IRMapping[i].IRCode) {
+                sCurrentCommand = tIRCode;
+                Serial.print(F("Calling "));
+                Serial.println(reinterpret_cast<const __FlashStringHelper *>(IRMapping[i].CommandString));
+                /*
+                 * Call the Quadruped function specified in IR mapping
+                 */
+                sJustExecutingCommand = true;
+                IRMapping[i].CommandToCall();
+                sJustExecutingCommand = false;
+                tIRCodeFound = true;
+                break;
+            }
+        }
+        if (!tIRCodeFound) {
+            // must be after IRMapping search
+            checkAndCallInstantCommands(tIRCode);
+        }
+        if (sMode != MODE_IR && tIRCodeFound) {
+            sMode = MODE_IR;
+            Serial.println("Switch to IR mode");
         }
     }
-    if (!tIRCodeFound) {
-        // must be after IRMW10Mapping search
-        checkAndCallInstantCommands(tIRCode);
+    if (sMode == MODE_AUTO && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
+        doAutoMove();
+        if (sRequestToStop) {
+            sMode = MODE_IR;
+            Serial.println("Switch to IR mode");
+        }
     }
+
     delay(50); // Pause for 50ms before executing next movement
 }  //loop
 
@@ -192,16 +214,16 @@ void loop() {
  */
 bool checkAndCallInstantCommands(uint8_t aIRCode) {
 // search IR code and call associated function
-    for (uint8_t i = 0; i < sizeof(IRMW10MappingInstantCommands) / sizeof(struct IRToCommandMapping); ++i) {
-        if (aIRCode == IRMW10MappingInstantCommands[i].IRCode) {
+    for (uint8_t i = 0; i < sizeof(IRMappingInstantCommands) / sizeof(struct IRToCommandMapping); ++i) {
+        if (aIRCode == IRMappingInstantCommands[i].IRCode) {
 
             Serial.print(F("Calling "));
-            Serial.print(reinterpret_cast<const __FlashStringHelper *>(IRMW10MappingInstantCommands[i].CommandString));
+            Serial.print(reinterpret_cast<const __FlashStringHelper *>(IRMappingInstantCommands[i].CommandString));
             Serial.println(':');
             /*
              * Call the Quadruped instant function specified in IR mapping
              */
-            IRMW10MappingInstantCommands[i].CommandToCall();
+            IRMappingInstantCommands[i].CommandToCall();
             /*
              * Print info
              */
@@ -262,28 +284,26 @@ uint8_t getIRCommand(bool doWait) {
 /*
  * Returns true if stop received
  */
-bool checkIRInput() {
+void checkIRInput() {
     uint8_t tIRCode = getIRCommand(false);
     if (tIRCode == COMMAND_EMPTY) {
-        return false;
+        return;
     } else if (tIRCode == sCurrentCommand) {
-        return false;
+        // repeated main (non instant) command
+        return;
     } else if (checkAndCallInstantCommands(tIRCode)) {
-        return false;
-    } else if (tIRCode == COMMAND_STOP) {
-        return true;
+        return;
     } else {
         sNextCommand = tIRCode;
-        return true; // return to loop
+        sRequestToStop = true; // return to loop
     }
-    return false;
 }
 
 void printCommandString(uint8_t aIRCode) {
     Serial.print(F("IRCommand="));
-    for (uint8_t i = 0; i < sizeof(IRMW10Mapping) / sizeof(struct IRToCommandMapping); ++i) {
-        if (aIRCode == IRMW10Mapping[i].IRCode) {
-            Serial.println(reinterpret_cast<const __FlashStringHelper *>(IRMW10Mapping[i].CommandString));
+    for (uint8_t i = 0; i < sizeof(IRMapping) / sizeof(struct IRToCommandMapping); ++i) {
+        if (aIRCode == IRMapping[i].IRCode) {
+            Serial.println(reinterpret_cast<const __FlashStringHelper *>(IRMapping[i].CommandString));
             return;
         }
     }
@@ -293,82 +313,75 @@ void printCommandString(uint8_t aIRCode) {
 /*
  * Returns true if stop received
  */
-bool delayAndCheckInput(uint16_t aDelayMillis) {
+void delayAndCheckInput(uint16_t aDelayMillis) {
     uint32_t tStartMillis = millis();
     do {
-        if (checkIRInput()) {
-            return true;
-        }
-    } while (millis() - tStartMillis > aDelayMillis);
-    return false;
+        checkIRInput();
+        RETURN_IF_STOP;
+    }while (millis() - tStartMillis > aDelayMillis);
 }
 
-bool moveOneServoAndCheckInput(uint8_t aServoIndex, uint8_t aDegree, uint16_t aDegreesPerSecond) {
+void moveOneServoAndCheckInput(uint8_t aServoIndex, uint8_t aDegree, uint16_t aDegreesPerSecond) {
     sServoArray[aServoIndex]->startEaseTo(aDegree, aDegreesPerSecond, false);
     do {
-        if (checkIRInput()) {
-            return true;
-        }
+        checkIRInput();
+        RETURN_IF_STOP;
         delay(REFRESH_INTERVAL / 1000); // 20ms - REFRESH_INTERVAL is in Microseconds
     } while (!sServoArray[aServoIndex]->update());
-    return false;
 }
 
-bool updateCheckInputAndWaitForAllServosToStop() {
+void updateCheckInputAndWaitForAllServosToStop() {
     do {
-        if (checkIRInput()) {
-            return true;
-        }
+        checkIRInput();
+        RETURN_IF_STOP;
         delay(REFRESH_INTERVAL / 1000); // 20ms - REFRESH_INTERVAL is in Microseconds
     } while (!updateAllServos());
-    return false;
 }
 
-bool synchronizeMoveAllServosAndCheckInputAndWait() {
+void synchronizeMoveAllServosAndCheckInputAndWait() {
     setEaseToForAllServos();
     synchronizeAllServosAndStartInterrupt(false);
-    return updateCheckInputAndWaitForAllServosToStop();
+    updateCheckInputAndWaitForAllServosToStop();
 }
 
 /*************************
  * Instant Commands
  *************************/
-bool doSetDirectionForward() {
+void doStop() {
+    sRequestToStop = true;
+}
+
+void doSetDirectionForward() {
     sMovingDirection = MOVE_DIRECTION_FORWARD;
-    return false;
 }
 
-bool doSetDirectionBack() {
+void doSetDirectionBack() {
     sMovingDirection = MOVE_DIRECTION_BACKWARD;
-    return false;
 }
 
-bool doSetDirectionLeft() {
+void doSetDirectionLeft() {
     sMovingDirection = MOVE_DIRECTION_LEFT;
-    return false;
 }
 
-bool doSetDirectionRight() {
+void doSetDirectionRight() {
     sMovingDirection = MOVE_DIRECTION_RIGHT;
-    return false;
 }
 
 /*
  * Decrease moving speed by 25%
  */
-bool doIncreaseSpeed() {
+void doIncreaseSpeed() {
     sServoSpeed += sServoSpeed / 4;
     if (sServoSpeed > 0xBF) {
         sServoSpeed = 0xBF;
     }
     setSpeedForAllServos(sServoSpeed);
-    return false;
 }
 
 /*
  * Increase moving speed by 25%
  */
-bool doDecreaseSpeed() {
+void doDecreaseSpeed() {
     if (sServoSpeed > 2) {
         sServoSpeed -= sServoSpeed / 4;
         if (sServoSpeed < 4) {
@@ -376,173 +389,182 @@ bool doDecreaseSpeed() {
         }
     }
     setSpeedForAllServos(sServoSpeed);
-    return false;
 }
 
 /*
  * !!! The angle is inverse to the effective height !!!
  * Take two degrees to move faster
  */
-bool doIncreaseHeight() {
+void doIncreaseHeight() {
     if (sBodyHeightAngle > LIFT_MIN_ANGLE) {
         sBodyHeightAngle -= 2;
         setLiftServosToBodyHeight(!sJustExecutingCommand);
     }
-    return false;
 }
 
-bool doDecreaseHeight() {
+void doDecreaseHeight() {
     if (sBodyHeightAngle < LIFT_MAX_ANGLE) {
         sBodyHeightAngle += 2;
         setLiftServosToBodyHeight(!sJustExecutingCommand);
     }
-    return false;
 }
 
 /******************************************
  * The Commands to execute
  ******************************************/
+void doAutoMove() {
+    centerServos();
+    RETURN_IF_STOP;
+
+    RETURN_IF_STOP;
+    sMovingDirection = MOVE_DIRECTION_FORWARD;
+    moveCreep(2);
+    RETURN_IF_STOP;
+
+    setSpeedForAllServos(200);
+    moveCreep(2);
+    RETURN_IF_STOP;
+
+//    setSpeedForAllServos(160);
+    sMovingDirection = MOVE_DIRECTION_RIGHT;
+    moveCreep(2);
+    RETURN_IF_STOP;
+
+    setSpeedForAllServos(160);
+    centerServos();
+    moveTrot(2);
+    RETURN_IF_STOP;
+
+    sMovingDirection = MOVE_DIRECTION_BACKWARD;
+    moveTrot(4);
+    RETURN_IF_STOP;
+
+    centerServos();
+    moveTurn(8);
+    RETURN_IF_STOP;
+
+    delayAndCheckInput(2000);
+}
 /*
  * Center, lean left and right lean all 4 directions and twist. Ends with a wave.
  */
-bool doDance() {
+void doDance() {
     Serial.print(F("Dance. Speed="));
     Serial.println(sServoSpeed);
 
-    if (centerServos()) {
-        return true;
-    }
+    centerServos();
+    RETURN_IF_STOP;
     /*
-     * Move down and up and back to vurrent height
+     * Move down and up and back to current height
      */
-    if (setLiftServos(LIFT_MAX_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE)) {
-        return true;
-    }
-    if (setLiftServos(LIFT_MIN_ANGLE, LIFT_MIN_ANGLE, LIFT_MIN_ANGLE, LIFT_MIN_ANGLE)) {
-        return true;
-    }
-    if (setLiftServos(sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle)) {
-        return true;
-    }
+    setLiftServos(LIFT_MAX_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE);
+    RETURN_IF_STOP;
+    setLiftServos(LIFT_MIN_ANGLE, LIFT_MIN_ANGLE, LIFT_MIN_ANGLE, LIFT_MIN_ANGLE);
+    RETURN_IF_STOP;
+    setLiftServos(sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle);
+    RETURN_IF_STOP;
 
     for (int i = 0; i < 1; ++i) {
-        if (doLeanLeft()) {
-            return true;
-        }
-        if (doLeanRight()) {
-            return true;
-        }
+        doLeanLeft();
+        RETURN_IF_STOP;
+        doLeanRight();
+        RETURN_IF_STOP;
     }
     for (int i = 0; i < 3; ++i) {
-        if (doLeanLeft()) {
-            return true;
-        }
+        doLeanLeft();
+        RETURN_IF_STOP;
         // lean back
-        if (setLiftServos(LIFT_MIN_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE, LIFT_MIN_ANGLE)) {
-            return true;
-        }
+        setLiftServos(LIFT_MIN_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE, LIFT_MIN_ANGLE);
+        RETURN_IF_STOP;
         uint8_t tTwistAngle = random(15, 40);
-        if (basicTwist(tTwistAngle, true)) {
-            return true;
-        }
-        if (basicTwist(tTwistAngle, false)) {
-            return true;
-        }
+        basicTwist(tTwistAngle, true);
+        RETURN_IF_STOP;
+        basicTwist(tTwistAngle, false);
+        RETURN_IF_STOP;
 
-        if (doLeanRight()) {
-            return true;
-        }
+        doLeanRight();
+        RETURN_IF_STOP;
         // lean front
-        if (setLiftServos(LIFT_MAX_ANGLE, LIFT_MIN_ANGLE, LIFT_MIN_ANGLE, LIFT_MAX_ANGLE)) {
-            return true;
-        }
+        setLiftServos(LIFT_MAX_ANGLE, LIFT_MIN_ANGLE, LIFT_MIN_ANGLE, LIFT_MAX_ANGLE);
+        RETURN_IF_STOP;
     }
 
-    if (doWave()) {
-        return true;
-    }
-    return centerServos();
+    doWave();
+    RETURN_IF_STOP;
+    centerServos();
 }
 
-bool doWave() {
+void doWave() {
     Serial.print(F("Wave 3 times with right leg. Speed="));
     Serial.println(sServoSpeed);
 
-    if (setAllServos(80, 90, 100, 90, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle)) {
-        return true;
-    }
+    setAllServos(80, 90, 100, 90, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle);
+    RETURN_IF_STOP;
 
-    if (setLiftServos(LIFT_MIN_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE)) {
-        return true;
-    }
+    setLiftServos(LIFT_MIN_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE);
+    RETURN_IF_STOP;
 
-    if (delayAndCheckInput(1000)) {
-        return true;
-    }
+    delayAndCheckInput(1000);
+    RETURN_IF_STOP;
+
     sServoArray[FRONT_RIGHT_PIVOT]->setEasingType(EASE_QUADRATIC_IN_OUT);
 
     for (uint8_t i = 0; i < 3; ++i) {
-        if (moveOneServoAndCheckInput(FRONT_RIGHT_PIVOT, 135, sServoSpeed * 2)) {
-            return true;
-        }
-        if (moveOneServoAndCheckInput(FRONT_RIGHT_PIVOT, 45, sServoSpeed * 2)) {
-            return true;
-        }
+        moveOneServoAndCheckInput(FRONT_RIGHT_PIVOT, 135, sServoSpeed * 2);
+        RETURN_IF_STOP;
+
+        moveOneServoAndCheckInput(FRONT_RIGHT_PIVOT, 45, sServoSpeed * 2);
+        RETURN_IF_STOP;
     }
-    if (delayAndCheckInput(1000)) {
-        return true;
-    }
-    return centerServos();
+    delayAndCheckInput(1000);
+    RETURN_IF_STOP;
+
+    centerServos();
 
 }
 
-bool doCenterServos() {
-    return centerServos();
+void doCenterServos() {
+    centerServos();
 }
 
-bool centerServos() {
+void centerServos() {
     Serial.print(F("Center. Speed="));
     Serial.println(sServoSpeed);
     return setAllServos(90, 90, 90, 90, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle);
 }
 
-bool doBow() {
+void doBow() {
     Serial.print(F("Bow. Speed="));
     Serial.println(sServoSpeed);
 
-    if (centerServos()) {
-        return true;
-    }
-    if (delayAndCheckInput(300)) {
-        return true;
-    }
+    centerServos();
+    RETURN_IF_STOP;
+
+    delayAndCheckInput(300);
+    RETURN_IF_STOP;
+
     // Lift front legs
     sServoArray[FRONT_LEFT_LIFT]->setEaseTo(LIFT_MIN_ANGLE, sServoSpeed);
     sServoArray[FRONT_RIGHT_LIFT]->startEaseToD(LIFT_MIN_ANGLE, sServoArray[FRONT_LEFT_LIFT]->mMillisForCompleteMove);
-    if (updateCheckInputAndWaitForAllServosToStop()) {
-        return true;
-    }
+    updateCheckInputAndWaitForAllServosToStop();
+    RETURN_IF_STOP;
 
-    if (delayAndCheckInput(300)) {
-        return true;
-    }
+    delayAndCheckInput(300);
+    RETURN_IF_STOP;
 
-    if (centerServos()) {
-        return true;
-    }
-    return false;
+    centerServos();
 }
 
-bool doLeanLeft() {
+void doLeanLeft() {
     Serial.print(F("Lean left. Speed="));
     Serial.println(sServoSpeed);
-    return setLiftServos(LIFT_MAX_ANGLE, LIFT_MAX_ANGLE, LIFT_MIN_ANGLE, LIFT_MIN_ANGLE);
+    setLiftServos(LIFT_MAX_ANGLE, LIFT_MAX_ANGLE, LIFT_MIN_ANGLE, LIFT_MIN_ANGLE);
 }
 
-bool doLeanRight() {
+void doLeanRight() {
     Serial.print(F("Lean right. Speed="));
     Serial.println(sServoSpeed);
-    return setLiftServos(LIFT_MIN_ANGLE, LIFT_MIN_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE);
+    setLiftServos(LIFT_MIN_ANGLE, LIFT_MIN_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE);
 }
 
 void setLiftServosToBodyHeight(bool aDoMove) {
@@ -567,7 +589,7 @@ void signalLeg(uint8_t aPivotServoIndex) {
  * Changes the servo calibration values in EEPROM.
  * Starts with front left i.e. sServoArray[0,1] and switches to the next leg with the COMMAND_ENTER
  */
-bool doCalibration() {
+void doCalibration() {
     uint8_t tPivotServoIndex = 0; // start with front left i.e. sServoArray[0]
     bool tGotExitCommand = false;
     resetServosTo90Degree();
@@ -577,7 +599,7 @@ bool doCalibration() {
     Serial.println(F("Use enter/OK button to go to next leg. Values are stored at receiving a different button or after 4th leg."));
 
     while (!tGotExitCommand) {
-        unsigned long tIRCode = getIRCommand();
+        unsigned long tIRCode = getIRCommand(true);
         printCommandString(tIRCode);
 
         switch (tIRCode) {
@@ -634,19 +656,15 @@ bool doCalibration() {
         sServoArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->print(&Serial);
         delay(200);
     }
-    return false;
 }
 
-bool doTwist() {
+void doTwist() {
     Serial.print(F("Twist. Speed="));
     Serial.println(sServoSpeed);
-    if (basicTwist(30, true)) {
-        return true;
-    }
-    if (basicTwist(30, false)) {
-        return true;
-    }
-    return false;
+    basicTwist(30, true);
+    RETURN_IF_STOP;
+
+    basicTwist(30, false);
 }
 
 /*
@@ -654,40 +672,44 @@ bool doTwist() {
  * 1. Creep: Move one leg forward and down, then move body with all 4 legs down, then move diagonal leg.
  * 2. Trot: Move 2 diagonal legs up and forward
  */
-bool doTrot() {
-//there is no basicTrot, since it is too simple
-    Serial.println(F("Trot. Speed="));
-    Serial.println(sServoSpeed);
+
+void moveTrot(uint8_t aNumberOfTrots) {
     setEasingTypeForMoving();
     uint8_t tCurrentDirection = sMovingDirection;
-    while (true) {
+    do {
         uint8_t LiftMaxAngle = sBodyHeightAngle + ((LIFT_MAX_ANGLE - sBodyHeightAngle) / 2);
         /*
          * first move right front and left back leg up and forward
          */
-        if (transformAndSetAllServos(TROT_BASE_ANGLE_FL_BR + TROT_MOVE_ANGLE, TROT_BASE_ANGLE_BL_FR - TROT_MOVE_ANGLE,
+        transformAndSetAllServos(TROT_BASE_ANGLE_FL_BR + TROT_MOVE_ANGLE, TROT_BASE_ANGLE_BL_FR - TROT_MOVE_ANGLE,
         TROT_BASE_ANGLE_FL_BR - TROT_MOVE_ANGLE, TROT_BASE_ANGLE_BL_FR + TROT_MOVE_ANGLE, sBodyHeightAngle, LiftMaxAngle,
-                sBodyHeightAngle, LiftMaxAngle, tCurrentDirection)) {
-            return true;
-        }
+                sBodyHeightAngle, LiftMaxAngle, tCurrentDirection);
+        RETURN_IF_STOP;
+
         checkIfBodyHeightHasChanged();
 
         // and the the other legs
-        if (transformAndSetAllServos(TROT_BASE_ANGLE_FL_BR - TROT_MOVE_ANGLE, TROT_BASE_ANGLE_BL_FR + TROT_MOVE_ANGLE,
+        transformAndSetAllServos(TROT_BASE_ANGLE_FL_BR - TROT_MOVE_ANGLE, TROT_BASE_ANGLE_BL_FR + TROT_MOVE_ANGLE,
         TROT_BASE_ANGLE_FL_BR + TROT_MOVE_ANGLE, TROT_BASE_ANGLE_BL_FR - TROT_MOVE_ANGLE, LiftMaxAngle, sBodyHeightAngle,
-                LiftMaxAngle, sBodyHeightAngle, tCurrentDirection)) {
-            return true;
-        }
+                LiftMaxAngle, sBodyHeightAngle, tCurrentDirection);
+        RETURN_IF_STOP;
+
         checkIfBodyHeightHasChanged();
 
         if (sMovingDirection != tCurrentDirection) {
             tCurrentDirection = sMovingDirection;
         }
-    }
-    return false;
+        aNumberOfTrots--;
+    } while (aNumberOfTrots != 0);
 }
 
-bool basicTwist(uint8_t aTwistAngle, bool aTurnLeft) {
+void doTrot() {
+    Serial.println(F("Trot. Speed="));
+    Serial.println(sServoSpeed);
+    moveTrot();
+}
+
+void basicTwist(uint8_t aTwistAngle, bool aTurnLeft) {
     Serial.print(F("Twist angle="));
     Serial.print(aTwistAngle);
     Serial.print(F(" turn left="));
@@ -695,42 +717,50 @@ bool basicTwist(uint8_t aTwistAngle, bool aTurnLeft) {
     int8_t tTwistAngle;
     aTurnLeft ? tTwistAngle = -aTwistAngle : tTwistAngle = aTwistAngle;
 
-    if (setPivotServos(90 + tTwistAngle, 90 + tTwistAngle, 90 + tTwistAngle, 90 + tTwistAngle)) {
-        return true;
-    }
-    return false;
+    setPivotServos(90 + tTwistAngle, 90 + tTwistAngle, 90 + tTwistAngle, 90 + tTwistAngle);
 }
 
-bool doTurnRight() {
+void doTurnRight() {
     sMovingDirection = MOVE_DIRECTION_RIGHT;
-    return turn();
+    moveTurn();
 }
 
-bool doTurnLeft() {
+void doTurnLeft() {
     sMovingDirection = MOVE_DIRECTION_LEFT;
-    return turn();
+    moveTurn();
 }
 
 /*
  * Must reverse direction of legs to move otherwise the COG is not supported by the legs
  */
-bool turn() {
+void moveTurn(uint8_t aNumberOfTurns) {
     centerServos();
     setEasingTypeForMoving();
-    uint8_t tLegIndex = 0;
+    uint8_t tNextLegIndex = FRONT_LEFT_PIVOT;
 
-    while (true) {
-        if (basicQuarterTurn(tLegIndex, sMovingDirection == MOVE_DIRECTION_LEFT)) {
-            return true;
-        }
-        // reverse direction if turn right
-        sMovingDirection == MOVE_DIRECTION_LEFT ? tLegIndex++ : tLegIndex--;
-        tLegIndex = tLegIndex % NUMBER_OF_LEGS;
+    /*
+     * Move one leg out of center position, otherwise the COG may be not supported at the first move
+     */
+    if (sMovingDirection == MOVE_DIRECTION_LEFT) {
+        moveOneServoAndCheckInput(FRONT_RIGHT_PIVOT, 90 + TURN_MOVE_ANGLE, sServoSpeed);
+        RETURN_IF_STOP;
     }
-    return false;
+    else {
+        moveOneServoAndCheckInput(BACK_LEFT_PIVOT, 90 - TURN_MOVE_ANGLE, sServoSpeed);
+        RETURN_IF_STOP;
+    }
+
+    do {
+        basicQuarterTurn(tNextLegIndex, sMovingDirection == MOVE_DIRECTION_LEFT);
+        RETURN_IF_STOP;
+        // reverse direction of NextLegIndex if moveTurn right
+        sMovingDirection == MOVE_DIRECTION_LEFT ? tNextLegIndex++ : tNextLegIndex--;
+        tNextLegIndex = tNextLegIndex % NUMBER_OF_LEGS;
+        aNumberOfTurns--;
+    } while (aNumberOfTurns != 0);
 }
 
-bool basicQuarterTurn(uint8_t aMoveLegIndex, bool aTurnLeft) {
+void basicQuarterTurn(uint8_t aMoveLegIndex, bool aTurnLeft) {
     Serial.print(F("Turn leg="));
     Serial.print(aMoveLegIndex);
     Serial.print(F(" turn left="));
@@ -739,7 +769,9 @@ bool basicQuarterTurn(uint8_t aMoveLegIndex, bool aTurnLeft) {
     int8_t tMoveAngle;
     int8_t tTurnAngle;
 
-// Move one leg forward in turn direction
+    /*
+     * Move one leg forward in moveTurn direction
+     */
     if (aTurnLeft) {
         tMoveAngle = TURN_MOVE_ANGLE;
         tTurnAngle = -TURN_BODY_ANGLE;
@@ -751,69 +783,71 @@ bool basicQuarterTurn(uint8_t aMoveLegIndex, bool aTurnLeft) {
     sServoNextPositionArray[tServoIndex + LIFT_SERVO_OFFSET] = LIFT_MAX_ANGLE;
     tServoIndex += SERVOS_PER_LEG;
 
+    /*
+     *
+     */
     for (uint8_t i = 0; i < NUMBER_OF_LEGS - 1; ++i) {
         tServoIndex %= NUMBER_OF_SERVOS;
         sServoNextPositionArray[tServoIndex] = sServoNextPositionArray[tServoIndex] + tTurnAngle;
+// reset lift values for all other legs
         sServoNextPositionArray[tServoIndex + LIFT_SERVO_OFFSET] = sBodyHeightAngle;
         tServoIndex += SERVOS_PER_LEG;
     }
 //    printArrayPositions(&Serial);
-    if (synchronizeMoveAllServosAndCheckInputAndWait()) {
-        return true;
-    }
-    return false;
+    synchronizeMoveAllServosAndCheckInputAndWait();
 }
 
 /*
- * Set servo positions and speeds needed to creep forward one step
+ * Set servo positions and speeds needed to moveCreep forward one step
  * Start with move to Y position with right legs together
  */
-bool doCreepForward() {
+void doCreepForward() {
     Serial.print(F("doCreepForward ServoSpeed="));
     Serial.println(sServoSpeed);
     sMovingDirection = MOVE_DIRECTION_FORWARD;
-    return creep();
+    moveCreep();
 }
 
 /*
  * Start from same position as forward
  */
-bool doCreepBack() {
+void doCreepBack() {
     Serial.print(F("doCreepBack ServoSpeed="));
     Serial.println(sServoSpeed);
     sMovingDirection = MOVE_DIRECTION_BACKWARD;
-    return creep();
+    moveCreep();
 }
 
 /*
  * Y position with right legs closed and left legs open
  */
-bool goToYPosition(uint8_t aDirection) {
+void goToYPosition(uint8_t aDirection) {
     Serial.print(F("goToYPosition aDirection="));
     Serial.println(aDirection);
     transformAndSetPivotServos(180 - Y_POSITION_OPEN_ANGLE, Y_POSITION_OPEN_ANGLE, (180 - Y_POSITION_CLOSE_ANGLE),
     Y_POSITION_CLOSE_ANGLE, aDirection, false, false);
-    return setLiftServos(sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle);
+    setLiftServos(sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle);
 }
 
-bool creep() {
+/*
+ * 0 -> 256 creeps
+ */
+void moveCreep(uint8_t aNumberOfCreeps) {
     goToYPosition(sMovingDirection);
     setEasingTypeForMoving();
     uint8_t tCurrentDirection = sMovingDirection;
 
-    while (true) {
-        if (basicHalfCreep(tCurrentDirection, false)) {
-            return true;
-        }
-        // now mirror movement
-        if (basicHalfCreep(tCurrentDirection, true)) {
-            return true;
-        }
+    do {
+        basicHalfCreep(tCurrentDirection, false);
+        RETURN_IF_STOP;
+// now mirror movement
+        basicHalfCreep(tCurrentDirection, true);
+        RETURN_IF_STOP;
         if (sMovingDirection != tCurrentDirection) {
             tCurrentDirection = sMovingDirection;
         }
-    }
-    return false;
+        aNumberOfCreeps--;
+    } while (aNumberOfCreeps != 0);
 }
 
 void checkIfBodyHeightHasChanged() {
@@ -831,7 +865,7 @@ void checkIfBodyHeightHasChanged() {
 /*
  * moves one leg forward and down, then moves body, then moves diagonal leg.
  */
-bool basicHalfCreep(uint8_t aDirection, bool doMirror) {
+void basicHalfCreep(uint8_t aDirection, bool doMirror) {
 
     Serial.print(F("BasicHalfCreep Direction="));
     Serial.print(aDirection);
@@ -839,36 +873,34 @@ bool basicHalfCreep(uint8_t aDirection, bool doMirror) {
     Serial.println(doMirror);
 // 1. Move front right leg up, forward and down
     Serial.println(F("Move front leg"));
-    if (transformAndSetAllServos(180 - Y_POSITION_OPEN_ANGLE, Y_POSITION_OPEN_ANGLE, 180 - Y_POSITION_CLOSE_ANGLE,
-    Y_POSITION_FRONT_ANGLE, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle, LIFT_MAX_ANGLE, aDirection, doMirror)) {
-        return true;
-    }
-    // check if body height has changed
+    transformAndSetAllServos(180 - Y_POSITION_OPEN_ANGLE, Y_POSITION_OPEN_ANGLE, 180 - Y_POSITION_CLOSE_ANGLE,
+    Y_POSITION_FRONT_ANGLE, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle, LIFT_MAX_ANGLE, aDirection, doMirror);
+    RETURN_IF_STOP;
+
+// check if body height has changed
     checkIfBodyHeightHasChanged();
 // reset lift value
     sServoNextPositionArray[transformOneServoIndex(FRONT_RIGHT_PIVOT) + LIFT_SERVO_OFFSET] = sBodyHeightAngle;
 
 // 2. Move body forward by CREEP_BODY_MOVE_ANGLE
     Serial.println(F("Move body"));
-    if (transformAndSetAllServos(180 - Y_POSITION_CLOSE_ANGLE, Y_POSITION_OPEN_ANGLE + CREEP_BODY_MOVE_ANGLE,
+    transformAndSetAllServos(180 - Y_POSITION_CLOSE_ANGLE, Y_POSITION_OPEN_ANGLE + CREEP_BODY_MOVE_ANGLE,
             180 - Y_POSITION_OPEN_ANGLE, Y_POSITION_OPEN_ANGLE, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle,
-            sBodyHeightAngle, aDirection, doMirror)) {
-        return true;
-    }
+            sBodyHeightAngle, aDirection, doMirror);
+    RETURN_IF_STOP;
     checkIfBodyHeightHasChanged();
 
 // 3. Move back right leg up, forward and down
     Serial.println(F("Move back leg to close position"));
 // Move to Y position with other side legs together
-    if (transformAndSetAllServos(180 - Y_POSITION_CLOSE_ANGLE, Y_POSITION_CLOSE_ANGLE, 180 - Y_POSITION_OPEN_ANGLE,
-    Y_POSITION_OPEN_ANGLE, sBodyHeightAngle, LIFT_MAX_ANGLE, sBodyHeightAngle, sBodyHeightAngle, aDirection, doMirror)) {
-        return true;
-    }
+    transformAndSetAllServos(180 - Y_POSITION_CLOSE_ANGLE, Y_POSITION_CLOSE_ANGLE, 180 - Y_POSITION_OPEN_ANGLE,
+    Y_POSITION_OPEN_ANGLE, sBodyHeightAngle, LIFT_MAX_ANGLE, sBodyHeightAngle, sBodyHeightAngle, aDirection, doMirror);
+    RETURN_IF_STOP;
+
     checkIfBodyHeightHasChanged();
 
 // reset lift value
     sServoNextPositionArray[transformOneServoIndex(BACK_LEFT_PIVOT) + LIFT_SERVO_OFFSET] = sBodyHeightAngle;
-    return false;
 }
 
 void setEasingTypeToLinear() {
@@ -895,7 +927,7 @@ void setEasingTypeForMoving() {
  */
 
 uint8_t getMirrorXorMask(uint8_t aDirection) {
-    // XOR the index with this value to get the mirrored index
+// XOR the index with this value to get the mirrored index
     if (aDirection & MOVE_DIRECTION_SIDE_MASK) {
         return 0x2;
     } else {
@@ -903,14 +935,14 @@ uint8_t getMirrorXorMask(uint8_t aDirection) {
     }
 }
 
-bool transformAndSetAllServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP, uint8_t aFLL, uint8_t aBLL, uint8_t aBRL,
+void transformAndSetAllServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP, uint8_t aFLL, uint8_t aBLL, uint8_t aBRL,
         uint8_t aFRL, uint8_t aDirection, bool doMirror, bool aDoMove) {
     uint8_t tIndexToAdd = aDirection * SERVOS_PER_LEG;
     uint8_t tXorToGetMirroredIndex = 0x0;
-    // Invert angles for pivot servos
+// Invert angles for pivot servos
     bool doInvert = false;
     if (doMirror) {
-        // XOR the index with this value to get the mirrored index
+// XOR the index with this value to get the mirrored index
         tXorToGetMirroredIndex = getMirrorXorMask(aDirection);
         doInvert = true;
     }
@@ -945,22 +977,21 @@ bool transformAndSetAllServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t 
     sServoNextPositionArray[tEffectivePivotServoIndex + LIFT_SERVO_OFFSET] = aFRL;
 
     if (aDoMove) {
-        return synchronizeMoveAllServosAndCheckInputAndWait();
+        synchronizeMoveAllServosAndCheckInputAndWait();
     }
-    return false;
 }
 
 /*
  * A subset of the functionality of transformAndSetAllServos() -> less arguments needed :-)
  */
-bool transformAndSetPivotServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP, uint8_t aDirection, bool doMirror,
+void transformAndSetPivotServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP, uint8_t aDirection, bool doMirror,
         bool aDoMove) {
     uint8_t tIndexToAdd = aDirection * SERVOS_PER_LEG;
     uint8_t tXorToGetMirroredIndex = 0x0;
-    // Invert angles for pivot servos
+// Invert angles for pivot servos
     bool doInvert = false;
     if (doMirror) {
-        // XOR the index with this value to get the mirrored index
+// XOR the index with this value to get the mirrored index
         tXorToGetMirroredIndex = getMirrorXorMask(aDirection);
         doInvert = true;
     }
@@ -991,15 +1022,14 @@ bool transformAndSetPivotServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_
     sServoNextPositionArray[tEffectivePivotServoIndex] = aFRP;
 
     if (aDoMove) {
-        return synchronizeMoveAllServosAndCheckInputAndWait();
+        synchronizeMoveAllServosAndCheckInputAndWait();
     }
-    return false;
 }
 
 uint8_t transformOneServoIndex(uint8_t aServoIndexToTransform, uint8_t aDirection, bool doMirror) {
     uint8_t tXorToGetMirroredIndex = 0x0;
     if (doMirror) {
-        // XOR the index with this value to get the mirrored index
+// XOR the index with this value to get the mirrored index
         tXorToGetMirroredIndex = getMirrorXorMask(aDirection);
     }
     return ((aServoIndexToTransform + (aDirection * SERVOS_PER_LEG)) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
@@ -1021,23 +1051,23 @@ void testTransform() {
     printArrayPositions(&Serial);
 }
 
-bool setPivotServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP) {
+void setPivotServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP) {
     sServoNextPositionArray[FRONT_LEFT_PIVOT] = aFLP;
     sServoNextPositionArray[BACK_LEFT_PIVOT] = aBLP;
     sServoNextPositionArray[BACK_RIGHT_PIVOT] = aBRP;
     sServoNextPositionArray[FRONT_RIGHT_PIVOT] = aFRP;
-    return synchronizeMoveAllServosAndCheckInputAndWait();
+    synchronizeMoveAllServosAndCheckInputAndWait();
 }
 
-bool setLiftServos(uint8_t aFLL, uint8_t aBLL, uint8_t aBRL, uint8_t aFRL) {
+void setLiftServos(uint8_t aFLL, uint8_t aBLL, uint8_t aBRL, uint8_t aFRL) {
     sServoNextPositionArray[FRONT_LEFT_LIFT] = aFLL;
     sServoNextPositionArray[BACK_LEFT_LIFT] = aBLL;
     sServoNextPositionArray[BACK_RIGHT_LIFT] = aBRL;
     sServoNextPositionArray[FRONT_RIGHT_LIFT] = aFRL;
-    return synchronizeMoveAllServosAndCheckInputAndWait();
+    synchronizeMoveAllServosAndCheckInputAndWait();
 }
 
-bool setAllServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP, uint8_t aFLL, uint8_t aBLL, uint8_t aBRL, uint8_t aFRL) {
+void setAllServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP, uint8_t aFLL, uint8_t aBLL, uint8_t aBRL, uint8_t aFRL) {
     sServoNextPositionArray[FRONT_LEFT_PIVOT] = aFLP;
     sServoNextPositionArray[BACK_LEFT_PIVOT] = aBLP;
     sServoNextPositionArray[BACK_RIGHT_PIVOT] = aBRP;
@@ -1047,7 +1077,7 @@ bool setAllServos(uint8_t aFLP, uint8_t aBLP, uint8_t aBRP, uint8_t aFRP, uint8_
     sServoNextPositionArray[BACK_LEFT_LIFT] = aBLL;
     sServoNextPositionArray[BACK_RIGHT_LIFT] = aBRL;
     sServoNextPositionArray[FRONT_RIGHT_LIFT] = aFRL;
-    return synchronizeMoveAllServosAndCheckInputAndWait();
+    synchronizeMoveAllServosAndCheckInputAndWait();
 }
 
 /*******************************************
@@ -1086,14 +1116,14 @@ void eepromWriteServoTrim() {
 /*
  * Just as an unused example to see the principle of movement
  */
-bool basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
+void basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
     Serial.print(F("LeftLegIndex="));
     Serial.print(aLeftLegIndex);
     uint8_t tLeftLegPivotServoIndex;
 
     if (aMoveMirrored) {
         Serial.print(F(" mirrored=true"));
-        // get index of pivot servo of mirrored leg
+// get index of pivot servo of mirrored leg
         tLeftLegPivotServoIndex = ((NUMBER_OF_LEGS - 1) - aLeftLegIndex) * SERVOS_PER_LEG; // 0->6
     } else {
         tLeftLegPivotServoIndex = aLeftLegIndex * SERVOS_PER_LEG;
@@ -1104,19 +1134,18 @@ bool basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
 
 // 1. Move front left leg up, forward and down
     Serial.println(F("Move front leg"));
-    if (moveOneServoAndCheckInput(tLeftLegPivotServoIndex + LIFT_SERVO_OFFSET, LIFT_MAX_ANGLE, sServoSpeed)) {
-        return true;
-    }
+    moveOneServoAndCheckInput(tLeftLegPivotServoIndex + LIFT_SERVO_OFFSET, LIFT_MAX_ANGLE, sServoSpeed);
+    RETURN_IF_STOP;
+
 // go CREEP_BODY_MOVE_ANGLE ahead of Y_POSITION_OPEN_ANGLE
     aMoveMirrored ?
             tEffectiveAngle = 180 - (Y_POSITION_OPEN_ANGLE - CREEP_BODY_MOVE_ANGLE) :
             tEffectiveAngle = Y_POSITION_OPEN_ANGLE - CREEP_BODY_MOVE_ANGLE;
-    if (moveOneServoAndCheckInput(tLeftLegPivotServoIndex, tEffectiveAngle, sServoSpeed)) {
-        return true;
-    }
-    if (moveOneServoAndCheckInput(tLeftLegPivotServoIndex + LIFT_SERVO_OFFSET, sBodyHeightAngle, sServoSpeed)) {
-        return true;
-    }
+    moveOneServoAndCheckInput(tLeftLegPivotServoIndex, tEffectiveAngle, sServoSpeed);
+    RETURN_IF_STOP;
+
+    moveOneServoAndCheckInput(tLeftLegPivotServoIndex + LIFT_SERVO_OFFSET, sBodyHeightAngle, sServoSpeed);
+    RETURN_IF_STOP;
 
 // 2. Move body forward
     Serial.println(F("Move body"));
@@ -1160,16 +1189,13 @@ bool basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
     Serial.println(F("Move back leg to close position"));
 // Move to Y position with right legs together / 120, 60, 180, 0
     uint8_t tDiagonalIndex = (tLeftLegPivotServoIndex + DIAGONAL_SERVO_OFFSET) % NUMBER_OF_SERVOS;
-    if (moveOneServoAndCheckInput(tDiagonalIndex + LIFT_SERVO_OFFSET, LIFT_MAX_ANGLE, sServoSpeed)) {
-        return true;
-    }
+    moveOneServoAndCheckInput(tDiagonalIndex + LIFT_SERVO_OFFSET, LIFT_MAX_ANGLE, sServoSpeed);
+    RETURN_IF_STOP;
+
     aMoveMirrored ? tEffectiveAngle = 180 - Y_POSITION_CLOSE_ANGLE : tEffectiveAngle = Y_POSITION_CLOSE_ANGLE;
-    if (moveOneServoAndCheckInput(tDiagonalIndex, tEffectiveAngle, sServoSpeed)) {
-        return true;
-    }
-    if (moveOneServoAndCheckInput(tDiagonalIndex + LIFT_SERVO_OFFSET, sBodyHeightAngle, sServoSpeed)) {
-        return true;
-    }
-    return false;
+    moveOneServoAndCheckInput(tDiagonalIndex, tEffectiveAngle, sServoSpeed);
+    RETURN_IF_STOP;
+
+    moveOneServoAndCheckInput(tDiagonalIndex + LIFT_SERVO_OFFSET, sBodyHeightAngle, sServoSpeed);
 }
 

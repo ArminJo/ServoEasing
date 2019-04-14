@@ -149,35 +149,37 @@
  */
 // list of functions to call at IR command
 // Stationary movements
-bool doDance();
-bool doWave();
-bool doTwist();
-bool doBow();
-bool doLeanLeft();
-bool doLeanRight();
+void doAutoMove();
+void doDance();
+void doWave();
+void doTwist();
+void doBow();
+void doLeanLeft();
+void doLeanRight();
 
-bool doCreepForward();
-bool doCreepBack();
-bool doTrot();
+void doCreepForward();
+void doCreepBack();
+void doTrot();
 
-bool doTurnLeft();
-bool doTurnRight();
+void doTurnLeft();
+void doTurnRight();
 
-bool doCenterServos();
+void doCenterServos();
 
-bool doCalibration();
+void doCalibration();
 
 /*
  * Instant command functions
  */
-bool doSetDirectionForward();
-bool doSetDirectionBack();
-bool doSetDirectionRight();
-bool doSetDirectionLeft();
-bool doIncreaseSpeed();
-bool doDecreaseSpeed();
-bool doIncreaseHeight();
-bool doDecreaseHeight();
+void doStop();
+void doSetDirectionForward();
+void doSetDirectionBack();
+void doSetDirectionRight();
+void doSetDirectionLeft();
+void doIncreaseSpeed();
+void doDecreaseSpeed();
+void doIncreaseHeight();
+void doDecreaseHeight();
 
 // IR strings of functions for output
 static const char forward[] PROGMEM ="forward";
@@ -196,7 +198,8 @@ static const char fastBack[] PROGMEM ="decrease height";
 static const char fastForward[] PROGMEM ="increase height";
 static const char wave[] PROGMEM ="wave";
 static const char mute[] PROGMEM ="calibration";
-static const char onOff[] PROGMEM ="on/off";
+//static const char onOff[] PROGMEM ="on/off";
+static const char stop[] PROGMEM ="stop";
 static const char dance[] PROGMEM ="dance";
 static const char trot[] PROGMEM ="trot";
 static const char twist[] PROGMEM ="twist";
@@ -205,24 +208,23 @@ static const char unknown[] PROGMEM ="unknown";
 // Basic mapping structure
 struct IRToCommandMapping {
     uint8_t IRCode;
-    bool (*CommandToCall)();
+    void (*CommandToCall)();
     const char * CommandString;
 };
 
 /*
  * Main mapping array of commands to C functions and command strings
  */
-struct IRToCommandMapping IRMW10Mapping[] = { { COMMAND_FORWARD, &doCreepForward, forward },
-        { COMMAND_BACKWARD, &doCreepBack, back }, {
-        COMMAND_RIGHT, &doTurnRight, right }, { COMMAND_LEFT, &doTurnLeft, left }, { COMMAND_CENTER, &doCenterServos, center }, {
-        COMMAND_CALIBRATE, &doCalibration, mute }, { COMMAND_DANCE, &doDance, dance }, { COMMAND_TWIST, &doTwist, twist }, {
-        COMMAND_WAVE, &doWave, wave }, { COMMAND_TROT, &doTrot, trot } };
+struct IRToCommandMapping IRMapping[] = { { COMMAND_FORWARD, &doCreepForward, forward }, { COMMAND_BACKWARD, &doCreepBack, back }, {
+COMMAND_RIGHT, &doTurnRight, right }, { COMMAND_LEFT, &doTurnLeft, left }, { COMMAND_CENTER, &doCenterServos, center }, {
+COMMAND_CALIBRATE, &doCalibration, mute }, { COMMAND_DANCE, &doDance, dance }, { COMMAND_TWIST, &doTwist, twist }, {
+COMMAND_WAVE, &doWave, wave }, { COMMAND_TROT, &doTrot, trot } };
 
-struct IRToCommandMapping IRMW10MappingInstantCommands[] = { { COMMAND_FORWARD, &doSetDirectionForward, dirForward }, {
+struct IRToCommandMapping IRMappingInstantCommands[] = { { COMMAND_FORWARD, &doSetDirectionForward, dirForward }, {
 COMMAND_BACKWARD, &doSetDirectionBack, dirBack }, { COMMAND_RIGHT, &doSetDirectionRight, dirRight }, { COMMAND_LEFT,
         &doSetDirectionLeft, dirLeft }, { COMMAND_INCREASE_SPEED, &doIncreaseSpeed, volPlus }, { COMMAND_DECREASE_SPEED,
-        &doDecreaseSpeed, volMinus }, {
-COMMAND_INCREASE_HEIGHT, &doIncreaseHeight, fastForward }, { COMMAND_DECREASE_HEIGHT, &doDecreaseHeight, fastBack } };
+        &doDecreaseSpeed, volMinus }, { COMMAND_INCREASE_HEIGHT, &doIncreaseHeight, fastForward }, { COMMAND_DECREASE_HEIGHT,
+        &doDecreaseHeight, fastBack }, { COMMAND_STOP, &doStop, stop } };
 
 // function to search in MappingInstantCommands array
 bool checkAndCallInstantCommands(uint8_t aIRCode);
