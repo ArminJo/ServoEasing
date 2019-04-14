@@ -2,7 +2,7 @@
  * RobotArmControl.cpp
  *
  * Program for controlling a RobotArm with 4 servos using 4 potentiometers and/or an IR Remote at pin A0
- * Sea also: https://www.instructables.com/id/4-DOF-Mechanical-Arm-Robot-Controlled-by-Arduino
+ * See also: https://www.instructables.com/id/4-DOF-Mechanical-Arm-Robot-Controlled-by-Arduino
  *
  * To run this example need to install the "ServoEasing", "IRLremote" and "PinChangeInterrupt" libraries under Sketch -> Include Library -> Manage Librarys...
  * Use "ServoEasing", "IRLremote" and "PinChangeInterrupt" as filter string.
@@ -32,7 +32,7 @@
 #include <IRLremote.h>      // include IR Remote library
 
 #include "ServoEasing.h"    // include servo library
-#include "ik.h"
+#include "RobotArmKinematics.h"
 
 //#define TRACE
 //#define DEBUG
@@ -73,30 +73,46 @@ ServoEasing HorizontalServo;     // 1 - Front Left Lift Servo
 ServoEasing LiftServo;     // 2 - Back Left Pivot Servo
 ServoEasing ClawServo;      // 3 - Back Left Lift Servo
 
+struct ArmPosition sStartPosition, sEndPosition, sCurrentPosition, sPositionDelta;
+
 /*
- * Global control parameters
+ * Global control variables
  */
 uint16_t sServoSpeed = 60;      // in degree/second
-uint8_t sEasingType = EASE_LINEAR;
-bool sInverseKinematicModeActive = true;
 
-uint8_t sBodyPivotAngle = PIVOT_NEUTRAL_ANGLE;
-uint8_t sHorizontalServoAngle = HORIZONTAL_NEUTRAL_ANGLE;
-uint8_t sLiftServoAngle = LIFT_NEUTRAL_ANGLE;
+/*
+ * Angles for the servos for IR control
+ */
+uint8_t sBodyPivotAngle = PIVOT_NEUTRAL_OFFSET_DEGREE;
+uint8_t sHorizontalServoAngle = HORIZONTAL_NEUTRAL_OFFSET_DEGREE;
+uint8_t sLiftServoAngle = LIFT_NEUTRAL_OFFSET_DEGREE;
 uint8_t sClawServoAngle = CLAW_START_ANGLE;
 
+/*
+ * Servo movement
+ */
+uint8_t sEasingType = EASE_LINEAR;
+bool sInverseKinematicModeActive = true;
+float sLastPercentageOfCompletion = 2.0;
+
+/*
+ * IR control related
+ */
 uint8_t sCurrentCommand; // to decide if we must change movement
 bool sCurrentCommandIsRepeat;
-bool sJustExecutingCommand;
+bool sJustExecutingCommand; // not used yet
 bool sRequestToStop;
 #define RETURN_IF_STOP if (sRequestToStop) return
-uint8_t sNextCommand = COMMAND_EMPTY;    // if != 0 do not wait for IR just take this command as next
+uint8_t sNextCommand = COMMAND_EMPTY;    // if != COMMAND_EMPTY do not wait for IR just take this command as next
 
+/*
+ * Operating mode
+ */
 #define MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE 10000
 #define MODE_IR 0
 #define MODE_AUTO 1
 #define MODE_MANUAL 3
-uint8_t sMode = MODE_MANUAL;
+uint8_t sMode = MODE_AUTO;
 
 CNec IRLremote;
 
@@ -119,9 +135,20 @@ void setAllServos(uint8_t aNumberOfValues, ...);
 
 bool handleManualControl();
 
+/*
+ * Kinematics functions
+ */
+void printPosition(struct ArmPosition * aPositionStruct);
+void printPositionShort(struct ArmPosition * aPositionStruct);
+
+bool goToPosition(int aLeftRight, int aBackFront, int aDownUp);
+void computeNewCurrentAngles(float aPercentageOfCompletion);
+
 float moveInverseKinematicForBase(float aPercentageOfCompletion);
 float moveInverseKinematicForHorizontal(float aPercentageOfCompletion);
 float moveInverseKinematicForLift(float aPercentageOfCompletion);
+void testInverseAndForwardKinematic();
+
 /*
  * Code starts here
  */
@@ -142,16 +169,16 @@ void setup() {
     setSpeedForAllServos(sServoSpeed);
     // Attach servos to Arduino Pins and set to start position. Must be done with write()
     BasePivotServo.attach(4);
-    BasePivotServo.write(PIVOT_NEUTRAL_ANGLE);
+    BasePivotServo.write(PIVOT_NEUTRAL_OFFSET_DEGREE);
     BasePivotServo.registerUserEaseInFunction(&moveInverseKinematicForBase);
     delay(200);
     HorizontalServo.attach(5);
-    HorizontalServo.write(HORIZONTAL_NEUTRAL_ANGLE);
+    HorizontalServo.write(HORIZONTAL_NEUTRAL_OFFSET_DEGREE);
     HorizontalServo.registerUserEaseInFunction(&moveInverseKinematicForHorizontal);
     delay(200);
     LiftServo.attach(7);
     ClawServo.attach(8);
-    LiftServo.write(LIFT_NEUTRAL_ANGLE);
+    LiftServo.write(LIFT_NEUTRAL_OFFSET_DEGREE);
     ClawServo.write(CLAW_START_ANGLE);
     LiftServo.registerUserEaseInFunction(&moveInverseKinematicForLift);
 
@@ -219,17 +246,16 @@ void loop() {
             Serial.println("Switch to IR mode");
         }
         delay(20); // Pause before executing next movement
-    } else if (sMode == MODE_AUTO) {
+    } else if (sMode == MODE_AUTO && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
         doAutoMove();
         if (sRequestToStop) {
             sMode = MODE_IR;
             Serial.println("Switch to IR mode");
         }
-    } else if (sMode == MODE_MANUAL) {
-        if (!handleManualControl() && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
-            sMode = MODE_AUTO;
-            Serial.println("Switch to auto mode");
-        }
+    } else if (sMode != MODE_IR && handleManualControl()) {
+        // disable IR and auto modes
+        sMode = MODE_MANUAL;
+        Serial.println("Switch to manual mode");
     }
 }  //loop
 
@@ -396,10 +422,284 @@ void doDecreaseSpeed() {
     setSpeedForAllServos(sServoSpeed);
 }
 
+void doSwitchToManual() {
+    sMode = MODE_MANUAL;
+    sRequestToStop = true;
+}
+
+/*
+ * Switch mode between Inverse-Kinematic and normal easing
+ */
+void doInverseKinematicOn() {
+    sInverseKinematicModeActive = true;
+}
+
+void doInverseKinematicOff() {
+    sInverseKinematicModeActive = false;
+}
+
+void doToggleInverseKinematic() {
+    if (!sCurrentCommandIsRepeat) {
+        sInverseKinematicModeActive = !sInverseKinematicModeActive;
+    }
+}
+
+void doSwitchEasingType() {
+    if (!sInverseKinematicModeActive && !sCurrentCommandIsRepeat) {
+        Serial.print(F("Set easing type to "));
+        if (sEasingType == EASE_LINEAR) {
+            setEasingType(EASE_QUADRATIC_IN_OUT);
+            Serial.print(F("quadratic"));
+        } else if (sEasingType == EASE_QUADRATIC_IN_OUT) {
+            setEasingType(EASE_SINE_IN_OUT);
+            Serial.print(F("sine"));
+        } else if (sEasingType == EASE_SINE_IN_OUT) {
+            setEasingType(EASE_CUBIC_IN_OUT);
+            Serial.print(F("cubic"));
+        } else if (sEasingType == EASE_CUBIC_IN_OUT) {
+            setEasingType(EASE_BOUNCE_OUT);
+            Serial.print(F("bounce out"));
+        } else if (sEasingType == EASE_BOUNCE_OUT) {
+            setEasingType(EASE_LINEAR);
+            Serial.print(F("linear"));
+        }
+        Serial.println();
+    }
+}
+
 /******************************************
  * The Commands to execute
  ******************************************/
-struct ArmPosition sStartPosition, sEndPosition, sCurrentPosition, sPositionDelta;
+
+void doAutoMove() {
+
+    if (sInverseKinematicModeActive) {
+        setEasingTypeForAllServos(EASE_USER_DIRECT);
+        ClawServo.setEasingType(EASE_LINEAR);
+    }
+
+    // init start position for first move
+    sEndPosition.LeftRightDegree = sServoNextPositionArray[SERVO_BASE_PIVOT];
+    sEndPosition.BackFrontDegree = sServoNextPositionArray[SERVO_HORIZONTAL];
+    sEndPosition.DownUpDegree = sServoNextPositionArray[SERVO_LIFT];
+    unsolve(&sEndPosition);
+
+    //    testInverseKinematic();
+
+    // goto neutral position
+    goToPosition(0, 148, 80);
+    RETURN_IF_STOP;
+
+    ClawServo.easeTo(CLAW_OPEN_ANGLE);
+
+    // go down and close claw
+    goToPosition(0, 148, -55);
+    RETURN_IF_STOP;
+    ClawServo.easeTo(CLAW_CLOSE_ANGLE);
+
+    // move up a bit
+    goToPosition(0, 148, 20);
+    RETURN_IF_STOP;
+
+    // move up, turn right and open claw
+    goToPosition(120, 148, 100);
+    RETURN_IF_STOP;
+
+    ClawServo.easeTo(CLAW_OPEN_ANGLE);
+
+    // turn left
+    goToPosition(-120, 0, 40);
+    RETURN_IF_STOP;
+
+    ClawServo.easeTo(CLAW_CLOSE_ANGLE);
+
+    // go back to start
+    goToPosition(0, 148, 80);
+    RETURN_IF_STOP;
+
+    setEasingTypeForAllServos(EASE_LINEAR);
+    delay(1000);
+}
+
+void doFolded() {
+    setAllServos(4, 90, 0, 100, 70);
+}
+
+void doCenter() {
+    setAllServos(4, PIVOT_NEUTRAL_OFFSET_DEGREE, HORIZONTAL_NEUTRAL_OFFSET_DEGREE, LIFT_NEUTRAL_OFFSET_DEGREE, CLAW_START_ANGLE);
+}
+
+void doGoBack() {
+    if (sHorizontalServoAngle > 2) {
+        sHorizontalServoAngle -= 2;
+        HorizontalServo.easeTo(sHorizontalServoAngle);
+    }
+}
+
+void doGoForward() {
+    if (sHorizontalServoAngle < 178) {
+        sHorizontalServoAngle += 2;
+        HorizontalServo.easeTo(sHorizontalServoAngle);
+    }
+}
+
+void doTurnRight() {
+    if (sBodyPivotAngle > 2) {
+        sBodyPivotAngle -= 2;
+        BasePivotServo.easeTo(sBodyPivotAngle);
+    }
+}
+
+void doTurnLeft() {
+    if (sBodyPivotAngle <= 178) {
+        sBodyPivotAngle += 2;
+        BasePivotServo.easeTo(sBodyPivotAngle);
+    }
+}
+
+void doLiftUp() {
+    if (sLiftServoAngle <= LIFT_MAX_ANGLE - 2) {
+        sLiftServoAngle += 2;
+        LiftServo.easeTo(sLiftServoAngle);
+    }
+}
+
+void doLiftDown() {
+    if (sLiftServoAngle > 2) {
+        sLiftServoAngle -= 2;
+        LiftServo.easeTo(sLiftServoAngle);
+    }
+}
+
+void doOpenClaw() {
+    if (sClawServoAngle > 2) {
+        sClawServoAngle -= 2;
+        ClawServo.easeTo(sClawServoAngle);
+    }
+}
+
+void doCloseClaw() {
+    if (sClawServoAngle <= (CLAW_MAX_ANGLE - 2)) {
+        sClawServoAngle += 2;
+        ClawServo.easeTo(sClawServoAngle);
+    }
+}
+
+/*******************************************
+ * Other stuff
+ ******************************************/
+
+/*
+ * Set easing type for all servos except claw
+ */
+void setEasingType(uint8_t aEasingType) {
+    sEasingType = aEasingType;
+    for (uint8_t tServoIndex = 0; tServoIndex < NUMBER_OF_SERVOS - 1; ++tServoIndex) {
+        sServoArray[tServoIndex]->setEasingType(aEasingType);
+    }
+}
+
+/*
+ *  aBasePivot,  aHorizontal,  aLift,  aClaw
+ */
+void setAllServos(uint8_t aNumberOfValues, ...) {
+#ifdef DEBUG
+    printArrayPositions(&Serial);
+#endif
+    va_list aDegreeValues;
+    va_start(aDegreeValues, aNumberOfValues);
+    setDegreeForAllServos(aNumberOfValues, &aDegreeValues);
+    va_end(aDegreeValues);
+#ifdef DEBUG
+    printArrayPositions(&Serial);
+#endif
+    synchronizeMoveAllServosAndCheckInputAndWait();
+}
+
+void changeEasingType(__attribute__((unused)) bool aButtonToggleState) {
+    doSwitchEasingType();
+}
+
+/*
+ * returns true if potentiometers has once been operated
+ */
+#define ANALOG_HYSTERESIS 6
+bool handleManualControl() {
+    static bool isInitialized = false;
+
+    static int sLastPivot;
+    static int sLastHorizontal;
+    static int sLastLift;
+    static int sLastClaw;
+
+    bool sManualActionHappened = false;
+    int tTargetAngle = 0; // to avoid compiler warnings
+// reset manual action after the first move to manual start position
+    if (!isInitialized) {
+        sLastPivot = analogRead(PIVOT_INPUT_PIN);
+        sLastHorizontal = analogRead(HORIZONTAL_INPUT_PIN);
+        sLastLift = analogRead(LIFT_INPUT_PIN);
+        sLastClaw = analogRead(CLAW_INPUT_PIN);
+        isInitialized = true;
+    }
+
+    int tPivot = analogRead(PIVOT_INPUT_PIN);
+    if (abs(sLastPivot - tPivot) > ANALOG_HYSTERESIS) {
+        sLastPivot = tPivot;
+        tTargetAngle = map(tPivot, 0, 1023, 0, 180);
+        moveOneServoAndCheckInput(SERVO_BASE_PIVOT, tTargetAngle);
+        Serial.print("BasePivotServo: micros=");
+        Serial.print(BasePivotServo.getEndMicrosecondsOrUnits());
+        sManualActionHappened = true;
+    }
+
+    int tHorizontal = analogRead(HORIZONTAL_INPUT_PIN);
+    if (abs(sLastHorizontal - tHorizontal) > ANALOG_HYSTERESIS) {
+        sLastHorizontal = tHorizontal;
+        tTargetAngle = map(tHorizontal, 0, 1023, 0, 180);
+        moveOneServoAndCheckInput(SERVO_HORIZONTAL, tTargetAngle);
+        Serial.print("HorizontalServo: micros=");
+        Serial.print(HorizontalServo.getEndMicrosecondsOrUnits());
+        sManualActionHappened = true;
+    }
+
+    int tLift = analogRead(LIFT_INPUT_PIN);
+    if (abs(sLastLift - tLift) > ANALOG_HYSTERESIS) {
+        sLastLift = tLift;
+        tTargetAngle = map(tLift, 0, 1023, 0, LIFT_MAX_ANGLE);
+        moveOneServoAndCheckInput(SERVO_LIFT, tTargetAngle);
+        Serial.print("LiftServo: micros=");
+        Serial.print(LiftServo.getEndMicrosecondsOrUnits());
+        sManualActionHappened = true;
+    }
+
+    int tClaw = analogRead(CLAW_INPUT_PIN);
+    if (abs(sLastClaw - tClaw) > (ANALOG_HYSTERESIS * 2)) {
+        sLastClaw = tClaw;
+        tTargetAngle = map(tClaw, 0, 1023, 0, CLAW_MAX_ANGLE);
+        moveOneServoAndCheckInput(SERVO_CLAW, tTargetAngle);
+        Serial.print("ClawServo: micros=");
+        Serial.print(ClawServo.getEndMicrosecondsOrUnits());
+        sManualActionHappened = true;
+    }
+
+    if (sManualActionHappened) {
+        Serial.print(" degree=");
+        Serial.print(tTargetAngle);
+        sEndPosition.LeftRightDegree = sServoNextPositionArray[SERVO_BASE_PIVOT];
+        sEndPosition.BackFrontDegree = sServoNextPositionArray[SERVO_HORIZONTAL];
+        sEndPosition.DownUpDegree = sServoNextPositionArray[SERVO_LIFT];
+        unsolve(&sEndPosition);
+        Serial.print(" | ");
+        printPositionShort(&sEndPosition);
+    }
+
+    return sManualActionHappened;
+}
+
+/*******************************
+ * Kinematics functions
+ *******************************/
 
 void printPosition(struct ArmPosition * aPositionStruct) {
     Serial.print("LeftRight=");
@@ -415,11 +715,25 @@ void printPosition(struct ArmPosition * aPositionStruct) {
     Serial.print("|");
     Serial.println(aPositionStruct->DownUpDegree);
 }
-//float sDistance;
 
-float sLastPercentageOfCompletion = 2.0;
+void printPositionShort(struct ArmPosition * aPositionStruct) {
+    Serial.print(aPositionStruct->LeftRight);
+    Serial.print(" ");
+    Serial.print(aPositionStruct->BackFront);
+    Serial.print(" ");
+    Serial.print(aPositionStruct->DownUp);
+    Serial.print(" <-> ");
 
-// Move smoothly from current position to the new position
+    Serial.print(aPositionStruct->LeftRightDegree);
+    Serial.print(" ");
+    Serial.print(aPositionStruct->BackFrontDegree);
+    Serial.print(" ");
+    Serial.println(aPositionStruct->DownUpDegree);
+}
+
+/*
+ * Use inverse kinematics user easing function for movement from current position to the new position
+ */
 bool goToPosition(int aLeftRight, int aBackFront, int aDownUp) {
     sStartPosition = sEndPosition;
 #ifdef DEBUG
@@ -432,10 +746,6 @@ bool goToPosition(int aLeftRight, int aBackFront, int aDownUp) {
     sPositionDelta.BackFront = aBackFront - sStartPosition.BackFront;
     sEndPosition.DownUp = aDownUp;
     sPositionDelta.DownUp = aDownUp - sStartPosition.DownUp;
-//    sDistance = sqrt(
-//            (sStartPosition.LeftRight - aLeftRight) * (sStartPosition.LeftRight - aLeftRight)
-//                    + (sStartPosition.BackFront - aBackFront) * (sStartPosition.BackFront - aBackFront)
-//                    + (sStartPosition.DownUp - aDownUp) * (sStartPosition.DownUp - aDownUp));
     if (!solve(&sEndPosition)) {
         Serial.print("Position cannot be solved: ");
         printPosition(&sEndPosition);
@@ -449,6 +759,9 @@ bool goToPosition(int aLeftRight, int aBackFront, int aDownUp) {
     return true;
 }
 
+/*
+ * Compute all 3 angles for a given point in movement by inverse kinematics
+ */
 void computeNewCurrentAngles(float aPercentageOfCompletion) {
     sCurrentPosition.LeftRight = sStartPosition.LeftRight + (sPositionDelta.LeftRight * aPercentageOfCompletion);
     sCurrentPosition.BackFront = sStartPosition.BackFront + (sPositionDelta.BackFront * aPercentageOfCompletion);
@@ -460,6 +773,9 @@ void computeNewCurrentAngles(float aPercentageOfCompletion) {
 #endif
 }
 
+/*
+ * Inverse kinematics callback functions for ServoEasing
+ */
 float moveInverseKinematicForBase(float aPercentageOfCompletion) {
     if (sLastPercentageOfCompletion != aPercentageOfCompletion) {
         sLastPercentageOfCompletion = aPercentageOfCompletion;
@@ -505,277 +821,52 @@ void testInverseKinematic() {
     goToPosition(0, 148, 80);
 }
 
-void doSwitchEasingType() {
-    if (!sInverseKinematicModeActive && !sCurrentCommandIsRepeat) {
-        Serial.print(F("Set easing type to "));
-        if (sEasingType == EASE_LINEAR) {
-            setEasingType(EASE_QUADRATIC_IN_OUT);
-            Serial.print(F("quadratic"));
-        } else if (sEasingType == EASE_QUADRATIC_IN_OUT) {
-            setEasingType(EASE_SINE_IN_OUT);
-            Serial.print(F("sine"));
-        } else if (sEasingType == EASE_SINE_IN_OUT) {
-            setEasingType(EASE_CUBIC_IN_OUT);
-            Serial.print(F("cubic"));
-        } else if (sEasingType == EASE_CUBIC_IN_OUT) {
-            setEasingType(EASE_BOUNCE_OUT);
-            Serial.print(F("bounce out"));
-        } else if (sEasingType == EASE_BOUNCE_OUT) {
-            setEasingType(EASE_LINEAR);
-            Serial.print(F("linear"));
-        }
-        Serial.println();
-    }
-}
-
-/*
- * Switch mode between Inverse-Kinematic and normal easing
- */
-void doInverseKinematicOn() {
-    sInverseKinematicModeActive = true;
-}
-
-void doInverseKinematicOff() {
-    sInverseKinematicModeActive = false;
-}
-
-void doToggleInverseKinematic() {
-    if (!sCurrentCommandIsRepeat) {
-        sInverseKinematicModeActive = !sInverseKinematicModeActive;
-    }
-}
-
-void doAutoMove() {
-
-    if (sInverseKinematicModeActive) {
-        setEasingTypeForAllServos(EASE_USER_DIRECT);
-        ClawServo.setEasingType(EASE_LINEAR);
-    }
-
-    // init start position for first move
+void testInverseAndForwardKinematic() {
+    // init neutral position for first test
     sEndPosition.LeftRight = 0;
     sEndPosition.BackFront = 148;
     sEndPosition.DownUp = 80;
+    solve(&sEndPosition);
+    printPosition(&sEndPosition);
+    unsolve(&sEndPosition);
+    printPosition(&sEndPosition);
+    Serial.println();
 
-//    testInverseKinematic();
+    sEndPosition.LeftRight = 0;
+    sEndPosition.BackFront = 80;
+    sEndPosition.DownUp = 60;
+    solve(&sEndPosition);
+    printPosition(&sEndPosition);
+    unsolve(&sEndPosition);
+    printPosition(&sEndPosition);
+    Serial.println();
 
-    ClawServo.easeTo(CLAW_OPEN_ANGLE);
+    sEndPosition.LeftRight = 80;
+    sEndPosition.BackFront = 148;
+    sEndPosition.DownUp = 80;
+    solve(&sEndPosition);
+    printPosition(&sEndPosition);
+    unsolve(&sEndPosition);
+    printPosition(&sEndPosition);
+    Serial.println();
 
-    // go down and close claw
-    goToPosition(0, 148, -55);
-    RETURN_IF_STOP;
-    ClawServo.easeTo(CLAW_CLOSE_ANGLE);
+    sEndPosition.LeftRight = 0;
+    sEndPosition.BackFront = 148;
+    sEndPosition.DownUp = 0;
+    solve(&sEndPosition);
+    printPosition(&sEndPosition);
+    unsolve(&sEndPosition);
+    printPosition(&sEndPosition);
+    Serial.println();
 
-// move up a bit
-    goToPosition(0, 148, 20);
-    RETURN_IF_STOP;
-
-// move up, turn right and open claw
-    goToPosition(120, 148, 100);
-    RETURN_IF_STOP;
-
-    ClawServo.easeTo(CLAW_OPEN_ANGLE);
-
-// turn left
-    goToPosition(-120, 0, 40);
-    RETURN_IF_STOP;
-
-    ClawServo.easeTo(CLAW_CLOSE_ANGLE);
-
-// must go back to start
-    goToPosition(0, 148, 80);
-    RETURN_IF_STOP;
-
-    setEasingTypeForAllServos(EASE_LINEAR);
-    delay(1000);
-}
-
-void doFolded() {
-    setAllServos(4, 90, 0, 100, 70);
-}
-
-void doCenter() {
-    setAllServos(4, PIVOT_NEUTRAL_ANGLE, HORIZONTAL_NEUTRAL_ANGLE, LIFT_NEUTRAL_ANGLE, CLAW_START_ANGLE);
-}
-
-void doGoBack() {
-    if (sHorizontalServoAngle > 2) {
-        sHorizontalServoAngle -= 2;
-        HorizontalServo.easeTo(sHorizontalServoAngle);
-    }
+    sEndPosition.LeftRight = 0;
+    sEndPosition.BackFront = 148;
+    sEndPosition.DownUp = -40;
+    solve(&sEndPosition);
+    printPosition(&sEndPosition);
+    unsolve(&sEndPosition);
+    printPosition(&sEndPosition);
+    Serial.println();
 
 }
 
-void doGoForward() {
-    if (sHorizontalServoAngle < 178) {
-        sHorizontalServoAngle += 2;
-        HorizontalServo.easeTo(sHorizontalServoAngle);
-    };
-}
-
-void doTurnRight() {
-    if (sBodyPivotAngle > 2) {
-        sBodyPivotAngle -= 2;
-        BasePivotServo.easeTo(sBodyPivotAngle);
-    }
-
-}
-
-void doTurnLeft() {
-    if (sBodyPivotAngle <= 178) {
-        sBodyPivotAngle += 2;
-        BasePivotServo.easeTo(sBodyPivotAngle);
-    }
-
-}
-
-void doLiftUp() {
-    if (sLiftServoAngle <= LIFT_MAX_ANGLE - 2) {
-        sLiftServoAngle += 2;
-        LiftServo.easeTo(sLiftServoAngle);
-    }
-
-}
-
-void doLiftDown() {
-    if (sLiftServoAngle > 2) {
-        sLiftServoAngle -= 2;
-        LiftServo.easeTo(sLiftServoAngle);
-    }
-
-}
-
-void doOpenClaw() {
-    if (sClawServoAngle > 2) {
-        sClawServoAngle -= 2;
-        ClawServo.easeTo(sClawServoAngle);
-    }
-
-}
-
-void doCloseClaw() {
-    if (sClawServoAngle <= (CLAW_MAX_ANGLE - 2)) {
-        sClawServoAngle += 2;
-        ClawServo.easeTo(sClawServoAngle);
-    }
-
-}
-
-/*
- * return true sets sRequestToStop in turn
- */
-void doSwitchToManual() {
-    sMode = MODE_MANUAL;
-    sRequestToStop = true;
-}
-
-/*
- * Set easing type for all servos except claw
- */
-void setEasingType(uint8_t aEasingType) {
-    sEasingType = aEasingType;
-    for (uint8_t tServoIndex = 0; tServoIndex < NUMBER_OF_SERVOS - 1; ++tServoIndex) {
-        sServoArray[tServoIndex]->setEasingType(aEasingType);
-    }
-}
-
-/*
- *  aBasePivot,  aHorizontal,  aLift,  aClaw
- */
-void setAllServos(uint8_t aNumberOfValues, ...) {
-#ifdef DEBUG
-    printArrayPositions(&Serial);
-#endif
-    va_list aDegreeValues;
-    va_start(aDegreeValues, aNumberOfValues);
-    setDegreeForAllServos(aNumberOfValues, &aDegreeValues);
-    va_end(aDegreeValues);
-#ifdef DEBUG
-    printArrayPositions(&Serial);
-#endif
-    synchronizeMoveAllServosAndCheckInputAndWait();
-}
-
-/*******************************************
- * Other stuff
- ******************************************/
-void changeEasingType(__attribute__((unused)) bool aButtonToggleState) {
-    doSwitchEasingType();
-
-}
-/*
- * returns true if potentiometers has once been operated
- */
-#define ANALOG_HYSTERESIS 6
-bool handleManualControl() {
-    static bool sManualActionHappened;
-    static bool isInitialized = false;
-
-    static int sLastPivot;
-    static int sLastHorizontal;
-    static int sLastLift;
-    static int sLastClaw;
-
-    int tTargetAngle;
-// reset manual action after the first move to manual start position
-    if (!isInitialized) {
-        sLastPivot = analogRead(PIVOT_INPUT_PIN);
-        sLastHorizontal = analogRead(HORIZONTAL_INPUT_PIN);
-        sLastLift = analogRead(LIFT_INPUT_PIN);
-        sLastClaw = analogRead(CLAW_INPUT_PIN);
-        isInitialized = true;
-    }
-
-    int tPivot = analogRead(PIVOT_INPUT_PIN);
-    if (abs(sLastPivot - tPivot) > ANALOG_HYSTERESIS) {
-        sLastPivot = tPivot;
-        tTargetAngle = map(tPivot, 0, 1023, 0, 180);
-        moveOneServoAndCheckInput(SERVO_BASE_PIVOT, tTargetAngle);
-        Serial.print("BasePivotServo: micros=");
-        Serial.print(BasePivotServo.getEndMicrosecondsOrUnits());
-        Serial.print(" degree=");
-        Serial.println(tTargetAngle);
-        sManualActionHappened = true;
-    }
-
-    int tHorizontal = analogRead(HORIZONTAL_INPUT_PIN);
-    if (abs(sLastHorizontal - tHorizontal) > ANALOG_HYSTERESIS) {
-        sLastHorizontal = tHorizontal;
-        tTargetAngle = map(tHorizontal, 0, 1023, 0, 180);
-        moveOneServoAndCheckInput(SERVO_HORIZONTAL, tTargetAngle);
-        // TODO
-        printArrayPositions(&Serial);
-
-        Serial.print("HorizontalServo: micros=");
-        Serial.print(HorizontalServo.getEndMicrosecondsOrUnits());
-        Serial.print(" degree=");
-        Serial.println(tTargetAngle);
-        sManualActionHappened = true;
-    }
-
-    int tLift = analogRead(LIFT_INPUT_PIN);
-    if (abs(sLastLift - tLift) > ANALOG_HYSTERESIS) {
-        sLastLift = tLift;
-        tTargetAngle = map(tLift, 0, 1023, 0, LIFT_MAX_ANGLE);
-        moveOneServoAndCheckInput(SERVO_LIFT, tTargetAngle);
-        Serial.print("LiftServo: micros=");
-        Serial.print(LiftServo.getEndMicrosecondsOrUnits());
-        Serial.print(" degree=");
-        Serial.println(tTargetAngle);
-        sManualActionHappened = true;
-    }
-
-    int tClaw = analogRead(CLAW_INPUT_PIN);
-    if (abs(sLastClaw - tClaw) > (ANALOG_HYSTERESIS * 2)) {
-        sLastClaw = tClaw;
-        tTargetAngle = map(tClaw, 0, 1023, 0, CLAW_MAX_ANGLE);
-        moveOneServoAndCheckInput(SERVO_CLAW, tTargetAngle);
-        Serial.print("ClawServo: micros=");
-        Serial.print(ClawServo.getEndMicrosecondsOrUnits());
-        Serial.print(" degree=");
-        Serial.println(tTargetAngle);
-        sManualActionHappened = true;
-    }
-
-    return sManualActionHappened;
-}
