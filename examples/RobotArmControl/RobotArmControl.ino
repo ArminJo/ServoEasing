@@ -48,10 +48,15 @@
 #define ZERO_DEGREE_VALUE_MICROS    544
 #define AT_180_DEGREE_VALUE_MICROS 2400
 
+#define PIVOT_SERVO_PIN         4
+#define HORIZONTAL_SERVO_PIN    5
+#define CLAW_SERVO_PIN          7
+#define LIFT_SERVO_PIN          8
+
 #define PIVOT_INPUT_PIN         A3
 #define HORIZONTAL_INPUT_PIN    A1
-#define LIFT_INPUT_PIN          A4
 #define CLAW_INPUT_PIN          A2
+#define LIFT_INPUT_PIN          A4
 
 #define LIFT_MAX_ANGLE          150
 #define CLAW_MAX_ANGLE          52
@@ -168,16 +173,16 @@ void setup() {
     delay(200);
     setSpeedForAllServos(sServoSpeed);
     // Attach servos to Arduino Pins and set to start position. Must be done with write()
-    BasePivotServo.attach(4);
+    BasePivotServo.attach(PIVOT_SERVO_PIN);
     BasePivotServo.write(PIVOT_NEUTRAL_OFFSET_DEGREE);
     BasePivotServo.registerUserEaseInFunction(&moveInverseKinematicForBase);
     delay(200);
-    HorizontalServo.attach(5);
+    HorizontalServo.attach(HORIZONTAL_SERVO_PIN);
     HorizontalServo.write(HORIZONTAL_NEUTRAL_OFFSET_DEGREE);
     HorizontalServo.registerUserEaseInFunction(&moveInverseKinematicForHorizontal);
     delay(200);
-    LiftServo.attach(7);
-    ClawServo.attach(8);
+    LiftServo.attach(LIFT_SERVO_PIN);
+    ClawServo.attach(CLAW_SERVO_PIN);
     LiftServo.write(LIFT_NEUTRAL_OFFSET_DEGREE);
     ClawServo.write(CLAW_START_ANGLE);
     LiftServo.registerUserEaseInFunction(&moveInverseKinematicForLift);

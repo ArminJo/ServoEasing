@@ -71,7 +71,7 @@ This example shows asymmetric (end movement is different from start movement) pa
 ## EndPositionsTest example
 This example helps you determine the right end values for your servo.<br/>
 These values are needed for the `attach()` function, if your servo does not comply to the standard values. 
-E.g. some of my SG90 servos have a 0 degree period of 620 µs instead of the standard 544.<br/>
+E.g. some of my SG90 servos have a 0 degree period of 620 us instead of the standard 544.<br/>
 This example does not use the ServoEasing functions.
 
 ## SpeedTest example
@@ -82,6 +82,9 @@ Demo of using two servos in a pan tilt housing to move a laser pointer.
         
 ## QuadrupedControl example
 Program for controlling a mePed Robot V2 with 8 servos using an IR Remote.
+Youtube video
+
+[![mePed V2 in actions](https://i.ytimg.com/vi/cLgj_sr7f1o/hqdefault.jpg)](https://youtu.be/cLgj_sr7f1o)
         
 ## RobotArmControl example
 Program for controlling a robot arm with 4 servos using 4 potentiometers and/or an IR Remote.
