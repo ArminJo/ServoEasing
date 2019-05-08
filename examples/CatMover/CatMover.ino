@@ -27,13 +27,20 @@
 
 #include "ServoEasing.h"
 
-#define VERSION_EXAMPLE "1.0"
+#define VERSION_EXAMPLE "1.1"
 
+#ifdef ESP8266
+const int LASER_POWER_PIN = 13;
+
+const int HORIZONTAL_SERVO_PIN = 14; // D5
+const int VERTICAL_SERVO_PIN = 12; // D6
+#else
 const int LASER_POWER_PIN = 5;
 
-// These pins are used by Timer 2 and can be used without overhead by using SimpleServo functions of ArduinoUtils.cpp - not used yet!
+// These pins are used by Timer 2 and can be used without overhead by using SimpleServo - not used yet!
 const int HORIZONTAL_SERVO_PIN = 10;
 const int VERTICAL_SERVO_PIN = 9;
+#endif
 
 struct ServoControlStruct {
     uint16_t minDegree;

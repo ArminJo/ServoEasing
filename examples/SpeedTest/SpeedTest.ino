@@ -142,7 +142,7 @@ void loop() {
 
     case 7:
         // Test for fast reaction to write
-        tSpeedOrPosition = ((tSpeedOrPosition >> 7) * 20) + 20; // gives values 20, 40 - 160
+        tSpeedOrPosition = (((1023 - tSpeedOrPosition) >> 7) * 20) + 20; // gives values 20, 40 to 160
         Serial.print(F("fast reaction: 85 -> 90 -> 95 -> 90 delay="));
         Serial.println(tSpeedOrPosition);
 

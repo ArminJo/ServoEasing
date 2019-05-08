@@ -56,7 +56,6 @@ ServoEasing Servo1(PCA9685_DEFAULT_ADDRESS, &Wire);
  * you can use the short constructor below instead, so that there is no difference to the OneServo example!
  */
 //ServoEasing Servo1;
-
 void setup() {
 
     pinMode(LED_BUILTIN, OUTPUT);
@@ -116,11 +115,11 @@ void loop() {
 
     for (int i = 0; i < 2; ++i) {
         Servo1.startEaseToD(135, 1000);
-        while (Servo1.isMoving()) {
+        while (Servo1.isMovingAndCallYield()) {
             ; // no delays here to avoid break between forth and back movement
         }
         Servo1.startEaseToD(45, 1000);
-        while (Servo1.isMoving()) {
+        while (Servo1.isMovingAndCallYield()) {
             ; // no delays here to avoid break between forth and back movement
         }
     }

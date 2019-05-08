@@ -26,13 +26,22 @@
 
 #include "ServoEasing.h"
 
-#define VERSION_EXAMPLE "1.0"
+#define VERSION_EXAMPLE "1.1"
 
-const int SERVO1_PIN = 10;
-const int SERVO2_PIN = 9;
-const int SERVO3_PIN = 7;
+#ifdef ESP8266
+const int SERVO1_PIN = 14; // D5
+const int SERVO2_PIN = 12; // D6
+const int SERVO3_PIN = 13; // D7
+
+const int SPEED_IN_PIN = 0;
+#else
+const int SERVO1_PIN = 9;
+const int SERVO2_PIN = 10;
+const int SERVO3_PIN = 11;
 
 const int SPEED_IN_PIN = A0;
+#endif
+
 
 ServoEasing Servo1;
 ServoEasing Servo2;
@@ -55,11 +64,12 @@ void setup() {
     Servo1.write(90);
     Servo2.write(90);
     Servo3.write(90);
-    delay(1000);
+    delay(2000);
 
     Servo1.startEaseToD(45, 1000);
     Servo2.startEaseToD(45, 1000);
     Servo3.startEaseToD(45, 1000);
+    delay(1000);
 
     Servo1.setEasingType(EASE_LINEAR);
     Servo2.setEasingType(EASE_QUADRATIC_IN_OUT);
@@ -71,7 +81,8 @@ void setup() {
 void loop() {
 
     uint16_t tSpeed = analogRead(SPEED_IN_PIN);
-    setSpeedForAllServos(map(tSpeed, 0, 1023, 5, 150));
+    tSpeed = map(tSpeed, 0, 1023, 5, 150);
+    setSpeedForAllServos(tSpeed);
 
     /*
      * Move three servos synchronously without interrupt handler
@@ -100,7 +111,8 @@ void loop() {
     Servo3.startEaseToD(45, Servo1.mMillisForCompleteMove);
     // No need to call synchronizeAllServosAndStartInterrupt(), since in this case I know that all durations are the same
     // Since all servos stops at the same time I have to check only one
-    while (Servo3.isMoving()) {
+    // Must call yield here for the ESP boards, since we have no delay called
+    while (Servo3.isMovingAndCallYield()) {
         ; // no delays here to avoid break between forth and back movement
     }
 
