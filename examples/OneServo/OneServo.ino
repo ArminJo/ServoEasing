@@ -26,9 +26,13 @@
 
 #include "ServoEasing.h"
 
-#define VERSION_EXAMPLE "1.0"
+#define VERSION_EXAMPLE "1.1"
 
+#ifdef ESP8266
+const int SERVO1_PIN = 14; // D5
+#else
 const int SERVO1_PIN = 9;
+#endif
 
 ServoEasing Servo1;
 
@@ -91,11 +95,12 @@ void loop() {
 
     for (int i = 0; i < 2; ++i) {
         Servo1.startEaseToD(135, 1000);
-        while (Servo1.isMoving()) {
+        // Must call yield here for the ESP boards, since we have no delay called
+        while (Servo1.isMovingAndCallYield()) {
             ; // no delays here to avoid break between forth and back movement
         }
         Servo1.startEaseToD(45, 1000);
-        while (Servo1.isMoving()) {
+        while (Servo1.isMovingAndCallYield()) {
             ; // no delays here to avoid break between forth and back movement
         }
     }

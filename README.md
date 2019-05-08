@@ -7,7 +7,8 @@ Youtube video of ServoEasing in action
 [![Demonstration of different servo easings](https://i.ytimg.com/vi/fC9uxdOBhfA/hqdefault.jpg)](https://www.youtube.com/watch?v=fC9uxdOBhfA)
 
 ## Servo easing library for Arduino
-This is a library for smooth servo movements. It can be used directly with a [PCA9685 servo expander](https://learn.adafruit.com/16-channel-pwm-servo-driver?view=all) or the Arduino Servo Library or the included Lightweight Servo library.
+This is a library for smooth servo movements. It can be used directly with a [PCA9685 servo expander](https://learn.adafruit.com/16-channel-pwm-servo-driver?view=all)
+or the Arduino Servo Library or the included Lightweight Servo library for AVR.
 The latter is useful, if you have only one or two servos since it uses only the internal timer with no software overhead.
 
 - **Linear** as well as other ease movements for all servos attached to the Arduino Servo library are provided.
@@ -66,7 +67,7 @@ If you do not need the more complex easing functions like `Sine` etc., which in 
 This example shows symmetric (end movement is mirror of start movement) linear, quadratic and cubic movements for 3 servos synchronously.
 
 ## AsymmetricEasing example
-This example shows asymmetric (end movement is different from start movement) partially **user defined** (line 140) non linear movements for 3 servos synchronously.
+This example shows asymmetric (end movement is different from start movement) partially **user defined** (line 134) non linear movements for 3 servos synchronously.
 
 ## EndPositionsTest example
 This example helps you determine the right end values for your servo.<br/>
@@ -90,6 +91,10 @@ Youtube video
 Program for controlling a robot arm with 4 servos using 4 potentiometers and/or an IR Remote.
 
 # Revision History
+### Version 1.2
+- Added ESP8266 support by using Ticker instead of timer interrupts for ESP.
+- AsymetricEasing example overhauled.
+
 ### Version 1.1.0
 - Corrected sine, circular, back and elastic IN functions.
 - easeTo() and write() store their degree parameter now also in sServoNextPositionArray.
@@ -109,6 +114,7 @@ The ServoEasing library examples are built on Travis CI for the following boards
 - Arduino Leonardo
 - Arduino cplayClassic
 - Arduino Mega 2560
+- ESP8266 Boards
 
 ## Requests for modifications / extensions
 Please write me a PM including your motivation/problem if you need a modification or an extension e.g. a callback functionality after move has finished.

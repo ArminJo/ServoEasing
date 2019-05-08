@@ -24,6 +24,23 @@
 #ifndef SERVOEASING_H_
 #define SERVOEASING_H_
 
+#define VERSION_SERVO_EASING 1.2.0
+/*
+ * Version 1.2
+ * - Added ESP8266 support by using Ticker instead of timer interrupts for ESP.
+ * - AsymetricEasing example overhauled.
+ * Version 1.1
+ * - corrected sine, circular, back and elastic IN functions.
+ * - easeTo() and write() store their degree parameter now also in sServoNextPositionArray.
+ * - added setSpeed(), getSpeed(), setSpeedForAllServos().
+ * - added easeTo(uint8_t aDegree) and setEaseTo(uint8_t aDegree).
+ * - added setEaseToForAllServos(), setEaseToForAllServosSynchronizeAndStartInterrupt(), synchronizeAndEaseToArrayPositions().
+ * - added getEndMicrosecondsOrUnits(), getDeltaMicrosecondsOrUnits().
+ * - added setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues),setDegreeForAllServos(uint8_t aNumberOfValues, ...).
+ * - added compile switch PROVIDE_ONLY_LINEAR_MOVEMENT to save additional 1500 bytes FLASH if enabled.
+ * - added convenience function clipDegreeSpecial().
+ */
+
 /*  *****************************************************************************************************************************
  *  To access the library files from your sketch, you have to first use `Sketch/Show Sketch Folder (Ctrl+K)` in the Arduino IDE.
  *  Then navigate to the parallel `libraries` folder and select the library you want to access.
@@ -43,6 +60,10 @@
  * If not using the Arduino IDE take care that Arduino Servo library sources are not compiled / included in the project.
  */
 //#define USE_LEIGHTWEIGHT_SERVO_LIB
+#if defined(ESP8266) && defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#error "No Lightweight Servo Library available (and needed) for ESP boards"
+#endif
+
 #if defined(USE_PCA9685_SERVO_EXPANDER) && defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 #error "Please define only one of the symbols USE_PCA9685_SERVO_EXPANDER or USE_LEIGHTWEIGHT_SERVO_LIB"
 #endif
@@ -103,20 +124,6 @@
 #ifdef WARN
 #define ERROR
 #endif
-
-#define VERSION_SERVO_EASING 1.1.0
-/*
- * Version 1.1
- * - corrected sine, circular, back and elastic IN functions.
- * - easeTo() and write() store their degree parameter now also in sServoNextPositionArray.
- * - added setSpeed(), getSpeed(), setSpeedForAllServos().
- * - added easeTo(uint8_t aDegree) and setEaseTo(uint8_t aDegree).
- * - added setEaseToForAllServos(), setEaseToForAllServosSynchronizeAndStartInterrupt(), synchronizeAndEaseToArrayPositions().
- * - added getEndMicrosecondsOrUnits(), getDeltaMicrosecondsOrUnits().
- * - added setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues),setDegreeForAllServos(uint8_t aNumberOfValues, ...).
- * - added compile switch PROVIDE_ONLY_LINEAR_MOVEMENT to save additional 1500 bytes FLASH if enabled.
- * - added convenience function clipDegreeSpecial().
- */
 
 #define DEFAULT_MICROSECONDS_FOR_0_DEGREE 544
 #define DEFAULT_MICROSECONDS_FOR_180_DEGREE 2400
@@ -198,7 +205,6 @@
 #define EASE_USER_BOUNCING      0x6F
 #define EASE_FUNCTION_DEGREE_OFFSET 2 // if the use function returns degree instead of 0.0 to 1.0 the value must be offset by 2 (return 2 for 0 degree)
 
-
 // some PCA9685 specific constants
 #define PCA9685_GENERAL_CALL_ADDRESS 0x00
 #define PCA9685_SOFTWARE_RESET      6
@@ -214,7 +220,7 @@
 
 class ServoEasing
 #if not defined(USE_LEIGHTWEIGHT_SERVO_LIB) && not defined(USE_PCA9685_SERVO_EXPANDER)
-        : public Servo
+: public Servo
 #endif
 {
 public:
@@ -268,13 +274,14 @@ public:
     uint16_t getDeltaMicrosecondsOrUnits();
     uint16_t getMillisForCompleteMove();
     bool isMoving();
+    bool isMovingAndCallYield();
 
     uint8_t MicrosecondsOrUnitsToDegree(uint16_t aMicrosecondsOrUnits);
     uint16_t DegreeToMicrosecondsOrUnits(uint8_t aDegree);
 
     void synchronizeServosAndStartInterrupt(bool doUpdateByInterrupt);
 
-    void print(Stream * aSerial); // Print dynamic and static info
+    void print(Stream * aSerial, bool doExtendedOutput = false); // Print dynamic and static info
     void printDynamic(Stream * aSerial, bool doExtendedOutput = false);
     void printStatic(Stream * aSerial);
 

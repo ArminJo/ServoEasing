@@ -26,21 +26,28 @@
 
 #include "ServoEasing.h"
 
-#define VERSION_EXAMPLE "1.0"
+#define VERSION_EXAMPLE "2.0"
 
-const int SERVO1_PIN = 10;
-const int SERVO2_PIN = 9;
-const int SERVO3_PIN = 7;
+#ifdef ESP8266
+const int SERVO1_PIN = 14; // D5
+const int SERVO2_PIN = 12;// D6
+const int SERVO3_PIN = 13;// D7
+
+const int SPEED_IN_PIN = 0;
+#else
+const int SERVO1_PIN = 9;
+const int SERVO2_PIN = 10;
+const int SERVO3_PIN = 11;
 
 const int SPEED_IN_PIN = A0;
+#endif
 
 ServoEasing Servo1;
 ServoEasing Servo2;
 ServoEasing Servo3;
 
 // forward declarations
-float EaseQuarticInAndBackOut(float aPercentageOfCompletion);
-float EaseQuarticInAndElasticOut(float aPercentageOfCompletion);
+float EaseQuadraticInQuarticOut(float aPercentageOfCompletion);
 
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
@@ -60,16 +67,16 @@ void setup() {
     Servo1.write(90);
     Servo2.write(90);
     Servo3.write(90);
-    delay(1000);
+    delay(2000);
 
     Servo1.startEaseToD(45, 1000);
     Servo2.startEaseToD(45, 1000);
     Servo3.startEaseToD(45, 1000);
+    delay(1000);
 
     Servo1.setEasingType(EASE_USER_DIRECT);
-    Servo2.setEasingType(EASE_USER_DIRECT);
-    Servo1.registerUserEaseInFunction(EaseQuarticInAndBackOut);
-    Servo2.registerUserEaseInFunction(EaseQuarticInAndElasticOut);
+    Servo1.registerUserEaseInFunction(EaseQuadraticInQuarticOut);
+    Servo2.setEasingType(EASE_ELASTIC_OUT);
 #ifndef KEEP_LIBRARY_SMALL
     Servo3.setEasingType(EASE_BOUNCE_OUT);
 #else
@@ -78,23 +85,25 @@ void setup() {
 #endif
 
     delay(500);
+
 }
 
 void loop() {
 
     uint16_t tSpeed = analogRead(SPEED_IN_PIN);
-    setSpeedForAllServos(map(tSpeed, 0, 1023, 5, 150));
-
+    tSpeed = map(tSpeed, 0, 1023, 5, 150);
+    setSpeedForAllServos(tSpeed);
 
     /*
      * Move three servos synchronously without interrupt handler
      */
     Serial.print(F("Move to 135 degree with "));
-    Serial.print(Servo1.getSpeed());
+    Serial.print(tSpeed);
     Serial.println(F(" degree per second with own update loop"));
-    Servo1.setEaseTo(135, tSpeed);
-    Servo2.setEaseTo(135, Servo1.mMillisForCompleteMove);
-    Servo3.setEaseTo(135, Servo1.mMillisForCompleteMove);
+    Servo1.setEaseTo(135);
+    Servo2.setEaseToD(135, Servo1.mMillisForCompleteMove);
+    Servo3.setEaseToD(135, Servo1.mMillisForCompleteMove);
+
     // No need to call synchronizeAllServosAndStartInterrupt(false), since in this case I know that all durations are the same
 
     do {
@@ -106,14 +115,15 @@ void loop() {
      * Move three servos synchronously with interrupt handler
      */
     Serial.print(F("Move to 45 degree with "));
-    Serial.print(Servo1.getSpeed());
+    Serial.print(tSpeed);
     Serial.println(F(" degree per second using interrupts"));
-    Servo1.setEaseTo(45, tSpeed);
-    Servo2.setEaseTo(45, Servo1.mMillisForCompleteMove);
+    Servo1.setEaseTo(45);
+    Servo2.setEaseToD(45, Servo1.mMillisForCompleteMove);
     Servo3.startEaseToD(45, Servo1.mMillisForCompleteMove);
     // No need to call synchronizeAllServosAndStartInterrupt(), since in this case I know that all durations are the same
     // Since all servos stops at the same time I have to check only one
-    while (Servo3.isMoving()) {
+    // Must call yield here for the ESP boards, since we have no delay called
+    while (Servo3.isMovingAndCallYield()) {
         ; // no delays here to avoid break between forth and back movement
     }
 }
@@ -121,22 +131,12 @@ void loop() {
 /*
  * User defined combined movement
  */
-float EaseQuarticInAndBackOut(float aPercentageOfCompletion) {
+float EaseQuadraticInQuarticOut(float aPercentageOfCompletion) {
     if (aPercentageOfCompletion <= 0.5) {
-        // Quartic IN
-        return (8 * aPercentageOfCompletion * aPercentageOfCompletion * aPercentageOfCompletion * aPercentageOfCompletion);
+        // Quadratic IN - output from 0.0 to 0.5
+        return (2 * QuadraticEaseIn(aPercentageOfCompletion));
     } else {
-        // Back OUT
-        return (1.0 - BackEaseIn(1.0 - aPercentageOfCompletion));
-    }
-}
-
-float EaseQuarticInAndElasticOut(float aPercentageOfCompletion) {
-    if (aPercentageOfCompletion <= 0.5) {
-        // Quartic IN
-        return (8 * aPercentageOfCompletion * aPercentageOfCompletion * aPercentageOfCompletion * aPercentageOfCompletion);
-    } else {
-        // Elastic OUT
-        return (1.0 - ElasticEaseIn(1.0 - aPercentageOfCompletion));
+        // Quartic OUT - output from 0.5 to 1.0
+        return (1.0 - (8 * QuarticEaseIn(1.0 - aPercentageOfCompletion)));
     }
 }

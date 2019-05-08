@@ -3,20 +3,11 @@
  *
  *  Enables smooth movement from one servo position to another.
  *  Linear as well as other ease movements (e.g. cubic) for all servos attached to the Arduino Servo library are provided.
- *  Interface is in degree but internally microseconds are used, since the resolution is better and we avoid the map function on every Servo.write()
+ *  Interface is in degree but internally only microseconds (if using Servo library) or units (if using PCA9685 expander) are used,
+ *  since the resolution is better and we avoid the map function on every Servo.write().
  *  The blocking functions wait for 20 ms since this is the default refresh time of the used Servo library.
  *
- *  The "synchronized" functions allow for 2 servos (e.g. on a pan/tilt module) to move synchronized, which means both movements will take the same time.
- *  The result of synchronizing is a linear movement of the combined servos.
- *
- *  If you want to move more servos synchronously you simply call startEaseTo() for every servo
- *  and overwrite each millisForCompleteMove with the biggest value found in all servos.
- *  Then call update() for all servos every 20 milliseconds.
- *  Or if you use interrupts, then just write your own handleTimer_COMPB_Interrupt() function.
- *
- *  Until now only one timer is supported, which means not more than 12 servos are supported.
- *
- *  Internally only microseconds (if using Servo library) or units (if using PCA9685 expander) are used to speed up things.
+ *  The AVR Servo library supports only one timer, which means not more than 12 servos are supported using this library.
  *
  *  Copyright (C) 2019  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
@@ -41,9 +32,14 @@
 
 #include "ServoEasing.h"
 
+#ifdef ESP8266
+#include "Ticker.h" // for ServoEasingInterrupt functions
+Ticker Timer20ms;
+#endif
+
 // Enable this to see information on each call
 // There should be no library which uses Serial, so enable it only for debugging purposes
-// #define TRACE
+//#define TRACE
 
 // Enable this if you want to measure timing by toggling pin12 on an arduino
 //#define MEASURE_TIMING
@@ -377,7 +373,10 @@ bool ServoEasing::startEaseTo(uint8_t aDegree, uint16_t aDegreesPerSecond, bool 
         // no effective movement -> return
         return !mServoMoves;
     }
-    uint16_t tMillisForCompleteMove = abs(aDegree - tCurrentAngle) * 1000L / aDegreesPerSecond;
+    uint16_t tMillisForCompleteMove = 1;
+    if (aDegreesPerSecond > 0) {
+        tMillisForCompleteMove = abs(aDegree - tCurrentAngle) * 1000L / aDegreesPerSecond;
+    }
 #ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
     if ((mEasingType & CALL_STYLE_MASK) == CALL_STYLE_BOUNCING_OUT_IN) {
         // bouncing has double movement
@@ -595,6 +594,15 @@ bool ServoEasing::isMoving() {
     return mServoMoves;
 }
 
+/*
+ * Call yield here, so the user do not need not care for it in long running loops.
+ * This has normally no effect for AVR code but is at least needed for ESP code.
+ */
+bool ServoEasing::isMovingAndCallYield() {
+    yield();
+    return mServoMoves;
+}
+
 uint8_t ServoEasing::getCurrentAngle() {
     return MicrosecondsOrUnitsToDegree(mCurrentMicrosecondsOrUnits);
 }
@@ -611,8 +619,8 @@ uint16_t ServoEasing::getMillisForCompleteMove() {
     return mMillisForCompleteMove;
 }
 
-void ServoEasing::print(Stream * aSerial) {
-    printDynamic(aSerial);
+void ServoEasing::print(Stream * aSerial, bool doExtendedOutput) {
+    printDynamic(aSerial, doExtendedOutput);
     printStatic(aSerial);
 }
 
@@ -656,6 +664,9 @@ void ServoEasing::printDynamic(Stream * aSerial, bool doExtendedOutput) {
     aSerial->print(mMillisForCompleteMove);
     aSerial->print(F(" ms"));
 
+    aSerial->print(F(" with speed="));
+    aSerial->print(mSpeed);
+
     if (doExtendedOutput) {
         aSerial->print(F(" mMillisAtStartMove="));
         aSerial->print(mMillisAtStartMove);
@@ -666,6 +677,7 @@ void ServoEasing::printDynamic(Stream * aSerial, bool doExtendedOutput) {
 
 /*
  * Prints values which normally does NOT change from move to move.
+ * call with
  */
 void ServoEasing::printStatic(Stream * aSerial) {
 
@@ -695,7 +707,12 @@ void ServoEasing::printStatic(Stream * aSerial) {
     aSerial->print(MAX_SERVOS);
 
     aSerial->print(" this=0x");
-    aSerial->println((uint16_t) this, HEX);
+    //#ifdef __ets__
+#if _PTRDIFF_WIDTH_ == 16
+    aSerial->println((uint32_t) this, HEX);
+#else
+    aSerial->println((uint32_t) this, HEX);
+#endif
 }
 
 /*
@@ -703,20 +720,36 @@ void ServoEasing::printStatic(Stream * aSerial) {
  * returns 0 if aDegreeToClip >= 218
  * returns 180 if 180 <= aDegreeToClip < 218
  */
-uint8_t clipDegreeSpecial(uint8_t aDegreeToClip){
-    if(aDegreeToClip){
+uint8_t clipDegreeSpecial(uint8_t aDegreeToClip) {
+    if (aDegreeToClip) {
         return aDegreeToClip;
     }
-    if(aDegreeToClip < 218){
+    if (aDegreeToClip < 218) {
         return 180;
     }
     return 0;
 }
 
+/*
+ * Update all servos from list and check if all servos have stopped.
+ * Can not call yield() here, since we are in an ISR context here.
+ */
+__attribute__((weak)) void handleServoTimerInterrupt() {
+#if defined(USE_PCA9685_SERVO_EXPANDER)
+    // Otherwise it will hang forever in I2C transfer
+    sei();
+#endif
+    if (updateAllServos()) {
+        // disable interrupt only if all servos stopped. This enables independent movements of servos with this interrupt handler.
+        disableServoEasingInterrupt();
+    }
+}
+
 void enableServoEasingInterrupt() {
+#if defined(__AVR__)
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
 #if defined(USE_PCA9685_SERVO_EXPANDER)
-    TODO
+    // TODO convert to timer 5
     // set timer 1 to 20 ms
     TCCR1A = _BV(WGM11);// FastPWM Mode mode TOP (20ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
     TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);// set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
@@ -736,34 +769,27 @@ void enableServoEasingInterrupt() {
 #endif
 
     TIFR1 |= _BV(OCF1B);     // clear any pending interrupts;
-    TIMSK1 |= _BV(OCIE1B);   // enable the output compare B interrupt
+    TIMSK1 |= _BV(OCIE1B);     // enable the output compare B interrupt
 #ifndef USE_LEIGHTWEIGHT_SERVO_LIB
 // update values 100us before the new servo period starts
     OCR1B = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL) / 8) - 100;
 #endif
 #endif
+#elif defined(ESP8266)
+    Timer20ms.attach_ms(20, handleServoTimerInterrupt);
+#endif
 }
 
 void disableServoEasingInterrupt() {
+#if defined(__AVR__)
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
     TIMSK5 &= ~(_BV(OCIE5B)); // disable the output compare B interrupt
 #else
     TIMSK1 &= ~(_BV(OCIE1B)); // disable the output compare B interrupt
 #endif
-}
-
-/*
- * Update all servos from list and check if all servos have stopped.
- */
-__attribute__((weak)) void handleTimer_COMPB_Interrupt() {
-#if defined(USE_PCA9685_SERVO_EXPANDER)
-    // Otherwise it will hang forever in I2C transfer
-    sei();
+#elif defined(ESP8266)
+    Timer20ms.detach();
 #endif
-    if (updateAllServos()) {
-        // disable interrupt only if all servos stopped. This enables independent movements of servos with this interrupt handler.
-        disableServoEasingInterrupt();
-    }
 }
 
 /*
@@ -771,20 +797,22 @@ __attribute__((weak)) void handleTimer_COMPB_Interrupt() {
  * 20us for last interrupt
  * The first servo pulse starts just after this interrupt routine has finished
  */
+#if defined(__AVR__)
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
 ISR(TIMER5_COMPB_vect) {
-    handleTimer_COMPB_Interrupt();
+    handleServoTimerInterrupt();
 }
 #else
 ISR(TIMER1_COMPB_vect) {
 #if defined(MEASURE_TIMING)
     digitalWriteFast(TIMING_PIN, HIGH);
 #endif
-    handleTimer_COMPB_Interrupt();
+    handleServoTimerInterrupt();
 #if defined(MEASURE_TIMING)
     digitalWriteFast(TIMING_PIN, LOW);
 #endif
 }
+#endif
 #endif
 
 /************************************
@@ -842,7 +870,7 @@ void setSpeedForAllServos(uint16_t aDegreesPerSecond) {
 
 void setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues) {
     for (uint8_t tServoIndex = 0; tServoIndex < aNumberOfValues; ++tServoIndex) {
-        sServoNextPositionArray[tServoIndex] = va_arg(*aDegreeValues, uint16_t);
+        sServoNextPositionArray[tServoIndex] = va_arg(*aDegreeValues, int);
     }
 }
 

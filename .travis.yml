@@ -11,18 +11,20 @@ env:
   global:
   - PRETTYNAME="ServoEasing Arduino Library"
 before_install:
+# Workaround for avoiding "fork/exec /bin/xtensa-lx106-elf-g++: no such file or directory"
+- echo "Removing ESP8266 cache"
+- rm -rf ~/.arduino15/packages/esp8266
 - source <(curl -SLs https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/install.sh)
 install:
 # Libraries for the QuadrupedControl example
 - arduino --install-library "PinChangeInterrupt","IRLremote"
-# do not know why this is needed here, for Talkie and other repos it works without the next line
-- ln -s $PWD /home/travis/arduino_ide/libraries/ServoEasing
 script:
 - build_platform uno
 - build_platform leonardo
 - build_platform cplayClassic
 - build_platform mega2560
+- build_platform esp8266
 notifications:
   email:
-    on_success: change
+    on_success: always
     on_failure: always

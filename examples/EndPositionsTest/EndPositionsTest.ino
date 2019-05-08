@@ -35,12 +35,16 @@
 
 #include "ADCUtils.h" // for get getVCCVoltageMillivolt
 
-#define VERSION_EXAMPLE "1.0"
+#define VERSION_EXAMPLE "1.1"
 
 const int SERVO_UNDER_TEST_PIN = 9;
 
 // Attach the sliding contact of the potentiometer here
+#ifdef ESP8266
+const int POSITION_ANALOG_INPUT_PIN = 0;
+#else
 const int POSITION_ANALOG_INPUT_PIN = A1;
+#endif
 
 Servo ServoUnderTest;
 

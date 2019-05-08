@@ -26,11 +26,17 @@
 
 #include "ServoEasing.h"
 
-#define VERSION_EXAMPLE "1.0"
+#define VERSION_EXAMPLE "1.1"
 
+#ifdef ESP8266
+const int SERVO1_PIN = 14; // D5
+const int SERVO2_PIN = 12; // D6
+const int SERVO3_PIN = 13; // D7
+#else
 const int SERVO1_PIN = 9;
 const int SERVO2_PIN = 10;
 const int SERVO3_PIN = 11;
+#endif
 
 ServoEasing Servo1;
 ServoEasing Servo2;
