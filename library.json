@@ -1,0 +1,14 @@
+{
+  "name": "ServoEasing",
+  "keywords": "Servo",
+  "description": "Arduino library to enable smooth servo movement.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ArminJo/ServoEasing"
+  },
+  "frameworks": "arduino",
+  "platforms": [
+    "atmelavr",
+    "espressif"
+  ]
+}
