@@ -1,11 +1,17 @@
 /*
  *  SpeedTest.cpp
  *
+ * This example gives you a feeling how fast your servo can move, what the end position values are and which refresh rate they accept.
+ * This example does not use the ServoEasing functions.
+ *
  *  With the potentiometer at pin A0 choose the mode to test.
  *  The modes 1 to 6 make a sweep with different intervals.
  *
- *  The interval/speed is determined by the other potentiometer at pin A1
- *  If the servo makes no breaks, but reaches 0 and 180 degree then you have specified the smallest delay / fastest speed for this stepping
+ *  The interval/speed is determined by the other potentiometer at pin A1.
+ *  If the servo makes no breaks, but reaches 0 and 180 degree then you have specified the smallest delay / fastest speed for this stepping.
+ *
+ *  With the potentiometer at pin A3 you can change the refresh interval of the servo pulse between 2.5 and 20 ms.
+ *  The layout if pins is chosen to be able to directly put this potentiometer at the breadboard without additional wiring.
  *
  * These are the fastest values for my SG90 servos at 5V (4.2 with servo active)
  *   180 degree 400 ms  -> 450 degree per second
@@ -41,17 +47,30 @@
 
 #include <Arduino.h>
 
+/*
+ * By using LightweightServo library we can change the refresh period.
+ * ... and discover that at least SG90 and MG90 servos accept a refresh period down to 2.5 ms!
+ */
+//#define USE_LEIGHTWEIGHT_SERVO_LIB
+#ifdef USE_LEIGHTWEIGHT_SERVO_LIB
+#include "LightweightServo.h"
+#else
 #include <Servo.h>
+#endif
 
 #include "ADCUtils.h" // for get getVCCVoltageMillivolt
 
 #define VERSION_EXAMPLE "1.0"
 
 #define MODE_ANALOG_INPUT_PIN A0
-#define SPEED_OR_POSITION_ANALOG_INPUT_PIN A1
+#define SPEED_OR_POSITION_ANALOG_INPUT_PIN A4
 
-const int SERVO_UNDER_TEST_PIN = 9;
+#ifdef USE_LEIGHTWEIGHT_SERVO_LIB
+#define REFRESH_PERIOD_ANALOG_INPUT_PIN A3
+#else
 Servo ServoUnderTest;
+const int SERVO_UNDER_TEST_PIN = 9;
+#endif
 
 /*
  * CHANGE THESE TO REFLECT THE CORRECT VALUES OF YOUR SERVO
@@ -69,6 +88,14 @@ void setup() {
 // initialize the digital pin as an output.
     pinMode(LED_BUILTIN, OUTPUT);
 
+#ifdef USE_LEIGHTWEIGHT_SERVO_LIB
+    // Enable Potentiometer between A1 and A5
+    pinMode(A1, OUTPUT);
+    pinMode(A5, OUTPUT);
+    digitalWrite(A1, LOW);
+    digitalWrite(A5, HIGH);
+#endif
+
     Serial.begin(115200);
     while (!Serial)
         ; //delay for Leonardo
@@ -82,38 +109,75 @@ void setup() {
     Serial.println(F("us."));
 
     // attach servo to pin 9
+#ifdef USE_LEIGHTWEIGHT_SERVO_LIB
+    write9(90);
+#else
     ServoUnderTest.attach(SERVO_UNDER_TEST_PIN, ZERO_DEGREE_VALUE_MICROS, AT_180_DEGREE_VALUE_MICROS);
     ServoUnderTest.write(90);
-    delay(2000);
+#endif
+    delay(3000);
 }
 
 void loop() {
     int tPulseMicros;
+    static int sLastPulseMicros;
+    static int sLastVoltageMillivolts;
 
     int tVoltageMillivolts = getVCCVoltageMillivolt();
 
-    Serial.print(F("VCC="));
-    Serial.print(tVoltageMillivolts);
-    Serial.print(F(" mV"));
-
+    // needed to switch ADC reference
+    analogRead(MODE_ANALOG_INPUT_PIN);
+    delay(5);
     int tMode = analogRead(MODE_ANALOG_INPUT_PIN);
+
     int tSpeedOrPosition = analogRead(SPEED_OR_POSITION_ANALOG_INPUT_PIN);
+#ifdef USE_LEIGHTWEIGHT_SERVO_LIB
+    int tPeriod = analogRead(REFRESH_PERIOD_ANALOG_INPUT_PIN);
+//    tPeriod =tPeriod>> 7 ;// gives values 0-7
+    ICR1 = map(tPeriod, 0, 1023, COUNT_FOR_20_MILLIS / 8, COUNT_FOR_20_MILLIS); // set period from 2.5 to 20 ms
+#endif
 
     tMode = tMode >> 7; // gives values 0-7
-    Serial.print(F(" Mode="));
-    Serial.print(tMode);
-    Serial.print(' ');
+    tPulseMicros = map(tSpeedOrPosition, 0, 1023, ZERO_DEGREE_VALUE_MICROS - 150, AT_180_DEGREE_VALUE_MICROS + 200);
+
+    if (tMode != 0 || sLastVoltageMillivolts != tVoltageMillivolts || abs(sLastPulseMicros - tPulseMicros) > 3) {
+        sLastVoltageMillivolts = tVoltageMillivolts;
+
+        Serial.print(F("VCC="));
+        Serial.print(tVoltageMillivolts);
+        Serial.print(F(" mV"));
+        Serial.print(F(" Mode="));
+        Serial.print(tMode);
+        Serial.print(' ');
+    }
 
     switch (tMode) {
     case 0:
         // direct position from 0 to 180 degree. Choose bigger range just to be sure both ends are reached.
-        tPulseMicros = map(tSpeedOrPosition, 0, 1023, ZERO_DEGREE_VALUE_MICROS - 100, AT_180_DEGREE_VALUE_MICROS + 200);
+#ifdef USE_LEIGHTWEIGHT_SERVO_LIB
+        writeMicroseconds9(tPulseMicros);
+#else
         ServoUnderTest.writeMicroseconds(tPulseMicros);
-        Serial.print(F("direct position: micros="));
-        Serial.print(tPulseMicros);
-        Serial.print(F(" degree="));
-        Serial.println(ServoUnderTest.read());
-        delay(200);
+#endif
+        if (abs(sLastPulseMicros - tPulseMicros) > 3) {
+            sLastPulseMicros = tPulseMicros;
+
+            Serial.print(F("direct position: micros="));
+            Serial.print(tPulseMicros);
+            Serial.print(F(" degree="));
+#ifdef USE_LEIGHTWEIGHT_SERVO_LIB
+            Serial.print(MicrosecondsToDegreeLightweightServo(tPulseMicros));
+            Serial.print(F(" period="));
+            Serial.print(ICR1 / 2000);
+            Serial.print('.');
+            Serial.print((ICR1 / 200) % 10);
+            Serial.print(F("ms"));
+#else
+            Serial.print(ServoUnderTest.read());
+#endif
+            Serial.println();
+        }
+        delay(100);
         break;
 
     case 1:
@@ -146,6 +210,7 @@ void loop() {
         Serial.print(F("fast reaction: 85 -> 90 -> 95 -> 90 delay="));
         Serial.println(tSpeedOrPosition);
 
+#ifndef USE_LEIGHTWEIGHT_SERVO_LIB
         ServoUnderTest.write(85);
         delay(tSpeedOrPosition);
         ServoUnderTest.write(90);
@@ -154,6 +219,7 @@ void loop() {
         delay(tSpeedOrPosition);
         ServoUnderTest.write(90);
         delay(tSpeedOrPosition);
+#endif
         break;
 
     default:
@@ -176,19 +242,35 @@ void doSwipe(uint8_t aDegreePerStep) {
     int tDelayMillis = readDelay(aDegreePerStep);
     Serial.print(F("swipe: degree per step="));
     Serial.print(aDegreePerStep);
-    Serial.print(F(" , delay="));
+    Serial.print(F(", delay="));
     Serial.print(tDelayMillis);
-    Serial.println(F(" ms"));
+    Serial.print(F(" ms"));
+#ifdef USE_LEIGHTWEIGHT_SERVO_LIB
+    Serial.print(F(", period="));
+    Serial.print(ICR1 / 2000);
+    Serial.print('.');
+    Serial.print((ICR1 / 200) % 10);
+    Serial.print(F(" ms"));
+#endif
+    Serial.println();
 
     uint8_t tDegree = 0;
     while (tDegree < 180) {
+#ifdef USE_LEIGHTWEIGHT_SERVO_LIB
+        write9(tDegree);
+#else
         ServoUnderTest.write(tDegree); // starts with 0
+#endif
         // read again to enable fast reaction to changed value
         delay(readDelay(aDegreePerStep));
         tDegree += aDegreePerStep;
     }
     while (tDegree > 0) {
+#ifdef USE_LEIGHTWEIGHT_SERVO_LIB
+        write9(tDegree);
+#else
         ServoUnderTest.write(tDegree);
+#endif
         // read again to enable fast reaction to changed value
         delay(readDelay(aDegreePerStep));
         tDegree -= aDegreePerStep;

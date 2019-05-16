@@ -270,7 +270,7 @@ uint16_t getVCCVoltageMillivolt(void) {
 }
 
 /*
- * Versions which restore the ADC Channel and handle reference switching.
+ * Version which restore the ADC Channel and handle reference switching.
  */
 float getTemperature(void) {
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
