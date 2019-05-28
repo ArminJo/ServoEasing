@@ -76,7 +76,7 @@ E.g. some of my SG90 servos have a 0 degree period of 620 us instead of the stan
 This example does not use the ServoEasing functions.
 
 ## SpeedTest example
-This example gives you a feeling how fast your servo can move.<br/>This example does not use the ServoEasing functions.
+This example gives you a feeling how fast your servo can move, what the end position values are and which refresh rate they accept.<br/>This example does not use the ServoEasing functions.
 
 ## CatMover example
 Demo of using two servos in a pan tilt housing to move a laser pointer.
@@ -91,6 +91,9 @@ Youtube video
 Program for controlling a robot arm with 4 servos using 4 potentiometers and/or an IR Remote.
 
 # Revision History
+### Version 1.2.1
+- Extended SpeedTest example. Now also able to change the width of the refresh period.
+
 ### Version 1.2
 - Added ESP8266 support by using Ticker instead of timer interrupts for ESP.
 - AsymetricEasing example overhauled.

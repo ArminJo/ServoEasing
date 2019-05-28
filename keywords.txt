@@ -11,26 +11,33 @@ ServoEasing	KEYWORD1
 # Methods and Functions (KEYWORD2)
 #######################################
 attach	KEYWORD2
-setSyncronizedServo	KEYWORD2
 setEasingType	KEYWORD2
+getEasingType	KEYWORD2
+setReverseOperation	KEYWORD2
+setTrim	KEYWORD2
+setTrimMicrosecondsOrUnits	KEYWORD2
 write	KEYWORD2
-writeSyncronized	KEYWORD2
 writeMicroseconds	KEYWORD2
 easeTo	KEYWORD2
 easeToD	KEYWORD2
-easeToSynchronized	KEYWORD2
-easeToDSynchronized	KEYWORD2
 startEaseTo	KEYWORD2
 startEaseToD	KEYWORD2
-startEaseToSynchronized	KEYWORD2
-startEaseToDSynchronized	KEYWORD2
 update	KEYWORD2
-updateSyncronized	KEYWORD2
 getCurrentAngle	KEYWORD2
+getEndMicrosecondsOrUnits	KEYWORD2
+getEndMicrosecondsOrUnitsWithTrim	KEYWORD2
+getDeltaMicrosecondsOrUnits	KEYWORD2
 getMillisForCompleteMove	KEYWORD2
 isMoving	KEYWORD2
+isMovingAndCallYield	KEYWORD2
 MicrosecondsToDegree	KEYWORD2
 DegreeToMicroseconds	KEYWORD2
+synchronizeServosAndStartInterrupt	KEYWORD2
+print	KEYWORD2
+printDynamic	KEYWORD2
+printStatic	KEYWORD2
+registerUserEaseInFunction	KEYWORD2
+callEasingFunction	KEYWORD2
 QuadraticEaseIn	KEYWORD2
 CubicEaseIn	KEYWORD2
 QuarticEaseIn	KEYWORD2
@@ -39,6 +46,22 @@ CircularEaseIn	KEYWORD2
 BackEaseIn	KEYWORD2
 ElasticEaseIn	KEYWORD2
 EaseOutBounce	KEYWORD2
+
+setSpeedForAllServos	KEYWORD2
+setDegreeForAllServos	KEYWORD2
+setEaseToForAllServos	KEYWORD2
+setEaseToForAllServosSynchronizeAndStartInterrupt	KEYWORD2
+synchronizeAndEaseToArrayPositions	KEYWORD2
+printArrayPositions	KEYWORD2
+isOneServoMoving	KEYWORD2
+stopAllServos	KEYWORD2
+updateAllServos	KEYWORD2
+synchronizeAllServosAndStartInterrupt	KEYWORD2
+setEasingTypeForAllServos	KEYWORD2
+updateAndWaitForAllServosToStop	KEYWORD2
+synchronizeAllServosStartAndWaitForAllServosToStop	KEYWORD2
+enableServoEasingInterrupt	KEYWORD2
+disableServoEasingInterrupt	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

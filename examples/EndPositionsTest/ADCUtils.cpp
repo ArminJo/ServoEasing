@@ -228,7 +228,7 @@ float getVCCVoltageSimple(void) {
 uint16_t getVCCVoltageMillivoltSimple(void) {
 // use AVCC with external capacitor at AREF pin as reference
     uint16_t tVCC = readADCChannelWithReferenceOversample(ADC_1_1_VOLT_CHANNEL_MUX, DEFAULT, 2);
-    return ((1024L * 1100) / tVCC);
+    return ((1023L * 1100) / tVCC);
 }
 
 float getTemperatureSimple(void) {
@@ -247,6 +247,7 @@ float getVCCVoltage(void) {
 
 /*
  * Read value of 1.1 Volt internal channel using VCC as reference.
+ * Waits for reference and channel switching.
  */
 uint16_t getVCCVoltageMillivolt(void) {
 // use AVCC with external capacitor at AREF pin as reference
@@ -270,7 +271,7 @@ uint16_t getVCCVoltageMillivolt(void) {
 }
 
 /*
- * Versions which restore the ADC Channel and handle reference switching.
+ * Version which restore the ADC Channel and handle reference switching.
  */
 float getTemperature(void) {
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
