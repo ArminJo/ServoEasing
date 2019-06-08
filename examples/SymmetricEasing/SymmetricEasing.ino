@@ -28,12 +28,18 @@
 
 #define VERSION_EXAMPLE "1.1"
 
-#ifdef ESP8266
+#if defined(ESP8266)
 const int SERVO1_PIN = 14; // D5
 const int SERVO2_PIN = 12; // D6
 const int SERVO3_PIN = 13; // D7
 
 const int SPEED_IN_PIN = 0;
+#elif defined(ESP32)
+const int SERVO1_PIN = 5;
+const int SERVO2_PIN = 18;
+const int SERVO3_PIN = 19;
+
+const int SPEED_IN_PIN = 36;
 #else
 const int SERVO1_PIN = 9;
 const int SERVO2_PIN = 10;
@@ -53,6 +59,10 @@ void setup() {
     while (!Serial); //delay for Leonardo
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
+
+#if defined(ESP32)
+    analogReadResolution(10);
+#endif
 
     // Attach servos to pins
     Serial.println(F("Attach servos"));

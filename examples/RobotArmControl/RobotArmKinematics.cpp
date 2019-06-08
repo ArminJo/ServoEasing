@@ -25,6 +25,8 @@
 
 #include "RobotArmKinematics.h"
 
+#include "RobotArmServoConfiguration.h"
+
 #include <math.h>
 #include <Arduino.h>     // for PI etc.
 #include "ServoEasing.h" // for clipDegreeSpecial()
@@ -63,9 +65,9 @@ bool cosangle(float opp, float adj1, float adj2, float& theta) {
  */
 void cart2polar(float aXValue, float aYValue, float& aRadius, float& aAngleRadiant) {
 #ifdef TRACE
-    Serial.print("aXValue=");
+    Serial.print("XValue=");
     Serial.print(aXValue);
-    Serial.print(" aYValue=");
+    Serial.print(" YValue=");
     Serial.print(aYValue);
 #endif
 
@@ -87,17 +89,20 @@ void cart2polar(float aXValue, float aYValue, float& aRadius, float& aAngleRadia
         aAngleRadiant *= -1;
     }
 #ifdef TRACE
-    Serial.print(" aAngleRadiant=");
+    Serial.print(" AngleRadiant=");
     Serial.println(aAngleRadiant);
 #endif
 }
 
+/*
+ * returns false if solving is not possible
+ */
 bool solve(struct ArmPosition * aPositionStruct) {
     // Get horizontal degree for servo (0-180 degree) and get radius for next computations
     float tRadiusHorizontal, tHorizontalAngleRadiant;
     cart2polar(aPositionStruct->LeftRight, aPositionStruct->BackFront, tRadiusHorizontal, tHorizontalAngleRadiant);
     aPositionStruct->LeftRightDegree = tHorizontalAngleRadiant * RAD_TO_DEG; // (0-180 degree, 0 is right, 90 degree is neutral)
-    aPositionStruct->LeftRightDegree = clipDegreeSpecial(aPositionStruct->LeftRightDegree + (PIVOT_NEUTRAL_OFFSET_DEGREE - 90)); // compensate with measured neutral angle of servo
+    aPositionStruct->LeftRightDegree = aPositionStruct->LeftRightDegree + (PIVOT_NEUTRAL_OFFSET_DEGREE - 90); // compensate with measured neutral angle of servo
 
     // Account for the virtual claw length!
     tRadiusHorizontal -= CLAW_LENGTH_MILLIMETER;
@@ -109,26 +114,26 @@ bool solve(struct ArmPosition * aPositionStruct) {
     // Solve arm inner angles
     float tAngleClawHorizontalRadiant;      // angle between vertical angle to claw and horizontal arm
     if (!cosangle(LIFT_ARM_LENGTH_MILLIMETER, HORIZONTAL_ARM_LENGTH_MILLIMETER, tRadiusVertical, tAngleClawHorizontalRadiant)) {
+        Serial.print(F("Cannot solve 1 "));
+        printPosition(aPositionStruct);
         return false;
     }
     float tAngleHorizontalLiftRadiant;  // angle between horizontal and lift arm
     if (!cosangle(tRadiusVertical, HORIZONTAL_ARM_LENGTH_MILLIMETER, LIFT_ARM_LENGTH_MILLIMETER, tAngleHorizontalLiftRadiant)) {
+        Serial.print(F("Cannot solve 2 "));
+        printPosition(aPositionStruct);
         return false;
     }
     bool tRetval = true;
 
-    // 0 is vertical, front > 0, back < 0
-    aPositionStruct->BackFrontDegree = (PI - (tVerticalAngleToClawRadiant + tAngleClawHorizontalRadiant)) * RAD_TO_DEG
-            + HORIZONTAL_NEUTRAL_OFFSET_DEGREE;
-    if (aPositionStruct->BackFrontDegree >= 90) {
-        aPositionStruct->BackFrontDegree -= 90;
-    } else {
-        aPositionStruct->BackFrontDegree = 0;
-        tRetval = false;
-    }
-    // 0 is horizontal, up > 0, down < 0
+    aPositionStruct->BackFrontDegree = (HALF_PI - (tVerticalAngleToClawRadiant + tAngleClawHorizontalRadiant)) * RAD_TO_DEG;
+    // Now BackFrontDegree == 0 is vertical, front > 0, back < 0
+    aPositionStruct->BackFrontDegree += HORIZONTAL_NEUTRAL_OFFSET_DEGREE;
+
     aPositionStruct->DownUpDegree = (tVerticalAngleToClawRadiant + tAngleClawHorizontalRadiant + tAngleHorizontalLiftRadiant - PI)
-            * RAD_TO_DEG + LIFT_NEUTRAL_OFFSET_DEGREE;
+            * RAD_TO_DEG;
+    // Now DownUpDegree == 0 is horizontal, up > 0, down < 0
+    aPositionStruct->DownUpDegree += LIFT_NEUTRAL_OFFSET_DEGREE;
 
     return tRetval;
 }
@@ -157,15 +162,19 @@ void unsolve(struct ArmPosition * aPositionStruct) {
     // here we have:  0 is vertical, front < 0, back > 0
     tInputAngle += 90;
     tInputAngleRad = tInputAngle * DEG_TO_RAD;
-//    Serial.print("InputAngle BackFront=");
-//    Serial.print(tInputAngle);
+#ifdef TRACE
+    Serial.print("InputAngle BackFront=");
+    Serial.print(tInputAngle);
+#endif
     polar2cart(HORIZONTAL_ARM_LENGTH_MILLIMETER, tInputAngleRad, tHorizontalArmHorizontalShift, tHeightOfHorizontalArm);
 
     // input angle: horizontal = 0, up > 0, down < 0
     tInputAngle = aPositionStruct->DownUpDegree;
     tInputAngle -= LIFT_NEUTRAL_OFFSET_DEGREE;
-//    Serial.print(" InputAngle DownUp=");
-//    Serial.print(tInputAngle);
+#ifdef TRACE
+    Serial.print(" InputAngle DownUp=");
+    Serial.print(tInputAngle);
+#endif
     tInputAngleRad = tInputAngle * DEG_TO_RAD;
     polar2cart(LIFT_ARM_LENGTH_MILLIMETER, tInputAngleRad, tLiftHorizontal, tLiftHeight);
     aPositionStruct->DownUp = tHeightOfHorizontalArm + tLiftHeight;
@@ -178,9 +187,58 @@ void unsolve(struct ArmPosition * aPositionStruct) {
     tInputAngle -= PIVOT_NEUTRAL_OFFSET_DEGREE;
     // here we have horizontal plane angle: forward = 0 left > 0 right < 0
     tInputAngle *= -1;
-//    Serial.print(" InputAngle LeftRight=");
-//    Serial.println(tInputAngle);
+#ifdef TRACE
+    Serial.print(" InputAngle LeftRight=");
+    Serial.println(tInputAngle);
+#endif
     tInputAngleRad = tInputAngle * DEG_TO_RAD;
     polar2cart(tHorizontalArmAndClawShift, tInputAngleRad, aPositionStruct->BackFront, aPositionStruct->LeftRight);
 }
 
+void printPosition(struct ArmPosition * aPositionStruct) {
+    Serial.print("LeftRight=");
+    Serial.print(aPositionStruct->LeftRight);
+    Serial.print("|");
+    Serial.print(aPositionStruct->LeftRightDegree);
+    Serial.print(" BackFront=");
+    Serial.print(aPositionStruct->BackFront);
+    Serial.print("|");
+    Serial.print(aPositionStruct->BackFrontDegree);
+    Serial.print(" DownUp=");
+    Serial.print(aPositionStruct->DownUp);
+    Serial.print("|");
+    Serial.println(aPositionStruct->DownUpDegree);
+}
+
+void printPositionShort(struct ArmPosition * aPositionStruct) {
+    Serial.print(aPositionStruct->LeftRight);
+    Serial.print(" ");
+    Serial.print(aPositionStruct->BackFront);
+    Serial.print(" ");
+    Serial.print(aPositionStruct->DownUp);
+    Serial.print(" <-> ");
+
+    Serial.print(aPositionStruct->LeftRightDegree);
+    Serial.print(" ");
+    Serial.print(aPositionStruct->BackFrontDegree);
+    Serial.print(" ");
+    Serial.println(aPositionStruct->DownUpDegree);
+}
+
+void printPositionShortWithUnits(struct ArmPosition * aPositionStruct) {
+    Serial.print("X=");
+    Serial.print(aPositionStruct->LeftRight);
+    Serial.print("mm, Y=");
+    Serial.print(aPositionStruct->BackFront);
+    Serial.print("mm, Z=");
+    Serial.print(aPositionStruct->DownUp);
+    Serial.print("mm <-> ");
+
+    Serial.print(aPositionStruct->LeftRightDegree);
+    Serial.print(", ");
+    Serial.print(aPositionStruct->BackFrontDegree);
+    Serial.print(", ");
+    Serial.print(aPositionStruct->DownUpDegree);
+    Serial.println(" degree");
+
+}

@@ -2,6 +2,7 @@
  * TwoServos.cpp
  *
  *  Shows smooth movement from one servo position to another for 2 servos synchronously.
+ *  Operate the first servo from -90 to +90 degree
  *
  *  Copyright (C) 2019  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
@@ -28,9 +29,12 @@
 
 #define VERSION_EXAMPLE "1.1"
 
-#ifdef ESP8266
+#if defined(ESP8266)
 const int SERVO1_PIN = 14; // D5
 const int SERVO2_PIN = 12; // D6
+#elif defined(ESP32)
+const int SERVO1_PIN = 5;
+const int SERVO2_PIN = 18;
 #else
 const int SERVO1_PIN = 9;
 const int SERVO2_PIN = 10;
@@ -51,9 +55,10 @@ void setup() {
     Serial.println(F("Attach servos"));
     Servo1.attach(SERVO1_PIN);
     Servo2.attach(SERVO2_PIN);
+    Servo1.setTrim(90); // Operate the servo from -90 to +90 degree
 
     // Set servos to start position.
-    Servo1.write(0);
+    Servo1.write(-90);
     Servo2.write(0);
     setSpeedForAllServos(30);
 
@@ -73,17 +78,17 @@ void loop() {
     /*
      * Move both servos blocking
      */
-    Serial.println(F("Move to 90/90 degree with 30 degree per second blocking"));
+    Serial.println(F("Move to 0/90 degree with 30 degree per second blocking"));
     setSpeedForAllServos(30);
-    Servo1.setEaseTo(90);
+    Servo1.setEaseTo(0);
     Servo2.setEaseTo(90);
     synchronizeAllServosStartAndWaitForAllServosToStop();
 
     /*
      * Now continue faster.
      */
-    Serial.println(F("Move to 180/10 degree with 60 degree per second using interrupts"));
-    Servo1.setEaseTo(180, 60);
+    Serial.println(F("Move to 90/10 degree with 60 degree per second using interrupts"));
+    Servo1.setEaseTo(90, 60);
     /*
      * An alternative method to synchronize and start
      * Synchronize by simply using the same duration
@@ -102,13 +107,13 @@ void loop() {
      *  The first servo moves with the specified speed.
      *  The second will be synchronized to slower speed (longer duration, than specified) because it has to move only 80 degree.
      */
-    Serial.println(F("Move to 90/90 degree with 90 degree per second using interrupts. Use cubic easing for first servo."));
+    Serial.println(F("Move to 0/90 degree with 90 degree per second using interrupts. Use cubic easing for first servo."));
     Servo1.setEasingType(EASE_CUBIC_IN_OUT);
     /*
      * Another method to specify moves
      * Use the sServoNextPositionArray and then call the appropriate function
      */
-    sServoNextPositionArray[0] = 90;
+    sServoNextPositionArray[0] = 0;
     sServoNextPositionArray[1] = 90;
     setEaseToForAllServosSynchronizeAndStartInterrupt(90);
 
@@ -123,8 +128,8 @@ void loop() {
     /*
      * Move both servos independently
      */
-    Serial.println(F("Move independently to 0/0 degree with 80/60 degree per second using interrupts"));
-    Servo1.setEaseTo(0, 80);
+    Serial.println(F("Move independently to -90/0 degree with 80/60 degree per second using interrupts"));
+    Servo1.setEaseTo(-90, 80);
     Servo2.startEaseTo(0, 60); // This start interrupt for all servos
     // blink until both servos stop
     while (Servo1.isMoving() || Servo2.isMoving()) {

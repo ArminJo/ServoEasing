@@ -1,5 +1,5 @@
 /*
- * QuadrupedIRConfiguration.h
+ * IRCommandMapping.h
  *
  * IR remote button codes, strings, and functions to call
  *
@@ -7,22 +7,31 @@
  *      Author: Armin
  */
 
-#ifndef SRC_ROBOT_ARM_IR_CONFIGURATION_H_
-#define SRC_ROBOT_ARM_IR_CONFIGURATION_H_
+#ifndef IR_COMMAND_MAPING_H_
+#define IR_COMMAND_MAPING_H_
 
 #include <Arduino.h>
-#define IR_RECEIVER_PIN  A0
+#include "Commands.h" // includes all the commands used in the mapping arrays below
 
-#if (IR_RECEIVER_PIN != 2) && (IR_RECEIVER_PIN != 3)
-#include <PinChangeInterrupt.h> // must be included if we do not use pin 2 or 3
-#endif
-
-#if not( defined(USE_KEYES_REMOTE) || defined(USE_WM10_REMOTE) || defined(USE_MSI_REMOTE) || defined(USE_CAR_MP3_REMOTE))
-#define USE_KEYES_REMOTE // the original remote of he mePed v2
+/*
+ * !!! Choose your remote !!!
+ */
+#define USE_KEYES_REMOTE
 //#define USE_WM10_REMOTE
 //#define USE_MSI_REMOTE
 //#define USE_CAR_MP3_REMOTE
+
+#if defined(USE_KEYES_REMOTE) && defined(USE_WM10_REMOTE)
+#error "Please choose only one remote for compile"
 #endif
+
+// If no remote specified, choose KEYES_REMOTE
+#if not( defined(USE_KEYES_REMOTE) || defined(USE_WM10_REMOTE) || defined(USE_MSI_REMOTE) || defined(USE_CAR_MP3_REMOTE))
+#define USE_KEYES_REMOTE // the original remote of he mePed v2
+#endif
+
+#define IR_NEC_REPEAT_ADDRESS 0xFFFF
+#define IR_NEC_REPEAT_CODE 0x0
 
 #ifdef USE_KEYES_REMOTE
 /*
@@ -30,7 +39,7 @@
  * IR code to button mapping for better reading. IR codes should only referenced here.
  */
 // Codes for the KEYES remote control with 17 Keys
-#define IR_ADDRESS 0x00FF
+#define IR_ADDRESS 0xFF00
 
 #define IR_UP    0x46
 #define IR_DOWN  0x15
@@ -111,7 +120,6 @@
  * SECOND:
  * IR button to command mapping for better reading. IR buttons should only referenced here.
  */
-// Mapping from IR buttons to commands for direct use in the code and in the mapping array
 #define COMMAND_EMPTY       0 // no command received
 #define COMMAND_UP          IR_UP
 #define COMMAND_DOWN        IR_DOWN
@@ -132,6 +140,7 @@
 
 #define COMMAND_STOP        IR_ON_OFF
 #endif
+
 /*
  * msi Remote control with numbers 1 to 0 and cursor cross below
  */
@@ -161,6 +170,10 @@
 #define IR_9    0x8
 #define IR_0    0x9
 
+/*
+ * SECOND:
+ * IR button to command mapping for better reading. IR buttons should only referenced here.
+ */
 #define COMMAND_EMPTY       0xFF // no command received, use 0xFF since 0x00 is a valid key on this remote
 #define COMMAND_UP          IR_UP
 #define COMMAND_DOWN        IR_DOWN
@@ -184,7 +197,6 @@
 #define COMMAND_EASE_TYPE   IR_9
 
 #define COMMAND_STOP        IR_ON_OFF
-
 #endif
 
 #ifdef USE_CAR_MP3_REMOTE
@@ -215,6 +227,10 @@
 #define IR_100  0x19
 #define IR_1000 0xD
 
+/*
+ * SECOND:
+ * IR button to command mapping for better reading. IR buttons should only referenced here.
+ */
 #define COMMAND_EMPTY       0 // no command received
 #define COMMAND_UP          IR_2
 #define COMMAND_DOWN        IR_8
@@ -236,38 +252,11 @@
 #define COMMAND_STOP        IR_PLAY_PAUSE
 #endif
 
-#define IR_NEC_REPEAT_ADDRESS 0xFFFF
-#define IR_NEC_REPEAT_CODE 0x0
-
 /*
- * THIRD:
- * Main mapping of commands to C functions
+ * This is valid for all remotes above
  */
-// list of functions to call at IR command
-// Stationary movements
-void doCenter();
-void doFolded();
-void doGoForward();
-void doGoBack();
-void doTurnRight();
-void doTurnLeft();
-void doLiftUp();
-void doLiftDown();
-void doOpenClaw();
-void doCloseClaw();
-
-void doAutoMove();
-void doSwitchToManual();
-void doInverseKinematicOff();
-void doInverseKinematicOn();
-void doToggleInverseKinematic();
-void doSwitchEasingType();
-
-/*
- * Instant command functions
- */
-void doIncreaseSpeed();
-void doDecreaseSpeed();
+#define IR_REPEAT_ADDRESS IR_NEC_REPEAT_ADDRESS
+#define IR_REPEAT_CODE IR_NEC_REPEAT_CODE
 
 // IR strings of functions for output
 static const char up[] PROGMEM ="up";
@@ -289,8 +278,13 @@ static const char manual[] PROGMEM ="manual";
 static const char ik_on[] PROGMEM ="IK on";
 static const char ik_off[] PROGMEM ="IK off";
 static const char ik_toggle[] PROGMEM ="toggle IK";
-static const char type[] PROGMEM ="type";
+static const char type[] PROGMEM ="easing type";
 static const char unknown[] PROGMEM ="unknown";
+
+/*
+ * THIRD:
+ * Main mapping of commands to C functions
+ */
 
 // Basic mapping structure
 struct IRToCommandMapping {
@@ -310,14 +304,11 @@ COMMAND_DOWN, &doLiftDown, down }, { COMMAND_OPEN, &doOpenClaw, open }, { COMMAN
 struct IRToCommandMapping IRMappingInstantCommands[] = { { COMMAND_INCREASE_SPEED, &doIncreaseSpeed, volPlus }, {
 COMMAND_DECREASE_SPEED, &doDecreaseSpeed, volMinus }, { COMMAND_STOP, &doSwitchToManual, manual },
 #ifdef COMMAND_IK_ON
-        {   COMMAND_IK_ON, &doInverseKinematicOn, ik_on}, {COMMAND_IK_OFF, &doInverseKinematicOff, ik_off},
+        { COMMAND_IK_ON, &doInverseKinematicOn, ik_on }, { COMMAND_IK_OFF, &doInverseKinematicOff, ik_off },
 #endif
 #ifdef COMMAND_IK_TOGGLE
-        { COMMAND_IK_TOGGLE, &doToggleInverseKinematic, ik_toggle },
+        {   COMMAND_IK_TOGGLE, &doToggleInverseKinematic, ik_toggle},
 #endif
         { COMMAND_EASE_TYPE, &doSwitchEasingType, type } };
 
-// function to search in MappingInstantCommands array
-bool checkAndCallInstantCommands(uint8_t aIRCode);
-
-#endif /* SRC_ROBOT_ARM_IR_CONFIGURATION_H_ */
+#endif /* IR_COMMAND_MAPING_H_ */

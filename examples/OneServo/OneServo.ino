@@ -28,8 +28,10 @@
 
 #define VERSION_EXAMPLE "1.1"
 
-#ifdef ESP8266
+#if defined(ESP8266)
 const int SERVO1_PIN = 14; // D5
+#elif defined(ESP32)
+const int SERVO1_PIN = 5;
 #else
 const int SERVO1_PIN = 9;
 #endif

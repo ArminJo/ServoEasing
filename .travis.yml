@@ -17,9 +17,10 @@ before_install:
 - source <(curl -SLs https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/install.sh)
 install:
 # Libraries for the QuadrupedControl example
-- arduino --install-library "PinChangeInterrupt","IRLremote"
+- arduino --install-library "PinChangeInterrupt","IRLremote","ESP32Servo"
 script:
 - build_platform uno
+- build_platform esp32
 - build_platform leonardo
 - build_platform cplayClassic
 - build_platform mega2560

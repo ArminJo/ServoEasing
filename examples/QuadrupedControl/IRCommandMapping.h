@@ -1,5 +1,5 @@
 /*
- * QuadrupedIRConfiguration.h
+ * IRCommandMapping.h
  *
  * IR remote button codes, strings, and functions to call
  *
@@ -7,23 +7,29 @@
  *      Author: Armin
  */
 
-#ifndef SRC_QUADRUPED_IR_CONFIGURATION_H_
-#define SRC_QUADRUPED_IR_CONFIGURATION_H_
+#ifndef IR_COMMAND_MAPING_H_
+#define IR_COMMAND_MAPING_H_
 
 #include <Arduino.h>
-#define IR_RECEIVER_PIN  A0
-
-#if (IR_RECEIVER_PIN != 2) && (IR_RECEIVER_PIN != 3)
-#include <PinChangeInterrupt.h> // must be included if we do not use pin 2 or 3
-#endif
+#include "Commands.h" // includes all the commands used in the mapping arrays below
 
 /*
  * !!! Choose your remote !!!
  */
+#define USE_KEYES_REMOTE
+//#define USE_WM10_REMOTE
+
+#if defined(USE_KEYES_REMOTE) && defined(USE_WM10_REMOTE)
+#error "Please choose only one remote for compile"
+#endif
+
+// If no remote specified, choose KEYES_REMOTE
 #if not( defined(USE_KEYES_REMOTE) || defined(USE_WM10_REMOTE))
 #define USE_KEYES_REMOTE // the original remote of he mePed v2
-//#define USE_WM10_REMOTE
 #endif
+
+#define IR_NEC_REPEAT_ADDRESS 0xFFFF
+#define IR_NEC_REPEAT_CODE 0x0
 
 #ifdef USE_KEYES_REMOTE
 /*
@@ -31,7 +37,7 @@
  * IR code to button mapping for better reading. IR codes should only referenced here.
  */
 // Codes for the KEYES remote control with 17 Keys
-#define IR_ADDRESS 0x00FF
+#define IR_ADDRESS 0xFF00
 
 #define IR_UP    0x46
 #define IR_DOWN  0x15
@@ -57,7 +63,6 @@
  * SECOND:
  * IR button to command mapping for better reading. IR buttons should only referenced here.
  */
-// Mapping from IR buttons to commands for direct use in the code and in the mapping array
 #define COMMAND_EMPTY       0 // no command received
 #define COMMAND_FORWARD     IR_UP
 #define COMMAND_BACKWARD    IR_DOWN
@@ -66,11 +71,12 @@
 
 #define COMMAND_CENTER      IR_OK
 #define COMMAND_STOP        IR_HASH
-#define COMMAND_CALIBRATE   IR_HASH
+#define COMMAND_CALIBRATE   IR_0
 #define COMMAND_DANCE       IR_1
 #define COMMAND_WAVE        IR_3
-#define COMMAND_TWIST       COMMAND_EMPTY
+#define COMMAND_TWIST       IR_9
 #define COMMAND_TROT        IR_7
+#define COMMAND_AUTO        IR_5
 
 #define COMMAND_INCREASE_SPEED  IR_6
 #define COMMAND_DECREASE_SPEED  IR_4
@@ -114,7 +120,6 @@
  * SECOND:
  * IR button to command mapping for better reading. IR buttons should only referenced here.
  */
-// Mapping from IR buttons to commands for direct use in the code and in the mapping array
 #define COMMAND_EMPTY       0 // no command received
 #define COMMAND_FORWARD     IR_UP
 #define COMMAND_BACKWARD    IR_DOWN
@@ -126,8 +131,9 @@
 #define COMMAND_CALIBRATE   IR_MUTE
 #define COMMAND_DANCE       IR_SRC
 #define COMMAND_WAVE        IR_RETURN
-#define COMMAND_TWIST       COMMAND_EMPTY
+#define COMMAND_TWIST       COMMAND_EMPTY // not on this remote
 #define COMMAND_TROT        IR_PLAY_PAUSE
+#define COMMAND_AUTO        COMMAND_EMPTY // not on this remote
 
 #define COMMAND_INCREASE_SPEED  IR_VOL_PLUS
 #define COMMAND_DECREASE_SPEED  IR_VOL_MINUS
@@ -140,46 +146,16 @@
 #define COMMAND_DOWN        IR_DOWN
 #endif
 
-#define IR_NEC_REPEAT_ADDRESS 0xFFFF
-#define IR_NEC_REPEAT_CODE 0x0
+/*
+ * This is valid for all remotes above
+ */
+#define IR_REPEAT_ADDRESS IR_NEC_REPEAT_ADDRESS
+#define IR_REPEAT_CODE IR_NEC_REPEAT_CODE
 
 /*
  * THIRD:
  * Main mapping of commands to C functions
  */
-// list of functions to call at IR command
-// Stationary movements
-void doAutoMove();
-void doDance();
-void doWave();
-void doTwist();
-void doBow();
-void doLeanLeft();
-void doLeanRight();
-
-void doCreepForward();
-void doCreepBack();
-void doTrot();
-
-void doTurnLeft();
-void doTurnRight();
-
-void doCenterServos();
-
-void doCalibration();
-
-/*
- * Instant command functions
- */
-void doStop();
-void doSetDirectionForward();
-void doSetDirectionBack();
-void doSetDirectionRight();
-void doSetDirectionLeft();
-void doIncreaseSpeed();
-void doDecreaseSpeed();
-void doIncreaseHeight();
-void doDecreaseHeight();
 
 // IR strings of functions for output
 static const char forward[] PROGMEM ="forward";
@@ -203,6 +179,7 @@ static const char stop[] PROGMEM ="stop";
 static const char dance[] PROGMEM ="dance";
 static const char trot[] PROGMEM ="trot";
 static const char twist[] PROGMEM ="twist";
+static const char autoMove[] PROGMEM ="auto move";
 static const char unknown[] PROGMEM ="unknown";
 
 // Basic mapping structure
@@ -215,18 +192,16 @@ struct IRToCommandMapping {
 /*
  * Main mapping array of commands to C functions and command strings
  */
-struct IRToCommandMapping IRMapping[] = { { COMMAND_FORWARD, &doCreepForward, forward }, { COMMAND_BACKWARD, &doCreepBack, back }, {
+const struct IRToCommandMapping IRMapping[] = { { COMMAND_FORWARD, &doCreepForward, forward }, { COMMAND_BACKWARD, &doCreepBack,
+        back }, {
 COMMAND_RIGHT, &doTurnRight, right }, { COMMAND_LEFT, &doTurnLeft, left }, { COMMAND_CENTER, &doCenterServos, center }, {
 COMMAND_CALIBRATE, &doCalibration, mute }, { COMMAND_DANCE, &doDance, dance }, { COMMAND_TWIST, &doTwist, twist }, {
-COMMAND_WAVE, &doWave, wave }, { COMMAND_TROT, &doTrot, trot } };
+COMMAND_WAVE, &doWave, wave }, { COMMAND_TROT, &doTrot, trot }, { COMMAND_AUTO, &doAutoMove, autoMove } };
 
-struct IRToCommandMapping IRMappingInstantCommands[] = { { COMMAND_FORWARD, &doSetDirectionForward, dirForward }, {
+const struct IRToCommandMapping IRMappingInstantCommands[] = { { COMMAND_FORWARD, &doSetDirectionForward, dirForward }, {
 COMMAND_BACKWARD, &doSetDirectionBack, dirBack }, { COMMAND_RIGHT, &doSetDirectionRight, dirRight }, { COMMAND_LEFT,
         &doSetDirectionLeft, dirLeft }, { COMMAND_INCREASE_SPEED, &doIncreaseSpeed, volPlus }, { COMMAND_DECREASE_SPEED,
         &doDecreaseSpeed, volMinus }, { COMMAND_INCREASE_HEIGHT, &doIncreaseHeight, fastForward }, { COMMAND_DECREASE_HEIGHT,
         &doDecreaseHeight, fastBack }, { COMMAND_STOP, &doStop, stop } };
 
-// function to search in MappingInstantCommands array
-bool checkAndCallInstantCommands(uint8_t aIRCode);
-
-#endif /* SRC_QUADRUPED_IR_CONFIGURATION_H_ */
+#endif /* IR_COMMAND_MAPING_H_ */

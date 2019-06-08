@@ -75,7 +75,7 @@ const int SERVO_UNDER_TEST_PIN = 9;
 /*
  * CHANGE THESE TO REFLECT THE CORRECT VALUES OF YOUR SERVO
  *
- * 620 and 2400 are the values for some of my sg90 servos determined with EndPositionTest example
+ * 480 to 620 and 2400 to 2500 are the values for some of my sg90 servos determined with EndPositionTest example
  * 544 suits better for standard servos
  */
 #define ZERO_DEGREE_VALUE_MICROS 544
@@ -131,15 +131,21 @@ void loop() {
     int tMode = analogRead(MODE_ANALOG_INPUT_PIN);
 
     int tSpeedOrPosition = analogRead(SPEED_OR_POSITION_ANALOG_INPUT_PIN);
+
 #ifdef USE_LEIGHTWEIGHT_SERVO_LIB
+    /*
+     * Set refresh period from 2.5 to 20 ms
+     */
     int tPeriod = analogRead(REFRESH_PERIOD_ANALOG_INPUT_PIN);
-//    tPeriod =tPeriod>> 7 ;// gives values 0-7
-    ICR1 = map(tPeriod, 0, 1023, COUNT_FOR_20_MILLIS / 8, COUNT_FOR_20_MILLIS); // set period from 2.5 to 20 ms
+    setLightweightServoRefreshRate(map(tPeriod, 0, 1023, 2500, 20000));
 #endif
 
     tMode = tMode >> 7; // gives values 0-7
     tPulseMicros = map(tSpeedOrPosition, 0, 1023, ZERO_DEGREE_VALUE_MICROS - 150, AT_180_DEGREE_VALUE_MICROS + 200);
 
+    /*
+     * Avoid print for mode 0 if nothing changed
+     */
     if (tMode != 0 || sLastVoltageMillivolts != tVoltageMillivolts || abs(sLastPulseMicros - tPulseMicros) > 3) {
         sLastVoltageMillivolts = tVoltageMillivolts;
 
@@ -159,6 +165,9 @@ void loop() {
 #else
         ServoUnderTest.writeMicroseconds(tPulseMicros);
 #endif
+        /*
+         * Avoid print if nothing changed
+         */
         if (abs(sLastPulseMicros - tPulseMicros) > 3) {
             sLastPulseMicros = tPulseMicros;
 

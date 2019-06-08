@@ -8,12 +8,9 @@
 #ifndef SRC_QUADRUPEDSERVOCONFIGURATION_H_
 #define SRC_QUADRUPEDSERVOCONFIGURATION_H_
 
-/*
- * Servo stuff
- */
 // some useful constants
-#define LIFT_MAX_ANGLE 135  // upper mechanical limit
-#define LIFT_MIN_ANGLE 40   // lower mechanical limit
+#define LIFT_MAX_ANGLE 135  // upper mechanical limit -> body is low
+#define LIFT_MIN_ANGLE 40   // lower mechanical limit -> body is high
 
 #define MOVE_DIRECTION_FORWARD  0x00
 #define MOVE_DIRECTION_LEFT     0x01

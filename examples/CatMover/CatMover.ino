@@ -29,11 +29,16 @@
 
 #define VERSION_EXAMPLE "1.1"
 
-#ifdef ESP8266
+#if defined(ESP8266)
 const int LASER_POWER_PIN = 13;
 
 const int HORIZONTAL_SERVO_PIN = 14; // D5
 const int VERTICAL_SERVO_PIN = 12; // D6
+#elif defined(ESP32)
+const int LASER_POWER_PIN = 13;
+
+const int HORIZONTAL_SERVO_PIN = 5;
+const int VERTICAL_SERVO_PIN = 18;
 #else
 const int LASER_POWER_PIN = 5;
 

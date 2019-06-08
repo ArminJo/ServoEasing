@@ -31,17 +31,25 @@
 
 #include <Arduino.h>
 
+#if defined(ESP32)
+#include <ESP32Servo.h>
+#else
 #include <Servo.h>
+#endif
 
+#if defined(AVR)
 #include "ADCUtils.h" // for get getVCCVoltageMillivolt
+#endif
 
 #define VERSION_EXAMPLE "1.1"
 
 const int SERVO_UNDER_TEST_PIN = 9;
 
 // Attach the sliding contact of the potentiometer here
-#ifdef ESP8266
+#if defined(ESP8266)
 const int POSITION_ANALOG_INPUT_PIN = 0;
+#elif defined(ESP32)
+const int POSITION_ANALOG_INPUT_PIN = 36;
 #else
 const int POSITION_ANALOG_INPUT_PIN = A1;
 #endif
@@ -77,7 +85,7 @@ void loop() {
     static int sLastPulseMicros;
 
     int tPosition = analogRead(POSITION_ANALOG_INPUT_PIN);
-    int tPulseMicros = map(tPosition, 0, 1023, 500, 2500);
+    int tPulseMicros = map(tPosition, 0, 1023, 400, 2500);
     if (sLastPulseMicros != tPulseMicros) {
         sLastPulseMicros = tPulseMicros;
         Serial.print("Micros=");
@@ -85,12 +93,14 @@ void loop() {
         Serial.print(" degree=");
         Serial.print(ServoUnderTest.read());
 
+#if defined(AVR)
         int tVoltageMillivolts = getVCCVoltageMillivolt();
         Serial.print(" VCC=");
         // since the values may depend from the supply voltage, print this value too,
         // but be careful, it may not be exact due to the tolerance of the internal bandgap reference
         Serial.print(tVoltageMillivolts);
         Serial.println(F(" mV"));
+#endif
 
         ServoUnderTest.writeMicroseconds(tPulseMicros);
     }

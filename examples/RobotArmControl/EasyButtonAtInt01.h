@@ -42,6 +42,14 @@
 #endif
 
 /*
+ * Use the arduino function attachInterrupt().
+ * Recommended if you get the error " multiple definition of `__vector_1'" (or `__vector_2')
+ * because another library uses the attachInterrupt() function.
+ * For one button it needs additional 160 bytes FLASH, for 2 buttons still 88 bytes.
+ */
+//#define USE_ATTACH_INTERRUPT
+//
+/*
  * Activate LED_BUILTIN as long as button is pressed
  * Serves as easy test to see if the debounce of 50 milliseconds is working with the button attached
  */
@@ -52,25 +60,8 @@
 #endif
 #endif
 
-/*
- * Use the arduino function attachInterrupt().
- * Recommended if you get the error " multiple definition of `__vector_1'" (or `__vector_2')
- * because another library uses the attachInterrupt() function.
- * For one button it needs additional 160 bytes FLASH, for 2 buttons still 88 bytes.
- */
-//#define USE_ATTACH_INTERRUPT
 //
 //#define MEASURE_TIMING
-//#define TRACE
-/*
- * These defines are here to enable saving of 150 bytes FLASH if only one button is needed
- */
-//#define USE_BUTTON_0
-//#define USE_BUTTON_1
-#if not (defined(USE_BUTTON_0) || defined(USE_BUTTON_1))
-#error USE_BUTTON_0 and USE_BUTTON_1 are not defined, please define them or remove the #include "EasyButtonAtInt01.h"
-#endif
-
 #if defined(MEASURE_TIMING) || defined (LED_FEEDBACK_FOR_DEBOUNCE_TEST)
 #include "digitalWriteFast.h"
 #endif
@@ -79,6 +70,17 @@
 #ifndef BUTTON_TEST_TIMING_PIN
 #define BUTTON_TEST_TIMING_PIN 12  // use pin 12
 #endif
+#endif
+
+//#define TRACE
+
+/*
+ * These defines are here to enable saving of 150 bytes FLASH if only one button is needed
+ */
+//#define USE_BUTTON_0
+//#define USE_BUTTON_1
+#if not (defined(USE_BUTTON_0) || defined(USE_BUTTON_1))
+#error USE_BUTTON_0 and USE_BUTTON_1 are not defined, please define them or remove the #include "EasyButtonAtInt01.h"
 #endif
 
 void handleINT0Interrupt();
@@ -262,6 +264,10 @@ void handleINT01Interrupts(EasyButton * aButtonControlPtr) {
     if (tDeltaMillis <= BUTTON_DEBOUNCING_MILLIS) {
 #ifdef TRACE
         Serial.println("Button bouncing");
+//        Serial.print("ms=");
+//        Serial.print(tMillis);
+//        Serial.print(" D=");
+//        Serial.println(tDeltaMillis);
 #endif
         /*
          * Button signal is ringing - do nothing, ignore and wait for next interrupt

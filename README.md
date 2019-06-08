@@ -91,7 +91,11 @@ Youtube video
 Program for controlling a robot arm with 4 servos using 4 potentiometers and/or an IR Remote.
 
 # Revision History
-### Version 1.2.1
+### Version 1.3.0
+- Added ESP32 support by using ESP32Servo.h and Ticker.h instead of Servo.h timer interrupts.
+- Changed degree parameter and values from uint8_t to integer to support operating a servo from -90 to + 90 degree with 90 degree trim.
+- RobotArmControl + QuadrupedControl examples refactored.
+- Changed "while" to "for" loops to avoid a gcc 7.3.0 atmel6.3.1 bug.
 - Extended SpeedTest example. Now also able to change the width of the refresh period.
 
 ### Version 1.2
@@ -121,3 +125,7 @@ The ServoEasing library examples are built on Travis CI for the following boards
 
 ## Requests for modifications / extensions
 Please write me a PM including your motivation/problem if you need a modification or an extension e.g. a callback functionality after move has finished.
+
+<a href="https://github.com/ArminJo">
+  <img src="http://www.joachimsmeyer.de/images/Logo_ServoEasing.png" alt="Logo" style="width:40px;height:40px;border:0">
+</a>

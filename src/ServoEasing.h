@@ -24,8 +24,14 @@
 #ifndef SERVOEASING_H_
 #define SERVOEASING_H_
 
-#define VERSION_SERVO_EASING 1.2.0
+#define VERSION_SERVO_EASING 1.3.0
 /*
+ * Version 1.3
+ * - Added ESP32 support by using ESP32Servo.h and Ticker.h instead of Servo.h timer interrupts.
+ * - Changed degree parameter and values from uint8_t to integer to support operating a servo from -90 to + 90 degree with 90 degree trim.
+ * - RobotArmControl + QuadrupedControl examples refactored.
+ * - Extended SpeedTest example. Now also able to change the width of the refresh period.
+ * - Changed "while" to "for" loops to avoid a gcc 7.3.0 atmel6.3.1 bug.
  * Version 1.2
  * - Added ESP8266 support by using Ticker instead of timer interrupts for ESP.
  * - AsymetricEasing example overhauled.
@@ -60,7 +66,7 @@
  * If not using the Arduino IDE take care that Arduino Servo library sources are not compiled / included in the project.
  */
 //#define USE_LEIGHTWEIGHT_SERVO_LIB
-#if defined(ESP8266) && defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#if ( defined(ESP8266) || defined(ESP32) ) && defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 #error "No Lightweight Servo Library available (and needed) for ESP boards"
 #endif
 
@@ -73,21 +79,30 @@
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 #include <Wire.h>
-#ifndef MAX_SERVOS
-#define MAX_SERVOS 16 // one PCA9685 has 16 outputs.
+#ifndef MAX_EASING_SERVOS
+#define MAX_EASING_SERVOS 16 // one PCA9685 has 16 outputs.
 #endif
 
 #elif defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 #include "LightweightServo.h"
-#ifndef MAX_SERVOS
-#define MAX_SERVOS 2 // default value for UNO etc.
+#ifndef MAX_EASING_SERVOS
+#define MAX_EASING_SERVOS 2 // default value for UNO etc.
 #endif
 #endif
 
 #else  // defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#if defined(ESP32)
+#include <ESP32Servo.h>
+#define REFRESH_INTERVAL 20000
+#else
 #include <Servo.h>
-#ifndef MAX_SERVOS
-#define MAX_SERVOS 12 // default value for UNO etc.
+#endif
+#ifndef MAX_EASING_SERVOS
+#ifdef MAX_SERVOS
+#define MAX_EASING_SERVOS MAX_SERVOS // =12 default value from Servo.h for UNO etc.
+#else
+#define MAX_EASING_SERVOS 12 // default value from Servo.h for UNO etc.
+#endif
 #endif
 #endif // defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 
@@ -203,7 +218,7 @@
 #define EASE_USER_OUT           0x2F
 #define EASE_USER_IN_OUT        0x4F
 #define EASE_USER_BOUNCING      0x6F
-#define EASE_FUNCTION_DEGREE_OFFSET 2 // if the use function returns degree instead of 0.0 to 1.0 the value must be offset by 2 (return 2 for 0 degree)
+#define EASE_FUNCTION_DEGREE_INDICATOR_OFFSET 256 // Offset to decide if the user function returns degree instead of 0.0 to 1.0. => returns 256 for 0 degree.
 
 // some PCA9685 specific constants
 #define PCA9685_GENERAL_CALL_ADDRESS 0x00
@@ -220,7 +235,7 @@
 
 class ServoEasing
 #if not defined(USE_LEIGHTWEIGHT_SERVO_LIB) && not defined(USE_PCA9685_SERVO_EXPANDER)
-: public Servo
+        : public Servo
 #endif
 {
 public:
@@ -229,19 +244,19 @@ public:
     ServoEasing(uint8_t aPCA9685I2CAddress = PCA9685_DEFAULT_ADDRESS, TwoWire *aI2CClass = &Wire);
     void PCA9685Init();
     void I2CWriteByte(uint8_t aAddress, uint8_t aData);
-    void setPWM(uint16_t aOff);
+    void setPWM(uint16_t aOffUnits);
     // main mapping function for us to PCA9685 Units (20000/4096 = 4.88 us)
-    uint16_t MicrosecondsToPCA9685Units(uint16_t aMicroseconds);
+    int MicrosecondsToPCA9685Units(int aMicroseconds);
 #else
     ServoEasing();
 #endif
     uint8_t attach(int aPin);
     // Here no units accepted, only microseconds!
     uint8_t attach(int aPin, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree);
-    void setReverseOperation(bool aOperateServoReverse);            // you want to call it before using setTrim
+    void setReverseOperation(bool aOperateServoReverse);  // You should call it before using setTrim
 
-    void setTrim(int8_t aTrim);
-    void setTrimMicrosecondsOrUnits(int16_t aTrimMicrosecondsOrUnits);
+    void setTrim(int aTrimDegrees);
+    void setTrimMicrosecondsOrUnits(int aTrimMicrosecondsOrUnits);
 
 #ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
     void setEasingType(uint8_t aEasingType);
@@ -257,42 +272,43 @@ public:
 
     void setSpeed(uint16_t aDegreesPerSecond);                      // This speed is taken if no speed argument is given.
     uint16_t getSpeed();
-    void easeTo(uint8_t aDegree);                                   // blocking move to new position using mLastSpeed
-    void easeTo(uint8_t aDegree, uint16_t aDegreesPerSecond);       // blocking move to new position using speed
-    void easeToD(uint8_t aDegree, uint16_t aMillisForMove);         // blocking move to new position using duration
+    void easeTo(int aDegree);                                   // blocking move to new position using mLastSpeed
+    void easeTo(int aDegree, uint16_t aDegreesPerSecond);       // blocking move to new position using speed
+    void easeToD(int aDegree, uint16_t aMillisForMove);         // blocking move to new position using duration
 
-    bool setEaseTo(uint8_t aDegree);                                // shortcut for startEaseTo(..,..,false)
-    bool setEaseTo(uint8_t aDegree, uint16_t aDegreesPerSecond);    // shortcut for startEaseTo(..,..,false)
-    bool startEaseTo(uint8_t aDegree);                              // shortcut for startEaseTo(aDegree, mSpeed, true)
-    bool startEaseTo(uint8_t aDegree, uint16_t aDegreesPerSecond, bool aStartUpdateByInterrupt = true);
-    bool setEaseToD(uint8_t aDegree, uint16_t aDegreesPerSecond);   // shortcut for startEaseToD(..,..,false)
-    bool startEaseToD(uint8_t aDegree, uint16_t aMillisForMove, bool aStartUpdateByInterrupt = true);
+    bool setEaseTo(int aDegree);                                // shortcut for startEaseTo(..,..,false)
+    bool setEaseTo(int aDegree, uint16_t aDegreesPerSecond);    // shortcut for startEaseTo(..,..,false)
+    bool startEaseTo(int aDegree);                              // shortcut for startEaseTo(aDegree, mSpeed, true)
+    bool startEaseTo(int aDegree, uint16_t aDegreesPerSecond, bool aStartUpdateByInterrupt = true);
+    bool setEaseToD(int aDegree, uint16_t aDegreesPerSecond);   // shortcut for startEaseToD(..,..,false)
+    bool startEaseToD(int aDegree, uint16_t aMillisForMove, bool aStartUpdateByInterrupt = true);
     bool update();
 
-    uint8_t getCurrentAngle();
-    uint16_t getEndMicrosecondsOrUnits();
-    uint16_t getDeltaMicrosecondsOrUnits();
-    uint16_t getMillisForCompleteMove();
+    int getCurrentAngle();
+    int getEndMicrosecondsOrUnits();
+    int getEndMicrosecondsOrUnitsWithTrim();
+    int getDeltaMicrosecondsOrUnits();
+    int getMillisForCompleteMove();
     bool isMoving();
     bool isMovingAndCallYield();
 
-    uint8_t MicrosecondsOrUnitsToDegree(uint16_t aMicrosecondsOrUnits);
-    uint16_t DegreeToMicrosecondsOrUnits(uint8_t aDegree);
+    int MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits);
+    int DegreeToMicrosecondsOrUnits(int aDegree);
 
     void synchronizeServosAndStartInterrupt(bool doUpdateByInterrupt);
 
-    void print(Stream * aSerial, bool doExtendedOutput = false); // Print dynamic and static info
-    void printDynamic(Stream * aSerial, bool doExtendedOutput = false);
+    void print(Stream * aSerial, bool doExtendedOutput = true); // Print dynamic and static info
+    void printDynamic(Stream * aSerial, bool doExtendedOutput = true);
     void printStatic(Stream * aSerial);
 
     /*
      * Internally only microseconds if using Servo library or units (= 4.88 us) if using PCA9685 expander are used to speed up things.
      * Other expander or libraries can therefore easily be added.
      */
-    volatile uint16_t mCurrentMicrosecondsOrUnits; // set by write() and writeMicrosecondsOrUnits(). Needed as start for next move and to avoid unnecessary writes.
-    uint16_t mStartMicrosecondsOrUnits;  // used with millisAtStartMove to compute currentMicrosecondsOrUnits
-    uint16_t mEndMicrosecondsOrUnits;    // used once as last value just if movement was finished
-    int16_t mDeltaMicrosecondsOrUnits;   // end - start
+    volatile int mCurrentMicrosecondsOrUnits; // set by write() and writeMicrosecondsOrUnits(). Needed as start for next move and to avoid unnecessary writes.
+    int mStartMicrosecondsOrUnits;  // used with millisAtStartMove to compute currentMicrosecondsOrUnits
+    int mEndMicrosecondsOrUnits;    // used once as last value just if movement was finished
+    int mDeltaMicrosecondsOrUnits;   // end - start
 
     /*
      * max speed is 450 degree/sec for SG90 and 540 degree/second for MG90 servos -> see speedTest.cpp
@@ -318,11 +334,11 @@ public:
     uint32_t mMillisAtStartMove;
     uint16_t mMillisForCompleteMove;
 
-    bool mOperateServoReverse; // true -> direction is reversed by internal swapping the values of mServo0DegreeMicrosecondsOrUnits and mServo180DegreeMicrosecondsOrUnits
-    int16_t mTrimMicrosecondsOrUnits; // This value will be added only at writeMicrosecondsOrUnits()
+    bool mOperateServoReverse; // true -> direction is reversed only at writeMicrosecondsOrUnits() by: aValue = mServo180DegreeMicrosecondsOrUnits - (aValue - mServo0DegreeMicrosecondsOrUnits)
+    int mTrimMicrosecondsOrUnits; // This value will be added only at writeMicrosecondsOrUnits()
 
-    uint16_t mServo0DegreeMicrosecondsOrUnits;
-    uint16_t mServo180DegreeMicrosecondsOrUnits;
+    int mServo0DegreeMicrosecondsOrUnits;
+    int mServo180DegreeMicrosecondsOrUnits;
 };
 
 /*
@@ -330,8 +346,8 @@ public:
  * Servos are inserted in the order, in which they are declared
  */
 extern uint8_t sServoCounter;
-extern ServoEasing * sServoArray[MAX_SERVOS];
-extern uint8_t sServoNextPositionArray[MAX_SERVOS];
+extern ServoEasing * sServoArray[MAX_EASING_SERVOS];
+extern int sServoNextPositionArray[MAX_EASING_SERVOS]; // use int since we want to support negative values
 
 /*
  * Functions working on all servos in the list
@@ -364,7 +380,7 @@ void synchronizeAllServosStartAndWaitForAllServosToStop();
 void enableServoEasingInterrupt();
 void disableServoEasingInterrupt();
 
-uint8_t clipDegreeSpecial(uint8_t aDegreeToClip);
+int clipDegreeSpecial(uint8_t aDegreeToClip);
 
 /*
  * Included easing functions
