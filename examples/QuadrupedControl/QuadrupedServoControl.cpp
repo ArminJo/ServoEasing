@@ -271,6 +271,20 @@ void setPivotServos(int aFLP, int aBLP, int aBRP, int aFRP) {
     synchronizeMoveAllServosAndCheckInputAndWait();
 }
 
+/*
+ * Accepts height from 0 to 100
+ */
+void setLiftServoHeight(ServoEasing & aLiftServo, uint8_t aHeightPercent) {
+    if (aHeightPercent > 100) {
+        aHeightPercent = 100;
+    }
+    int tDegreeForLiftServo = map(aHeightPercent, 0, 100, LIFT_MAX_ANGLE, LIFT_MIN_ANGLE);
+    aLiftServo.easeTo(tDegreeForLiftServo);
+}
+
+/*
+ * Set all servos to the same angle
+ */
 void setLiftServos(int aBodyHeightAngle) {
     sServoNextPositionArray[FRONT_LEFT_LIFT] = aBodyHeightAngle;
     sServoNextPositionArray[BACK_LEFT_LIFT] = aBodyHeightAngle;
@@ -287,6 +301,9 @@ void setLiftServos(int aFLL, int aBLL, int aBRL, int aFRL) {
     synchronizeMoveAllServosAndCheckInputAndWait();
 }
 
+/*
+ * Used after change of sBodyHeightAngle
+ */
 void setLiftServosToBodyHeight() {
     // Set values direct, since we expect only a change of 2 degree
     for (uint8_t i = LIFT_SERVO_OFFSET; i < NUMBER_OF_SERVOS; i += SERVOS_PER_LEG) {

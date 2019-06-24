@@ -24,9 +24,11 @@
 #ifndef SERVOEASING_H_
 #define SERVOEASING_H_
 
-#define VERSION_SERVO_EASING 1.3.0
+#define VERSION_SERVO_EASING 1.3.1
 /*
- * Version 1.3
+ * Version 1.3.1
+ * - Added detach() function.
+ * Version 1.3.0
  * - Added ESP32 support by using ESP32Servo.h and Ticker.h instead of Servo.h timer interrupts.
  * - Changed degree parameter and values from uint8_t to integer to support operating a servo from -90 to + 90 degree with 90 degree trim.
  * - RobotArmControl + QuadrupedControl examples refactored.
@@ -75,8 +77,6 @@
 #endif
 
 #if defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-#define REFRESH_INTERVAL 20000
-
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 #include <Wire.h>
 #ifndef MAX_EASING_SERVOS
@@ -93,10 +93,10 @@
 #else  // defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 #if defined(ESP32)
 #include <ESP32Servo.h>
-#define REFRESH_INTERVAL 20000
 #else
 #include <Servo.h>
 #endif
+
 #ifndef MAX_EASING_SERVOS
 #ifdef MAX_SERVOS
 #define MAX_EASING_SERVOS MAX_SERVOS // =12 default value from Servo.h for UNO etc.
@@ -105,6 +105,13 @@
 #endif
 #endif
 #endif // defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+
+#if ! defined(REFRESH_INTERVAL)
+#define REFRESH_INTERVAL 20000   // (from Servo.h)
+#endif
+#if ! defined(INVALID_SERVO)
+#define INVALID_SERVO    255     // flag indicating an invalid servo index (from Servo.h)
+#endif
 
 /*
  * Define `KEEP_LIBRARY_SMALL` if space (1850 Bytes) matters.
@@ -253,6 +260,7 @@ public:
     uint8_t attach(int aPin);
     // Here no units accepted, only microseconds!
     uint8_t attach(int aPin, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree);
+    void detach();
     void setReverseOperation(bool aOperateServoReverse);  // You should call it before using setTrim
 
     void setTrim(int aTrimDegrees);
@@ -327,7 +335,7 @@ public:
     uint8_t mPCA9685I2CAddress;
     TwoWire * mI2CClass;
 #endif
-    uint8_t mServoPin; // pin number - at least needed for Lightweight Servo Lib
+    uint8_t mServoPin; // pin number or NO_SERVO_ATTACHED_PIN_NUMBER - at least needed for Lightweight Servo Lib
 
     uint8_t mServoIndex; // Index in sServoArray
 

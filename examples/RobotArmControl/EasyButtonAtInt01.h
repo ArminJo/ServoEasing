@@ -1,7 +1,7 @@
 /*
  * EasyButtonAtInt01.h
  *
- *  Arduino library for handling push buttons connected between ground and INT0 and / or INT1 pin (pin 2 / 3).
+ *  Arduino library for handling push buttons connected between ground and INT0 and / or INT1 pin (pin 2 / 3 on most Arduinos).
  *  The library is totally based on interrupt.
  *  Debouncing is implemented in a not blocking way! It is merely done by ignoring a button change within the debouncing time.
  *
@@ -61,14 +61,15 @@
 #endif
 
 //
-//#define MEASURE_TIMING
+#define MEASURE_TIMING
 #if defined(MEASURE_TIMING) || defined (LED_FEEDBACK_FOR_DEBOUNCE_TEST)
 #include "digitalWriteFast.h"
 #endif
 
 #if defined(MEASURE_TIMING)
 #ifndef BUTTON_TEST_TIMING_PIN
-#define BUTTON_TEST_TIMING_PIN 12  // use pin 12
+#define BUTTON_TEST_TIMING_PIN 6  // use pin 6
+//#define BUTTON_TEST_TIMING_PIN 12  // use pin 12
 #endif
 #endif
 
@@ -81,6 +82,46 @@
 //#define USE_BUTTON_1
 #if not (defined(USE_BUTTON_0) || defined(USE_BUTTON_1))
 #error USE_BUTTON_0 and USE_BUTTON_1 are not defined, please define them or remove the #include "EasyButtonAtInt01.h"
+#endif
+
+/*
+ * Pin and port definitions for Arduinos
+ */
+#define INT1_PIN (3)
+#define INT1_BIT INT1_PIN
+#if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
+#define INT0_PIN (2)
+#define INT0_DDR_PORT (DDRB)
+#define INT0_IN_PORT  (PINB)
+#define INT0_OUT_PORT (PORTB)
+
+#define INT1_DDR_PORT (DDRB)
+#define INT1_IN_PORT  (PINB)
+#define INT1_OUT_PORT (PORTB)
+#elif defined(__AVR_ATtiny87__) || defined(__AVR_ATtiny167__)
+#define INT0_PIN (14)
+#define INT0_DDR_PORT (DDRB)
+#define INT0_IN_PORT  (PINB)
+#define INT0_OUT_PORT (PORTB)
+
+#define INT1_DDR_PORT (DDRA)
+#define INT1_IN_PORT  (PINA)
+#define INT1_OUT_PORT (PORTA)
+#else
+#define INT0_PIN (2)
+#define INT0_DDR_PORT (DDRD)
+#define INT0_IN_PORT  (PIND)
+#define INT0_OUT_PORT (PORTD)
+
+#define INT1_DDR_PORT (DDRD)
+#define INT1_IN_PORT  (PIND)
+#define INT1_OUT_PORT (PORTD)
+#endif
+
+#if (INT0_PIN >= 8)
+#define INT0_BIT (INT0_PIN - 8)
+#else
+#define INT0_BIT INT0_PIN
 #endif
 
 void handleINT0Interrupt();
@@ -109,20 +150,25 @@ public:
     volatile long ButtonLastChangeMillis;       // for debouncing
     volatile long ButtonReleaseMillis;          // for double press recognition
 
-    volatile bool isButton0AtPin2;
+    volatile bool isButtonAtINT0;
     void (*ButtonPressCallback)(bool aButtonToggleState) = NULL; // if not null, is called on every button press with ButtonToggleState as parameter
 
-    EasyButton(bool aIsButton0AtPin2) {
-        isButton0AtPin2 = aIsButton0AtPin2;
+    EasyButton(bool aIsButtonAtINT0) {
+        isButtonAtINT0 = aIsButtonAtINT0;
         init();
     }
 
-    EasyButton(bool aIsButton0AtPin2, void (*aButtonPressCallback)(bool aButtonToggleState)) {
-        isButton0AtPin2 = aIsButton0AtPin2;
+    EasyButton(bool aIsButtonAtINT0, void (*aButtonPressCallback)(bool aButtonToggleState)) {
+        isButtonAtINT0 = aIsButtonAtINT0;
         ButtonPressCallback = aButtonPressCallback;
         init();
     }
 
+#if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
+#define EICRA  MCUCR
+#define EIFR   GIFR
+#define EIMSK  GIMSK
+#endif
     /*
      * Sets pin 2 mode to INPUT_PULLUP and enables INT0 Interrupt on any logical change.
      */
@@ -135,11 +181,11 @@ public:
         pinModeFast(BUTTON_TEST_FEEDBACK_LED_PIN, OUTPUT);
 #endif
 #if defined(USE_BUTTON_0) && not defined(USE_BUTTON_1)
-        DDRD &= ~(_BV(2)); // pinModeFast(2, INPUT_PULLUP);
-        PORTD |= _BV(2);
+        INT0_DDR_PORT &= ~(_BV(INT0_BIT)); // pinModeFast(2, INPUT_PULLUP);
+        INT0_OUT_PORT |= _BV(INT0_BIT);
         sPointerToButton0ForISR = this;
 #if defined(USE_ATTACH_INTERRUPT)
-        attachInterrupt(digitalPinToInterrupt(2), &handleINT0Interrupt, CHANGE);
+        attachInterrupt(digitalPinToInterrupt(INT0_PIN), &handleINT0Interrupt, CHANGE);
 #else
         // interrupt on any logical change
         EICRA |= (1 << ISC00);
@@ -150,11 +196,11 @@ public:
 #endif //USE_ATTACH_INTERRUPT
 #endif
 #if defined(USE_BUTTON_1) && not defined(USE_BUTTON_0)
-        DDRD &= ~(_BV(3));
-        PORTD |= _BV(3);
+        INT1_DDR_PORT &= ~(_BV(INT1_BIT));
+        INT1_OUT_PORT |= _BV(INT1_BIT);
         sPointerToButton1ForISR = this;
 #if defined(USE_ATTACH_INTERRUPT)
-        attachInterrupt(digitalPinToInterrupt(3), &handleINT1Interrupt, CHANGE);
+        attachInterrupt(digitalPinToInterrupt(INT1_PIN), &handleINT1Interrupt, CHANGE);
 #else
         // interrupt on any logical change
         EICRA |= (1 << ISC10);
@@ -166,12 +212,12 @@ public:
 #endif
 
 #if defined(USE_BUTTON_0) && defined(USE_BUTTON_1)
-        if (isButton0AtPin2) {
-            DDRD &= ~(_BV(2)); // pinModeFast(2, INPUT_PULLUP);
-            PORTD |= _BV(2);
+        if (isButtonAtINT0) {
+            INT0_DDR_PORT &= ~(_BV(INT0_BIT)); // pinModeFast(2, INPUT_PULLUP);
+            INT0_OUT_PORT |= _BV(INT0_BIT);
             sPointerToButton0ForISR = this;
 #if defined(USE_ATTACH_INTERRUPT)
-            attachInterrupt(digitalPinToInterrupt(2), &handleINT0Interrupt, CHANGE);
+            attachInterrupt(digitalPinToInterrupt(INT0_PIN), &handleINT0Interrupt, CHANGE);
 #else
             // interrupt on any logical change
             EICRA |= (1 << ISC00);
@@ -181,11 +227,11 @@ public:
             EIMSK |= 1 << INT0;
 #endif //USE_ATTACH_INTERRUPT
         } else {
-            DDRD &= ~(_BV(3));
-            PORTD |= _BV(3);
+            INT1_DDR_PORT &= ~(_BV(INT1_BIT));
+            INT1_OUT_PORT |= _BV(INT1_BIT);
             sPointerToButton1ForISR = this;
 #if defined(USE_ATTACH_INTERRUPT)
-            attachInterrupt(digitalPinToInterrupt(3), &handleINT1Interrupt, CHANGE);
+            attachInterrupt(digitalPinToInterrupt(INT1_PIN), &handleINT1Interrupt, CHANGE);
 #else
             // interrupt on any logical change
             EICRA |= (1 << ISC10);
@@ -207,18 +253,18 @@ public:
     uint16_t updateButtonPressDuration() {
         uint8_t tActualButtonStateIsActive;
 #if defined(USE_BUTTON_0) && not defined(USE_BUTTON_1)
-        tActualButtonStateIsActive = PIND & _BV(2);  //  = digitalReadFast(2);
+        tActualButtonStateIsActive = INT0_IN_PORT & _BV(INT0_BIT);  //  = digitalReadFast(2);
 #endif
 
 #if defined(USE_BUTTON_1) && not defined(USE_BUTTON_0)
-        tActualButtonStateIsActive = PIND & _BV(3);  //  = digitalReadFast(3);
+        tActualButtonStateIsActive = INT1_IN_PORT & _BV(INT1_BIT);  //  = digitalReadFast(3);
 #endif
 
 #if defined(USE_BUTTON_0) && defined(USE_BUTTON_1)
-        if (isButton0AtPin2) {
-            tActualButtonStateIsActive = PIND & _BV(2);  //  = digitalReadFast(2);
+        if (isButtonAtINT0) {
+            tActualButtonStateIsActive = INT0_IN_PORT & _BV(INT0_BIT);  //  = digitalReadFast(2);
         } else {
-            tActualButtonStateIsActive = PIND & _BV(3);  //  = digitalReadFast(3);
+            tActualButtonStateIsActive = INT1_IN_PORT & _BV(INT1_BIT);  //  = digitalReadFast(3);
         }
 #endif
         if (tActualButtonStateIsActive) {
@@ -241,18 +287,18 @@ void handleINT01Interrupts(EasyButton * aButtonControlPtr) {
     bool tActualButtonStateIsActive;
 
 #if defined(USE_BUTTON_0) && not defined(USE_BUTTON_1)
-    tActualButtonStateIsActive = PIND & _BV(2);  //  = digitalReadFast(2);
+    tActualButtonStateIsActive = INT0_IN_PORT & _BV(INT0_BIT);  //  = digitalReadFast(2);
 #endif
 
 #if defined(USE_BUTTON_1) && not defined(USE_BUTTON_0)
-    tActualButtonStateIsActive = PIND & _BV(3);  //  = digitalReadFast(3);
+    tActualButtonStateIsActive = INT1_IN_PORT & _BV(INT1_BIT);  //  = digitalReadFast(3);
 #endif
 
 #if defined(USE_BUTTON_0) && defined(USE_BUTTON_1)
-    if (aButtonControlPtr->isButton0AtPin2) {
-        tActualButtonStateIsActive = PIND & _BV(2);  //  = digitalReadFast(2);
+    if (aButtonControlPtr->isButtonAtINT0) {
+        tActualButtonStateIsActive = INT0_IN_PORT & _BV(INT0_BIT);  //  = digitalReadFast(2);
     } else {
-        tActualButtonStateIsActive = PIND & _BV(3);  //  = digitalReadFast(3);
+        tActualButtonStateIsActive = INT1_IN_PORT & _BV(INT1_BIT);  //  = digitalReadFast(3);
     }
 #endif
 
@@ -307,7 +353,21 @@ void handleINT01Interrupts(EasyButton * aButtonControlPtr) {
                     /*
                      * Check button again since it may changed back while processing callback function
                      */
-                    tActualButtonStateIsActive = PIND & _BV(2);
+#if defined(USE_BUTTON_0) && not defined(USE_BUTTON_1)
+                    tActualButtonStateIsActive = INT0_IN_PORT & _BV(INT0_BIT);
+#endif
+
+#if defined(USE_BUTTON_1) && not defined(USE_BUTTON_0)
+                    tActualButtonStateIsActive = INT1_IN_PORT & _BV(INT1_BIT);
+#endif
+
+#if defined(USE_BUTTON_0) && defined(USE_BUTTON_1)
+                    if (aButtonControlPtr->isButtonAtINT0) {
+                        tActualButtonStateIsActive = INT0_IN_PORT & _BV(INT0_BIT);
+                    } else {
+                        tActualButtonStateIsActive = INT1_IN_PORT & _BV(INT1_BIT);
+                    }
+#endif
                     tActualButtonStateIsActive = !tActualButtonStateIsActive;
                     if (aButtonControlPtr->ButtonStateIsActive != tActualButtonStateIsActive) {
                         // button released now, so maintain status

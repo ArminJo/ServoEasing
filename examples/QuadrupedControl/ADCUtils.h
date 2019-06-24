@@ -33,20 +33,25 @@
 // Temperature channel definitions - 1 LSB / 1 degree Celsius
 #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
 #define SHIFT_VALUE_FOR_REFERENCE REFS2
-#define ADC_TEMPERATURE_CHANNEL_MUX 15
 #define ADC_1_1_VOLT_CHANNEL_MUX 12
 #else
 #define SHIFT_VALUE_FOR_REFERENCE REFS0
 #endif
-#if defined (__AVR_ATmega328P__)
+
+// Temperature channel definitions - 1 LSB / 1 degree Celsius
+#if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
+#define ADC_TEMPERATURE_CHANNEL_MUX 15
+#elif defined(__AVR_ATtiny87__) || defined(__AVR_ATtiny167__)
+#define ADC_ISCR_CHANNEL_MUX 3
+#define ADC_TEMPERATURE_CHANNEL_MUX 11
+#define ADC_1_1_VOLT_CHANNEL_MUX 12
+#elif defined (__AVR_ATmega328P__)
 #define ADC_TEMPERATURE_CHANNEL_MUX 8
 #define ADC_1_1_VOLT_CHANNEL_MUX 14
-#endif
-#if defined(__AVR_ATmega32U4__)
+#elif defined(__AVR_ATmega32U4__)
 #define ADC_TEMPERATURE_CHANNEL_MUX 0x27
 #define ADC_1_1_VOLT_CHANNEL_MUX 0x1E
-#endif
-#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega1284__) || defined(__AVR_ATmega1284P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega644A__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644PA__)
+#elif defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega1284__) || defined(__AVR_ATmega1284P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega644A__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644PA__)
 #define ADC_1_1_VOLT_CHANNEL_MUX 0x1E
 #define INTERNAL INTERNAL1V1
 #endif

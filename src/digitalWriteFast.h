@@ -1,7 +1,7 @@
 /*
-  Optimized digital functions for AVR microcontrollers
-  by Watterott electronic (www.watterott.com)
-  based on http://code.google.com/p/digitalwritefast
+ Optimized digital functions for AVR microcontrollers
+ by Watterott electronic (www.watterott.com)
+ based on http://code.google.com/p/digitalwritefast
  */
 
 #ifndef __digitalWriteFast_h_
@@ -37,7 +37,6 @@
 #ifndef BIN
 # define BIN (2)
 #endif
-
 
 // workarounds for ARM microcontrollers
 #if (!defined(__AVR__) || \
@@ -97,14 +96,12 @@
 
 #endif
 
-
 // digital functions
 //#ifndef digitalPinToPortReg
 #define SPI_SW_SS_PIN   (10) //SS on Uno (for software SPI)
 #define SPI_SW_MOSI_PIN (11) //MOSI on Uno (for software SPI)
 #define SPI_SW_MISO_PIN (12) //MISO on Uno (for software SPI)
 #define SPI_SW_SCK_PIN  (13) //SCK on Uno (for software SPI)
-
 
 // --- Arduino Due and SAM3X8E based boards ---
 #if (defined(ARDUINO_SAM_DUE) || \
@@ -304,6 +301,23 @@
 (((P) >= 0 && (P) <= 7) ? (P) : (((P) >= 8 && (P) <= 13) ? (P) - 8 : (P) - 14))
 #endif
 
+// --- ATtinyX5 ---
+#elif defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
+// we have only PORTB
+#define __digitalPinToPortReg(P) (&PORTB)
+#define __digitalPinToDDRReg(P)  (&DDRB)
+#define __digitalPinToPINReg(P)  (&PINB)
+#define __digitalPinToBit(P) \
+(((P) >= 0 && (P) <= 7) ? (P) : (((P) >= 8 && (P) <= 13) ? (P) - 8 : (P) - 14))
+
+// --- ATtinyX4 + ATtinyX7 ---
+//  ATtinyX4: PORTA for 0 to 7, PORTB for 8 to 11
+//  ATtinyX7: PORTA for 0 to 7, PORTB for 8 to 15
+#elif  defined(__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__) || defined(__AVR_ATtiny87__) || defined(__AVR_ATtiny167__)
+#define __digitalPinToPortReg(P) (((P) >= 0 && (P) <= 7) ? &PORTA : &PORTB)
+#define __digitalPinToDDRReg(P)  (((P) >= 0 && (P) <= 7) ? &DDRA : &DDRB)
+#define __digitalPinToPINReg(P)  (((P) >= 0 && (P) <= 7) ? &PINA : &PINB)
+#define __digitalPinToBit(P)     (((P) >= 0 && (P) <= 7) ? (P) : (P) - 8 )
 
 // --- Other ---
 #else
@@ -320,7 +334,6 @@
 #endif
 //#endif  //#ifndef digitalPinToPortReg
 
-
 #ifndef digitalWriteFast
 #if (defined(__AVR__) || defined(ARDUINO_ARCH_AVR))
 #define digitalWriteFast(P, V) \
@@ -333,7 +346,6 @@ if (__builtin_constant_p(P) && __builtin_constant_p(V)) { \
 #define digitalWriteFast digitalWrite
 #endif
 #endif
-
 
 #ifndef pinModeFast
 #if (defined(__AVR__) || defined(ARDUINO_ARCH_AVR))
@@ -353,7 +365,6 @@ if (__builtin_constant_p(P) && __builtin_constant_p(V)) { \
 #endif
 #endif
 
-
 #ifndef digitalReadFast
 #if (defined(__AVR__) || defined(ARDUINO_ARCH_AVR))
 #define digitalReadFast(P) ( (int) __digitalReadFast((P)) )
@@ -371,6 +382,5 @@ if (__builtin_constant_p(P) && __builtin_constant_p(V)) { \
 #define digitalToggleFast(P) BIT_SET(*__digitalPinToPINReg(P), __digitalPinToBit(P))
 #endif
 #endif
-
 
 #endif //__digitalWriteFast_h_

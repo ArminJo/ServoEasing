@@ -20,11 +20,11 @@ install:
 - arduino --install-library "PinChangeInterrupt","IRLremote","ESP32Servo"
 script:
 - build_platform uno
-- build_platform esp32
 - build_platform leonardo
 - build_platform cplayClassic
 - build_platform mega2560
 - build_platform esp8266
+- build_platform esp32
 notifications:
   email:
     on_success: always

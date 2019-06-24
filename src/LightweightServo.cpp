@@ -83,7 +83,17 @@ void initLightweightServoPin9_10(bool aUsePin9, bool aUsePin10) {
     TCCR1A = tNewTCCR1A;
     TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);    // set prescaler to 8, FastPWM Mode mode bits WGM13 + WGM12
     ICR1 = ISR1_COUNT_FOR_20_MILLIS;  // set period to 20 ms
-    // do not set counter here, since with counter = 0 (default) no output signal is generated.
+    // Do not set counter here, since with counter = 0 (default) no output signal is generated now.
+}
+
+void deinitLightweightServoPin9_10(bool aUsePin9) {
+    if (aUsePin9) {
+        DDRB &= ~(_BV(DDB1));   // set OC1A = PortB1 -> PIN 9 to input direction
+        TCCR1A &= ~(_BV(COM1A1)); // disable non-inverting Compare Output mode OC1A
+    } else {
+        DDRB &= ~(_BV(DDB2));   // set OC1B = PortB2 -> PIN 10 to input direction
+        TCCR1A &= ~(_BV(COM1B1)); // disable non-inverting Compare Output mode OC1B
+    }
 }
 
 /*

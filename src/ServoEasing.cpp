@@ -144,6 +144,8 @@ ServoEasing::ServoEasing() // @suppress("Class members should be properly initia
         sServoArray[sServoCounter] = this;
         mServoIndex = sServoCounter;
         sServoCounter++;
+    } else {
+        mServoIndex = INVALID_SERVO;   // flag indicating an invalid servo index
     }
 
 #if defined(MEASURE_TIMING)
@@ -199,6 +201,17 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServo0Degree, int aMic
 #else
     return Servo::attach(aPin, aMicrosecondsForServo0Degree, aMicrosecondsForServo180Degree);
 #endif
+}
+
+void ServoEasing::detach() {
+#if defined(USE_PCA9685_SERVO_EXPANDER)
+    setPWM(4096); // set signal fully off
+#elif defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+    deinitLightweightServoPin9_10(mServoPin == 9); // disable output and change to input
+#else
+    Servo::detach();
+#endif
+//    mServoPin = INVALID_SERVO; // not used yet
 }
 
 // Set a flag which is only used at writeMicrosecondsOrUnits
@@ -856,11 +869,16 @@ void printArrayPositions(Stream * aSerial) {
     aSerial->print(F("ServoNextPositionArray="));
     // AJ 22.05.2019 This does not work with gcc 7.3.0 atmel6.3.1 and -Os
     // It drops the tServoIndex < MAX_EASING_SERVOS condition, since  MAX_EASING_SERVOS is equal to the size of sServoArray
+    // This has only an effect if the whole sServoArray is filled up, i.e we have declared MAX_EASING_SERVOS ServoEasing objects.
 //    while (sServoArray[tServoIndex] != NULL && tServoIndex < MAX_EASING_SERVOS) {
 //        aSerial->print(sServoNextPositionArray[tServoIndex]);
 //        aSerial->print(F(" | "));
 //        tServoIndex++;
 //    }
+
+// switching conditions cures the bug
+//    while (tServoIndex < MAX_EASING_SERVOS && sServoArray[tServoIndex] != NULL) {
+
     // this also does not work
 //    for (uint8_t tServoIndex = 0; sServoArray[tServoIndex] != NULL && tServoIndex < MAX_EASING_SERVOS  ; ++tServoIndex) {
 //        aSerial->print(sServoNextPositionArray[tServoIndex]);

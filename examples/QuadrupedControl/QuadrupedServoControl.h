@@ -51,6 +51,7 @@ void setAllServos(int aFLP, int aBLP, int aBRP, int aFRP, int aFLL, int aBLL, in
 void setPivotServos(int aFLP, int aBLP, int aBRP, int aFRP);
 void setLiftServos(int aFLL, int aBLL, int aBRL, int aFRL);
 void setLiftServos(int aBodyHeightAngle);
+void setLiftServoHeight(ServoEasing & aLiftServo, uint8_t aHeightPercent);
 
 /*
  * Main transformation functions

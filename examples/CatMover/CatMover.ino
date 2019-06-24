@@ -42,7 +42,7 @@ const int VERTICAL_SERVO_PIN = 18;
 #else
 const int LASER_POWER_PIN = 5;
 
-// These pins are used by Timer 2 and can be used without overhead by using SimpleServo - not used yet!
+// These pins are used by Timer 2 and can be used without overhead by using SimpleServo
 const int HORIZONTAL_SERVO_PIN = 10;
 const int VERTICAL_SERVO_PIN = 9;
 #endif

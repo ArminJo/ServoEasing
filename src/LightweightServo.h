@@ -19,6 +19,7 @@
  */
 void initLightweightServoPin9And10();
 void initLightweightServoPin9_10(bool aUsePin9 = true, bool aUsePin10 = true);
+void deinitLightweightServoPin9_10(bool aUsePin9);
 
 void setLightweightServoPulseMicrosFor0And180Degree(int aMicrosecondsForServo0Degree, int a180DegreeValue);
 void setLightweightServoRefreshRate(unsigned int aRefreshPeriodMicroseconds);

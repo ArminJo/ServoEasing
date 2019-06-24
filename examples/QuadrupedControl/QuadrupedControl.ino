@@ -125,9 +125,16 @@ void loop() {
 }
 
 /*
- * The auto move function
- * Put your own moves here.
+ * The auto move function. Put your own moves here.
+ *
+ * Servos available:
+ *  frontLeftPivotServo, frontLeftLiftServo
+ *  backLeftPivotServo, backLeftLiftServo
+ *  backRightPivotServo, backRightLiftServo
+ *  frontRightPivotServo, frontRightLiftServo
+ *
  * Useful commands:
+ *
  * sMovingDirection = MOVE_DIRECTION_FORWARD;
  * moveCreep(1);
  * centerServos();
@@ -137,7 +144,8 @@ void loop() {
  * doLeanRight();
  * basicTwist(30);
  * doWave();
- * sServoArray[FRONT_LEFT_LIFT]->easeTo(LIFT_MIN_ANGLE);
+ * To move the front left lift servo use:
+ * frontLeftLiftServo.easeTo(LIFT_MIN_ANGLE);
  * setLiftServos(LIFT_MIN_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE);
  * setPivotServos(100, 100, 80, 80);
  */
@@ -146,4 +154,6 @@ void doAutoMove() {
      * comment this out and put your own code here
      */
     internalAutoMove();
+    return;
+
 }
