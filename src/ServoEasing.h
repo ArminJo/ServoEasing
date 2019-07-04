@@ -366,6 +366,7 @@ void setDegreeForAllServos(uint8_t aNumberOfValues, ...);
 
 bool setEaseToForAllServos();
 bool setEaseToForAllServos(uint16_t aDegreesPerSecond);
+bool setEaseToDForAllServos(uint16_t aMillisForMove);
 void setEaseToForAllServosSynchronizeAndStartInterrupt();
 void setEaseToForAllServosSynchronizeAndStartInterrupt(uint16_t aDegreesPerSecond);
 void synchronizeAndEaseToArrayPositions();

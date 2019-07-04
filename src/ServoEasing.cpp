@@ -932,6 +932,15 @@ bool setEaseToForAllServos(uint16_t aDegreesPerSecond) {
     return tOneServoIsMoving;
 }
 
+bool setEaseToDForAllServos(uint16_t aMillisForMove) {
+    bool tOneServoIsMoving = false;
+    for (uint8_t tServoIndex = 0; tServoIndex < sServoCounter; ++tServoIndex) {
+        tOneServoIsMoving = sServoArray[tServoIndex]->setEaseToD(sServoNextPositionArray[tServoIndex], aMillisForMove)
+                || tOneServoIsMoving;
+    }
+    return tOneServoIsMoving;
+}
+
 bool isOneServoMoving() {
     for (uint8_t tServoIndex = 0; tServoIndex < sServoCounter; ++tServoIndex) {
         if (sServoArray[tServoIndex]->mServoMoves) {
