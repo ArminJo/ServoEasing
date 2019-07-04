@@ -20,10 +20,10 @@ extern ServoEasing ClawServo;      // 3 - Back Left Lift Servo
 
 extern struct ArmPosition sStartPosition, sEndPosition, sCurrentPosition, sPositionDelta;
 
-extern uint8_t sBodyPivotAngle;
-extern uint8_t sHorizontalServoAngle;
-extern uint8_t sLiftServoAngle;
-extern uint8_t sClawServoAngle;
+extern int sBodyPivotAngle;
+extern int sHorizontalServoAngle;
+extern int sLiftServoAngle;
+extern int sClawServoAngle;
 
 extern uint8_t sEasingType;
 extern float sLastPercentageOfCompletion;
@@ -39,7 +39,16 @@ void setAllServos(uint8_t aNumberOfValues, ...);
 /*
  * Inverse kinematic
  */
-bool goToPosition(int aLeftRight, int aBackFront, int aDownUp);
+#define KEEP_POSITION (-1000) // Can be used as parameter for goToPosition()
+void internalAutoMove();
+void goToNeutral();
+void openClaw();
+void closeClaw();
+bool goToPosition(int aLeftRightMilliMeter, int aBackFrontMilliMeter, int aDownUpMilliMeter);
+bool goToPositionRelative(int aLeftRightDeltaMilliMeter, int aBackFrontDeltaMilliMeter, int aDownUpDeltaMilliMeter);
+
+uint16_t getMaxDeltaMillimeter();
+
 void computeNewCurrentAngles(float aPercentageOfCompletion);
 void testInverseKinematic();
 void testInverseAndForwardKinematic();
@@ -48,8 +57,12 @@ void testInverseAndForwardKinematic();
  * Move and wait functions
  */
 void synchronizeMoveAllServosAndCheckInputAndWait();
+void synchronizeMoveAllServosDAndCheckInputAndWait(uint16_t aMillisForMove);
 void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree);
 void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree, uint16_t aDegreesPerSecond);
 void updateAndCheckInputAndWaitForAllServosToStop();
 
 #endif /* ROBOTARMSERVOCONTROL_H_ */
+
+//Added by Sloeber 
+#pragma once

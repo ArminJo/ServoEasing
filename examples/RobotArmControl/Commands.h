@@ -24,6 +24,9 @@ void doLiftDown();
 void doOpenClaw();
 void doCloseClaw();
 
+// from ClockMovements.cpp
+void doClockTest();
+
 void doSwitchToManual();
 void doInverseKinematicOff();
 void doInverseKinematicOn();
@@ -41,3 +44,6 @@ void doDecreaseSpeed();
 void doSwitchEasingType();
 
 #endif /* SRC_COMMANDS_H_ */
+
+//Added by Sloeber 
+#pragma once

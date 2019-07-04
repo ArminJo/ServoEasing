@@ -34,14 +34,53 @@
 #include "Commands.h" // for doAutoMove
 #include "IRCommandDispatcher.h"
 #include "QuadrupedServoControl.h"
+#include "QuadrupedMovements.h"
+
 #include "ADCUtils.h"
+
+/*
+ * The auto move function. Put your own moves here.
+ *
+ * Servos available:
+ *  frontLeftPivotServo, frontLeftLiftServo
+ *  backLeftPivotServo, backLeftLiftServo
+ *  backRightPivotServo, backRightLiftServo
+ *  frontRightPivotServo, frontRightLiftServo
+ *
+ * Useful commands:
+ *
+ * sMovingDirection = MOVE_DIRECTION_FORWARD; // MOVE_DIRECTION_LEFT etc.
+ * moveCreep(1);
+ * centerServos();
+ * moveTrot(1);
+ * moveTurn(1);
+ * doLeanLeft();
+ * doLeanRight();
+ * basicTwist(30);
+ * doWave();
+ * delayAndCheckIRInput(1000);
+ *
+ * To move the front left lift servo use:
+ * frontLeftLiftServo.easeTo(LIFT_MIN_ANGLE);
+ * setLiftServos(LIFT_MIN_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE);
+ * setPivotServos(100, 100, 80, 80);
+ */
+void doAutoMove() {
+    /*
+     * comment this out and put your own code here
+     */
+    internalAutoMove();
+    return;
+
+}
 
 #define VCC_STOP_THRESHOLD_MILLIVOLT 3600 // stop moving if below 3.6 Volt
 #define MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE 20000 // 20 seconds
 #define MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE 120000 // 2 Minutes
 #define MILLIS_OF_INACTIVITY_BETWEEN_REMINDER_MOVE 60000 // 1 Minute
 
-#define VERSION_EXAMPLE "2.0"
+#define VERSION_EXAMPLE "2.1"
+// 2.1 auto move
 // 2.0 major refactoring
 // 1.1 mirror computation at transformAndSetPivotServos and transformOneServoIndex
 
@@ -60,7 +99,7 @@ void setup() {
     setupQuadrupedServos();
     setSpeedForAllServos(sServoSpeed);
 
-    // Only fore setting channel and reference
+    // Just for setting channel and reference
     getVCCVoltageMillivoltSimple();
 
     /*
@@ -124,36 +163,3 @@ void loop() {
     delay(50); // Pause for 50ms before executing next movement
 }
 
-/*
- * The auto move function. Put your own moves here.
- *
- * Servos available:
- *  frontLeftPivotServo, frontLeftLiftServo
- *  backLeftPivotServo, backLeftLiftServo
- *  backRightPivotServo, backRightLiftServo
- *  frontRightPivotServo, frontRightLiftServo
- *
- * Useful commands:
- *
- * sMovingDirection = MOVE_DIRECTION_FORWARD;
- * moveCreep(1);
- * centerServos();
- * moveTrot(1);
- * moveTurn(1);
- * doLeanLeft();
- * doLeanRight();
- * basicTwist(30);
- * doWave();
- * To move the front left lift servo use:
- * frontLeftLiftServo.easeTo(LIFT_MIN_ANGLE);
- * setLiftServos(LIFT_MIN_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE);
- * setPivotServos(100, 100, 80, 80);
- */
-void doAutoMove() {
-    /*
-     * comment this out and put your own code here
-     */
-    internalAutoMove();
-    return;
-
-}

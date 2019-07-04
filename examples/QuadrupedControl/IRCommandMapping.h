@@ -16,8 +16,14 @@
 /*
  * !!! Choose your remote !!!
  */
-#define USE_KEYES_REMOTE
+//#define USE_KEYES_REMOTE // The mePed 2 Standard remote, will be taken as default
 //#define USE_WM10_REMOTE
+
+// Take KEYES remote as default if not otherwise specified
+#if !defined(USE_KEYES_REMOTE) && !defined(USE_WM10_REMOTE)
+#define USE_KEYES_REMOTE // the mePed 2 Standard remote
+#endif
+
 
 #if defined(USE_KEYES_REMOTE) && defined(USE_WM10_REMOTE)
 #error "Please choose only one remote for compile"
@@ -205,3 +211,6 @@ COMMAND_BACKWARD, &doSetDirectionBack, dirBack }, { COMMAND_RIGHT, &doSetDirecti
         &doDecreaseHeight, fastBack }, { COMMAND_STOP, &doStop, stop } };
 
 #endif /* IR_COMMAND_MAPING_H_ */
+
+//Added by Sloeber 
+#pragma once

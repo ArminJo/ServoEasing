@@ -39,7 +39,7 @@
  ******************************************/
 
 /*
- * Center, lean left and right lean all 4 directions and twist. Ends with a wave.
+ * Center, lean left and right lean all 4 directions and twist a random angle. Ends with a wave.
  */
 void doDance() {
     Serial.print(F("Dance."));
@@ -63,9 +63,9 @@ void doDance() {
         doLeanLeft();
         RETURN_IF_STOP;
         // lean back
-        setLiftServos(LIFT_MIN_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE, LIFT_MIN_ANGLE);
+        doLeanBack();
         RETURN_IF_STOP;
-        uint8_t tTwistAngle = random(15, 40);
+        uint8_t tTwistAngle = random(30, 60);
         basicTwist(tTwistAngle);
         RETURN_IF_STOP;
         basicTwist(tTwistAngle, false);
@@ -74,7 +74,7 @@ void doDance() {
         doLeanRight();
         RETURN_IF_STOP;
         // lean front
-        setLiftServos(LIFT_MAX_ANGLE, LIFT_MIN_ANGLE, LIFT_MIN_ANGLE, LIFT_MAX_ANGLE);
+        doLeanFront();
         RETURN_IF_STOP;
     }
 
@@ -87,9 +87,11 @@ void doWave() {
     Serial.print(F("Wave 3 times with right leg."));
     printSpeed();
 
+    // move front left and back right leg 10 degree forward to avoid falling to front if lifting the front right leg
     setAllServos(80, 90, 100, 90, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle);
     RETURN_IF_STOP;
 
+    // move all legs up, except front left -> front right lifts from the ground
     setLiftServos(LIFT_MIN_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE);
     RETURN_IF_STOP;
 
@@ -98,6 +100,7 @@ void doWave() {
 
     sServoArray[FRONT_RIGHT_PIVOT]->setEasingType(EASE_QUADRATIC_IN_OUT);
 
+    // wave with the front right leg
     for (uint8_t i = 0; i < 3; ++i) {
         moveOneServoAndCheckInputAndWait(FRONT_RIGHT_PIVOT, 135, sServoSpeed * 2);
         RETURN_IF_STOP;
@@ -105,6 +108,8 @@ void doWave() {
         moveOneServoAndCheckInputAndWait(FRONT_RIGHT_PIVOT, 45, sServoSpeed * 2);
         RETURN_IF_STOP;
     }
+    sServoArray[FRONT_RIGHT_PIVOT]->setEasingType(EASE_LINEAR);
+
     delayAndCheckIRInput(1000);
     RETURN_IF_STOP;
 
@@ -161,6 +166,18 @@ void doLeanRight() {
     setLiftServos(LIFT_MIN_ANGLE, LIFT_MIN_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE);
 }
 
+void doLeanBack() {
+    Serial.print(F("Lean back."));
+    printSpeed();
+    setLiftServos(LIFT_MIN_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE, LIFT_MIN_ANGLE);
+}
+
+void doLeanFront() {
+    Serial.print(F("Lean front."));
+    printSpeed();
+    setLiftServos(LIFT_MAX_ANGLE, LIFT_MIN_ANGLE, LIFT_MIN_ANGLE, LIFT_MAX_ANGLE);
+}
+
 void doTurnRight() {
     sMovingDirection = MOVE_DIRECTION_RIGHT;
     moveTurn();
@@ -213,6 +230,8 @@ void doAttention() {
 }
 
 void internalAutoMove() {
+    uint16_t tOriginalSpeed = sServoSpeed;
+
     centerServos();
     RETURN_IF_STOP;
 
@@ -220,33 +239,68 @@ void internalAutoMove() {
     doAttention();
     RETURN_IF_STOP;
 
+    // creep forward slow
     sMovingDirection = MOVE_DIRECTION_FORWARD;
     moveCreep(2);
     RETURN_IF_STOP;
 
-    setSpeedForAllServos(200);
-    moveCreep(2);
+    // creep forward fast
+    setSpeed(260);
+    moveCreep(6);
     RETURN_IF_STOP;
 
-//    setSpeedForAllServos(160);
+    // creep right fast
     sMovingDirection = MOVE_DIRECTION_RIGHT;
-    moveCreep(2);
+    moveCreep(8);
     RETURN_IF_STOP;
 
-    setSpeedForAllServos(160);
-    centerServos();
-    moveTrot(2);
-    RETURN_IF_STOP;
-
-    sMovingDirection = MOVE_DIRECTION_BACKWARD;
-    moveTrot(4);
-    RETURN_IF_STOP;
-
-    centerServos();
-    moveTurn(8);
+    // creep left fast
+    sMovingDirection = MOVE_DIRECTION_LEFT;
+    moveCreep(4);
     RETURN_IF_STOP;
 
     delayAndCheckIRInput(2000);
+
+    setSpeed(200);
+    doDance();
+    RETURN_IF_STOP;
+
+    // turn right
+    sMovingDirection = MOVE_DIRECTION_RIGHT;
+    moveTurn(11);
+    RETURN_IF_STOP;
+
+    // trot forward
+    setSpeed(160);
+    sMovingDirection = MOVE_DIRECTION_FORWARD;
+    centerServos();
+    moveTrot(10);
+    RETURN_IF_STOP;
+
+    // trot back
+    sMovingDirection = MOVE_DIRECTION_BACKWARD;
+    moveTrot(8);
+    RETURN_IF_STOP;
+
+    delayAndCheckIRInput(2000);
+
+    // trot right
+    sMovingDirection = MOVE_DIRECTION_RIGHT;
+    moveTrot(8);
+    RETURN_IF_STOP;
+
+    delayAndCheckIRInput(2000);
+
+    // turn right
+    centerServos();
+    sMovingDirection = MOVE_DIRECTION_RIGHT;
+    moveTurn(12);
+    RETURN_IF_STOP;
+
+    // restore speed
+    setSpeed(tOriginalSpeed);
+
+    delayAndCheckIRInput(10000);
 }
 /*************************
  * Instant Commands
@@ -272,18 +326,19 @@ void doSetDirectionRight() {
 }
 
 /*
- * Decrease moving speed by 25%
+ * Increase moving speed by 25%
  */
 void doIncreaseSpeed() {
     sServoSpeed += sServoSpeed / 4;
-    if (sServoSpeed > 0xBF) {
-        sServoSpeed = 0xBF;
+    if (sServoSpeed > 400) {
+        sServoSpeed = 400;
     }
     setSpeedForAllServos(sServoSpeed);
+    Serial.print(sServoSpeed);
 }
 
 /*
- * Increase moving speed by 25%
+ * Decrease moving speed by 25%
  */
 void doDecreaseSpeed() {
     if (sServoSpeed > 2) {
@@ -293,6 +348,7 @@ void doDecreaseSpeed() {
         }
     }
     setSpeedForAllServos(sServoSpeed);
+    Serial.print(sServoSpeed);
 }
 
 /*

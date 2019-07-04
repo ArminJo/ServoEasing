@@ -247,27 +247,32 @@ public:
     }
 
     /*
-     * Used for long button press recognition.
-     * Updates the ButtonPressDurationMillis by polling, since this cannot be done by interrupt.
+     * Negative logic for readButtonState() true means button pin is LOW
      */
-    uint16_t updateButtonPressDuration() {
-        uint8_t tActualButtonStateIsActive;
+    bool readButtonState() {
 #if defined(USE_BUTTON_0) && not defined(USE_BUTTON_1)
-        tActualButtonStateIsActive = INT0_IN_PORT & _BV(INT0_BIT);  //  = digitalReadFast(2);
+        return !(INT0_IN_PORT & _BV(INT0_BIT));  //  = digitalReadFast(2);
 #endif
 
 #if defined(USE_BUTTON_1) && not defined(USE_BUTTON_0)
-        tActualButtonStateIsActive = INT1_IN_PORT & _BV(INT1_BIT);  //  = digitalReadFast(3);
+        return !(INT1_IN_PORT & _BV(INT1_BIT));  //  = digitalReadFast(3);
 #endif
 
 #if defined(USE_BUTTON_0) && defined(USE_BUTTON_1)
         if (isButtonAtINT0) {
-            tActualButtonStateIsActive = INT0_IN_PORT & _BV(INT0_BIT);  //  = digitalReadFast(2);
+            return !(INT0_IN_PORT & _BV(INT0_BIT));  //  = digitalReadFast(2);
         } else {
-            tActualButtonStateIsActive = INT1_IN_PORT & _BV(INT1_BIT);  //  = digitalReadFast(3);
+            return !(INT1_IN_PORT & _BV(INT1_BIT));  //  = digitalReadFast(3);
         }
 #endif
-        if (tActualButtonStateIsActive) {
+    }
+
+    /*
+     * Used for long button press recognition.
+     * Updates the ButtonPressDurationMillis by polling, since this cannot be done by interrupt.
+     */
+    uint16_t updateButtonPressDuration() {
+        if (readButtonState()) {
             // Button still active -> update ButtonPressDurationMillis
             ButtonPressDurationMillis = millis() - ButtonLastChangeMillis;
         }
@@ -285,7 +290,9 @@ EasyButton * EasyButton::sPointerToButton1ForISR;
 void handleINT01Interrupts(EasyButton * aButtonControlPtr) {
     // Read button value
     bool tActualButtonStateIsActive;
-
+    /*
+     * This is faster than aButtonControlPtr->readButtonState();
+     */
 #if defined(USE_BUTTON_0) && not defined(USE_BUTTON_1)
     tActualButtonStateIsActive = INT0_IN_PORT & _BV(INT0_BIT);  //  = digitalReadFast(2);
 #endif
@@ -353,22 +360,7 @@ void handleINT01Interrupts(EasyButton * aButtonControlPtr) {
                     /*
                      * Check button again since it may changed back while processing callback function
                      */
-#if defined(USE_BUTTON_0) && not defined(USE_BUTTON_1)
-                    tActualButtonStateIsActive = INT0_IN_PORT & _BV(INT0_BIT);
-#endif
-
-#if defined(USE_BUTTON_1) && not defined(USE_BUTTON_0)
-                    tActualButtonStateIsActive = INT1_IN_PORT & _BV(INT1_BIT);
-#endif
-
-#if defined(USE_BUTTON_0) && defined(USE_BUTTON_1)
-                    if (aButtonControlPtr->isButtonAtINT0) {
-                        tActualButtonStateIsActive = INT0_IN_PORT & _BV(INT0_BIT);
-                    } else {
-                        tActualButtonStateIsActive = INT1_IN_PORT & _BV(INT1_BIT);
-                    }
-#endif
-                    tActualButtonStateIsActive = !tActualButtonStateIsActive;
+                    tActualButtonStateIsActive = aButtonControlPtr->readButtonState();
                     if (aButtonControlPtr->ButtonStateIsActive != tActualButtonStateIsActive) {
                         // button released now, so maintain status
 #ifdef TRACE
@@ -437,3 +429,6 @@ ISR(INT1_vect) {
 #endif // not defined(USE_ATTACH_INTERRUPT)
 
 #endif /* EASY_BUTTON_AT_INT01_H_ */
+
+//Added by Sloeber 
+#pragma once

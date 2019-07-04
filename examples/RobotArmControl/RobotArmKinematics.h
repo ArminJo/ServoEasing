@@ -32,7 +32,12 @@ void unsolve(struct ArmPosition * aPositionStruct);
  * Helper functions
  */
 void printPosition(struct ArmPosition * aPositionStruct);
+void printPositionCartesianWithLinefeed(struct ArmPosition * aPositionStruct);
+void printPositionCartesian(struct ArmPosition * aPositionStruct);
 void printPositionShort(struct ArmPosition * aPositionStruct);
 void printPositionShortWithUnits(struct ArmPosition * aPositionStruct);
 
 #endif // ROBOT_ARM_KINEMATICS_H_
+
+//Added by Sloeber 
+#pragma once

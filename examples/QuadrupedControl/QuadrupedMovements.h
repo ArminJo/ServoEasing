@@ -27,3 +27,6 @@ void moveCreep(uint8_t aNumberOfCreeps = 0);    // 0 -> 256 creeps
 void checkIfBodyHeightHasChanged();
 
 #endif /* SRC_QUADRUPEDMOVEMENTS_H_ */
+
+//Added by Sloeber 
+#pragma once

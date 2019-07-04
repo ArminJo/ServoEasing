@@ -31,8 +31,15 @@ uint8_t getIRCommand(bool doWait);
 void checkIRInput();
 void delayAndCheckIRInput(uint16_t aDelayMillis);
 
+bool checkAndCallMainCommands(uint8_t aIRCode);
 bool checkAndCallInstantCommands(uint8_t aIRCode); // function to search in MappingInstantCommands array
 
 void printIRCommandString(uint8_t aIRCode);
 
 #endif /* SRC_IRCOMMANDDISPATCHER_H_ */
+
+//Added by Sloeber 
+#pragma once
+
+//Added by Sloeber 
+#pragma once

@@ -31,10 +31,42 @@
 #include "Commands.h"
 #include "IRCommandDispatcher.h"
 #include "RobotArmServoControl.h"
+#include "uRTCLib.h"
 
-#define VCC_STOP_THRESHOLD_MILLIVOLT 3600 // stop moving if below 3.6 Volt
+/*
+ * The auto move function. Put your own moves here.
+ *
+ * Servos available:
+ * BasePivotServo (-90 to +90), HorizontalServo, LiftServo, ClawServo
+ *
+ * Useful commands:
+ *
+ * goToNeutral()
+ * goToPosition(int aLeftRightMilliMeter, int aBackFrontMilliMeter, int aDownUpMilliMeter);
+ * goToPositionRelative(int aLeftRightDeltaMilliMeter, int aBackFrontDeltaMilliMeter, int aDownUpDeltaMilliMeter);
+ * delayAndCheckIRInput(1000);
+ *
+ * To move the front left lift servo use:
+ * BasePivotServo.easeTo(-90);
+ * setLiftServos(LIFT_MIN_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE);
+ * setPivotServos(100, 100, 80, 80);
+ */
 
-#define MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE 10000
+void doAutoMove() {
+    /*
+     * comment this out and put your own code here
+     */
+    internalAutoMove();
+    return;
+
+}
+
+#define VCC_STOP_THRESHOLD_MILLIVOLT 3500 // We have voltage drop at the connectors, so the battery voltage is assumed higher, than the Arduino VCC.
+#define VCC_STOP_MIN_MILLIVOLT 3200         // We have voltage drop at the connectors, so the battery voltage is assumed higher, than the Arduino VCC.
+#define VCC_STOP_PERIOD_MILLIS 2000         // Period of VCC checks
+#define VCC_STOP_PERIOD_REPETITIONS 9       // Shutdown after 9 times (18 seconds) VCC below VCC_STOP_THRESHOLD_MILLIVOLT or 1 time below VCC_STOP_MIN_MILLIVOLT
+
+#define MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE 30000
 
 //#define TRACE
 //#define DEBUG
@@ -51,7 +83,14 @@ void changeEasingType(bool aButtonToggleState);
 EasyButton Button0AtPin2(true, &changeEasingType);
 
 void handleManualControl();
+void checkVCC();
+void printRTC();
+void testRTC();
+
 bool sManualActionHappened = false;
+bool sVCCTooLow = false;
+
+uRTCLib RTC_DS3231;
 
 /*
  * Code starts here
@@ -74,6 +113,14 @@ void setup() {
 
     setupIRDispatcher();
 
+#ifndef ROBOT_ARM_2
+    Wire.begin();
+    RTC_DS3231.set_model(URTCLIB_MODEL_DS3231);
+    Serial.println("Set date");
+    RTC_DS3231.set(0, 42, 16, 4, 11, 7, 19);
+    //  RTCLib::set(byte second, byte minute, byte hour, byte dayOfWeek, byte dayOfMonth, byte month, byte year)
+#endif
+
     // Output VCC Voltage
     uint16_t tVoltageMillivolts = getVCCVoltageMillivolt();
     Serial.print(F("VCC="));
@@ -85,10 +132,16 @@ void setup() {
 
 void loop() {
 
-    // Reset mode to linear for all movements using inverse kinematic
+    // Reset mode to linear for all servos
     if (sInverseKinematicModeActive) {
         setEasingTypeForAllServos(EASE_LINEAR);
     }
+
+#ifndef ROBOT_ARM_2
+    printRTC();
+#endif
+
+    checkVCC();
 
     /*
      * Check for IR commands and execute them
@@ -98,23 +151,58 @@ void loop() {
     /*
      * Do auto move if timeout after boot was reached and no IR command was received
      */
-    if (!sValidIRCodeReceived && !sManualActionHappened && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
+    if (!sValidIRCodeReceived && !sManualActionHappened && !sVCCTooLow
+            && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
         doAutoMove();
     }
 
     if (!sValidIRCodeReceived) {
         handleManualControl();
     }
+}
 
-    /*
-     * Stop servos if voltage gets low
-     */
-    uint16_t tVoltageMillivolts = getVCCVoltageMillivolt();
-    if (tVoltageMillivolts < VCC_STOP_THRESHOLD_MILLIVOLT) {
+/*
+ * checks VCC periodically and sets sVCCTooLow
+ */
+void checkVCC() {
+    static uint8_t sVoltageTooLowCounter;
+    static long sLastMillisOfVoltageCheck;
+    if (millis() - sLastMillisOfVoltageCheck >= VCC_STOP_PERIOD_MILLIS) {
+        sLastMillisOfVoltageCheck = millis();
+        uint16_t tVCC = getVCCVoltageMillivolt();
+
         Serial.print(F("VCC="));
-        Serial.print(tVoltageMillivolts);
-        Serial.print(" mV -> ");
-        shutdownServos();
+        Serial.print(tVCC);
+        Serial.println(" mV");
+
+        // one time flag
+        if (!sVCCTooLow) {
+            if (tVCC < VCC_STOP_THRESHOLD_MILLIVOLT) {
+                /*
+                 * Voltage too low, wait VCC_STOP_PERIOD_REPETITIONS (9) times and then shut down.
+                 */
+                if (tVCC < VCC_STOP_MIN_MILLIVOLT) {
+                    // emergency shutdown
+                    sVoltageTooLowCounter = VCC_STOP_PERIOD_REPETITIONS;
+                    Serial.println(F("Voltage < 3.2 Volt detected"));
+                } else {
+                    sVoltageTooLowCounter++;
+                    Serial.println(F("Voltage < 3.4 Volt detected"));
+                }
+                if (sVoltageTooLowCounter == VCC_STOP_PERIOD_REPETITIONS) {
+                    Serial.println(F("Shut down"));
+                    sVCCTooLow = true;
+                    /*
+                     * Do it once and wait for 5 seconds
+                     * Afterwards only auto move is disabled
+                     */
+                    shutdownServos();
+                    delay(5000);
+                }
+            } else {
+                sVoltageTooLowCounter = 0;
+            }
+        }
     }
 }
 
@@ -133,74 +221,95 @@ void setToAutoMode() {
 /*
  * Sets sManualActionHappened if potentiometers has once been operated
  */
-#define ANALOG_HYSTERESIS 6
+#define ANALOG_HYSTERESIS 2
+#define ANALOG_HYSTERESIS_FOR_MANUAL_ACTION 12
 void handleManualControl() {
     static bool isInitialized = false;
 
-    static int sLastPivot;
-    static int sLastHorizontal;
-    static int sLastLift;
-    static int sLastClaw;
+    static int sFirstPivot, sLastPivot;
+    static int sFirstHorizontal, sLastHorizontal;
+    static int sFirstLift, sLastLift;
+    static int sFirstClaw, sLastClaw;
 
     /*
      * Dummy read to set the reference and let it settle
      */
-    analogRead(PIVOT_INPUT_PIN);
+    analogRead (PIVOT_INPUT_PIN);
     delay(1);
 
-    bool tManualAction = false; // do only one servo at a time
+    bool tValueChanged = false; // do only one servo at a time
+    bool tManualAction = false; // if value changed more than ANALOG_HYSTERESIS_FOR_MANUAL_ACTION
+
     int tTargetAngle = 0; // to avoid compiler warnings
 // reset manual action after the first move to manual start position
     if (!isInitialized) {
-        sLastPivot = analogRead(PIVOT_INPUT_PIN);
-        sLastHorizontal = analogRead(HORIZONTAL_INPUT_PIN);
-        sLastLift = analogRead(LIFT_INPUT_PIN);
-        sLastClaw = analogRead(CLAW_INPUT_PIN);
+        sFirstPivot = sLastPivot = analogRead(PIVOT_INPUT_PIN);
+        sFirstHorizontal = sLastHorizontal = analogRead(HORIZONTAL_INPUT_PIN);
+        sFirstLift = sLastLift = analogRead(LIFT_INPUT_PIN);
+        sFirstClaw = sLastClaw = analogRead(CLAW_INPUT_PIN);
         isInitialized = true;
     }
 
     int tPivot = analogRead(PIVOT_INPUT_PIN);
     if (abs(sLastPivot - tPivot) > ANALOG_HYSTERESIS) {
+        tValueChanged = true;
+        // check for manual action
+        if (abs(sFirstPivot - tPivot) > ANALOG_HYSTERESIS_FOR_MANUAL_ACTION) {
+            tManualAction = true;
+        }
         sLastPivot = tPivot;
         tTargetAngle = map(tPivot, 0, 1023, 10 + PIVOT_OFFSET, -10 - PIVOT_OFFSET);
         moveOneServoAndCheckInputAndWait(SERVO_BASE_PIVOT, tTargetAngle);
         Serial.print("BasePivotServo: micros=");
         Serial.print(BasePivotServo.getEndMicrosecondsOrUnitsWithTrim());
-        tManualAction = true;
     }
 
     int tHorizontal = analogRead(HORIZONTAL_INPUT_PIN);
-    if (!tManualAction && abs(sLastHorizontal - tHorizontal) > ANALOG_HYSTERESIS) {
+    if (!tValueChanged && abs(sLastHorizontal - tHorizontal) > ANALOG_HYSTERESIS) {
+        tValueChanged = true;
+        // check for manual action
+        if (abs(sFirstHorizontal - tHorizontal) > ANALOG_HYSTERESIS_FOR_MANUAL_ACTION) {
+            tManualAction = true;
+        }
         sLastHorizontal = tHorizontal;
         tTargetAngle = map(tHorizontal, 0, 1023, 0, 180);
         moveOneServoAndCheckInputAndWait(SERVO_HORIZONTAL, tTargetAngle);
         Serial.print("HorizontalServo: micros=");
         Serial.print(HorizontalServo.getEndMicrosecondsOrUnits());
-        tManualAction = true;
     }
 
     int tLift = analogRead(LIFT_INPUT_PIN);
-    if (!tManualAction && abs(sLastLift - tLift) > ANALOG_HYSTERESIS * 2) {
+    if (!tValueChanged && abs(sLastLift - tLift) > ANALOG_HYSTERESIS) {
+        tValueChanged = true;
+        // check for manual action
+        if (abs(sFirstLift - tLift) > ANALOG_HYSTERESIS_FOR_MANUAL_ACTION) {
+            tManualAction = true;
+        }
         sLastLift = tLift;
         tTargetAngle = map(tLift, 0, 1023, 0, LIFT_MAX_ANGLE);
         moveOneServoAndCheckInputAndWait(SERVO_LIFT, tTargetAngle);
         Serial.print("LiftServo: micros=");
         Serial.print(LiftServo.getEndMicrosecondsOrUnits());
-        tManualAction = true;
     }
 
     int tClaw = analogRead(CLAW_INPUT_PIN);
-    if (!tManualAction && abs(sLastClaw - tClaw) > (ANALOG_HYSTERESIS * 2)) {
+    if (!tValueChanged && abs(sLastClaw - tClaw) > (ANALOG_HYSTERESIS)) {
+        tValueChanged = true;
+        // check for manual action
+        if (abs(sFirstClaw - tClaw) > ANALOG_HYSTERESIS_FOR_MANUAL_ACTION) {
+            tManualAction = true;
+        }
         sLastClaw = tClaw;
         tTargetAngle = map(tClaw, 0, 1023, 0, CLAW_MAX_ANGLE);
         moveOneServoAndCheckInputAndWait(SERVO_CLAW, tTargetAngle);
         Serial.print("ClawServo: micros=");
         Serial.print(ClawServo.getEndMicrosecondsOrUnits());
-        tManualAction = true;
     }
 
-    if (tManualAction) {
-        sManualActionHappened = true;
+    if (tValueChanged) {
+        if (tManualAction) {
+            sManualActionHappened = true;
+        }
         Serial.print(" degree=");
         Serial.print(tTargetAngle);
         Serial.print(" | ");
@@ -212,3 +321,62 @@ void handleManualControl() {
     }
 }
 
+/*
+ * Only URTCLIB_SQWG_OFF_1 and URTCLIB_SQWG_1H work on my china module
+ */
+void testRTC() {
+    Serial.println("Testing SQWG/INT output:");
+
+    Serial.println("fixed 1:");
+    RTC_DS3231.sqwgSetMode(URTCLIB_SQWG_OFF_1);
+    delay(2000);
+
+    Serial.println("1 hertz:");
+    RTC_DS3231.sqwgSetMode(URTCLIB_SQWG_1H);
+    delay(3000);
+
+    Serial.println("1024 hertz:");
+    RTC_DS3231.sqwgSetMode(URTCLIB_SQWG_1024H);
+    delay(2000);
+
+    Serial.println("4096 hertz:");
+    RTC_DS3231.sqwgSetMode(URTCLIB_SQWG_4096H);
+    delay(2000);
+
+    Serial.println("8192 hertz:");
+    RTC_DS3231.sqwgSetMode(URTCLIB_SQWG_8192H);
+    delay(2000);
+
+}
+
+void printRTC() {
+    static long sLastMillisOfRTCRead;
+
+    if (millis() - sLastMillisOfRTCRead >= 1000) {
+        sLastMillisOfRTCRead = millis();
+        RTC_DS3231.refresh();
+
+        Serial.print("RTC DateTime: ");
+        Serial.print(RTC_DS3231.day());
+        Serial.print('.');
+        Serial.print(RTC_DS3231.month());
+        Serial.print('.');
+        Serial.print(RTC_DS3231.year());
+
+        Serial.print(' ');
+
+        Serial.print(RTC_DS3231.hour());
+        Serial.print(':');
+        Serial.print(RTC_DS3231.minute());
+        Serial.print(':');
+        Serial.print(RTC_DS3231.second());
+
+        Serial.print(" DOW: ");
+        Serial.print(RTC_DS3231.dayOfWeek());
+
+        Serial.print(" - Temp: ");
+        Serial.print(RTC_DS3231.temp());
+
+        Serial.println();
+    }
+}

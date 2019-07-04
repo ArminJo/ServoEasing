@@ -59,15 +59,17 @@ void doGoForward() {
     }
 }
 
+// Allow to go to -92
 void doTurnRight() {
-    if (sBodyPivotAngle > 2) {
+    if (sBodyPivotAngle > -90) {
         sBodyPivotAngle -= 2;
         BasePivotServo.easeTo(sBodyPivotAngle);
     }
 }
 
+// Allow to go to 82
 void doTurnLeft() {
-    if (sBodyPivotAngle <= 178) {
+    if (sBodyPivotAngle <= 90) {
         sBodyPivotAngle += 2;
         BasePivotServo.easeTo(sBodyPivotAngle);
     }
@@ -124,7 +126,7 @@ void doToggleInverseKinematic() {
     }
 }
 
-void doAutoMove() {
+void internalAutoMove() {
     Serial.print(F("Start auto move: InverseKinematicModeActive="));
     Serial.println(sInverseKinematicModeActive);
 
@@ -173,7 +175,7 @@ void doAutoMove() {
     goToPosition(0, 148, 80);
     RETURN_IF_STOP;
 
-    delay(1000);
+    delayAndCheckIRInput(2000);
 }
 /*************************
  * Instant Commands
@@ -191,6 +193,7 @@ void doIncreaseSpeed() {
         sServoSpeed = 0xBF;
     }
     setSpeedForAllServos(sServoSpeed);
+    Serial.print(sServoSpeed);
 }
 
 /*
@@ -204,6 +207,7 @@ void doDecreaseSpeed() {
         }
     }
     setSpeedForAllServos(sServoSpeed);
+    Serial.print(sServoSpeed);
 }
 
 void doSwitchEasingType() {

@@ -12,21 +12,26 @@
 
 #include "IRCommandDispatcher.h" // for checkIRInput(); and RETURN_IF_STOP;
 
+//#define DEBUG
+
 // Define the 4 servos in exact this order!
 ServoEasing BasePivotServo;    // 0 - Front Left Pivot Servo
 ServoEasing HorizontalServo;     // 1 - Front Left Lift Servo
 ServoEasing LiftServo;     // 2 - Back Left Pivot Servo
 ServoEasing ClawServo;      // 3 - Back Left Lift Servo
 
-struct ArmPosition sStartPosition, sEndPosition, sCurrentPosition, sPositionDelta;
+struct ArmPosition sStartPosition; // is loaded with end position at every goToPosition...()
+struct ArmPosition sEndPosition;
+struct ArmPosition sCurrentPosition; // Used for movement
+struct ArmPosition sPositionDelta; // sEndPosition - sStartPosition - used for faster computing the movement
 
 /*
  * Angles for the servos for IR control
  */
-uint8_t sBodyPivotAngle = PIVOT_NEUTRAL_OFFSET_DEGREE;
-uint8_t sHorizontalServoAngle = HORIZONTAL_NEUTRAL_OFFSET_DEGREE;
-uint8_t sLiftServoAngle = LIFT_NEUTRAL_OFFSET_DEGREE;
-uint8_t sClawServoAngle = CLAW_START_ANGLE;
+int sBodyPivotAngle = PIVOT_NEUTRAL_OFFSET_DEGREE;
+int sHorizontalServoAngle = HORIZONTAL_NEUTRAL_OFFSET_DEGREE;
+int sLiftServoAngle = LIFT_NEUTRAL_OFFSET_DEGREE;
+int sClawServoAngle = CLAW_START_ANGLE;
 
 /*
  * Servo movement
@@ -35,6 +40,8 @@ uint8_t sEasingType = EASE_LINEAR;
 float sLastPercentageOfCompletion;
 uint16_t sServoSpeed = 60;      // in degree/second
 
+// User functions for ServoEasing implementing Inverse kinematics movement
+// TODO test carefully
 float moveInverseKinematicForBase(float aPercentageOfCompletion);
 float moveInverseKinematicForHorizontal(float aPercentageOfCompletion);
 float moveInverseKinematicForLift(float aPercentageOfCompletion);
@@ -112,114 +119,100 @@ void setAllServos(uint8_t aNumberOfValues, ...) {
     synchronizeMoveAllServosAndCheckInputAndWait();
 }
 
-/*void drawNumber(float aXOrigin, float aYOrigin, int aNumber, float aScale) {
-
-  switch (aNumber) {
-
-    case 0:
-      drawTo(bx + 12 * scale, by + 6 * scale);
-      lift(0);
-      bogenGZS(bx + 7 * scale, by + 10 * scale, 10 * scale, -0.8, 6.7, 0.5);
-      lift(1);
-      break;
-    case 1:
-
-      drawTo(bx + 3 * scale, by + 15 * scale);
-      lift(0);
-      drawTo(bx + 10 * scale, by + 20 * scale);
-      drawTo(bx + 10 * scale, by + 0 * scale);
-      lift(1);
-      break;
-    case 2:
-      drawTo(bx + 2 * scale, by + 12 * scale);
-      lift(0);
-      bogenUZS(bx + 8 * scale, by + 14 * scale, 6 * scale, 3, -0.8, 1);
-      drawTo(bx + 1 * scale, by + 0 * scale);
-      drawTo(bx + 14 * scale, by + 0 * scale);
-      lift(1);
-      break;
-    case 3:
-      drawTo(bx + 2 * scale, by + 17 * scale);
-      lift(0);
-      bogenUZS(bx + 5 * scale, by + 15 * scale, 5 * scale, 3, -2, 1);
-      bogenUZS(bx + 5 * scale, by + 5 * scale, 5 * scale, 1.57, -3, 1);
-      lift(1);
-      break;
-    case 4:
-      drawTo(bx + 10 * scale, by + 0 * scale);
-      lift(0);
-      drawTo(bx + 10 * scale, by + 20 * scale);
-      drawTo(bx + 2 * scale, by + 6 * scale);
-      drawTo(bx + 12 * scale, by + 6 * scale);
-      lift(1);
-      break;
-    case 5:
-      drawTo(bx + 2 * scale, by + 5 * scale);
-      lift(0);
-      bogenGZS(bx + 5 * scale, by + 6 * scale, 6 * scale, -2.5, 2, 1);
-      drawTo(bx + 5 * scale, by + 20 * scale);
-      drawTo(bx + 12 * scale, by + 20 * scale);
-      lift(1);
-      break;
-    case 6:
-      drawTo(bx + 2 * scale, by + 10 * scale);
-      lift(0);
-      bogenUZS(bx + 7 * scale, by + 6 * scale, 6 * scale, 2, -4.4, 1);
-      drawTo(bx + 11 * scale, by + 20 * scale);
-      lift(1);
-      break;
-    case 7:
-      drawTo(bx + 2 * scale, by + 20 * scale);
-      lift(0);
-      drawTo(bx + 12 * scale, by + 20 * scale);
-      drawTo(bx + 2 * scale, by + 0);
-      lift(1);
-      break;
-    case 8:
-      drawTo(bx + 5 * scale, by + 10 * scale);
-      lift(0);
-      bogenUZS(bx + 5 * scale, by + 15 * scale, 5 * scale, 4.7, -1.6, 1);
-      bogenGZS(bx + 5 * scale, by + 5 * scale, 5 * scale, -4.7, 2, 1);
-      lift(1);
-      break;
-
-    case 9:
-      drawTo(bx + 9 * scale, by + 11 * scale);
-      lift(0);
-      bogenUZS(bx + 7 * scale, by + 15 * scale, 5 * scale, 4, -0.5, 1);
-      drawTo(bx + 5 * scale, by + 0);
-      lift(1);
-      break;
-
-    case 11: // Doppelpunkt
-      drawTo(bx + 5 * scale, by + 15 * scale);
-      lift(0);
-      bogenGZS(bx + 5 * scale, by + 15 * scale, 0.1 * scale, 1, -1, 1);
-      lift(1);
-      drawTo(bx + 5 * scale, by + 5 * scale);
-      lift(0);
-      bogenGZS(bx + 5 * scale, by + 5 * scale, 0.1 * scale, 1, -1, 1);
-      lift(1);
-      break;
-
-  }
+/*
+ *  aBasePivot,  aHorizontal,  aLift,  aClaw
+ */
+void setAllServosD(uint16_t aMillisForMove, uint8_t aNumberOfValues, ...) {
+#ifdef DEBUG
+    printArrayPositions(&Serial);
+#endif
+    va_list aDegreeValues;
+    va_start(aDegreeValues, aNumberOfValues);
+    setDegreeForAllServos(aNumberOfValues, &aDegreeValues);
+    va_end(aDegreeValues);
+#ifdef DEBUG
+    printArrayPositions(&Serial);
+#endif
+    synchronizeMoveAllServosDAndCheckInputAndWait(aMillisForMove);
 }
-*/
+
+void goToNeutral() {
+    sEndPosition.LeftRightDegree = PIVOT_NEUTRAL_OFFSET_DEGREE;
+    sEndPosition.BackFrontDegree = HORIZONTAL_NEUTRAL_OFFSET_DEGREE;
+    sEndPosition.DownUpDegree = LIFT_NEUTRAL_OFFSET_DEGREE;
+    unsolve(&sEndPosition);
+    goToPositionRelative(0, 0, 0);
+}
+
+uint16_t getMaxDeltaMillimeter() {
+    float tMaxDelta = 0;
+    if (abs(sPositionDelta.LeftRight) > tMaxDelta) {
+        tMaxDelta = abs(sPositionDelta.LeftRight);
+    }
+    if (abs(sPositionDelta.BackFront) > tMaxDelta) {
+        tMaxDelta = abs(sPositionDelta.BackFront);
+    }
+    if (abs(sPositionDelta.DownUp) > tMaxDelta) {
+        tMaxDelta = abs(sPositionDelta.DownUp);
+    }
+    return tMaxDelta;
+}
+
+uint16_t getDurationMillisForMove() {
+    uint16_t tMaxDeltaMillimeter = getMaxDeltaMillimeter();
+    uint16_t tMillisForMove = ((tMaxDeltaMillimeter * 125) / sServoSpeed) * 8; // *125 *8 to avoid temporary overflow at 16 bit arithmetic.
+#ifdef DEBUG
+    Serial.print(F("Speed="));
+    Serial.print(sServoSpeed);
+    Serial.print(F(" max mm="));
+    Serial.print(tMaxDeltaMillimeter);
+    Serial.print(F(" millis="));
+    Serial.println(tMillisForMove);
+#endif
+    return tMillisForMove;
+}
+
+void openClaw() {
+    sClawServoAngle = CLAW_OPEN_ANGLE;
+    ClawServo.easeTo(CLAW_OPEN_ANGLE);
+}
+
+void closeClaw() {
+    sClawServoAngle = CLAW_CLOSE_ANGLE;
+    ClawServo.easeTo(CLAW_CLOSE_ANGLE);
+}
+
 /*
  * Use inverse kinematics user easing function for movement from current position to the new position
+ * If parameter is KEEP_POSITION, the position will not be changed
  */
-bool goToPosition(int aLeftRight, int aBackFront, int aDownUp) {
+bool goToPosition(int aLeftRightMilliMeter, int aBackFrontMilliMeter, int aDownUpMilliMeter) {
+// First copy old end position to new start position
     sStartPosition = sEndPosition;
 #ifdef DEBUG
     Serial.print("Start: ");
     printPosition(&sStartPosition);
 #endif
-    sEndPosition.LeftRight = aLeftRight;
-    sPositionDelta.LeftRight = aLeftRight - sStartPosition.LeftRight;
-    sEndPosition.BackFront = aBackFront;
-    sPositionDelta.BackFront = aBackFront - sStartPosition.BackFront;
-    sEndPosition.DownUp = aDownUp;
-    sPositionDelta.DownUp = aDownUp - sStartPosition.DownUp;
+    if (aLeftRightMilliMeter == KEEP_POSITION) {
+        sPositionDelta.LeftRight = 0;
+    } else {
+        sEndPosition.LeftRight = aLeftRightMilliMeter;
+        sPositionDelta.LeftRight = aLeftRightMilliMeter - sStartPosition.LeftRight;
+    }
+
+    if (aBackFrontMilliMeter == KEEP_POSITION) {
+        sPositionDelta.BackFront = 0;
+    } else {
+        sEndPosition.BackFront = aBackFrontMilliMeter;
+        sPositionDelta.BackFront = aBackFrontMilliMeter - sStartPosition.BackFront;
+    }
+
+    if (aDownUpMilliMeter == KEEP_POSITION) {
+        sPositionDelta.DownUp = 0;
+    } else {
+        sEndPosition.DownUp = aDownUpMilliMeter;
+        sPositionDelta.DownUp = aDownUpMilliMeter - sStartPosition.DownUp;
+    }
     if (!solve(&sEndPosition)) {
         Serial.print("Position cannot be solved: ");
         printPosition(&sEndPosition);
@@ -230,7 +223,40 @@ bool goToPosition(int aLeftRight, int aBackFront, int aDownUp) {
     printPosition(&sEndPosition);
 #endif
     sLastPercentageOfCompletion = -2.0; // to force first computation
-    setAllServos(3, sEndPosition.LeftRightDegree, sEndPosition.BackFrontDegree, sEndPosition.DownUpDegree);
+    setAllServosD(getDurationMillisForMove(), 3, sEndPosition.LeftRightDegree, sEndPosition.BackFrontDegree,
+            sEndPosition.DownUpDegree);
+    return true;
+}
+
+bool goToPositionRelative(int aLeftRightDeltaMilliMeter, int aBackFrontDeltaMilliMeter, int aDownUpDeltaMilliMeter) {
+// First copy old end position to new start position
+    sStartPosition = sEndPosition;
+#ifdef DEBUG
+    Serial.print("Start: ");
+    printPosition(&sStartPosition);
+#endif
+
+    sEndPosition.LeftRight = sStartPosition.LeftRight + aLeftRightDeltaMilliMeter;
+    sPositionDelta.LeftRight = aLeftRightDeltaMilliMeter;
+
+    sEndPosition.BackFront = sStartPosition.BackFront + aBackFrontDeltaMilliMeter;
+    sPositionDelta.BackFront = aBackFrontDeltaMilliMeter;
+
+    sEndPosition.DownUp = sStartPosition.DownUp + aDownUpDeltaMilliMeter;
+    sPositionDelta.DownUp = aDownUpDeltaMilliMeter;
+
+    if (!solve(&sEndPosition)) {
+        Serial.print("Position cannot be solved: ");
+        printPosition(&sEndPosition);
+        return false;
+    }
+#ifdef DEBUG
+    Serial.print("End: ");
+    printPosition(&sEndPosition);
+#endif
+    sLastPercentageOfCompletion = -2.0; // to force first computation
+    setAllServosD(getDurationMillisForMove(), 3, sEndPosition.LeftRightDegree, sEndPosition.BackFrontDegree,
+            sEndPosition.DownUpDegree);
     return true;
 }
 
@@ -241,12 +267,19 @@ void computeNewCurrentAngles(float aPercentageOfCompletion) {
     sCurrentPosition.LeftRight = sStartPosition.LeftRight + (sPositionDelta.LeftRight * aPercentageOfCompletion);
     sCurrentPosition.BackFront = sStartPosition.BackFront + (sPositionDelta.BackFront * aPercentageOfCompletion);
     sCurrentPosition.DownUp = sStartPosition.DownUp + (sPositionDelta.DownUp * aPercentageOfCompletion);
-    solve(&sCurrentPosition);
+    if (!solve(&sCurrentPosition)) {
+        Serial.print("Current: ");
+        Serial.print(aPercentageOfCompletion);
+        Serial.print(" ");
+        printPositionCartesianWithLinefeed(&sCurrentPosition);
+    }
 #ifdef TRACE
-    Serial.print("Current: ");
-    Serial.print(aPercentageOfCompletion);
-    Serial.print(" ");
-    printPosition(&sCurrentPosition);
+    else {
+        Serial.print("Current: ");
+        Serial.print(aPercentageOfCompletion);
+        Serial.print(" ");
+        printPositionCartesianWithLinefeed(&sCurrentPosition);
+    }
 #endif
 }
 
@@ -290,21 +323,21 @@ float moveInverseKinematicForLift(float aPercentageOfCompletion) {
 }
 
 void testInverseKinematic() {
-    // init start position for first move
+// init start position for first move
     sEndPosition.LeftRight = 0;
     sEndPosition.BackFront = LIFT_ARM_LENGTH_MILLIMETER + CLAW_LENGTH_MILLIMETER; // 148;
     sEndPosition.DownUp = HORIZONTAL_ARM_LENGTH_MILLIMETER; // 80
-    // go to start position
+// go to start position
     goToPosition(0, 148, 80);
-    // go forward, backward
+// go forward, backward
     goToPosition(0, 168, 80);
     goToPosition(0, 128, 80);
     goToPosition(0, 148, 80);
-    // go up, down
+// go up, down
     goToPosition(0, 148, 100);
     goToPosition(0, 148, 60);
     goToPosition(0, 148, 80);
-    // go right, left
+// go right, left
     goToPosition(40, 148, 80);
     goToPosition(-40, 148, 80);
     goToPosition(0, 148, 80);
@@ -314,7 +347,7 @@ void testInverseKinematic() {
  * Only test computation, do not move arm!
  */
 void testInverseAndForwardKinematic() {
-    // init neutral position for first test
+// init neutral position for first test
     sEndPosition.LeftRight = 0;
     sEndPosition.BackFront = LIFT_ARM_LENGTH_MILLIMETER + CLAW_LENGTH_MILLIMETER; // 148
     sEndPosition.DownUp = HORIZONTAL_ARM_LENGTH_MILLIMETER; // 80
@@ -402,6 +435,12 @@ void updateAndCheckInputAndWaitForAllServosToStop() {
         RETURN_IF_STOP;
         delay(REFRESH_INTERVAL / 1000); // 20ms - REFRESH_INTERVAL is in Microseconds
     } while (!updateAllServos());
+}
+
+void synchronizeMoveAllServosDAndCheckInputAndWait(uint16_t aMillisForMove) {
+    setEaseToDForAllServos(aMillisForMove);
+    synchronizeAllServosAndStartInterrupt(false);
+    updateAndCheckInputAndWaitForAllServosToStop();
 }
 
 void synchronizeMoveAllServosAndCheckInputAndWait() {

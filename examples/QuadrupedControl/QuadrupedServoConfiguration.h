@@ -63,3 +63,6 @@
 #define FRONT_RIGHT_LIFT 7
 
 #endif /* SRC_QUADRUPEDSERVOCONFIGURATION_H_ */
+
+//Added by Sloeber 
+#pragma once

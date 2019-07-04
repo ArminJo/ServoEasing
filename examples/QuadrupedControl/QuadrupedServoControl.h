@@ -27,10 +27,11 @@ extern uint8_t sBodyHeightAngle;  //  = 60 From LIFT_MIN_ANGLE to LIFT_MAX_ANGLE
 extern int8_t sServoTrimAngles[];
 
 void setupQuadrupedServos();
+void setSpeed(uint16_t aSpeed);
 void printSpeed();
 
 void resetServosTo90Degree();
-void shutdownServos() ;
+void shutdownServos();
 void centerServos();
 void setEasingTypeToLinear();
 void setEasingTypeForMoving();
@@ -47,19 +48,21 @@ void updateAndCheckInputAndWaitForAllServosToStop();
  * Set servo positions
  */
 void setLiftServosToBodyHeight();
-void setAllServos(int aFLP, int aBLP, int aBRP, int aFRP, int aFLL, int aBLL, int aBRL, int aFRL);
-void setPivotServos(int aFLP, int aBLP, int aBRP, int aFRP);
-void setLiftServos(int aFLL, int aBLL, int aBRL, int aFRL);
+void setAllServos(int aFrontLeftPivot, int aBackLeftPivot, int aBackRightPivot, int aFrontRightPivot, int aFrontLeftLift,
+        int aBackLeftLift, int aBackRightLift, int aFrontRightLift);
+void setPivotServos(int aFrontLeftPivot, int aBackLeftPivot, int aBackRightPivot, int aFrontRightPivot);
+void setLiftServos(int aFrontLeftLift, int aBackLeftLift, int aBackRightLift, int aFrontRightLift);
 void setLiftServos(int aBodyHeightAngle);
 void setLiftServoHeight(ServoEasing & aLiftServo, uint8_t aHeightPercent);
 
 /*
  * Main transformation functions
  */
-void transformAndSetAllServos(int aFLP, int aBLP, int aBRP, int aFRP, int aFLL, int aBLL, int aBRL,
-        int aFRL, uint8_t aDirection = MOVE_DIRECTION_FORWARD, bool doMirror = false, bool aDoMove = true);
-void transformAndSetPivotServos(int aFLP, int aBLP, int aBRP, int aFRP, uint8_t aDirection = MOVE_DIRECTION_FORWARD,
-        bool doMirror = false, bool aDoMove = true);
+void transformAndSetAllServos(int aFrontLeftPivot, int aBackLeftPivot, int aBackRightPivot, int aFrontRightPivot,
+        int aFrontLeftLift, int aBackLeftLift, int aBackRightLift, int aFrontRightLift, uint8_t aDirection =
+        MOVE_DIRECTION_FORWARD, bool doMirror = false, bool aDoMove = true);
+void transformAndSetPivotServos(int aFrontLeftPivot, int aBackLeftPivot, int aBackRightPivot, int aFrontRightPivot,
+        uint8_t aDirection = MOVE_DIRECTION_FORWARD, bool doMirror = false, bool aDoMove = true);
 uint8_t transformOneServoIndex(uint8_t aServoIndexToTransform, uint8_t aDirection = MOVE_DIRECTION_FORWARD, bool doMirror = false);
 
 /*
@@ -70,3 +73,6 @@ void eepromReadAndSetServoTrim();
 void eepromWriteServoTrim();
 
 #endif /* QUADRUPEDSERVOCONTROL_H_ */
+
+//Added by Sloeber 
+#pragma once

@@ -78,6 +78,12 @@ void centerServos() {
     setAllServos(90, 90, 90, 90, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle);
 }
 
+void setSpeed(uint16_t aSpeed) {
+    sServoSpeed = aSpeed;
+    setSpeedForAllServos(sServoSpeed);
+    printSpeed();
+}
+
 void printSpeed() {
     Serial.print(F(" Speed="));
     Serial.println(sServoSpeed);
@@ -145,8 +151,9 @@ uint8_t getMirrorXorMask(uint8_t aDirection) {
     }
 }
 
-void transformAndSetAllServos(int aFLP, int aBLP, int aBRP, int aFRP, int aFLL, int aBLL, int aBRL, int aFRL, uint8_t aDirection,
-        bool doMirror, bool aDoMove) {
+void transformAndSetAllServos(int aFrontLeftPivot, int aBackLeftPivot, int aBackRightPivot, int aFrontRightPivot,
+        int aFrontLeftLift, int aBackLeftLift, int aBackRightLift, int aFrontRightLift, uint8_t aDirection, bool doMirror,
+        bool aDoMove) {
     uint8_t tIndexToAdd = aDirection * SERVOS_PER_LEG;
     uint8_t tXorToGetMirroredIndex = 0x0;
 // Invert angles for pivot servos
@@ -160,31 +167,31 @@ void transformAndSetAllServos(int aFLP, int aBLP, int aBRP, int aFRP, int aFLL, 
     uint8_t tEffectivePivotServoIndex;
     tEffectivePivotServoIndex = ((FRONT_LEFT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
-        aFLP = 180 - aFLP;
+        aFrontLeftPivot = 180 - aFrontLeftPivot;
     }
-    sServoNextPositionArray[tEffectivePivotServoIndex] = aFLP;
-    sServoNextPositionArray[tEffectivePivotServoIndex + LIFT_SERVO_OFFSET] = aFLL;
+    sServoNextPositionArray[tEffectivePivotServoIndex] = aFrontLeftPivot;
+    sServoNextPositionArray[tEffectivePivotServoIndex + LIFT_SERVO_OFFSET] = aFrontLeftLift;
 
     tEffectivePivotServoIndex = ((BACK_LEFT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
-        aBLP = 180 - aBLP;
+        aBackLeftPivot = 180 - aBackLeftPivot;
     }
-    sServoNextPositionArray[tEffectivePivotServoIndex] = aBLP;
-    sServoNextPositionArray[tEffectivePivotServoIndex + LIFT_SERVO_OFFSET] = aBLL;
+    sServoNextPositionArray[tEffectivePivotServoIndex] = aBackLeftPivot;
+    sServoNextPositionArray[tEffectivePivotServoIndex + LIFT_SERVO_OFFSET] = aBackLeftLift;
 
     tEffectivePivotServoIndex = ((BACK_RIGHT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
-        aBRP = 180 - aBRP;
+        aBackRightPivot = 180 - aBackRightPivot;
     }
-    sServoNextPositionArray[tEffectivePivotServoIndex] = aBRP;
-    sServoNextPositionArray[tEffectivePivotServoIndex + LIFT_SERVO_OFFSET] = aBRL;
+    sServoNextPositionArray[tEffectivePivotServoIndex] = aBackRightPivot;
+    sServoNextPositionArray[tEffectivePivotServoIndex + LIFT_SERVO_OFFSET] = aBackRightLift;
 
     tEffectivePivotServoIndex = ((FRONT_RIGHT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
-        aFRP = 180 - aFRP;
+        aFrontRightPivot = 180 - aFrontRightPivot;
     }
-    sServoNextPositionArray[tEffectivePivotServoIndex] = aFRP;
-    sServoNextPositionArray[tEffectivePivotServoIndex + LIFT_SERVO_OFFSET] = aFRL;
+    sServoNextPositionArray[tEffectivePivotServoIndex] = aFrontRightPivot;
+    sServoNextPositionArray[tEffectivePivotServoIndex + LIFT_SERVO_OFFSET] = aFrontRightLift;
 
     if (aDoMove) {
         synchronizeMoveAllServosAndCheckInputAndWait();
@@ -194,7 +201,8 @@ void transformAndSetAllServos(int aFLP, int aBLP, int aBRP, int aFRP, int aFLL, 
 /*
  * A subset of the functionality of transformAndSetAllServos() -> less arguments needed :-)
  */
-void transformAndSetPivotServos(int aFLP, int aBLP, int aBRP, int aFRP, uint8_t aDirection, bool doMirror, bool aDoMove) {
+void transformAndSetPivotServos(int aFrontLeftPivot, int aBackLeftPivot, int aBackRightPivot, int aFrontRightPivot,
+        uint8_t aDirection, bool doMirror, bool aDoMove) {
     uint8_t tIndexToAdd = aDirection * SERVOS_PER_LEG;
     uint8_t tXorToGetMirroredIndex = 0x0;
 // Invert angles for pivot servos
@@ -208,27 +216,27 @@ void transformAndSetPivotServos(int aFLP, int aBLP, int aBRP, int aFRP, uint8_t 
     uint8_t tEffectivePivotServoIndex;
     tEffectivePivotServoIndex = ((FRONT_LEFT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
-        aFLP = 180 - aFLP;
+        aFrontLeftPivot = 180 - aFrontLeftPivot;
     }
-    sServoNextPositionArray[tEffectivePivotServoIndex] = aFLP;
+    sServoNextPositionArray[tEffectivePivotServoIndex] = aFrontLeftPivot;
 
     tEffectivePivotServoIndex = ((BACK_LEFT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
-        aBLP = 180 - aBLP;
+        aBackLeftPivot = 180 - aBackLeftPivot;
     }
-    sServoNextPositionArray[tEffectivePivotServoIndex] = aBLP;
+    sServoNextPositionArray[tEffectivePivotServoIndex] = aBackLeftPivot;
 
     tEffectivePivotServoIndex = ((BACK_RIGHT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
-        aBRP = 180 - aBRP;
+        aBackRightPivot = 180 - aBackRightPivot;
     }
-    sServoNextPositionArray[tEffectivePivotServoIndex] = aBRP;
+    sServoNextPositionArray[tEffectivePivotServoIndex] = aBackRightPivot;
 
     tEffectivePivotServoIndex = ((FRONT_RIGHT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
-        aFRP = 180 - aFRP;
+        aFrontRightPivot = 180 - aFrontRightPivot;
     }
-    sServoNextPositionArray[tEffectivePivotServoIndex] = aFRP;
+    sServoNextPositionArray[tEffectivePivotServoIndex] = aFrontRightPivot;
 
     if (aDoMove) {
         synchronizeMoveAllServosAndCheckInputAndWait();
@@ -263,11 +271,11 @@ void testTransform() {
     printArrayPositions(&Serial);
 }
 
-void setPivotServos(int aFLP, int aBLP, int aBRP, int aFRP) {
-    sServoNextPositionArray[FRONT_LEFT_PIVOT] = aFLP;
-    sServoNextPositionArray[BACK_LEFT_PIVOT] = aBLP;
-    sServoNextPositionArray[BACK_RIGHT_PIVOT] = aBRP;
-    sServoNextPositionArray[FRONT_RIGHT_PIVOT] = aFRP;
+void setPivotServos(int aFrontLeftPivot, int aBackLeftPivot, int aBackRightPivot, int aFrontRightPivot) {
+    sServoNextPositionArray[FRONT_LEFT_PIVOT] = aFrontLeftPivot;
+    sServoNextPositionArray[BACK_LEFT_PIVOT] = aBackLeftPivot;
+    sServoNextPositionArray[BACK_RIGHT_PIVOT] = aBackRightPivot;
+    sServoNextPositionArray[FRONT_RIGHT_PIVOT] = aFrontRightPivot;
     synchronizeMoveAllServosAndCheckInputAndWait();
 }
 
@@ -293,11 +301,11 @@ void setLiftServos(int aBodyHeightAngle) {
     synchronizeMoveAllServosAndCheckInputAndWait();
 }
 
-void setLiftServos(int aFLL, int aBLL, int aBRL, int aFRL) {
-    sServoNextPositionArray[FRONT_LEFT_LIFT] = aFLL;
-    sServoNextPositionArray[BACK_LEFT_LIFT] = aBLL;
-    sServoNextPositionArray[BACK_RIGHT_LIFT] = aBRL;
-    sServoNextPositionArray[FRONT_RIGHT_LIFT] = aFRL;
+void setLiftServos(int aFrontLeftLift, int aBackLeftLift, int aBackRightLift, int aFrontRightLift) {
+    sServoNextPositionArray[FRONT_LEFT_LIFT] = aFrontLeftLift;
+    sServoNextPositionArray[BACK_LEFT_LIFT] = aBackLeftLift;
+    sServoNextPositionArray[BACK_RIGHT_LIFT] = aBackRightLift;
+    sServoNextPositionArray[FRONT_RIGHT_LIFT] = aFrontRightLift;
     synchronizeMoveAllServosAndCheckInputAndWait();
 }
 
@@ -311,16 +319,17 @@ void setLiftServosToBodyHeight() {
     }
 }
 
-void setAllServos(int aFLP, int aBLP, int aBRP, int aFRP, int aFLL, int aBLL, int aBRL, int aFRL) {
-    sServoNextPositionArray[FRONT_LEFT_PIVOT] = aFLP;
-    sServoNextPositionArray[BACK_LEFT_PIVOT] = aBLP;
-    sServoNextPositionArray[BACK_RIGHT_PIVOT] = aBRP;
-    sServoNextPositionArray[FRONT_RIGHT_PIVOT] = aFRP;
+void setAllServos(int aFrontLeftPivot, int aBackLeftPivot, int aBackRightPivot, int aFrontRightPivot, int aFrontLeftLift,
+        int aBackLeftLift, int aBackRightLift, int aFrontRightLift) {
+    sServoNextPositionArray[FRONT_LEFT_PIVOT] = aFrontLeftPivot;
+    sServoNextPositionArray[BACK_LEFT_PIVOT] = aBackLeftPivot;
+    sServoNextPositionArray[BACK_RIGHT_PIVOT] = aBackRightPivot;
+    sServoNextPositionArray[FRONT_RIGHT_PIVOT] = aFrontRightPivot;
 
-    sServoNextPositionArray[FRONT_LEFT_LIFT] = aFLL;
-    sServoNextPositionArray[BACK_LEFT_LIFT] = aBLL;
-    sServoNextPositionArray[BACK_RIGHT_LIFT] = aBRL;
-    sServoNextPositionArray[FRONT_RIGHT_LIFT] = aFRL;
+    sServoNextPositionArray[FRONT_LEFT_LIFT] = aFrontLeftLift;
+    sServoNextPositionArray[BACK_LEFT_LIFT] = aBackLeftLift;
+    sServoNextPositionArray[BACK_RIGHT_LIFT] = aBackRightLift;
+    sServoNextPositionArray[FRONT_RIGHT_LIFT] = aFrontRightLift;
     synchronizeMoveAllServosAndCheckInputAndWait();
 }
 

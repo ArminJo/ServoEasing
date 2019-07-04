@@ -20,6 +20,8 @@ void doTwist();
 void doBow();
 void doLeanLeft();
 void doLeanRight();
+void doLeanBack();
+void doLeanFront();
 
 void doCreepForward();
 void doCreepBack();
@@ -46,3 +48,6 @@ void doIncreaseHeight();
 void doDecreaseHeight();
 
 #endif /* SRC_COMMANDS_H_ */
+
+//Added by Sloeber 
+#pragma once

@@ -16,7 +16,16 @@
 /*
  * !!! Choose your remote !!!
  */
-#define USE_KEYES_REMOTE
+//#define USE_MSI_REMOTE // Is taken by default
+//#define USE_KEYES_REMOTE
+//#define USE_WM10_REMOTE
+//#define USE_CAR_MP3_REMOTE
+
+// Take MSI remote as default if not otherwise specified
+#if !defined(USE_KEYES_REMOTE) && !defined(USE_WM10_REMOTE) && !defined(USE_MSI_REMOTE) && !defined(USE_CAR_MP3_REMOTE)
+#define USE_MSI_REMOTE
+#endif
+//#define USE_KEYES_REMOTE
 //#define USE_WM10_REMOTE
 //#define USE_MSI_REMOTE
 //#define USE_CAR_MP3_REMOTE
@@ -197,6 +206,7 @@
 #define COMMAND_EASE_TYPE   IR_9
 
 #define COMMAND_STOP        IR_ON_OFF
+#define COMMAND_TEST        IR_5
 #endif
 
 #ifdef USE_CAR_MP3_REMOTE
@@ -214,18 +224,22 @@
 #define IR_PLUS     0x15
 #define IR_EQ       0x9
 
+#define IR_0    0x16
+#define IR_100  0x19
+#define IR_200  0xD
+
 #define IR_1    0xC
 #define IR_2    0x18
 #define IR_3    0x5E
+
 #define IR_4    0x8
 #define IR_5    0x1C
 #define IR_6    0x5A
+
 #define IR_7    0x42
 #define IR_8    0x52
 #define IR_9    0x4A
-#define IR_0    0x16
-#define IR_100  0x19
-#define IR_1000 0xD
+
 
 /*
  * SECOND:
@@ -250,6 +264,12 @@
 #define COMMAND_MOVE        IR_CH
 
 #define COMMAND_STOP        IR_PLAY_PAUSE
+
+#define COMMAND_IK_ON       IR_200
+#define COMMAND_IK_OFF      IR_9
+#define COMMAND_EASE_TYPE   IR_3
+
+#define COMMAND_TEST        IR_100
 #endif
 
 /*
@@ -279,6 +299,7 @@ static const char ik_on[] PROGMEM ="IK on";
 static const char ik_off[] PROGMEM ="IK off";
 static const char ik_toggle[] PROGMEM ="toggle IK";
 static const char type[] PROGMEM ="easing type";
+static const char test[] PROGMEM ="test";
 static const char unknown[] PROGMEM ="unknown";
 
 /*
@@ -299,7 +320,7 @@ struct IRToCommandMapping {
 struct IRToCommandMapping IRMapping[] = { { COMMAND_FORWARD, &doGoForward, forward }, { COMMAND_BACKWARD, &doGoBack, back }, {
 COMMAND_RIGHT, &doTurnRight, right }, { COMMAND_LEFT, &doTurnLeft, left }, { COMMAND_UP, &doLiftUp, up }, {
 COMMAND_DOWN, &doLiftDown, down }, { COMMAND_OPEN, &doOpenClaw, open }, { COMMAND_CLOSE, &doCloseClaw, close }, { COMMAND_CENTER,
-        &doCenter, center }, { COMMAND_FOLD, &doFolded, fold }, { COMMAND_MOVE, &doAutoMove, move } };
+        &doCenter, center }, { COMMAND_FOLD, &doFolded, fold }, { COMMAND_MOVE, &doAutoMove, move }, { COMMAND_TEST, &doClockTest, test }  };
 
 struct IRToCommandMapping IRMappingInstantCommands[] = { { COMMAND_INCREASE_SPEED, &doIncreaseSpeed, volPlus }, {
 COMMAND_DECREASE_SPEED, &doDecreaseSpeed, volMinus }, { COMMAND_STOP, &doSwitchToManual, manual },
@@ -312,3 +333,6 @@ COMMAND_DECREASE_SPEED, &doDecreaseSpeed, volMinus }, { COMMAND_STOP, &doSwitchT
         { COMMAND_EASE_TYPE, &doSwitchEasingType, type } };
 
 #endif /* IR_COMMAND_MAPING_H_ */
+
+//Added by Sloeber 
+#pragma once

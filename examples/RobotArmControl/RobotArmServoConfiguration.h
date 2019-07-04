@@ -16,14 +16,17 @@
 #define PIVOT_INPUT_PIN         A1
 #define HORIZONTAL_INPUT_PIN    A2
 #define LIFT_INPUT_PIN          A3
-#define CLAW_INPUT_PIN          A4
+#define CLAW_INPUT_PIN          A6
 
 /*
  * Geometry values of the robot arm
  */
 #define HORIZONTAL_ARM_LENGTH_MILLIMETER    80
 #define LIFT_ARM_LENGTH_MILLIMETER          80
-#define CLAW_LENGTH_MILLIMETER 68 //Length from wrist to hand PLUS base center to shoulder
+#define CLAW_LENGTH_MILLIMETER              68 // Length from wrist to hand PLUS base center to shoulder
+#define ORIGIN_HEIGHT_OVER_GROUND_PLANE     68 // Height of Z=0 over ground
+#define CLAW_HEIGHT_OVER_GROUND_PLANE       18 // Height of claw position over ground if first parts of claw touches the ground
+#define FRONT_VALUE_FOR_GROUND             120 // Y value if X == 0 and claw is at its lowest position
 
 // Index into (external) servo array. Order must be the same as of definitions in main.
 #define SERVO_BASE_PIVOT 0
@@ -88,9 +91,12 @@
 #define LIFT_MAX_ANGLE          160
 #define CLAW_MAX_ANGLE          70
 
-#define CLAW_START_ANGLE        CLAW_MAX_ANGLE
+#define CLAW_START_ANGLE        CLAW_OPEN_ANGLE
 #define CLAW_CLOSE_ANGLE        CLAW_MAX_ANGLE
 #define CLAW_OPEN_ANGLE         (CLAW_MAX_ANGLE - 30)
 #endif
 
 #endif /* SRC_ROBOTARMSERVOCONFIGURATION_H_ */
+
+//Added by Sloeber
+#pragma once

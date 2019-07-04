@@ -31,7 +31,6 @@
 #include "QuadrupedServoControl.h"
 #include "IRCommandDispatcher.h" // for RETURN_IF_STOP
 
-
 uint8_t sMovingDirection = MOVE_DIRECTION_FORWARD;
 
 /*
@@ -42,6 +41,7 @@ uint8_t sMovingDirection = MOVE_DIRECTION_FORWARD;
 
 void moveTrot(uint8_t aNumberOfTrots) {
     setEasingTypeForMoving();
+
     uint8_t tCurrentDirection = sMovingDirection;
     do {
         uint8_t LiftMaxAngle = sBodyHeightAngle + ((LIFT_MAX_ANGLE - sBodyHeightAngle) / 2);
@@ -68,13 +68,18 @@ void moveTrot(uint8_t aNumberOfTrots) {
         }
         aNumberOfTrots--;
     } while (aNumberOfTrots != 0);
+
+    setEasingTypeToLinear();
 }
 
 void basicTwist(uint8_t aTwistAngle, bool aTurnLeft) {
     Serial.print(F("Twist angle="));
     Serial.print(aTwistAngle);
-    Serial.print(F(" turn left="));
-    Serial.println(aTurnLeft);
+    if (aTurnLeft) {
+        Serial.println(F(" left"));
+    } else {
+        Serial.println(F(" right"));
+    }
     int8_t tTwistAngle;
     aTurnLeft ? tTwistAngle = -aTwistAngle : tTwistAngle = aTwistAngle;
 
@@ -82,15 +87,15 @@ void basicTwist(uint8_t aTwistAngle, bool aTurnLeft) {
 }
 
 /*
- * Must reverse direction of legs to move otherwise the COG is not supported by the legs
+ * Must reverse direction of legs if turning right otherwise the COG is not supported.
  */
-void moveTurn(uint8_t aNumberOfTurns) {
+void moveTurn(uint8_t aNumberOfQuarterTurns) {
     centerServos();
     setEasingTypeForMoving();
     uint8_t tNextLegIndex = FRONT_LEFT_PIVOT;
 
     /*
-     * Move one leg out of center position, otherwise the COG may be not supported at the first move
+     * Move one leg out of center position, otherwise the COG is not supported at the first move
      */
     if (sMovingDirection == MOVE_DIRECTION_LEFT) {
         moveOneServoAndCheckInputAndWait(FRONT_RIGHT_PIVOT, 90 + TURN_MOVE_ANGLE);
@@ -106,15 +111,23 @@ void moveTurn(uint8_t aNumberOfTurns) {
         // reverse direction of NextLegIndex if moveTurn right
         sMovingDirection == MOVE_DIRECTION_LEFT ? tNextLegIndex++ : tNextLegIndex--;
         tNextLegIndex = tNextLegIndex % NUMBER_OF_LEGS;
-        aNumberOfTurns--;
-    } while (aNumberOfTurns != 0);
+        aNumberOfQuarterTurns--;
+    } while (aNumberOfQuarterTurns != 0);
+
+    setEasingTypeToLinear();
 }
 
+/*
+ * One quarter turn is approximately 12 degree
+ */
 void basicQuarterTurn(uint8_t aMoveLegIndex, bool aTurnLeft) {
     Serial.print(F("Turn leg="));
     Serial.print(aMoveLegIndex);
-    Serial.print(F(" turn left="));
-    Serial.println(aTurnLeft);
+    if (aTurnLeft) {
+        Serial.println(F(" left"));
+    } else {
+        Serial.println(F(" right"));
+    }
     int8_t tServoIndex = aMoveLegIndex * SERVOS_PER_LEG;
     int8_t tMoveAngle;
     int8_t tTurnAngle;
@@ -177,6 +190,8 @@ void moveCreep(uint8_t aNumberOfCreeps) {
         }
         aNumberOfCreeps--;
     } while (aNumberOfCreeps != 0);
+
+    setEasingTypeToLinear();
 }
 
 /*
