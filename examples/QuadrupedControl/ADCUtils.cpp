@@ -214,11 +214,11 @@ int readUntil4ConsecutiveValuesAreEqual(uint8_t aChannelNumber, uint8_t aDelay, 
 }
 
 /*
- * Versions without handling of switched reference.
+ * Versions without handling of switched reference and channel.
  * Use only if reference (DEFAULT, INTERNAL) is known to be at the right value (DEFAULT for VCC and INTERNAL for temperature)
- * and channel select register ADMUX may be overwritten.
+ * and register ADMUX may be overwritten.
  * Use it for example if you only call getVCCVoltageSimple() or getTemperatureSimple() in your program.
- * Calling both will lead to wrong values since of reference switching.
+ * Calling both will lead to wrong values since of reference and channel switching.
  */
 float getVCCVoltageSimple(void) {
 // use AVCC with external capacitor at AREF pin as reference

@@ -72,3 +72,9 @@ uint16_t getVCCVoltageMillivolt(void);
 float getTemperature(void);
 
 #endif /* SRC_ADCUTILS_H_ */
+
+//Added by Sloeber 
+#pragma once
+
+//Added by Sloeber 
+#pragma once
