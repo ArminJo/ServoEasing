@@ -361,8 +361,12 @@ extern int sServoNextPositionArray[MAX_EASING_SERVOS]; // use int since we want 
  * Functions working on all servos in the list
  */
 void setSpeedForAllServos(uint16_t aDegreesPerSecond);
+#if defined(va_arg)
 void setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues);
+#endif
+#if defined(va_start)
 void setDegreeForAllServos(uint8_t aNumberOfValues, ...);
+#endif
 
 bool setEaseToForAllServos();
 bool setEaseToForAllServos(uint16_t aDegreesPerSecond);

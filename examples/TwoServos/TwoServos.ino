@@ -40,6 +40,11 @@ const int SERVO1_PIN = 9;
 const int SERVO2_PIN = 10;
 #endif
 
+// for ESP32 LED_BUILTIN is defined as static const uint8_t LED_BUILTIN = 2;
+#if !defined(LED_BUILTIN) && !defined(ESP32)
+#define LED_BUILTIN PB1
+#endif
+
 ServoEasing Servo1;
 ServoEasing Servo2;
 
@@ -52,9 +57,16 @@ void setup() {
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
     // Attach servos to pins
-    Serial.println(F("Attach servos"));
-    Servo1.attach(SERVO1_PIN);
-    Servo2.attach(SERVO2_PIN);
+    Serial.print(F("Attach servo at pin "));
+    Serial.println(SERVO1_PIN);
+    if (Servo1.attach(SERVO1_PIN) == false) {
+        Serial.println(F("Error attaching servo"));
+    }
+    Serial.print(F("Attach servo at pin "));
+    Serial.println(SERVO2_PIN);
+    if (Servo1.attach(SERVO2_PIN) == false) {
+        Serial.println(F("Error attaching servo"));
+    }
     Servo1.setTrim(90); // Operate the servo from -90 to +90 degree
 
     // Set servos to start position.

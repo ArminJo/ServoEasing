@@ -86,7 +86,7 @@ void doSwipe(uint8_t aDegreePerStep);
 
 void setup() {
 // initialize the digital pin as an output.
-    pinMode(LED_BUILTIN, OUTPUT);
+//    pinMode(LED_BUILTIN, OUTPUT);
 
 #ifdef USE_LEIGHTWEIGHT_SERVO_LIB
     // Enable Potentiometer between A1 and A5

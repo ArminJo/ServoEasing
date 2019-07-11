@@ -56,7 +56,7 @@ ServoEasing Servo3;
 float EaseQuadraticInQuarticOut(float aPercentageOfCompletion);
 
 void setup() {
-    pinMode(LED_BUILTIN, OUTPUT);
+//    pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
     while (!Serial)
         ; //delay for Leonardo
@@ -68,10 +68,21 @@ void setup() {
 #endif
 
     // Attach servos to pins
-    Serial.println(F("Attach servos"));
-    Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
-    Servo2.attach(SERVO2_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
-    Servo3.attach(SERVO3_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
+    Serial.print(F("Attach servo at pin "));
+    Serial.println(SERVO1_PIN);
+    if (Servo1.attach(Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE)) == false) {
+        Serial.println(F("Error attaching servo"));
+    }
+    Serial.print(F("Attach servo at pin "));
+    Serial.println(SERVO2_PIN);
+    if (Servo1.attach(Servo2.attach(SERVO2_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE)) == false) {
+        Serial.println(F("Error attaching servo"));
+    }
+    Serial.print(F("Attach servo at pin "));
+    Serial.println(SERVO3_PIN);
+    if (Servo1.attach(Servo3.attach(SERVO3_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE)) == false) {
+        Serial.println(F("Error attaching servo"));
+    }
 
     // Set servos to start position.
     Servo1.write(90);

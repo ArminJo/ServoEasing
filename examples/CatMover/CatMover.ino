@@ -59,7 +59,7 @@ ServoEasing ServoVertical;
 
 void setup() {
 // initialize the digital pin as an output.
-    pinMode(LED_BUILTIN, OUTPUT);
+//    pinMode(LED_BUILTIN, OUTPUT);
     pinMode(LASER_POWER_PIN, OUTPUT);
     digitalWrite(LASER_POWER_PIN, HIGH);
 
@@ -72,8 +72,16 @@ void setup() {
     /*
      * Set up servos
      */
-    ServoHorizontal.attach(HORIZONTAL_SERVO_PIN);
-    ServoVertical.attach(VERTICAL_SERVO_PIN);
+    Serial.print(F("Attach servo at pin "));
+    Serial.println(HORIZONTAL_SERVO_PIN);
+    if (ServoHorizontal.attach(HORIZONTAL_SERVO_PIN) == false) {
+        Serial.println(F("Error attaching servo"));
+    }
+    Serial.print(F("Attach servo at pin "));
+    Serial.println(VERTICAL_SERVO_PIN);
+    if (ServoVertical.attach(VERTICAL_SERVO_PIN) == false) {
+        Serial.println(F("Error attaching servo"));
+    }
 
     ServoHorizontalControl.minDegree = 45;
     ServoHorizontalControl.maxDegree = 135;

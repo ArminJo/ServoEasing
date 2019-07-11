@@ -44,6 +44,11 @@
 
 const int SERVO1_PIN = 9;
 
+// for ESP32 LED_BUILTIN is defined as static const uint8_t LED_BUILTIN = 2;
+#if !defined(LED_BUILTIN) && !defined(ESP32)
+#define LED_BUILTIN PB1
+#endif
+
 /*
  * Constructor to specify the expander address (needed at least if you use more than one expander board)
  * and to specify the I2C implementation library.

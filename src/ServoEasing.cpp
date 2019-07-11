@@ -155,9 +155,12 @@ ServoEasing::ServoEasing() // @suppress("Class members should be properly initia
 #endif
 
 /*
- * Return 0/false if not pin 9 or 10 else return aPin
- * Pin number != 9 results in using pin 10.
- * For PCA9685 expansion return true only if channel number between 0 and 15 since PCA9685 has only 16 channels
+ * If USE_LEIGHTWEIGHT_SERVO_LIB is enabled:
+ *      Return 0/false if not pin 9 or 10 else return aPin
+ *      Pin number != 9 results in using pin 10.
+ * If USE_PCA9685_SERVO_EXPANDER is enabled:
+ *      Return true only if channel number between 0 and 15 since PCA9685 has only 16 channels, else returns false
+ * Else return servoIndex / internal channel number
  */
 uint8_t ServoEasing::attach(int aPin) {
     mServoPin = aPin;
@@ -897,18 +900,22 @@ void setSpeedForAllServos(uint16_t aDegreesPerSecond) {
     }
 }
 
+#if defined(va_arg)
 void setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues) {
     for (uint8_t tServoIndex = 0; tServoIndex < aNumberOfValues; ++tServoIndex) {
         sServoNextPositionArray[tServoIndex] = va_arg(*aDegreeValues, int);
     }
 }
+#endif
 
+#if defined(va_start)
 void setDegreeForAllServos(uint8_t aNumberOfValues, ...) {
     va_list aDegreeValues;
     va_start(aDegreeValues, aNumberOfValues);
     setDegreeForAllServos(aNumberOfValues, &aDegreeValues);
     va_end(aDegreeValues);
 }
+#endif
 
 /*
  * Sets target position using content of sServoNextPositionArray

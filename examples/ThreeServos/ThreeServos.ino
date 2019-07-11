@@ -42,6 +42,11 @@ const int SERVO2_PIN = 10;
 const int SERVO3_PIN = 11;
 #endif
 
+// for ESP32 LED_BUILTIN is defined as static const uint8_t LED_BUILTIN = 2;
+#if !defined(LED_BUILTIN) && !defined(ESP32)
+#define LED_BUILTIN PB1
+#endif
+
 ServoEasing Servo1;
 ServoEasing Servo2;
 ServoEasing Servo3;
@@ -55,10 +60,21 @@ void setup() {
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
     // Attach servos to pins
-    Serial.println(F("Attach servos"));
-    Servo1.attach(SERVO1_PIN);
-    Servo2.attach(SERVO2_PIN);
-    Servo3.attach(SERVO3_PIN);
+    Serial.print(F("Attach servo at pin "));
+    Serial.println(SERVO1_PIN);
+    if (Servo1.attach(SERVO1_PIN) == false) {
+        Serial.println(F("Error attaching servo"));
+    }
+    Serial.print(F("Attach servo at pin "));
+    Serial.println(SERVO2_PIN);
+    if (Servo1.attach(SERVO2_PIN) == false) {
+        Serial.println(F("Error attaching servo"));
+    }
+    Serial.print(F("Attach servo at pin "));
+    Serial.println(SERVO3_PIN);
+    if (Servo1.attach(SERVO3_PIN) == false) {
+        Serial.println(F("Error attaching servo"));
+    }
 
     // Set servos to start position.
     Servo1.write(0);

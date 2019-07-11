@@ -27,5 +27,7 @@ script:
 - build_platform esp32
 notifications:
   email:
+    recipients:
+      - armin.arduino@gmail.com
     on_success: always
     on_failure: always
