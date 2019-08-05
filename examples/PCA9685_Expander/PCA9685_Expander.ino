@@ -70,12 +70,13 @@ void setup() {
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
-    // Attach servo to pin
-    Serial.println(F("Attach servo"));
+    Serial.println(F("Attach servo to port 9 of PCA9685 expander"));
     Servo1.attach(SERVO1_PIN);
 
     // Set servo to start position.
+    Serial.println(F("Try to communicate with PCA9685 Expander by TWI / I2C"));
     Servo1.write(0);
+    Serial.println(F("Communication with with PCA9685 Expander was successful"));
 
     // Just wait for servos to reach position
     delay(500);
@@ -94,7 +95,7 @@ void loop() {
     Servo1.easeTo(90, 10);
 
     // Now move faster without any delay between the moves
-    Serial.println(F("Move to 180 degree with 30 degree per second using interrupts"));
+    Serial.println(F("Move to 180 degree with 30 degree per second using interrupts of Timer1"));
     Servo1.startEaseTo(180, 30);
     /*
      * Now you can run your program while the servo is moving.
@@ -106,16 +107,32 @@ void loop() {
 
     delay(1000);
 
-    Serial.println(F("Move to 45 degree in one second using interrupts"));
-    Servo1.startEaseToD(45, 1000);
+    Serial.println(F("Move to 45 degree in one second NOT using interrupts of Timer1"));
+    Servo1.startEaseToD(45, 1000, false);
     // Blink until servo stops
+    uint32_t tLastLEDChangeMillis = 0;
+    uint32_t tLastServoUpdateMillis = Servo1.mMillisAtStartMove;
     while (Servo1.isMoving()) {
-        blinkLED();
+        /*
+         * Update servo position each 20ms
+         */
+        if (millis() - tLastServoUpdateMillis > (REFRESH_INTERVAL / 1000)) { // 20ms - REFRESH_INTERVAL is in Microseconds
+            Servo1.update();
+            tLastServoUpdateMillis = millis();
+        }
+
+        /*
+         * Toggle LED every 50 ms
+         */
+        if (millis() - tLastLEDChangeMillis > 50) {
+            digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+            tLastLEDChangeMillis = millis();
+        }
     }
 
     delay(1000);
 
-    Serial.println(F("Move to 135 degree and back nonlinear in one second each using interrupts"));
+    Serial.println(F("Move to 135 degree and back nonlinear in one second each using interrupts of Timer1"));
     Servo1.setEasingType(EASE_CUBIC_IN_OUT);
 
     for (int i = 0; i < 2; ++i) {
@@ -133,11 +150,24 @@ void loop() {
     delay(1000);
 
     /*
-     * Very fast move. The LED goes off when servo reaches 90 degree
+     * The LED goes on if servo reaches 120 degree
      */
-    Serial.println(F("Move to 0 degree with 360 degree per second using interrupts"));
-    Servo1.startEaseTo(0, 360, true);
+    Serial.println(F("Move to 180 degree with 50 degree per second blocking"));
+    Servo1.startEaseTo(180, 50);
+    while (Servo1.getCurrentAngle() < 120) {
+        delay(20); // just wait until angle is above 120 degree
+    }
     digitalWrite(LED_BUILTIN, HIGH);
+    while (Servo1.isMovingAndCallYield()) {
+        ; // wait for servo to stop
+    }
+    delay(1000);
+
+    /*
+     * Very fast move. The LED goes off when servo theoretical reaches 90 degree
+     */
+    Serial.println(F("Move from 180 to 0 degree with 360 degree per second using interrupts of Timer1"));
+    Servo1.startEaseTo(0, 360, true);
     // Wait for 250 ms. The servo should have moved 90 degree.
     delay(250);
     digitalWrite(LED_BUILTIN, LOW);

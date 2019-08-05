@@ -118,12 +118,26 @@ void loop() {
 
     delay(1000);
 
+
     /*
-     * Very fast move. The LED goes off when servo reaches 90 degree
+     * The LED goes on if servo reaches 120 degree
      */
-    Serial.println(F("Move to 0 degree with 360 degree per second using interrupts"));
-    Servo1.startEaseTo(0, 360, true);
+    Serial.println(F("Move to 180 degree with 50 degree per second blocking"));
+    Servo1.startEaseTo(180, 50);
+    while(Servo1.getCurrentAngle() < 120  ){
+        delay(20); // just wait until angle is above 120 degree
+    }
     digitalWrite(LED_BUILTIN, HIGH);
+    while (Servo1.isMovingAndCallYield()) {
+        ; // wait for servo to stop
+    }
+    delay(1000);
+
+    /*
+     * Very fast move. The LED goes off when servo theoretical reaches 90 degree
+     */
+    Serial.println(F("Move from 180 to 0 degree with 360 degree per second using interrupts of Timer1"));
+    Servo1.startEaseTo(0, 360, true);
     // Wait for 250 ms. The servo should have moved 90 degree.
     delay(250);
     digitalWrite(LED_BUILTIN, LOW);

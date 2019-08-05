@@ -24,31 +24,6 @@
 #ifndef SERVOEASING_H_
 #define SERVOEASING_H_
 
-#define VERSION_SERVO_EASING 1.3.1
-/*
- * Version 1.3.1
- * - Added detach() function.
- * Version 1.3.0
- * - Added ESP32 support by using ESP32Servo.h and Ticker.h instead of Servo.h timer interrupts.
- * - Changed degree parameter and values from uint8_t to integer to support operating a servo from -90 to + 90 degree with 90 degree trim.
- * - RobotArmControl + QuadrupedControl examples refactored.
- * - Extended SpeedTest example. Now also able to change the width of the refresh period.
- * - Changed "while" to "for" loops to avoid a gcc 7.3.0 atmel6.3.1 bug.
- * Version 1.2
- * - Added ESP8266 support by using Ticker instead of timer interrupts for ESP.
- * - AsymetricEasing example overhauled.
- * Version 1.1
- * - corrected sine, circular, back and elastic IN functions.
- * - easeTo() and write() store their degree parameter now also in sServoNextPositionArray.
- * - added setSpeed(), getSpeed(), setSpeedForAllServos().
- * - added easeTo(uint8_t aDegree) and setEaseTo(uint8_t aDegree).
- * - added setEaseToForAllServos(), setEaseToForAllServosSynchronizeAndStartInterrupt(), synchronizeAndEaseToArrayPositions().
- * - added getEndMicrosecondsOrUnits(), getDeltaMicrosecondsOrUnits().
- * - added setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues),setDegreeForAllServos(uint8_t aNumberOfValues, ...).
- * - added compile switch PROVIDE_ONLY_LINEAR_MOVEMENT to save additional 1500 bytes FLASH if enabled.
- * - added convenience function clipDegreeSpecial().
- */
-
 /*  *****************************************************************************************************************************
  *  To access the library files from your sketch, you have to first use `Sketch/Show Sketch Folder (Ctrl+K)` in the Arduino IDE.
  *  Then navigate to the parallel `libraries` folder and select the library you want to access.
@@ -127,6 +102,32 @@
 //
 // Enable this if you want to measure timing by toggling pin12 on an arduino
 //#define MEASURE_TIMING
+
+#define VERSION_SERVO_EASING 1.3.1
+/*
+ * Version 1.3.1
+ * - Added detach() function.
+ * Version 1.3.0
+ * - Added ESP32 support by using ESP32Servo.h and Ticker.h instead of Servo.h timer interrupts.
+ * - Changed degree parameter and values from uint8_t to integer to support operating a servo from -90 to + 90 degree with 90 degree trim.
+ * - RobotArmControl + QuadrupedControl examples refactored.
+ * - Extended SpeedTest example. Now also able to change the width of the refresh period.
+ * - Changed "while" to "for" loops to avoid a gcc 7.3.0 atmel6.3.1 bug.
+ * Version 1.2
+ * - Added ESP8266 support by using Ticker instead of timer interrupts for ESP.
+ * - AsymetricEasing example overhauled.
+ * Version 1.1
+ * - corrected sine, circular, back and elastic IN functions.
+ * - easeTo() and write() store their degree parameter now also in sServoNextPositionArray.
+ * - added setSpeed(), getSpeed(), setSpeedForAllServos().
+ * - added easeTo(uint8_t aDegree) and setEaseTo(uint8_t aDegree).
+ * - added setEaseToForAllServos(), setEaseToForAllServosSynchronizeAndStartInterrupt(), synchronizeAndEaseToArrayPositions().
+ * - added getEndMicrosecondsOrUnits(), getDeltaMicrosecondsOrUnits().
+ * - added setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues),setDegreeForAllServos(uint8_t aNumberOfValues, ...).
+ * - added compile switch PROVIDE_ONLY_LINEAR_MOVEMENT to save additional 1500 bytes FLASH if enabled.
+ * - added convenience function clipDegreeSpecial().
+ */
+
 /*
  * Enable this to see information on each call.
  * Since there should be no library which uses Serial, enable TRACE only for development purposes.

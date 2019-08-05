@@ -13,7 +13,7 @@ The latter is useful, if you have only one or two servos since it uses only the 
 
 - **Linear** as well as other ease movements for all servos attached to the Arduino Servo library are provided.
 - All servos can move **synchronized**.
-- It enables **non blocking** movement for all servos attached to the Arduino Servo library by reusing the interrupts of the servo timer.
+- It enables **non blocking** movement by using **startEaseTo\* functions** for all servos attached to the Arduino Servo library by reusing the interrupts of the servo timer Timer1.
 
 ## Usage
 Just call **myServo.startEaseTo()** instead of **myServo.write()** and you are done. Or if you want to wait (blocking) until sevo has arrived, use **myServo.easeTo()**. Speed of movement can be set by **myServo.setSpeed()**.
@@ -49,19 +49,21 @@ The library files itself are located in the `src` sub-directory.<br/>
 If you did not yet store the example as your own sketch, then with Ctrl+K you are instantly in the right library folder.
         
 ## Using PCA9685 16-Channel Servo Expander
-To enable it, open the library file ServoEasing.h and comment out line 37 or define global symbol `USE_PCA9685_SERVO_EXPANDER` which is yet not possible in Arduini IDE:-(.
+To enable the use of the expander, open the library file ServoEasing.h and comment out line 37 or define global symbol `USE_PCA9685_SERVO_EXPANDER` which is yet not possible in Arduino IDE:-(.<br/>
+Timer1 is then only needed for the startEaseTo* functions.
 
-## Using the included Lightweight Servo library
+## Using the included [Lightweight Servo library](https://github.com/ArminJo/LightweightServo)
 Using the **Lightweight Servo Library** reduces sketch size and makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
-To enable it, open the library file ServoEasing.h and comment out line 46 or define global symbol `USE_LEIGHTWEIGHT_SERVO_LIB` which is yet not possible in Arduini IDE:-(.<br/>
-If not using the Arduino IDE take care that Arduino Servo library sources are not compiled / included in the project.
+Up to 2 servos are supported by this library and they must be attached to pin 9 and/or 10.<br/>
+To enable it, open the library file ServoEasing.h and comment out line 46 or define global symbol `USE_LEIGHTWEIGHT_SERVO_LIB` which is yet not possible in Arduino IDE:-(.<br/>
+If not using the Arduino IDE, take care that Arduino Servo library sources are not compiled / included in the project.
 
 ## Reducing library size
 If you have only one or two servos, then you can save program space by using Lightweight Servo library .
 This saves 742 bytes FLASH and 42 bytes RAM.<br/>
-If you do not need the more complex easing functions like `Sine` etc., which in turn need sin(), cos(), sqrt() and pow(), you can shrink library size by approximately 2100 bytes by defining the symbol KEEP_LIBRARY_SMALL or comment out line 34 in ServoEasing.h.
+If you do not need the more complex easing functions like `Sine` etc., which in turn need sin(), cos(), sqrt() and pow(), you can shrink library size by approximately 1850 bytes by commenting out line 97 in ServoEasing.h or define global symbol `KEEP_LIBRARY_SMALL` which is yet not possible in Arduino IDE:-(.<br/>
  
-# Examples
+# Special examples
 
 ## SymmetricEasing example
 This example shows symmetric (end movement is mirror of start movement) linear, quadratic and cubic movements for 3 servos synchronously.

@@ -6,7 +6,7 @@
  *  Interface is in degree but internally only microseconds (if using Servo library) or units (if using PCA9685 expander) are used,
  *  since the resolution is better and we avoid the map function on every Servo.write().
  *  The blocking functions wait for 20 ms since this is the default refresh time of the used Servo library.
- *
+ *   *
  *  The AVR Servo library supports only one timer, which means not more than 12 servos are supported using this library.
  *
  *  Copyright (C) 2019  Armin Joachimsmeyer
