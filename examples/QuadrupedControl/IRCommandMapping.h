@@ -18,24 +18,72 @@
  */
 //#define USE_KEYES_REMOTE // The mePed 2 Standard remote, will be taken as default
 //#define USE_WM10_REMOTE
+//#define USE_KEYES_REMOTE_CLONE With number pad and direction control switched
 
 // Take KEYES remote as default if not otherwise specified
-#if !defined(USE_KEYES_REMOTE) && !defined(USE_WM10_REMOTE)
+#if !defined(USE_KEYES_REMOTE) && !defined(USE_WM10_REMOTE) && !defined(USE_KEYES_REMOTE_CLONE)
 #define USE_KEYES_REMOTE // the mePed 2 Standard remote
 #endif
-
 
 #if defined(USE_KEYES_REMOTE) && defined(USE_WM10_REMOTE)
 #error "Please choose only one remote for compile"
 #endif
 
-// If no remote specified, choose KEYES_REMOTE
-#if not( defined(USE_KEYES_REMOTE) || defined(USE_WM10_REMOTE))
-#define USE_KEYES_REMOTE // the original remote of he mePed v2
-#endif
-
 #define IR_NEC_REPEAT_ADDRESS 0xFFFF
 #define IR_NEC_REPEAT_CODE 0x0
+
+#ifdef USE_KEYES_REMOTE_CLONE
+// Codes for the KEYES CLONE remote control with 17 Keys with keypad above direction control
+#define IR_ADDRESS 0xFF00
+
+#define IR_UP    0x18
+#define IR_DOWN  0x52
+#define IR_RIGHT 0x5A
+#define IR_LEFT  0x08
+#define IR_OK    0x1C
+
+#define IR_1    0x46
+#define IR_2    0x45
+#define IR_3    0x47
+#define IR_4    0x44
+#define IR_5    0x40
+#define IR_6    0x43
+#define IR_7    0x07
+#define IR_8    0x15
+#define IR_9    0x09
+#define IR_0    0x19
+
+#define IR_STAR 0x16
+#define IR_HASH 0x0D
+/*
+ * SECOND:
+ * IR button to command mapping for better reading. IR buttons should only referenced here.
+ */
+#define COMMAND_EMPTY       0 // no command received
+#define COMMAND_FORWARD     IR_UP
+#define COMMAND_BACKWARD    IR_DOWN
+#define COMMAND_RIGHT       IR_RIGHT
+#define COMMAND_LEFT        IR_LEFT
+
+#define COMMAND_CENTER      IR_OK
+#define COMMAND_STOP        IR_HASH
+#define COMMAND_CALIBRATE   IR_0
+#define COMMAND_DANCE       IR_1
+#define COMMAND_WAVE        IR_3
+#define COMMAND_TWIST       IR_9
+#define COMMAND_TROT        IR_7
+#define COMMAND_AUTO        IR_5
+
+#define COMMAND_INCREASE_SPEED  IR_6
+#define COMMAND_DECREASE_SPEED  IR_4
+#define COMMAND_INCREASE_HEIGHT IR_2
+#define COMMAND_DECREASE_HEIGHT IR_8
+
+// locally for doCalibration
+#define COMMAND_ENTER       IR_OK
+#define COMMAND_UP          IR_UP
+#define COMMAND_DOWN        IR_DOWN
+#endif
 
 #ifdef USE_KEYES_REMOTE
 /*
@@ -212,5 +260,5 @@ COMMAND_BACKWARD, &doSetDirectionBack, dirBack }, { COMMAND_RIGHT, &doSetDirecti
 
 #endif /* IR_COMMAND_MAPING_H_ */
 
-//Added by Sloeber 
+//Added by Sloeber
 #pragma once

@@ -11,6 +11,7 @@
 #define SRC_COMMANDS_H_
 
 extern bool sInverseKinematicModeActive;
+extern bool sDrawTime;
 
 void doAutoMove();
 void doCenter();
@@ -25,7 +26,7 @@ void doOpenClaw();
 void doCloseClaw();
 
 // from ClockMovements.cpp
-void doClockTest();
+void doStartClock();
 
 void doSwitchToManual();
 void doInverseKinematicOff();
@@ -45,5 +46,5 @@ void doSwitchEasingType();
 
 #endif /* SRC_COMMANDS_H_ */
 
-//Added by Sloeber 
+//Added by Sloeber
 #pragma once

@@ -32,6 +32,7 @@
 #include "RobotArmServoControl.h"
 
 bool sInverseKinematicModeActive = true;
+bool sDrawTime = false;
 
 /******************************************
  * The Commands to execute

@@ -72,33 +72,71 @@ void doGetPenSpecial() {
 
 }
 
-void doClockTest() {
-    Serial.println(F("Go neutral"));
-    goToNeutral();
+uint8_t sOldHour;
+uint8_t sOldMinute;
+bool sDrawTimeJustStarted = false;
 
-    doGetPenSpecial();
-    delayAndCheckIRInput(5000);
+/*
+ * Check time every 10 seconds
+ */
+void checkTimeAndDraw(uRTCLib * aRTC_DS3231) {
+    static long sLastMillisOfRTCCheck;
+    if (millis() - sLastMillisOfRTCCheck >= 5000 || sDrawTimeJustStarted) {
+        if (sDrawTimeJustStarted) {
+            doGetPenSpecial();
+        } else if (sValidIRCodeReceived) {
+            // stop time drawing mode, but not at the first call
+            sDrawTime = false;
+            doStorePen();
+            return;
+        }
+        // clear flag in order to detect next IR command which stops time drawing mode
+        sValidIRCodeReceived = false;
 
-    //    Serial.println(F("Move up again"));
-    goToPosition(KEEP_POSITION, KEEP_POSITION, PEN_GRIP_Z + PEN_HOLDER_DEPTH);
-    delayAndCheckIRInput(1000);
+        sLastMillisOfRTCCheck = millis();
+        aRTC_DS3231->refresh();
+        uint8_t tNewHour = aRTC_DS3231->hour();
+        uint8_t tNewMinute = aRTC_DS3231->minute();
+        if (sOldMinute != tNewMinute || sDrawTimeJustStarted) {
+            sOldMinute = tNewMinute;
+            /*
+             * Minute has changed -> draw new time
+             */
+            Serial.println(F("Minute has changed -> Start with go neutral"));
+            delayAndCheckIRInput(5000);
+            //    Serial.println(F("Move up again"));
+            goToPosition(KEEP_POSITION, KEEP_POSITION, PEN_GRIP_Z + PEN_HOLDER_DEPTH);
+            delayAndCheckIRInput(1000);
 
-    Serial.println(F("Hours tens"));
-    drawNumber(DIGIT_HOUR_TENS, 1);
-    delayAndCheckIRInput(3000);
+            if (sOldHour != tNewHour || sDrawTimeJustStarted) {
+                sOldHour = tNewHour;
+                uint8_t tHourOnes = tNewHour % 10;
+                if (tHourOnes == 0 || sDrawTimeJustStarted) {
+                    drawNumber(DIGIT_HOUR_TENS, tNewHour / 10);
+                    delayAndCheckIRInput(1000);
+                }
+                drawNumber(DIGIT_HOUR_ONES, tHourOnes);
+                delayAndCheckIRInput(1000);
+            }
+            uint8_t tMinuteOnes = tNewMinute % 10;
+            if (tMinuteOnes == 0 || sDrawTimeJustStarted) {
+                drawNumber(DIGIT_MINUTES_TENS, tNewMinute / 10);
+                delayAndCheckIRInput(1000);
+            }
+            drawNumber(DIGIT_MINUTES_ONES, tMinuteOnes);
+            delayAndCheckIRInput(1000);
+            //    Serial.println(F("Go to pen"));
+            goToPosition(PEN_POSITION_X, PEN_POSITION_Y, KEEP_POSITION);
 
-    Serial.println(F("Hours ones"));
-    drawNumber(DIGIT_HOUR_ONES, 0);
-    delayAndCheckIRInput(3000);
+            sDrawTimeJustStarted = false;
+        }
+    }
+}
 
-    drawNumber(DIGIT_MINUTES_TENS, 4);
-    delayAndCheckIRInput(2000);
-
-    Serial.println(F("Minutes ones"));
-    drawNumber(DIGIT_MINUTES_ONES, 7);
-    delayAndCheckIRInput(2000);
-
-    doStorePen();
+void doStartClock() {
+    sDrawTime = true;
+    sDrawTimeJustStarted = true;
+    sValidIRCodeReceived = false;
 }
 
 void doSetModeForClockMovement() {
@@ -164,6 +202,9 @@ void doErase(uint8_t aDigitPosition) {
 
 }
 
+/*
+ * Assumes Pen at
+ */
 void drawNumber(uint8_t aNumber) {
     switch (aNumber) {
     case 0:
@@ -181,14 +222,29 @@ void drawNumber(uint8_t aNumber) {
         goToPositionRelative(0, -CLOCK_DIGIT_HEIGHT, 0);
         break;
     case 2:
+        liftPen();
+        goToPositionRelative(0, CLOCK_DIGIT_HEIGHT, 0);
         lowerPen();
-
+        goToPositionRelative(CLOCK_DIGIT_WIDTH, 0, 0);
+        goToPositionRelative(0, -CLOCK_DIGIT_HEIGHT / 2, 0);
+        goToPositionRelative(-CLOCK_DIGIT_WIDTH, 0, 0);
+        goToPositionRelative(0, -CLOCK_DIGIT_HEIGHT / 2, 0);
+        goToPositionRelative(CLOCK_DIGIT_WIDTH, 0, 0);
         break;
     case 3:
+        liftPen();
+        goToPositionRelative(0, CLOCK_DIGIT_HEIGHT, 0);
         lowerPen();
-
+        goToPositionRelative(CLOCK_DIGIT_WIDTH, 0, 0);
+        goToPositionRelative(0, -CLOCK_DIGIT_HEIGHT, 0);
+        goToPositionRelative(-CLOCK_DIGIT_WIDTH, 0, 0);
+        liftPen();
+        goToPositionRelative(0, CLOCK_DIGIT_HEIGHT / 2, 0);
+        lowerPen();
+        goToPositionRelative(CLOCK_DIGIT_WIDTH, 0, 0);
         break;
     case 4:
+        liftPen();
         goToPositionRelative(0, CLOCK_DIGIT_HEIGHT, 0);
         lowerPen();
         goToPositionRelative(0, -(CLOCK_DIGIT_HEIGHT / 2), 0);
@@ -199,12 +255,24 @@ void drawNumber(uint8_t aNumber) {
         goToPositionRelative(0, -CLOCK_DIGIT_HEIGHT, 0);
         break;
     case 5:
+        liftPen();
+        goToPositionRelative(CLOCK_DIGIT_WIDTH, CLOCK_DIGIT_HEIGHT, 0);
         lowerPen();
-
+        goToPositionRelative(-CLOCK_DIGIT_WIDTH, 0, 0);
+        goToPositionRelative(0, -CLOCK_DIGIT_HEIGHT / 2, 0);
+        goToPositionRelative(CLOCK_DIGIT_WIDTH, 0, 0);
+        goToPositionRelative(0, -CLOCK_DIGIT_HEIGHT / 2, 0);
+        goToPositionRelative(-CLOCK_DIGIT_WIDTH, 0, 0);
         break;
     case 6:
+        liftPen();
+        goToPositionRelative(CLOCK_DIGIT_WIDTH, CLOCK_DIGIT_HEIGHT, 0);
         lowerPen();
-
+        goToPositionRelative(-CLOCK_DIGIT_WIDTH, 0, 0);
+        goToPositionRelative(0, -CLOCK_DIGIT_HEIGHT, 0);
+        goToPositionRelative(CLOCK_DIGIT_WIDTH, 0, 0);
+        goToPositionRelative(0, CLOCK_DIGIT_HEIGHT / 2, 0);
+        goToPositionRelative(-CLOCK_DIGIT_WIDTH, 0, 0);
         break;
     case 7:
         goToPositionRelative(0, CLOCK_DIGIT_HEIGHT, 0);
@@ -213,12 +281,26 @@ void drawNumber(uint8_t aNumber) {
         goToPositionRelative((-CLOCK_DIGIT_WIDTH / 2), -CLOCK_DIGIT_HEIGHT, 0);
         break;
     case 8:
+        // draw clockwise
         lowerPen();
-
+        goToPositionRelative(0, CLOCK_DIGIT_HEIGHT, 0);
+        goToPositionRelative(CLOCK_DIGIT_WIDTH, 0, 0);
+        goToPositionRelative(0, -CLOCK_DIGIT_HEIGHT, 0);
+        goToPositionRelative(-CLOCK_DIGIT_WIDTH, 0, 0);
+        liftPen();
+        goToPositionRelative(0, CLOCK_DIGIT_HEIGHT / 2, 0);
+        lowerPen();
+        goToPositionRelative(CLOCK_DIGIT_WIDTH, 0, 0);
         break;
     case 9:
+        liftPen();
+        goToPositionRelative(CLOCK_DIGIT_WIDTH, CLOCK_DIGIT_HEIGHT / 2, 0);
         lowerPen();
-
+        goToPositionRelative(-CLOCK_DIGIT_WIDTH, 0, 0);
+        goToPositionRelative(0, CLOCK_DIGIT_HEIGHT / 2, 0);
+        goToPositionRelative(CLOCK_DIGIT_WIDTH, 0, 0);
+        goToPositionRelative(0, -CLOCK_DIGIT_HEIGHT, 0);
+        goToPositionRelative(-CLOCK_DIGIT_WIDTH, 0, 0);
         break;
     default:
         break;
@@ -236,6 +318,7 @@ void drawNumber(uint8_t aDigitPosition, uint8_t aNumber) {
 
     switch (aDigitPosition) {
     case DIGIT_MINUTES_ONES:
+        // go to lower left position of digit
         goToPosition(CLOCK_MINUTES_ONES_X, CLOCK_DIGITS_Y, KEEP_POSITION);
         break;
     case DIGIT_MINUTES_TENS:

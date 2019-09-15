@@ -8,6 +8,7 @@
  */
 
 #include "RobotArmServoConfiguration.h"
+#include "uRTCLib.h"
 
 #include <stdint.h>
 
@@ -22,7 +23,7 @@
 
 #define DRAW_SURFACE_Z           (-20)
 
-#define LIFT_HEIGHT              (10)
+#define LIFT_HEIGHT              (15)
 
 #define CLOCK_DIGIT_WIDTH        (25)
 #define CLOCK_DIGIT_MARGIN_X     (10)
@@ -67,6 +68,7 @@ void doStorePen();
 void doGetEraser();
 void doStoreEraser();
 void doSetModeForClockMovement();
+void checkTimeAndDraw(uRTCLib * aRTC_DS3231);
 
 void doErase(uint8_t aDigitPosition);
 void drawNumber(uint8_t aNumber);

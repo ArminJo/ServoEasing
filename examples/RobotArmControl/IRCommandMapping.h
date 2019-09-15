@@ -320,7 +320,7 @@ struct IRToCommandMapping {
 struct IRToCommandMapping IRMapping[] = { { COMMAND_FORWARD, &doGoForward, forward }, { COMMAND_BACKWARD, &doGoBack, back }, {
 COMMAND_RIGHT, &doTurnRight, right }, { COMMAND_LEFT, &doTurnLeft, left }, { COMMAND_UP, &doLiftUp, up }, {
 COMMAND_DOWN, &doLiftDown, down }, { COMMAND_OPEN, &doOpenClaw, open }, { COMMAND_CLOSE, &doCloseClaw, close }, { COMMAND_CENTER,
-        &doCenter, center }, { COMMAND_FOLD, &doFolded, fold }, { COMMAND_MOVE, &doAutoMove, move }, { COMMAND_TEST, &doClockTest, test }  };
+        &doCenter, center }, { COMMAND_FOLD, &doFolded, fold }, { COMMAND_MOVE, &doAutoMove, move }, { COMMAND_TEST, &doStartClock, test }  };
 
 struct IRToCommandMapping IRMappingInstantCommands[] = { { COMMAND_INCREASE_SPEED, &doIncreaseSpeed, volPlus }, {
 COMMAND_DECREASE_SPEED, &doDecreaseSpeed, volMinus }, { COMMAND_STOP, &doSwitchToManual, manual },

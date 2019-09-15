@@ -1,7 +1,7 @@
 # Quadruped / mePed V2 example
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-Youtube video of mePed in action controlled by an IR remote
+YouTube video of mePed in action controlled by an IR remote
 
 [![mePed V2 in actions](https://i.ytimg.com/vi/cLgj_sr7f1o/hqdefault.jpg)](https://youtu.be/cLgj_sr7f1o)
 

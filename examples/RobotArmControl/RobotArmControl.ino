@@ -30,8 +30,10 @@
 
 #include "Commands.h"
 #include "IRCommandDispatcher.h"
+#include "RobotArmServoConfiguration.h"
 #include "RobotArmServoControl.h"
 #include "uRTCLib.h"
+#include "ClockMovements.h"
 
 /*
  * The auto move function. Put your own moves here.
@@ -117,7 +119,7 @@ void setup() {
     Wire.begin();
     RTC_DS3231.set_model(URTCLIB_MODEL_DS3231);
     Serial.println("Set date");
-    RTC_DS3231.set(0, 42, 16, 4, 11, 7, 19);
+    RTC_DS3231.set(0, 58, 18, 4, 14, 8, 19);
     //  RTCLib::set(byte second, byte minute, byte hour, byte dayOfWeek, byte dayOfMonth, byte month, byte year)
 #endif
 
@@ -147,18 +149,23 @@ void loop() {
      * Check for IR commands and execute them
      */
     loopIRDispatcher();
+    // check for changed time and draw it
+    if (sDrawTime) {
+        checkTimeAndDraw(&RTC_DS3231);
+    }
 
     /*
      * Do auto move if timeout after boot was reached and no IR command was received
      */
-    if (!sValidIRCodeReceived && !sManualActionHappened && !sVCCTooLow
+    if (!sDrawTime && !sValidIRCodeReceived && !sManualActionHappened && !sVCCTooLow
             && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
         doAutoMove();
     }
 
-    if (!sValidIRCodeReceived) {
+    if (!sDrawTime && !sValidIRCodeReceived) {
         handleManualControl();
     }
+
 }
 
 /*
@@ -222,7 +229,7 @@ void setToAutoMode() {
  * Sets sManualActionHappened if potentiometers has once been operated
  */
 #define ANALOG_HYSTERESIS 2
-#define ANALOG_HYSTERESIS_FOR_MANUAL_ACTION 12
+#define ANALOG_HYSTERESIS_FOR_MANUAL_ACTION 16
 void handleManualControl() {
     static bool isInitialized = false;
 
@@ -234,13 +241,14 @@ void handleManualControl() {
     /*
      * Dummy read to set the reference and let it settle
      */
-    analogRead (PIVOT_INPUT_PIN);
+    analogRead(PIVOT_INPUT_PIN);
     delay(1);
 
     bool tValueChanged = false; // do only one servo at a time
-    bool tManualAction = false; // if value changed more than ANALOG_HYSTERESIS_FOR_MANUAL_ACTION
+    bool tManualAction = false; // gets true if value changed more than ANALOG_HYSTERESIS_FOR_MANUAL_ACTION
 
     int tTargetAngle = 0; // to avoid compiler warnings
+
 // reset manual action after the first move to manual start position
     if (!isInitialized) {
         sFirstPivot = sLastPivot = analogRead(PIVOT_INPUT_PIN);
