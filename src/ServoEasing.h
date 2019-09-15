@@ -311,7 +311,7 @@ public:
     void printStatic(Stream * aSerial);
 
     /*
-     * Internally only microseconds if using Servo library or units (= 4.88 us) if using PCA9685 expander are used to speed up things.
+     * Internally only microseconds (or units (= 4.88 us) if using PCA9685 expander) and not degree are used to speed up things.
      * Other expander or libraries can therefore easily be added.
      */
     volatile int mCurrentMicrosecondsOrUnits; // set by write() and writeMicrosecondsOrUnits(). Needed as start for next move and to avoid unnecessary writes.

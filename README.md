@@ -1,8 +1,9 @@
 # ServoEasing - move your servo more natural
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Build Status](https://travis-ci.org/ArminJo/ServoEasing.svg?branch=master)](https://travis-ci.org/ArminJo/ServoEasing)
+[![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
+[![Build status](https://travis-ci.org/ArminJo/ServoEasing.svg?branch=master)](https://travis-ci.org/ArminJo/ServoEasing)
 
-Youtube video of ServoEasing in action
+YouTube video of ServoEasing in action
 
 [![Demonstration of different servo easings](https://i.ytimg.com/vi/fC9uxdOBhfA/hqdefault.jpg)](https://www.youtube.com/watch?v=fC9uxdOBhfA)
 
@@ -16,7 +17,7 @@ The latter is useful, if you have only one or two servos since it uses only the 
 - It enables **non blocking** movement by using **startEaseTo\* functions** for all servos attached to the Arduino Servo library by reusing the interrupts of the servo timer Timer1.
 
 ## Usage
-Just call **myServo.startEaseTo()** instead of **myServo.write()** and you are done. Or if you want to wait (blocking) until sevo has arrived, use **myServo.easeTo()**. Speed of movement can be set by **myServo.setSpeed()**.
+Just call **myServo.startEaseTo()** instead of **myServo.write()** and you are done. Or if you want to wait (blocking) until servo has arrived, use **myServo.easeTo()**. Speed of movement can be set by **myServo.setSpeed()**.
 
 ### Includes the following **easing functions**:
 - Linear
@@ -42,27 +43,31 @@ Just call **myServo.startEaseTo()** instead of **myServo.write()** and you are d
 - [C functions on Github](https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c)
 - [Interactive cubic-bezier](http://cubic-bezier.com)
 
+# Internals
+Internally only microseconds (or units (= 4.88 us) if using PCA9685 expander) and not degree are used to speed up things. Other expander or libraries can therefore easily be added.<br/>
+Timer1 is used for the Arduino Servo library. To have non blocking easing functions its unused **channel B** is used to generate an interrupt 100 us before the end of the 20 ms Arduino Servo refresh period. This interrupt then updates all servo values for the next refresh period.
+
 # Modifying library properties
 To access the Arduino library files from a sketch, you have to first use `Sketch/Show Sketch Folder (Ctrl+K)` in the Arduino IDE.<br/>
 Then navigate to the parallel `libraries` folder and select the library you want to access.<br/>
 The library files itself are located in the `src` sub-directory.<br/>
 If you did not yet store the example as your own sketch, then with Ctrl+K you are instantly in the right library folder.
-        
+
 ## Using PCA9685 16-Channel Servo Expander
-To enable the use of the expander, open the library file ServoEasing.h and comment out line 37 or define global symbol `USE_PCA9685_SERVO_EXPANDER` which is yet not possible in Arduino IDE:-(.<br/>
+To enable the use of the expander, open the library file ServoEasing.h and comment out line 37 or define global symbol `USE_PCA9685_SERVO_EXPANDER` which is not yet possible in Arduino IDE:-(.<br/>
 Timer1 is then only needed for the startEaseTo* functions.
 
 ## Using the included [Lightweight Servo library](https://github.com/ArminJo/LightweightServo)
 Using the **Lightweight Servo Library** reduces sketch size and makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
 Up to 2 servos are supported by this library and they must be attached to pin 9 and/or 10.<br/>
-To enable it, open the library file ServoEasing.h and comment out line 46 or define global symbol `USE_LEIGHTWEIGHT_SERVO_LIB` which is yet not possible in Arduino IDE:-(.<br/>
+To enable it, open the library file ServoEasing.h and comment out line 46 or define global symbol `USE_LEIGHTWEIGHT_SERVO_LIB` which is not yet possible in Arduino IDE:-(.<br/>
 If not using the Arduino IDE, take care that Arduino Servo library sources are not compiled / included in the project.
 
 ## Reducing library size
 If you have only one or two servos, then you can save program space by using Lightweight Servo library .
 This saves 742 bytes FLASH and 42 bytes RAM.<br/>
-If you do not need the more complex easing functions like `Sine` etc., which in turn need sin(), cos(), sqrt() and pow(), you can shrink library size by approximately 1850 bytes by commenting out line 97 in ServoEasing.h or define global symbol `KEEP_LIBRARY_SMALL` which is yet not possible in Arduino IDE:-(.<br/>
- 
+If you do not need the more complex easing functions like `Sine` etc., which in turn need sin(), cos(), sqrt() and pow(), you can shrink library size by approximately 1850 bytes by commenting out line 97 in ServoEasing.h or define global symbol `KEEP_LIBRARY_SMALL` which is not yet possible in Arduino IDE:-(.<br/>
+
 # Special examples
 
 ## SymmetricEasing example
@@ -73,22 +78,23 @@ This example shows asymmetric (end movement is different from start movement) pa
 
 ## EndPositionsTest example
 This example helps you determine the right end values for your servo.<br/>
-These values are needed for the `attach()` function, if your servo does not comply to the standard values. 
+These values are needed for the `attach()` function, if your servo does not comply to the standard values.
 E.g. some of my SG90 servos have a 0 degree period of 620 us instead of the standard 544.<br/>
 This example does not use the ServoEasing functions.
 
 ## SpeedTest example
-This example gives you a feeling how fast your servo can move, what the end position values are and which refresh rate they accept.<br/>This example does not use the ServoEasing functions.
+This example gives you a feeling how fast your servo can move, what the end position values are and which refresh rate they accept.<br/>
+This example does not use the ServoEasing functions.
 
 ## CatMover example
 Demo of using two servos in a pan tilt housing to move a laser pointer.
-        
+
 ## QuadrupedControl example
-Program for controlling a mePed Robot V2 with 8 servos using an IR Remote.
-Youtube video
+Program for controlling a mePed Robot V2 with 8 servos using an IR Remote.<br/>
+YouTube video
 
 [![mePed V2 in actions](https://i.ytimg.com/vi/cLgj_sr7f1o/hqdefault.jpg)](https://youtu.be/cLgj_sr7f1o)
-        
+
 ## RobotArmControl example
 Program for controlling a robot arm with 4 servos using 4 potentiometers and/or an IR Remote.
 
@@ -125,7 +131,8 @@ The ServoEasing library examples are built on Travis CI for the following boards
 - Arduino Leonardo
 - Arduino cplayClassic
 - Arduino Mega 2560
-- ESP8266 Boards
+- ESP8266 boards (tested with LOLIN D1 R2 board)
+- ESP32   boards (tested with ESP32 DEVKITV1 board)
 
 ## Requests for modifications / extensions
 Please write me a PM including your motivation/problem if you need a modification or an extension e.g. a callback functionality after move has finished.

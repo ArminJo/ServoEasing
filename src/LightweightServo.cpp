@@ -44,7 +44,7 @@ int sMicrosecondsForServo180Degree = 2400;
 
 /*
  * Use 16 bit timer1 for generating 2 servo signals entirely by hardware without any interrupts.
- * Use FastPWM mode and generate pulse at start of the 20ms period
+ * Use FastPWM mode and generate pulse at start of the 20 ms period
  * The 2 servo signals are tied to pin 9 and 10 of an 328.
  * Attention - both pins are set to OUTPUT here!
  * 32 bytes code size
@@ -54,7 +54,7 @@ void initLightweightServoPin9And10() {
      * Periods below 20 ms gives problems with long signals i.e. the positioning is not possible
      */
     DDRB |= _BV(DDB1) | _BV(DDB2);                // set pins OC1A = PortB1 -> PIN 9 and OC1B = PortB2 -> PIN 10 to output direction
-    TCCR1A = _BV(COM1A1) | _BV(COM1B1) | _BV(WGM11); // FastPWM Mode mode TOP (20ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
+    TCCR1A = _BV(COM1A1) | _BV(COM1B1) | _BV(WGM11); // FastPWM Mode mode TOP (20 ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
     TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);    // set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
     ICR1 = ISR1_COUNT_FOR_20_MILLIS;  // set period to 20 ms
     // do not set counter here, since with counter = 0 (default) no output signal is generated.
@@ -62,7 +62,7 @@ void initLightweightServoPin9And10() {
 
 /*
  * Use 16 bit timer1 for generating 2 servo signals entirely by hardware without any interrupts.
- * Use FastPWM mode and generate pulse at start of the 20ms period
+ * Use FastPWM mode and generate pulse at start of the 20 ms period
  * The 2 servo signals are tied to pin 9 and 10 of an 328.
  * Attention - the selected pin is set to OUTPUT here!
  * 54 bytes code size
@@ -70,7 +70,7 @@ void initLightweightServoPin9And10() {
 void initLightweightServoPin9_10(bool aUsePin9, bool aUsePin10) {
 
     uint8_t tNewTCCR1A = TCCR1A & (_BV(COM1A1) | _BV(COM1B1)); // keep existing COM1A1 and COM1B1 settings
-    tNewTCCR1A |= _BV(WGM11); // FastPWM Mode mode TOP (20ms) determined by ICR1
+    tNewTCCR1A |= _BV(WGM11); // FastPWM Mode mode TOP (20 ms) determined by ICR1
 
     if (aUsePin9) {
         DDRB |= _BV(DDB1);   // set OC1A = PortB1 -> PIN 9 to output direction

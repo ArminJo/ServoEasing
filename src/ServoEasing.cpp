@@ -6,7 +6,7 @@
  *  Interface is in degree but internally only microseconds (if using Servo library) or units (if using PCA9685 expander) are used,
  *  since the resolution is better and we avoid the map function on every Servo.write().
  *  The blocking functions wait for 20 ms since this is the default refresh time of the used Servo library.
- *   *
+ *
  *  The AVR Servo library supports only one timer, which means not more than 12 servos are supported using this library.
  *
  *  Copyright (C) 2019  Armin Joachimsmeyer
@@ -352,14 +352,14 @@ void ServoEasing::easeTo(int aDegree, uint16_t aDegreesPerSecond) {
     startEaseTo(aDegree, aDegreesPerSecond, false);
     do {
         // First do the delay, then check for update, since we are likely called directly after start and there is nothing to move yet
-        delay(REFRESH_INTERVAL / 1000); // 20ms - REFRESH_INTERVAL is in Microseconds
+        delay(REFRESH_INTERVAL / 1000); // 20 ms - REFRESH_INTERVAL is in Microseconds
     } while (!update());
 }
 
 void ServoEasing::easeToD(int aDegree, uint16_t aMillisForMove) {
     startEaseToD(aDegree, aMillisForMove, false);
     do {
-        delay(REFRESH_INTERVAL / 1000); // 20ms - REFRESH_INTERVAL is in Microseconds
+        delay(REFRESH_INTERVAL / 1000); // 20 ms - REFRESH_INTERVAL is in Microseconds
     } while (!update());
 }
 
@@ -765,25 +765,30 @@ __attribute__((weak)) void handleServoTimerInterrupt() {
     }
 }
 
+/*
+ * Timer1 is used for the Arduino Servo library.
+ * To have non blocking easing functions its unused channel B is used to generate an interrupt 100 us before the end of the 20 ms Arduino Servo refresh period.
+ * This interrupt then updates all servo values for the next refresh period.
+ */
 void enableServoEasingInterrupt() {
 #if defined(__AVR__)
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
 #if defined(USE_PCA9685_SERVO_EXPANDER)
     // TODO convert to timer 5
     // set timer 1 to 20 ms
-    TCCR1A = _BV(WGM11);// FastPWM Mode mode TOP (20ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
+    TCCR1A = _BV(WGM11);// FastPWM Mode mode TOP (20 ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
     TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);// set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
     ICR1 = 40000;// set period to 20 ms
 #endif
 
     TIFR5 |= _BV(OCF5B);     // clear any pending interrupts;
     TIMSK5 |= _BV(OCIE5B);// enable the output compare B interrupt
-    OCR5B = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL) / 8) - 100;// update values 100us before the new servo period starts
+    OCR5B = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL) / 8) - 100;// update values 100 us before the new servo period starts
 #else
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 //    // set timer 1 to 20 ms
-    TCCR1A = _BV(WGM11);// FastPWM Mode mode TOP (20ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
+    TCCR1A = _BV(WGM11);// FastPWM Mode mode TOP (20 ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
     TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);// set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
     ICR1 = 40000;// set period to 20 ms
 #endif
@@ -791,7 +796,7 @@ void enableServoEasingInterrupt() {
     TIFR1 |= _BV(OCF1B);     // clear any pending interrupts;
     TIMSK1 |= _BV(OCIE1B);     // enable the output compare B interrupt
 #ifndef USE_LEIGHTWEIGHT_SERVO_LIB
-// update values 100us before the new servo period starts
+// update values 100 us before the new servo period starts
     OCR1B = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL) / 8) - 100;
 #endif
 #endif
@@ -813,8 +818,8 @@ void disableServoEasingInterrupt() {
 }
 
 /*
- * 60us for single servo + 160 us per servo if using I2C e.g.for PCA9685 expander at 400000Hz or + 100 at 800000Hz
- * 20us for last interrupt
+ * 60 us for single servo + 160 us per servo if using I2C e.g.for PCA9685 expander at 400000 Hz or + 100 at 800000 Hz
+ * 20 us for last interrupt
  * The first servo pulse starts just after this interrupt routine has finished
  */
 #if defined(__AVR__)
@@ -978,7 +983,7 @@ bool updateAllServos() {
 void updateAndWaitForAllServosToStop() {
     do {
         // First do the delay, then check for update, since we are likely called directly after start and there is nothing to move yet
-        delay(REFRESH_INTERVAL / 1000); // 20ms - REFRESH_INTERVAL is in Microseconds
+        delay(REFRESH_INTERVAL / 1000); // 20 ms - REFRESH_INTERVAL is in Microseconds
     } while (!updateAllServos());
 }
 
