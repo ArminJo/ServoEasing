@@ -69,6 +69,8 @@ This saves 742 bytes FLASH and 42 bytes RAM.<br/>
 If you do not need the more complex easing functions like `Sine` etc., which in turn need sin(), cos(), sqrt() and pow(), you can shrink library size by approximately 1850 bytes by commenting out line 97 in ServoEasing.h or define global symbol `KEEP_LIBRARY_SMALL` which is not yet possible in Arduino IDE:-(.<br/>
 
 # Special examples
+## Simple example
+This example does not use interrupts and should therefore run on any platform where the Arduino Servo library is available.
 
 ## SymmetricEasing example
 This example shows symmetric (end movement is mirror of start movement) linear, quadratic and cubic movements for 3 servos synchronously.
