@@ -33,8 +33,9 @@
 
 #include "QuadrupedServoConfiguration.h"
 #include "QuadrupedServoControl.h"
+#include "QuadrupedControl.h"
 
-#include "IRCommandDispatcher.h" // for checkIRInput(); and RETURN_IF_STOP;
+//#include "IRCommandDispatcher.h" // for checkIRInput(); and RETURN_IF_STOP;
 
 // Define 8 servos in exact this order!
 ServoEasing frontLeftPivotServo;    // 0 - Front Left Pivot Servo
@@ -48,6 +49,7 @@ ServoEasing frontRightLiftServo;    // 7 - Front Right Lift Servo
 
 uint16_t sServoSpeed = 90;      // in degree/second
 uint8_t sBodyHeightAngle = LIFT_MIN_ANGLE + 20; // From LIFT_MIN_ANGLE to LIFT_MAX_ANGLE !!! The bigger the angle, the lower the body !!!
+uint8_t sBodyHeight;  // normalized body height from 0 (low) to 255 (high)
 
 // Arrays of trim angles stored in EEPROM
 EEMEM int8_t sServoTrimAnglesEEPROM[NUMBER_OF_SERVOS]; // The one which resides in EEPROM and IR read out at startup - filled by eepromWriteServoTrim
@@ -55,16 +57,16 @@ int8_t sServoTrimAngles[NUMBER_OF_SERVOS]; // RAM copy for easy setting trim ang
 
 void setupQuadrupedServos() {
     // Attach servos to Arduino Pins
-    frontLeftPivotServo.attach(5);
-    frontLeftLiftServo.attach(6);
-    backLeftPivotServo.attach(7);
-    backLeftLiftServo.attach(8);
+    frontLeftPivotServo.attach(FRONT_LEFT_PIVOT_SERVO_PIN);
+    frontLeftLiftServo.attach(FRONT_LEFT_PIVOT_SERVO_PIN + 1);
+    backLeftPivotServo.attach(FRONT_LEFT_PIVOT_SERVO_PIN + 2);
+    backLeftLiftServo.attach(FRONT_LEFT_PIVOT_SERVO_PIN + 3);
     // Invert direction for lift servos.
     backLeftLiftServo.setReverseOperation(true);
-    backRightPivotServo.attach(9);
-    backRightLiftServo.attach(10);
-    frontRightPivotServo.attach(11);
-    frontRightLiftServo.attach(12);
+    backRightPivotServo.attach(FRONT_LEFT_PIVOT_SERVO_PIN + 4);
+    backRightLiftServo.attach(FRONT_LEFT_PIVOT_SERVO_PIN + 5);
+    frontRightPivotServo.attach(FRONT_LEFT_PIVOT_SERVO_PIN + 6);
+    frontRightLiftServo.attach(FRONT_LEFT_PIVOT_SERVO_PIN + 7);
     frontRightLiftServo.setReverseOperation(true);
 }
 
@@ -340,17 +342,17 @@ void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree) {
 void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree, uint16_t aDegreesPerSecond) {
     sServoArray[aServoIndex]->startEaseTo(aDegree, aDegreesPerSecond, false);
     do {
-        checkIRInput();
-        RETURN_IF_STOP;
-        delay(REFRESH_INTERVAL / 1000); // 20ms - REFRESH_INTERVAL is in Microseconds
+        if (delayAndCheck(REFRESH_INTERVAL / 1000)) { // 20 ms - REFRESH_INTERVAL is in Microseconds
+            return;
+        }
     } while (!sServoArray[aServoIndex]->update());
 }
 
 void updateAndCheckInputAndWaitForAllServosToStop() {
     do {
-        checkIRInput();
-        RETURN_IF_STOP;
-        delay(REFRESH_INTERVAL / 1000); // 20ms - REFRESH_INTERVAL is in Microseconds
+        if (delayAndCheck(REFRESH_INTERVAL / 1000)) { // 20 ms - REFRESH_INTERVAL is in Microseconds
+            return;
+        }
     } while (!updateAllServos());
 }
 

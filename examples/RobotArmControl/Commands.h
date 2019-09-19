@@ -46,5 +46,4 @@ void doSwitchEasingType();
 
 #endif /* SRC_COMMANDS_H_ */
 
-//Added by Sloeber
 #pragma once

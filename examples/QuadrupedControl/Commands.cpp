@@ -28,15 +28,21 @@
 #include <Arduino.h>
 
 #include "Commands.h"
+#include "QuadrupedControl.h"
 #include "QuadrupedMovements.h"
-
 #include "IRCommandDispatcher.h"
-
 #include "QuadrupedServoControl.h"
+#include "QuadrupedNeoPixel.h"
 
 /******************************************
  * The Commands to execute
  ******************************************/
+
+void doBeep() {
+    tone(PIN_SPEAKER, 2000, 200);
+    delayAndCheck(400);
+    tone(PIN_SPEAKER, 2000, 200);
+}
 
 /*
  * Center, lean left and right lean all 4 directions and twist a random angle. Ends with a wave.
@@ -95,7 +101,7 @@ void doWave() {
     setLiftServos(LIFT_MIN_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE);
     RETURN_IF_STOP;
 
-    delayAndCheckIRInput(1000);
+    delayAndCheck(1000);
     RETURN_IF_STOP;
 
     sServoArray[FRONT_RIGHT_PIVOT]->setEasingType(EASE_QUADRATIC_IN_OUT);
@@ -110,7 +116,7 @@ void doWave() {
     }
     sServoArray[FRONT_RIGHT_PIVOT]->setEasingType(EASE_LINEAR);
 
-    delayAndCheckIRInput(1000);
+    delayAndCheck(1000);
     RETURN_IF_STOP;
 
     centerServos();
@@ -128,7 +134,7 @@ void doBow() {
     centerServos();
     RETURN_IF_STOP;
 
-    delayAndCheckIRInput(300);
+    delayAndCheck(300);
     RETURN_IF_STOP;
 
     // Lift front legs
@@ -137,7 +143,7 @@ void doBow() {
     updateAndCheckInputAndWaitForAllServosToStop();
     RETURN_IF_STOP;
 
-    delayAndCheckIRInput(300);
+    delayAndCheck(300);
     RETURN_IF_STOP;
 
     centerServos();
@@ -221,6 +227,7 @@ void doCreepBack() {
  */
 void doAttention() {
     Serial.println(F("Move to get attention"));
+    doBeep();
     // Move down and up and back to starting height
     setLiftServos(LIFT_MAX_ANGLE);
     RETURN_IF_STOP;
@@ -241,6 +248,7 @@ void internalAutoMove() {
 
     // creep forward slow
     sMovingDirection = MOVE_DIRECTION_FORWARD;
+    triggerNeoPatterns();
     moveCreep(2);
     RETURN_IF_STOP;
 
@@ -259,7 +267,7 @@ void internalAutoMove() {
     moveCreep(4);
     RETURN_IF_STOP;
 
-    delayAndCheckIRInput(2000);
+    delayAndCheck(2000);
 
     setSpeed(200);
     doDance();
@@ -267,6 +275,7 @@ void internalAutoMove() {
 
     // turn right
     sMovingDirection = MOVE_DIRECTION_RIGHT;
+    triggerNeoPatterns();
     moveTurn(11);
     RETURN_IF_STOP;
 
@@ -282,14 +291,14 @@ void internalAutoMove() {
     moveTrot(8);
     RETURN_IF_STOP;
 
-    delayAndCheckIRInput(2000);
+    delayAndCheck(2000);
 
     // trot right
     sMovingDirection = MOVE_DIRECTION_RIGHT;
     moveTrot(8);
     RETURN_IF_STOP;
 
-    delayAndCheckIRInput(2000);
+    delayAndCheck(2000);
 
     // turn right
     centerServos();
@@ -300,13 +309,14 @@ void internalAutoMove() {
     // restore speed
     setSpeed(tOriginalSpeed);
 
-    delayAndCheckIRInput(10000);
+    delayAndCheck(10000);
 }
 /*************************
  * Instant Commands
  *************************/
 void doStop() {
     sRequestToStopReceived = true;
+    sActionType = ACTION_TYPE_STOP;
 }
 
 void doSetDirectionForward() {
@@ -356,21 +366,29 @@ void doDecreaseSpeed() {
  * Take two degrees to move faster
  */
 void doIncreaseHeight() {
-    if (sBodyHeightAngle > LIFT_MIN_ANGLE) {
+    if (sBodyHeightAngle > (LIFT_MIN_ANGLE + 2)) {
         sBodyHeightAngle -= 2;
-        if (!sJustExecutingCommand) {
+        convertBodyHeightAngleToHeight();
+        if (!sExecutingMainCommand) {
             setLiftServosToBodyHeight();
         }
     }
 }
 
 void doDecreaseHeight() {
-    if (sBodyHeightAngle < LIFT_MAX_ANGLE) {
+    if (sBodyHeightAngle < (LIFT_MAX_ANGLE - 2)) {
         sBodyHeightAngle += 2;
-        if (!sJustExecutingCommand) {
+        convertBodyHeightAngleToHeight();
+        if (!sExecutingMainCommand) {
             setLiftServosToBodyHeight();
         }
     }
+}
+
+void convertBodyHeightAngleToHeight() {
+    sBodyHeight = map(sBodyHeightAngle, LIFT_MAX_ANGLE, LIFT_MIN_ANGLE, 0, 255);
+    Serial.print(F("sBodyHeight="));
+    Serial.println(sBodyHeight);
 }
 
 /*

@@ -753,6 +753,7 @@ int clipDegreeSpecial(uint8_t aDegreeToClip) {
 /*
  * Update all servos from list and check if all servos have stopped.
  * Can not call yield() here, since we are in an ISR context here.
+ * Defined weak in order to be able to overwrite it.
  */
 __attribute__((weak)) void handleServoTimerInterrupt() {
 #if defined(USE_PCA9685_SERVO_EXPANDER)
@@ -793,8 +794,9 @@ void enableServoEasingInterrupt() {
     ICR1 = 40000;// set period to 20 ms
 #endif
 
-    TIFR1 |= _BV(OCF1B);     // clear any pending interrupts;
-    TIMSK1 |= _BV(OCIE1B);     // enable the output compare B interrupt
+    TIFR1 |= _BV(OCF1B);    // clear any pending interrupts;
+    TIMSK1 |= _BV(OCIE1B);  // enable the output compare B interrupt
+    TCCR1B |= _BV(ICNC1);   // used as flag, that interrupts are enabled again, if disable is suppressed because interrupt is used to synchronize e.g. NeoPixel
 #ifndef USE_LEIGHTWEIGHT_SERVO_LIB
 // update values 100 us before the new servo period starts
     OCR1B = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL) / 8) - 100;

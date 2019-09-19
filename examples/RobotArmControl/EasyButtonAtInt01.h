@@ -430,5 +430,4 @@ ISR(INT1_vect) {
 
 #endif /* EASY_BUTTON_AT_INT01_H_ */
 
-//Added by Sloeber 
 #pragma once

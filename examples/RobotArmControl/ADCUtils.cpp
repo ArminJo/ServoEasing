@@ -1,7 +1,7 @@
 /*
  * ADCUtils.cpp
  *
- * ADC utility functions. Conversion time is defined as 0.104 milliseconds for 16MHz Arduinos in ADCUtils.h.
+ * ADC utility functions. Conversion time is defined as 0.104 milliseconds for 16 MHz Arduinos in ADCUtils.h.
  *
  *  Created on: 23.02.2018
  *  Copyright (C) 2018  Armin Joachimsmeyer
@@ -284,7 +284,7 @@ float getTemperature(void) {
     bool tReferenceMustBeChanged = (ADMUX & (DEFAULT << SHIFT_VALUE_FOR_REFERENCE));
     if (tReferenceMustBeChanged) {
         tOldADMUX = ADMUX;
-        // set AREF  to 1.1V and wait for settling
+        // set AREF  to 1.1 Volt and wait for settling
         ADMUX = ADC_TEMPERATURE_CHANNEL_MUX | (INTERNAL << SHIFT_VALUE_FOR_REFERENCE);
         delayMicroseconds(4000); // measured value is 3500 us
     }

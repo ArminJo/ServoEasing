@@ -11,10 +11,10 @@
 
 #include <Arduino.h>
 
-// PRESCALE4 => 13 * 4 = 52 microseconds per ADC conversion at 1 Mhz Clock => 19,2kHz
+// PRESCALE4 => 13 * 4 = 52 microseconds per ADC conversion at 1 Mhz Clock => 19,2 kHz
 #define ADC_PRESCALE2    1 // 26 microseconds per ADC conversion at 1 MHz
 #define ADC_PRESCALE4    2 // 52 microseconds per ADC conversion at 1 MHz
-// PRESCALE8 => 13 * 8 = 104 microseconds per ADC sample at 1 Mhz Clock => 9,6kHz
+// PRESCALE8 => 13 * 8 = 104 microseconds per ADC sample at 1 Mhz Clock => 9,6 kHz
 #define ADC_PRESCALE8    3 // 104 microseconds per ADC conversion at 1 MHz
 #define ADC_PRESCALE16   4 // 208 microseconds per ADC conversion at 1 MHz
 #define ADC_PRESCALE32   5 // 416 microseconds per ADC conversion at 1 MHz
@@ -73,8 +73,4 @@ float getTemperature(void);
 
 #endif /* SRC_ADCUTILS_H_ */
 
-//Added by Sloeber 
-#pragma once
-
-//Added by Sloeber 
 #pragma once

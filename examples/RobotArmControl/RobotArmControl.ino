@@ -157,12 +157,12 @@ void loop() {
     /*
      * Do auto move if timeout after boot was reached and no IR command was received
      */
-    if (!sDrawTime && !sValidIRCodeReceived && !sManualActionHappened && !sVCCTooLow
+    if (!sDrawTime && !sAtLeastOneValidIRCodeReceived && !sManualActionHappened && !sVCCTooLow
             && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
         doAutoMove();
     }
 
-    if (!sDrawTime && !sValidIRCodeReceived) {
+    if (!sDrawTime && !sAtLeastOneValidIRCodeReceived) {
         handleManualControl();
     }
 
@@ -221,7 +221,7 @@ void changeEasingType(__attribute__((unused)) bool aButtonToggleState) {
 }
 
 void setToAutoMode() {
-    sValidIRCodeReceived = false;
+    sAtLeastOneValidIRCodeReceived = false;
     sManualActionHappened = false;
 }
 

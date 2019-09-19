@@ -16,19 +16,23 @@
 #include <PinChangeInterrupt.h> // must be included if we do not use pin 2 or 3
 #endif
 
-extern bool sJustExecutingCommand;  // set if we just execute a command by dispatcher
+extern bool sJustCalledMainCommand;
+extern bool sExecutingMainCommand;  // set if we just execute a command by dispatcher
 extern bool sCurrentCommandIsRepeat;
-extern bool sValidIRCodeReceived;   // set if we received a valid IR code. Used for breaking timeout for auto move.
+extern bool sAtLeastOneValidIRCodeReceived;   // set if we received a valid IR code. Used for breaking timeout for auto move.
 extern uint32_t sLastTimeOfValidIRCodeReceived; // millis of last IR command
 extern bool sRequestToStopReceived; // flag for main loop, set by checkIRInput()
+#define ACTION_TYPE_STOP 0
+extern uint8_t sActionType; // can be set by commands and is reset if sRequestToStopReceived is set
+
 #define RETURN_IF_STOP if (sRequestToStopReceived) return
 
 
 void setupIRDispatcher();
-void loopIRDispatcher();
+bool loopIRDispatcher();
 
 uint8_t getIRCommand(bool doWait);
-void checkIRInput();
+bool checkIRInput();
 void delayAndCheckIRInput(uint16_t aDelayMillis);
 
 bool checkAndCallMainCommands(uint8_t aIRCode);
@@ -38,8 +42,4 @@ void printIRCommandString(uint8_t aIRCode);
 
 #endif /* SRC_IRCOMMANDDISPATCHER_H_ */
 
-//Added by Sloeber 
-#pragma once
-
-//Added by Sloeber 
 #pragma once

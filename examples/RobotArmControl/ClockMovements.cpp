@@ -84,14 +84,14 @@ void checkTimeAndDraw(uRTCLib * aRTC_DS3231) {
     if (millis() - sLastMillisOfRTCCheck >= 5000 || sDrawTimeJustStarted) {
         if (sDrawTimeJustStarted) {
             doGetPenSpecial();
-        } else if (sValidIRCodeReceived) {
+        } else if (sAtLeastOneValidIRCodeReceived) {
             // stop time drawing mode, but not at the first call
             sDrawTime = false;
             doStorePen();
             return;
         }
         // clear flag in order to detect next IR command which stops time drawing mode
-        sValidIRCodeReceived = false;
+        sAtLeastOneValidIRCodeReceived = false;
 
         sLastMillisOfRTCCheck = millis();
         aRTC_DS3231->refresh();
@@ -136,7 +136,7 @@ void checkTimeAndDraw(uRTCLib * aRTC_DS3231) {
 void doStartClock() {
     sDrawTime = true;
     sDrawTimeJustStarted = true;
-    sValidIRCodeReceived = false;
+    sAtLeastOneValidIRCodeReceived = false;
 }
 
 void doSetModeForClockMovement() {

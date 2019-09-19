@@ -7,8 +7,8 @@
  *
  * This file mainly contains setup and loop and the basic movements
  *
- * To run this example need to install the "ServoEasing", "IRLremote" and "PinChangeInterrupt" libraries under "Tools -> Manage Libraries..." or "Ctrl+Shift+I"
- * Use "ServoEasing", "IRLremote" and "PinChangeInterrupt" as filter string.
+ * To run this example you need to install the "ServoEasing", "IRLremote", "PinChangeInterrupt", "NeoPatterns", "Adafruit_NeoPixel" libraries.
+ * These libraries can be installed under "Tools -> Manage Libraries..." or "Ctrl+Shift+I".
  *
  *  Copyright (C) 2019  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
@@ -31,11 +31,15 @@
 
 #include <Arduino.h>
 
-#include "Commands.h" // for doAutoMove
+#include "QuadrupedControl.h"
+#include "QuadrupedNeoPixel.h"
+
 #include "IRCommandDispatcher.h"
 #include "QuadrupedServoControl.h"
 #include "QuadrupedMovements.h"
+#include "IRCommandMapping.h" // for IR_REMOTE_NAME
 
+#include "HCSR04.h"
 #include "ADCUtils.h"
 
 /*
@@ -71,15 +75,17 @@ void doAutoMove() {
      */
     internalAutoMove();
     return;
+}
+
+/*
+ * Create your own basic movement here
+ */
+void doTest() {
 
 }
 
-#define VCC_STOP_THRESHOLD_MILLIVOLT 3600 // stop moving if below 3.6 Volt
-#define MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE 20000 // 20 seconds
-#define MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE 120000 // 2 Minutes
-#define MILLIS_OF_INACTIVITY_BETWEEN_REMINDER_MOVE 60000 // 1 Minute
-
-#define VERSION_EXAMPLE "2.1"
+#define VERSION_EXAMPLE "3.0"
+// 3.0 NeoPixel and distance sensor added
 // 2.1 auto move
 // 2.0 major refactoring
 // 1.1 mirror computation at transformAndSetPivotServos and transformOneServoIndex
@@ -102,10 +108,16 @@ void setup() {
     // Just for setting channel and reference
     getVCCVoltageMillivoltSimple();
 
+    initUSDistancePins(PIN_TRIGGER_OUT, PIN_ECHO_IN);
+
     /*
      * set servo to 90 degree WITHOUT trim and wait
      */
     resetServosTo90Degree();
+
+#if defined(PIN_SPEAKER)
+    tone(PIN_SPEAKER, 2000, 300);
+#endif
     delay(2000);
 
     /*
@@ -119,9 +131,15 @@ void setup() {
      * Set to initial height
      */
     centerServos();
+    convertBodyHeightAngleToHeight();
 
     setupIRDispatcher();
+    Serial.print(F("Listening to IR remote of type "));
+    Serial.println(IR_REMOTE_NAME);
 
+    enableServoEasingInterrupt(); // This enables the interrupt, which synchronizes the NeoPixel update with the servo pulse generation.
+
+    initNeoPatterns();
 }
 
 void loop() {
@@ -131,35 +149,97 @@ void loop() {
     setEasingTypeToLinear();
 
     /*
-     * Check for IR commands and execute them
+     * Check for IR commands and execute them.
+     * Returns only AFTER finishing of requested movement
      */
     loopIRDispatcher();
 
     /*
      * Do auto move if timeout after boot was reached and no IR command was received
      */
-    if (!sValidIRCodeReceived && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
+    if (!sAtLeastOneValidIRCodeReceived && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
         doAutoMove();
+        sAtLeastOneValidIRCodeReceived = true; // do auto move only once
     }
 
+    /*
+     * Get attention that no command was received since 2 minutes and quadruped may be switched off
+     */
     if (millis() - sLastTimeOfValidIRCodeReceived > MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE) {
-        // Get attention that no command was received since 2 Minutes and quadruped may be switched off
         doAttention();
         // next attention in 1 minute
         sLastTimeOfValidIRCodeReceived += MILLIS_OF_INACTIVITY_BETWEEN_REMINDER_MOVE;
     }
 
-    /*
-     * Stop servos if voltage gets low
-     */
-    uint16_t tVCC = getVCCVoltageMillivoltSimple();
-    if (tVCC < VCC_STOP_THRESHOLD_MILLIVOLT) {
-        Serial.print(F("VCC "));
-        Serial.print(tVCC);
-        Serial.print(F(" below 3600 Millivolt "));
+    if (checkForLowVoltage()) {
         shutdownServos();
+#if defined(PIN_SPEAKER)
+        tone(PIN_SPEAKER, 2000, 200);
+        delay(400);
+        tone(PIN_SPEAKER, 1400, 300);
+        delay(600);
+        tone(PIN_SPEAKER, 1000, 400);
+        delay(800);
+        tone(PIN_SPEAKER, 700, 500);
+#endif
+        delay(10000);  // wait for next check
     }
 
-    delay(50); // Pause for 50ms before executing next movement
+//    handleUSSensor();
+
 }
 
+/*
+ * Special delay function for the quadruped control.
+ * It checks for low voltage, IR input and US distance sensor
+ * @return  true - if exit condition occurred like stop received
+ */
+bool delayAndCheck(uint16_t aDelayMillis) {
+    uint32_t tStartMillis = millis();
+
+    // check only once per delay
+    if (!checkForLowVoltage()) {
+        do {
+            if (checkIRInput()) {
+                Serial.println(F("IR stop received -> exit from delayAndCheck"));
+                sActionType = ACTION_TYPE_STOP;
+                return true;
+            }
+            yield();
+        } while (millis() - tStartMillis < aDelayMillis);
+        return false;
+    }
+    sActionType = ACTION_TYPE_STOP;
+    return true;
+}
+
+/*
+ * Get front distance
+ */
+void handleUSSensor() {
+    static uint16_t sLastDistance;
+    uint16_t tDistance = getUSDistanceAsCentiMeter();
+    if (tDistance != sLastDistance) {
+        Serial.print(F("Distance="));
+        Serial.print(tDistance);
+        Serial.println(F("cm"));
+    }
+}
+
+/*
+ * Stop servos if voltage gets low
+ * @return  true - if voltage too low
+ */
+bool checkForLowVoltage() {
+    uint16_t tVCC = getVCCVoltageMillivoltSimple();
+    if (tVCC > VCC_STOP_THRESHOLD_MILLIVOLT) {
+        return false; // signal OK
+    }
+    /*
+     * Low voltage here
+     */
+    Serial.print(F("VCC "));
+    Serial.print(tVCC);
+    Serial.print(F(" below 3600 Millivolt -> "));
+    return true;
+}

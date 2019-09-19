@@ -42,11 +42,18 @@ CPanasonic IRLremote;
 CNec IRLremote;
 #endif
 
-bool sJustExecutingCommand;             // set if we just execute a command by dispatcher
+bool sJustCalledMainCommand;
+bool sExecutingMainCommand;             // set if we just execute a command by dispatcher
 bool sCurrentCommandIsRepeat;
-bool sValidIRCodeReceived = false;      // set if we received a valid IR code. Used for breaking timeout for auto move.
+bool sAtLeastOneValidIRCodeReceived = false; // one time flag. Set if we received a valid IR code. Used for breaking timeout for auto move.
 uint32_t sLastTimeOfValidIRCodeReceived; // millis of last IR command
-bool sRequestToStopReceived;            // flag for movements to stop, set by checkIRInput()
+uint8_t sActionType;
+/*
+ * Flag for movements to stop, set by checkIRInput().
+ * It works like an exception so we do not need to propagate the return value from the delay up to the movements.
+ * Instead we can use "if (sRequestToStopReceived) return;" (available as macro RETURN_IF_STOP).
+ */
+bool sRequestToStopReceived;
 
 // internally used
 uint8_t sCurrentIRCode;                // to decide if we have a repetition of non instant commands. Not needed for NEC remotes.
@@ -60,7 +67,10 @@ void setupIRDispatcher() {
     }
 }
 
-void loopIRDispatcher() {
+/**
+ * @return true if valid main or instant command received
+ */
+bool loopIRDispatcher() {
     uint8_t tIRCode;
 
     // here we are stopped, so lets start a new turn
@@ -80,13 +90,14 @@ void loopIRDispatcher() {
      * search IR code and call associated function
      */
     if (tIRCode != COMMAND_EMPTY) {
-        if (!checkAndCallMainCommands(tIRCode)) {
-            // must be after IRMapping search
-            if (checkAndCallInstantCommands(tIRCode)) {
-                sLastTimeOfValidIRCodeReceived = millis();
-            }
+        if (checkAndCallMainCommands(tIRCode)) {
+            return true;
+        } else {
+            // must be after checkAndCallMainCommands
+            return checkAndCallInstantCommands(tIRCode);
         }
     }
+    return false;
 }
 
 /*
@@ -146,8 +157,8 @@ uint8_t getIRCommand(bool doWait) {
 }
 
 /*
- * Main command are commands which can only be executed if no movement happens.
- * Return true if main command found.
+ * @return  true if main command found.
+ * @note    Main command are commands which can only be executed if no movement happens.
  */
 bool checkAndCallMainCommands(uint8_t aIRCode) {
     for (uint8_t i = 0; i < sizeof(IRMapping) / sizeof(struct IRToCommandMapping); ++i) {
@@ -158,23 +169,24 @@ bool checkAndCallMainCommands(uint8_t aIRCode) {
             Serial.println(reinterpret_cast<const __FlashStringHelper *>(IRMapping[i].CommandString));
 
             sLastTimeOfValidIRCodeReceived = millis();
-            // one time flag
-            sValidIRCodeReceived = true;
+            // one time flag used for breaking timeout for auto move.
+            sAtLeastOneValidIRCodeReceived = true;
 
             /*
              * Call the function specified in IR mapping
              */
-            sJustExecutingCommand = true;
-            IRMapping[i].CommandToCall();
-            sJustExecutingCommand = false;
+            sJustCalledMainCommand = true;
+            sExecutingMainCommand = true;
+            IRMapping[i].CommandToCall(); // Blocking call. Will only return after the move is finished.
+            sExecutingMainCommand = false;
             return true;
         }
     }
     return false;
 }
 /*
- * Instant command are commands which can be executed at each time in movement.
- * return true if instant command found.
+ * @return  true if instant command found.
+ * @note    Instant command are commands which can be executed at each time in movement.
  */
 bool checkAndCallInstantCommands(uint8_t aIRCode) {
 // search IR code and call associated function
@@ -185,8 +197,8 @@ bool checkAndCallInstantCommands(uint8_t aIRCode) {
             Serial.print(reinterpret_cast<const __FlashStringHelper *>(IRMappingInstantCommands[i].CommandString));
 
             sLastTimeOfValidIRCodeReceived = millis();
-            // one time flag
-            sValidIRCodeReceived = true;
+            // one time flag used for breaking timeout for auto move.
+            sAtLeastOneValidIRCodeReceived = true;
 
             /*
              * Call the instant function specified in IR mapping
@@ -204,23 +216,26 @@ bool checkAndCallInstantCommands(uint8_t aIRCode) {
 /*
  * Suppress repeated IR non instant commands
  * Sets sRequestToStopReceived if stop received
+ * @return  true - if IR command stop received
+ *
  */
-void checkIRInput() {
+bool checkIRInput() {
     uint8_t tIRCode = getIRCommand(false);
     if (tIRCode == COMMAND_EMPTY) {
-        return;
+        return false;
     } else if (tIRCode == sCurrentIRCode) {
         // suppress repeated main (non instant) command
-        return;
+        return false;
     } else if (checkAndCallInstantCommands(tIRCode)) {
-        return;
+        return false;
     } else {
         sNextCommand = tIRCode;
         sRequestToStopReceived = true; // return to loop
 
         sLastTimeOfValidIRCodeReceived = millis();
         // one time flag
-        sValidIRCodeReceived = true;
+        sAtLeastOneValidIRCodeReceived = true;
+        return true;
     }
 }
 
@@ -236,14 +251,13 @@ void printIRCommandString(uint8_t aIRCode) {
 }
 
 /*
- * Returns true if stop received
+ * @return  true - if stop received
  */
 void delayAndCheckIRInput(uint16_t aDelayMillis) {
     uint32_t tStartMillis = millis();
     do {
-        checkIRInput();
-        if (sRequestToStopReceived) {
-            Serial.println(F("Early exit from delayAndCheckIRInput"));
+        if (checkIRInput()) {
+            Serial.println(F("IR stop received -> exit from delayAndCheckIRInput"));
             return;
         }
     } while (millis() - tStartMillis < aDelayMillis);

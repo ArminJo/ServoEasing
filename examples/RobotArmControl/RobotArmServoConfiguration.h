@@ -98,5 +98,4 @@
 
 #endif /* SRC_ROBOTARMSERVOCONFIGURATION_H_ */
 
-//Added by Sloeber
 #pragma once

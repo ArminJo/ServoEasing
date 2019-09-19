@@ -107,7 +107,7 @@ void doCloseClaw() {
 void doSwitchToManual() {
     sRequestToStopReceived = true;
     // this enables manual mode
-    sValidIRCodeReceived = false;
+    sAtLeastOneValidIRCodeReceived = false;
 }
 
 /*

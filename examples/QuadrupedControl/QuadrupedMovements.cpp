@@ -31,6 +31,7 @@
 #include "QuadrupedServoControl.h"
 #include "IRCommandDispatcher.h" // for RETURN_IF_STOP
 
+#define INFO
 uint8_t sMovingDirection = MOVE_DIRECTION_FORWARD;
 
 /*
@@ -40,6 +41,7 @@ uint8_t sMovingDirection = MOVE_DIRECTION_FORWARD;
  */
 
 void moveTrot(uint8_t aNumberOfTrots) {
+    sActionType = ACTION_TYPE_TROT;
     setEasingTypeForMoving();
 
     uint8_t tCurrentDirection = sMovingDirection;
@@ -70,9 +72,11 @@ void moveTrot(uint8_t aNumberOfTrots) {
     } while (aNumberOfTrots != 0);
 
     setEasingTypeToLinear();
+    sActionType = ACTION_TYPE_STOP;
 }
 
 void basicTwist(uint8_t aTwistAngle, bool aTurnLeft) {
+#ifdef INFO
     Serial.print(F("Twist angle="));
     Serial.print(aTwistAngle);
     if (aTurnLeft) {
@@ -80,6 +84,7 @@ void basicTwist(uint8_t aTwistAngle, bool aTurnLeft) {
     } else {
         Serial.println(F(" right"));
     }
+#endif
     int8_t tTwistAngle;
     aTurnLeft ? tTwistAngle = -aTwistAngle : tTwistAngle = aTwistAngle;
 
@@ -90,6 +95,7 @@ void basicTwist(uint8_t aTwistAngle, bool aTurnLeft) {
  * Must reverse direction of legs if turning right otherwise the COG is not supported.
  */
 void moveTurn(uint8_t aNumberOfQuarterTurns) {
+    sActionType = ACTION_TYPE_TURN;
     centerServos();
     setEasingTypeForMoving();
     uint8_t tNextLegIndex = FRONT_LEFT_PIVOT;
@@ -115,12 +121,14 @@ void moveTurn(uint8_t aNumberOfQuarterTurns) {
     } while (aNumberOfQuarterTurns != 0);
 
     setEasingTypeToLinear();
+    sActionType = ACTION_TYPE_STOP;
 }
 
 /*
  * One quarter turn is approximately 12 degree
  */
 void basicQuarterTurn(uint8_t aMoveLegIndex, bool aTurnLeft) {
+#ifdef INFO
     Serial.print(F("Turn leg="));
     Serial.print(aMoveLegIndex);
     if (aTurnLeft) {
@@ -128,6 +136,7 @@ void basicQuarterTurn(uint8_t aMoveLegIndex, bool aTurnLeft) {
     } else {
         Serial.println(F(" right"));
     }
+#endif
     int8_t tServoIndex = aMoveLegIndex * SERVOS_PER_LEG;
     int8_t tMoveAngle;
     int8_t tTurnAngle;
@@ -164,8 +173,10 @@ void basicQuarterTurn(uint8_t aMoveLegIndex, bool aTurnLeft) {
  * Y position with right legs closed and left legs open
  */
 void goToYPosition(uint8_t aDirection) {
+#ifdef INFO
     Serial.print(F("goToYPosition aDirection="));
     Serial.println(aDirection);
+#endif
     transformAndSetPivotServos(180 - Y_POSITION_OPEN_ANGLE, Y_POSITION_OPEN_ANGLE, (180 - Y_POSITION_CLOSE_ANGLE),
     Y_POSITION_CLOSE_ANGLE, aDirection, false, false);
     setLiftServos(sBodyHeightAngle);
@@ -175,6 +186,7 @@ void goToYPosition(uint8_t aDirection) {
  * 0 -> 256 creeps
  */
 void moveCreep(uint8_t aNumberOfCreeps) {
+    sActionType = ACTION_TYPE_CREEP;
     goToYPosition(sMovingDirection);
     setEasingTypeForMoving();
     uint8_t tCurrentDirection = sMovingDirection;
@@ -192,19 +204,21 @@ void moveCreep(uint8_t aNumberOfCreeps) {
     } while (aNumberOfCreeps != 0);
 
     setEasingTypeToLinear();
+    sActionType = ACTION_TYPE_STOP;
 }
 
 /*
  * moves one leg forward and down, then moves body, then moves diagonal leg.
  */
 void basicHalfCreep(uint8_t aDirection, bool doMirror) {
-
+#ifdef INFO
     Serial.print(F("BasicHalfCreep Direction="));
     Serial.print(aDirection);
     Serial.print(F(" doMirror="));
     Serial.println(doMirror);
 // 1. Move front right leg up, forward and down
     Serial.println(F("Move front leg"));
+#endif
     transformAndSetAllServos(180 - Y_POSITION_OPEN_ANGLE, Y_POSITION_OPEN_ANGLE, 180 - Y_POSITION_CLOSE_ANGLE,
     Y_POSITION_FRONT_ANGLE, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle, LIFT_MAX_ANGLE, aDirection, doMirror);
     RETURN_IF_STOP;
@@ -215,7 +229,9 @@ void basicHalfCreep(uint8_t aDirection, bool doMirror) {
     sServoNextPositionArray[transformOneServoIndex(FRONT_RIGHT_PIVOT) + LIFT_SERVO_OFFSET] = sBodyHeightAngle;
 
 // 2. Move body forward by CREEP_BODY_MOVE_ANGLE
+#ifdef INFO
     Serial.println(F("Move body"));
+#endif
     transformAndSetAllServos(180 - Y_POSITION_CLOSE_ANGLE, Y_POSITION_OPEN_ANGLE + CREEP_BODY_MOVE_ANGLE,
             180 - Y_POSITION_OPEN_ANGLE, Y_POSITION_OPEN_ANGLE, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle,
             sBodyHeightAngle, aDirection, doMirror);
@@ -223,7 +239,9 @@ void basicHalfCreep(uint8_t aDirection, bool doMirror) {
     checkIfBodyHeightHasChanged();
 
 // 3. Move back right leg up, forward and down
+#ifdef INFO
     Serial.println(F("Move back leg to close position"));
+#endif
 // Move to Y position with other side legs together
     transformAndSetAllServos(180 - Y_POSITION_CLOSE_ANGLE, Y_POSITION_CLOSE_ANGLE, 180 - Y_POSITION_OPEN_ANGLE,
     Y_POSITION_OPEN_ANGLE, sBodyHeightAngle, LIFT_MAX_ANGLE, sBodyHeightAngle, sBodyHeightAngle, aDirection, doMirror);
@@ -239,23 +257,32 @@ void basicHalfCreep(uint8_t aDirection, bool doMirror) {
  * Just as an unused example to see the principle of movement
  */
 void basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
+#ifdef INFO
     Serial.print(F("LeftLegIndex="));
     Serial.print(aLeftLegIndex);
+#endif
+
     uint8_t tLeftLegPivotServoIndex;
 
     if (aMoveMirrored) {
+#ifdef INFO
         Serial.print(F(" mirrored=true"));
+#endif
 // get index of pivot servo of mirrored leg
         tLeftLegPivotServoIndex = ((NUMBER_OF_LEGS - 1) - aLeftLegIndex) * SERVOS_PER_LEG; // 0->6
     } else {
         tLeftLegPivotServoIndex = aLeftLegIndex * SERVOS_PER_LEG;
     }
+#ifdef INFO
     Serial.println();
+#endif
 //    printArrayPositions(&Serial);
     uint8_t tEffectiveAngle;
 
 // 1. Move front left leg up, forward and down
+#ifdef INFO
     Serial.println(F("Move front leg"));
+#endif
     moveOneServoAndCheckInputAndWait(tLeftLegPivotServoIndex + LIFT_SERVO_OFFSET, LIFT_MAX_ANGLE);
     RETURN_IF_STOP;
 
@@ -270,7 +297,9 @@ void basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
     RETURN_IF_STOP;
 
 // 2. Move body forward
+#ifdef INFO
     Serial.println(F("Move body"));
+#endif
     uint8_t tIndex = tLeftLegPivotServoIndex;
     uint8_t tIndexDelta;
 // Front left
@@ -308,7 +337,9 @@ void basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
     synchronizeMoveAllServosAndCheckInputAndWait();
 
 // 3. Move back right leg up, forward and down
+#ifdef INFO
     Serial.println(F("Move back leg to close position"));
+#endif
 // Move to Y position with right legs together / 120, 60, 180, 0
     uint8_t tDiagonalIndex = (tLeftLegPivotServoIndex + DIAGONAL_SERVO_OFFSET) % NUMBER_OF_SERVOS;
     moveOneServoAndCheckInputAndWait(tDiagonalIndex + LIFT_SERVO_OFFSET, LIFT_MAX_ANGLE);

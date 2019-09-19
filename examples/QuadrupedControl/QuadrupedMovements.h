@@ -28,5 +28,4 @@ void checkIfBodyHeightHasChanged();
 
 #endif /* SRC_QUADRUPEDMOVEMENTS_H_ */
 
-//Added by Sloeber 
 #pragma once

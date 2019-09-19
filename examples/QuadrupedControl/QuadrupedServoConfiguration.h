@@ -16,7 +16,13 @@
 #define MOVE_DIRECTION_LEFT     0x01
 #define MOVE_DIRECTION_BACKWARD 0x02
 #define MOVE_DIRECTION_RIGHT    0x03
+#define MOVE_DIRECTION_MASK     0x03
 #define MOVE_DIRECTION_SIDE_MASK    0x01
+
+#define ACTION_TYPE_CREEP   1
+#define ACTION_TYPE_TROT    2
+#define ACTION_TYPE_TURN    3
+#define ACTION_TYPE_TWIST   4
 
 /*
  * Specification for basic creep
@@ -36,11 +42,14 @@
 #define TROT_BASE_ANGLE_FL_BR 135
 #define TROT_BASE_ANGLE_BL_FR 45
 #define TROT_MOVE_ANGLE 30
+
 /*
  * Leg layout geometry
  */
 #define NUMBER_OF_LEGS 4
 #define NUMBER_OF_SERVOS 8
+// Pins where servos are attached. The other servos are attached to the next pins (pins 6 to 12).
+#define FRONT_LEFT_PIVOT_SERVO_PIN 5
 #define SERVOS_PER_LEG (NUMBER_OF_SERVOS / NUMBER_OF_LEGS)
 #define DIAGONAL_SERVO_OFFSET (2 * SERVOS_PER_LEG)
 #define LIFT_SERVO_OFFSET 1 // lift servo number is 1 more than base/pivot servo number
@@ -64,5 +73,4 @@
 
 #endif /* SRC_QUADRUPEDSERVOCONFIGURATION_H_ */
 
-//Added by Sloeber 
 #pragma once

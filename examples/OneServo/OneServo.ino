@@ -61,7 +61,7 @@ void setup() {
     // Set servo to start position.
     Servo1.write(0);
 
-    // Just wait for servos to reach position
+    // Just wait for servo to reach position
     delay(500);
 }
 

@@ -23,6 +23,7 @@ extern ServoEasing frontRightLiftServo;    // 7 - Front Right Lift Servo
 
 extern uint16_t sServoSpeed;      //  = 90 in degree/second
 extern uint8_t sBodyHeightAngle;  //  = 60 From LIFT_MIN_ANGLE to LIFT_MAX_ANGLE !!! The bigger the angle, the lower the body !!!
+extern uint8_t sBodyHeight;       // normalized body height from 0 (low) to 255 (high)
 
 extern int8_t sServoTrimAngles[];
 
@@ -74,5 +75,4 @@ void eepromWriteServoTrim();
 
 #endif /* QUADRUPEDSERVOCONTROL_H_ */
 
-//Added by Sloeber 
 #pragma once

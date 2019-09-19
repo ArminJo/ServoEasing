@@ -43,6 +43,7 @@
 #define IR_NEC_REPEAT_CODE 0x0
 
 #ifdef USE_KEYES_REMOTE
+#define IR_REMOTE_NAME "KEYES"
 /*
  * FIRST:
  * IR code to button mapping for better reading. IR codes should only referenced here.
@@ -99,6 +100,7 @@
 #endif
 
 #ifdef USE_WM10_REMOTE
+#define IR_REMOTE_NAME "WM10"
 /*
  * FIRST:
  * IR code to button mapping for better reading. IR codes should only referenced here.
@@ -154,6 +156,7 @@
  * msi Remote control with numbers 1 to 0 and cursor cross below
  */
 #ifdef USE_MSI_REMOTE
+#define IR_REMOTE_NAME "MSI"
 
 #define IR_ADDRESS 0xBD02
 
@@ -210,6 +213,8 @@
 #endif
 
 #ifdef USE_CAR_MP3_REMOTE
+#define IR_REMOTE_NAME "CAR MP3"
+
 #define IR_ADDRESS 0xFF00
 
 #define IR_CH_MINUS 0x45
@@ -334,5 +339,4 @@ COMMAND_DECREASE_SPEED, &doDecreaseSpeed, volMinus }, { COMMAND_STOP, &doSwitchT
 
 #endif /* IR_COMMAND_MAPING_H_ */
 
-//Added by Sloeber 
 #pragma once

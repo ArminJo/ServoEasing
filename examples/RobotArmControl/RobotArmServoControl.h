@@ -64,5 +64,4 @@ void updateAndCheckInputAndWaitForAllServosToStop();
 
 #endif /* ROBOTARMSERVOCONTROL_H_ */
 
-//Added by Sloeber 
 #pragma once

@@ -39,5 +39,4 @@ void printPositionShortWithUnits(struct ArmPosition * aPositionStruct);
 
 #endif // ROBOT_ARM_KINEMATICS_H_
 
-//Added by Sloeber 
 #pragma once

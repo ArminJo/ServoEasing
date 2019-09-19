@@ -10,10 +10,14 @@
 #ifndef SRC_COMMANDS_H_
 #define SRC_COMMANDS_H_
 
+#include "QuadrupedControl.h" // for doAutoMove() and doMyMovement()
+
+// The code for the called command is available in variable sCurrentIRCode
+void doBeep();
+
 void internalAutoMove();
 void doAttention();
 
-void doAutoMove();
 void doDance();
 void doWave();
 void doTwist();
@@ -46,8 +50,8 @@ void doIncreaseSpeed();
 void doDecreaseSpeed();
 void doIncreaseHeight();
 void doDecreaseHeight();
+void convertBodyHeightAngleToHeight();
 
 #endif /* SRC_COMMANDS_H_ */
 
-//Added by Sloeber 
 #pragma once

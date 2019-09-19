@@ -75,3 +75,5 @@ void drawNumber(uint8_t aNumber);
 void drawNumber(uint8_t aDigitPosition, uint8_t aNumber);
 
 #endif /* SRC_CLOCK_MOVEMENTS_H_ */
+
+#pragma once

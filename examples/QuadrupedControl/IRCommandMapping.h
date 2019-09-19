@@ -19,7 +19,6 @@
 //#define USE_KEYES_REMOTE // The mePed 2 Standard remote, will be taken as default
 //#define USE_WM10_REMOTE
 //#define USE_KEYES_REMOTE_CLONE With number pad and direction control switched
-
 // Take KEYES remote as default if not otherwise specified
 #if !defined(USE_KEYES_REMOTE) && !defined(USE_WM10_REMOTE) && !defined(USE_KEYES_REMOTE_CLONE)
 #define USE_KEYES_REMOTE // the mePed 2 Standard remote
@@ -33,6 +32,7 @@
 #define IR_NEC_REPEAT_CODE 0x0
 
 #ifdef USE_KEYES_REMOTE_CLONE
+#define IR_REMOTE_NAME "KEYES_CLONE"
 // Codes for the KEYES CLONE remote control with 17 Keys with keypad above direction control
 #define IR_ADDRESS 0xFF00
 
@@ -73,6 +73,7 @@
 #define COMMAND_TWIST       IR_9
 #define COMMAND_TROT        IR_7
 #define COMMAND_AUTO        IR_5
+#define COMMAND_TEST        IR_STAR
 
 #define COMMAND_INCREASE_SPEED  IR_6
 #define COMMAND_DECREASE_SPEED  IR_4
@@ -86,6 +87,7 @@
 #endif
 
 #ifdef USE_KEYES_REMOTE
+#define IR_REMOTE_NAME "KEYES"
 /*
  * FIRST:
  * IR code to button mapping for better reading. IR codes should only referenced here.
@@ -131,6 +133,7 @@
 #define COMMAND_TWIST       IR_9
 #define COMMAND_TROT        IR_7
 #define COMMAND_AUTO        IR_5
+#define COMMAND_TEST        IR_STAR
 
 #define COMMAND_INCREASE_SPEED  IR_6
 #define COMMAND_DECREASE_SPEED  IR_4
@@ -144,6 +147,7 @@
 #endif
 
 #ifdef USE_WM10_REMOTE
+#define IR_REMOTE_NAME "WM10"
 /*
  * FIRST:
  * IR code to button mapping for better reading. IR codes should only referenced here.
@@ -188,6 +192,7 @@
 #define COMMAND_TWIST       COMMAND_EMPTY // not on this remote
 #define COMMAND_TROT        IR_PLAY_PAUSE
 #define COMMAND_AUTO        COMMAND_EMPTY // not on this remote
+#define COMMAND_TEST        COMMAND_EMPTY // not on this remote
 
 #define COMMAND_INCREASE_SPEED  IR_VOL_PLUS
 #define COMMAND_DECREASE_SPEED  IR_VOL_MINUS
@@ -212,6 +217,7 @@
  */
 
 // IR strings of functions for output
+static const char beep[] PROGMEM ="beep";
 static const char forward[] PROGMEM ="forward";
 static const char back[] PROGMEM ="back";
 static const char enter[] PROGMEM ="enter";
@@ -234,6 +240,8 @@ static const char dance[] PROGMEM ="dance";
 static const char trot[] PROGMEM ="trot";
 static const char twist[] PROGMEM ="twist";
 static const char autoMove[] PROGMEM ="auto move";
+static const char myMove[] PROGMEM ="my move";
+static const char test[] PROGMEM ="test";
 static const char unknown[] PROGMEM ="unknown";
 
 // Basic mapping structure
@@ -243,22 +251,34 @@ struct IRToCommandMapping {
     const char * CommandString;
 };
 
+#ifndef EMPTY_MAPPING
 /*
  * Main mapping array of commands to C functions and command strings
  */
-const struct IRToCommandMapping IRMapping[] = { { COMMAND_FORWARD, &doCreepForward, forward }, { COMMAND_BACKWARD, &doCreepBack,
-        back }, {
-COMMAND_RIGHT, &doTurnRight, right }, { COMMAND_LEFT, &doTurnLeft, left }, { COMMAND_CENTER, &doCenterServos, center }, {
-COMMAND_CALIBRATE, &doCalibration, mute }, { COMMAND_DANCE, &doDance, dance }, { COMMAND_TWIST, &doTwist, twist }, {
-COMMAND_WAVE, &doWave, wave }, { COMMAND_TROT, &doTrot, trot }, { COMMAND_AUTO, &doAutoMove, autoMove } };
+const struct IRToCommandMapping IRMapping[] = { { COMMAND_RIGHT, &doTurnRight, right }, { COMMAND_LEFT, &doTurnLeft, left }, {
+COMMAND_CENTER, &doCenterServos, center }, { COMMAND_FORWARD, &doCreepForward, forward }, { COMMAND_BACKWARD, &doCreepBack, back },
+        { COMMAND_CALIBRATE, &doCalibration, mute }, { COMMAND_DANCE, &doDance, dance }, { COMMAND_TWIST, &doTwist, twist }, {
+        COMMAND_WAVE, &doWave, wave }, { COMMAND_TROT, &doTrot, trot }, { COMMAND_AUTO, &doAutoMove, autoMove }, { COMMAND_TEST,
+                &doTest, test } };
 
 const struct IRToCommandMapping IRMappingInstantCommands[] = { { COMMAND_FORWARD, &doSetDirectionForward, dirForward }, {
 COMMAND_BACKWARD, &doSetDirectionBack, dirBack }, { COMMAND_RIGHT, &doSetDirectionRight, dirRight }, { COMMAND_LEFT,
         &doSetDirectionLeft, dirLeft }, { COMMAND_INCREASE_SPEED, &doIncreaseSpeed, volPlus }, { COMMAND_DECREASE_SPEED,
         &doDecreaseSpeed, volMinus }, { COMMAND_INCREASE_HEIGHT, &doIncreaseHeight, fastForward }, { COMMAND_DECREASE_HEIGHT,
         &doDecreaseHeight, fastBack }, { COMMAND_STOP, &doStop, stop } };
+#else
+// empty mapping
+ const struct IRToCommandMapping IRMapping[] = {
+ {COMMAND_RIGHT, &doTest, myMove }, { COMMAND_LEFT, &doTest, myMove }, { COMMAND_CENTER, &doCenterServos, center },
+ { COMMAND_FORWARD, &doBeep, beep }, { COMMAND_BACKWARD, &doBeep, beep },
+ {COMMAND_CALIBRATE, &doBeep, beep }, { COMMAND_DANCE, &doBeep, beep }, { COMMAND_TWIST, &doBeep, beep },
+ {COMMAND_WAVE, &doBeep, beep }, { COMMAND_TROT, &doBeep, beep }, { COMMAND_AUTO, &doBeep, beep } };
 
+ const struct IRToCommandMapping IRMappingInstantCommands[] = { { COMMAND_FORWARD, &doBeep, beep },
+ {COMMAND_BACKWARD, &doBeep, beep }, { COMMAND_RIGHT, &doBeep, beep }, { COMMAND_LEFT, &doBeep, beep },
+ { COMMAND_INCREASE_SPEED, &doBeep, beep }, { COMMAND_DECREASE_SPEED, &doBeep, beep },
+ { COMMAND_INCREASE_HEIGHT, &doBeep, beep }, { COMMAND_DECREASE_HEIGHT, &doBeep, beep }, { COMMAND_STOP, &doBeep, beep } };
+#endif // EMPTY_MAPPING
 #endif /* IR_COMMAND_MAPING_H_ */
 
-//Added by Sloeber
 #pragma once
