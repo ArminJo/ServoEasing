@@ -73,12 +73,15 @@ void setup() {
     Serial.println(F("Attach servo to port 9 of PCA9685 expander"));
     Servo1.attach(SERVO1_PIN);
 
-    // Set servo to start position.
+    /**************************************************
+     * Set servos to start position.
+     * This is the position where the movement starts.
+     *************************************************/
     Serial.println(F("Try to communicate with PCA9685 Expander by TWI / I2C"));
     Servo1.write(0);
     Serial.println(F("Communication with with PCA9685 Expander was successful"));
 
-    // Just wait for servos to reach position
+    // Wait for servos to reach start position.
     delay(500);
 }
 

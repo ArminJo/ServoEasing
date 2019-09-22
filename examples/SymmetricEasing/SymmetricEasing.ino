@@ -81,10 +81,15 @@ void setup() {
         Serial.println(F("Error attaching servo"));
     }
 
-    // Set servos to start position.
+    /**************************************************
+     * Set servos to start position.
+     * This is the position where the movement starts.
+     *************************************************/
     Servo1.write(90);
     Servo2.write(90);
     Servo3.write(90);
+
+    // Wait for servos to reach start position.
     delay(2000);
 
     Servo1.startEaseToD(45, 1000);

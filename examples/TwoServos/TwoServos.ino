@@ -69,12 +69,15 @@ void setup() {
     }
     Servo1.setTrim(90); // Operate the servo from -90 to +90 degree
 
-    // Set servos to start position.
+    /**************************************************
+     * Set servos to start position.
+     * This is the position where the movement starts.
+     *************************************************/
     Servo1.write(-90);
     Servo2.write(0);
     setSpeedForAllServos(30);
 
-    // Just wait for servos to reach position
+    // Just wait for servos to reach position.
     delay(500);
 }
 

@@ -42,7 +42,7 @@ const int VERTICAL_SERVO_PIN = 18;
 #else
 const int LASER_POWER_PIN = 5;
 
-// These pins are used by Timer 2 and can be used without overhead by using SimpleServo
+// These pins are used by Timer 2 and can be used without overhead by using Lightweight Servo library
 const int HORIZONTAL_SERVO_PIN = 10;
 const int VERTICAL_SERVO_PIN = 9;
 #endif
@@ -88,7 +88,11 @@ void setup() {
     ServoVerticalControl.minDegree = 0;
     ServoVerticalControl.maxDegree = 45;
 
-    // this helps mounting the pan / tilt housing
+    /**************************************************
+     * Set servos to start position.
+     * This is the position where the movement starts.
+     *************************************************/
+    // This values helps mounting the pan / tilt housing
     ServoHorizontal.write(90);
     ServoVertical.write(90);
 

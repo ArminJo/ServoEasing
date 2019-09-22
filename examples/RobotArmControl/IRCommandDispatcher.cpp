@@ -34,7 +34,7 @@
 #include "IRCommandDispatcher.h"
 #include <IRLremote.h>      // include IR Remote library
 
-#include "IRCommandMapping.h" // must be before IRLremote.h. Specifies the IR input pin at A0
+#include "IRCommandMapping.h"
 
 #if (IR_CONTROL_CODING == 'P')
 CPanasonic IRLremote;
@@ -250,15 +250,31 @@ void printIRCommandString(uint8_t aIRCode) {
     Serial.println(reinterpret_cast<const __FlashStringHelper *>(unknown));
 }
 
+// to be overwritten by example or user function.
+bool __attribute__((weak)) checkOncePerDelay() {
+    return false; // everything OK
+}
+
 /*
- * @return  true - if stop received
+ * Special delay function for the quadruped control.
+ * It checks for low voltage, IR input and US distance sensor
+ * @return  true - if exit condition occurred like stop received
  */
-void delayAndCheckIRInput(uint16_t aDelayMillis) {
+bool delayAndCheck(uint16_t aDelayMillis) {
     uint32_t tStartMillis = millis();
-    do {
-        if (checkIRInput()) {
-            Serial.println(F("IR stop received -> exit from delayAndCheckIRInput"));
-            return;
-        }
-    } while (millis() - tStartMillis < aDelayMillis);
+
+    // check only once per delay
+    if (!checkOncePerDelay()) {
+        do {
+            if (checkIRInput()) {
+                Serial.println(F("IR stop received -> exit from delayAndCheck"));
+                sActionType = ACTION_TYPE_STOP;
+                return true;
+            }
+            yield();
+        } while (millis() - tStartMillis < aDelayMillis);
+        return false;
+    }
+    sActionType = ACTION_TYPE_STOP;
+    return true;
 }

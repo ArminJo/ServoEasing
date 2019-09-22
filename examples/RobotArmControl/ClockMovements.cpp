@@ -103,28 +103,28 @@ void checkTimeAndDraw(uRTCLib * aRTC_DS3231) {
              * Minute has changed -> draw new time
              */
             Serial.println(F("Minute has changed -> Start with go neutral"));
-            delayAndCheckIRInput(5000);
+            delayAndCheck(5000);
             //    Serial.println(F("Move up again"));
             goToPosition(KEEP_POSITION, KEEP_POSITION, PEN_GRIP_Z + PEN_HOLDER_DEPTH);
-            delayAndCheckIRInput(1000);
+            delayAndCheck(1000);
 
             if (sOldHour != tNewHour || sDrawTimeJustStarted) {
                 sOldHour = tNewHour;
                 uint8_t tHourOnes = tNewHour % 10;
                 if (tHourOnes == 0 || sDrawTimeJustStarted) {
                     drawNumber(DIGIT_HOUR_TENS, tNewHour / 10);
-                    delayAndCheckIRInput(1000);
+                    delayAndCheck(1000);
                 }
                 drawNumber(DIGIT_HOUR_ONES, tHourOnes);
-                delayAndCheckIRInput(1000);
+                delayAndCheck(1000);
             }
             uint8_t tMinuteOnes = tNewMinute % 10;
             if (tMinuteOnes == 0 || sDrawTimeJustStarted) {
                 drawNumber(DIGIT_MINUTES_TENS, tNewMinute / 10);
-                delayAndCheckIRInput(1000);
+                delayAndCheck(1000);
             }
             drawNumber(DIGIT_MINUTES_ONES, tMinuteOnes);
-            delayAndCheckIRInput(1000);
+            delayAndCheck(1000);
             //    Serial.println(F("Go to pen"));
             goToPosition(PEN_POSITION_X, PEN_POSITION_Y, KEEP_POSITION);
 

@@ -60,28 +60,32 @@ void setup() {
         Serial.println(F("Error attaching servo"));
     }
 
-    // Set servo to start position.
+    /**************************************************
+     * Set servo to start position.
+     * This is the position where the movement starts.
+     *************************************************/
     Servo1.write(0);
 
-    // Just wait for servo to reach position
+    // Wait for servo to reach start position.
     delay(500);
 
     // Move slow
-    Serial.println(F("Move to 90 degree with 10 degree per second blocking"));
-    Servo1.easeTo(90, 10);
+    Serial.println(F("Move to 90 degree with 20 degree per second blocking"));
+    Servo1.easeTo(90, 20);
 
     delay(1000);
 
     // Now move faster
-    Servo1.setSpeed(10);  // This speed is taken if no speed argument is given.
-    Serial.println(F("Move to 180 degree with 30 degree per second blocking"));
+    Servo1.setSpeed(40);  // This speed is taken if no speed argument is given.
+    Serial.println(F("Move to 180 degree with 40 degree per second blocking using cubic easing"));
+    Servo1.setEasingType(EASE_CUBIC_IN_OUT);
     Servo1.easeTo(180);
 
     delay(2000);
 
-    Serial.println(F("Move back to 0 degree using cubic easing"));
-    Servo1.setEasingType(EASE_CUBIC_IN_OUT);
-    Servo1.startEaseTo(0, 30, false);
+    Serial.println(F("Move back to 0 degree using circular easing"));
+    Servo1.setEasingType(EASE_CIRCULAR_IN_OUT);
+    Servo1.startEaseTo(0, 40, false);
     /*
      * Now do the updates and wait until servo finished
      */

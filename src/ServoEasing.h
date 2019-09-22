@@ -35,6 +35,7 @@
  * To enable it, open the library file ServoEasing.h and comment out line 32.
  */
 //#define USE_PCA9685_SERVO_EXPANDER
+
 /*
  * If you have only one or two servos, then you can save program space by defining symbol `USE_LEIGHTWEIGHT_SERVO_LIB`.
  * This saves 742 bytes FLASH and 42 bytes RAM.
@@ -102,7 +103,6 @@
 //
 // Enable this if you want to measure timing by toggling pin12 on an arduino
 //#define MEASURE_TIMING
-
 #define VERSION_SERVO_EASING 1.3.1
 /*
  * Version 1.3.1

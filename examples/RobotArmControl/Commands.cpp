@@ -176,7 +176,7 @@ void internalAutoMove() {
     goToPosition(0, 148, 80);
     RETURN_IF_STOP;
 
-    delayAndCheckIRInput(2000);
+    delayAndCheck(2000);
 }
 /*************************
  * Instant Commands

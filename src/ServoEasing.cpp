@@ -40,6 +40,8 @@ Ticker Timer20ms;
 // Enable this to see information on each call
 // There should be no library which uses Serial, so enable it only for debugging purposes
 //#define TRACE
+// output can be directly used for Arduino Serial Plotter (Ctrl-Shift-L)
+//#define TRACE_FOR_SERIAL_PLOTTER
 
 // Enable this if you want to measure timing by toggling pin12 on an arduino
 //#define MEASURE_TIMING
@@ -288,7 +290,9 @@ void ServoEasing::writeMicrosecondsOrUnits(int aValue) {
         Serial.print(aValue + mTrimMicrosecondsOrUnits);
     }
 #endif // TRACE
-
+#if defined(TRACE_FOR_SERIAL_PLOTTER)
+    Serial.println(aValue);
+#endif
     // Apply trim - this is the only place mTrimMicrosecondsOrUnits is evaluated
     aValue += mTrimMicrosecondsOrUnits;
     // Apply reverse - this is the only place mOperateServoReverse is evaluated

@@ -8,23 +8,27 @@ YouTube video of ServoEasing in action
 [![Demonstration of different servo easings](https://i.ytimg.com/vi/fC9uxdOBhfA/hqdefault.jpg)](https://www.youtube.com/watch?v=fC9uxdOBhfA)
 
 ## Servo easing library for Arduino
-This is a library for smooth servo movements. It can be used directly with a [PCA9685 servo expander](https://learn.adafruit.com/16-channel-pwm-servo-driver?view=all)
-or the Arduino Servo Library or the included Lightweight Servo library for AVR.
-The latter is useful, if you have only one or two servos since it uses only the internal timer with no software overhead.
+This is a library for smooth servo movements. It uses the standard Arduino Servo library and therefore has its restrictions regarding pins and platform support.<br/>
+As an alternative to the Arduino Servo library, ServoEasing can be used with a [PCA9685 servo expander](https://learn.adafruit.com/16-channel-pwm-servo-driver?view=all) using the Arduino Wire library or a compatible one (and their restrictions).<br/>
+For **ESP32** you need to install the Arduino ESP32Servo library.<br/><br/>
+For **AVR**, if you need only one or two servos, you may want to use the included [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) instead of the Arduino Servo library because it uses only the internal Timer1 with no software overhead and has no problems with interrupt blocking libraries like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
+For instructions how to enable these alternatives see [Modifying library properties](https://github.com/ArminJo/ServoEasing#modifying-library-properties)
 
-- **Linear** as well as other ease movements for all servos attached to the Arduino Servo library are provided.
-- All servos can move **synchronized**.
-- It enables **non blocking** movement by using **startEaseTo\* functions** for all servos attached to the Arduino Servo library by reusing the interrupts of the servo timer Timer1.
+### Features
+- **Linear** and 9 other ease movements are provided.
+- All servos can move **synchronized** or **independently**.
+- **Non blocking** movements are enabled by using **startEaseTo\* functions** by reusing the interrupts of the servo timer Timer1 or using a dedicated timer on other platforms. This function is not available for all platforms.
 
 ## Usage
-Just call **myServo.startEaseTo()** instead of **myServo.write()** and you are done. Or if you want to wait (blocking) until servo has arrived, use **myServo.easeTo()**. Speed of movement can be set by **myServo.setSpeed()**.
+Just call **myServo.startEaseTo()** instead of **myServo.write()** and you are done. Or if you want to wait (blocking) until servo has arrived, use **myServo.easeTo()**. Speed of movement can be set by **myServo.setSpeed()**.<br/>
+Do not forget to **set the start position** for the Servo by simply calling **myServo.write()**, since the library has **no knowledge about your servos initial position** and therefore starts at **0 degree** at the first move, which may be undesirable.
 
 ### Includes the following **easing functions**:
 - Linear
 - Quadratic
 - Cubic
 - Quartic
-- Sine
+- Sine (similar to Quadratic)
 - Circular
 - Back
 - Elastic
@@ -35,7 +39,7 @@ Just call **myServo.startEaseTo()** instead of **myServo.write()** and you are d
 - In
 - Out
 - InOut
-- BouncingOutIn (mirrored Out) -> BouncingOutIn of the Sine function results in the upper half of the sine.
+- Bouncing (mirrored Out) e.g. Bouncing of the Sine function results in the upper (positive) half of the sine.
 
 ## Useful resources
 - [Easings Cheat Sheet](https://easings.net/)
@@ -45,7 +49,7 @@ Just call **myServo.startEaseTo()** instead of **myServo.write()** and you are d
 
 # Internals
 Internally only microseconds (or units (= 4.88 us) if using PCA9685 expander) and not degree are used to speed up things. Other expander or libraries can therefore easily be added.<br/>
-Timer1 is used for the Arduino Servo library. To have non blocking easing functions its unused **channel B** is used to generate an interrupt 100 us before the end of the 20 ms Arduino Servo refresh period. This interrupt then updates all servo values for the next refresh period.
+On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking easing functions its unused **Channel B** is used to generate an interrupt 100 us before the end of the 20 ms Arduino Servo refresh period. This interrupt then updates all servo values for the next refresh period.
 
 # Modifying library properties
 To access the Arduino library files from a sketch, you have to first use `Sketch/Show Sketch Folder (Ctrl+K)` in the Arduino IDE.<br/>
@@ -68,15 +72,39 @@ If you have only one or two servos, then you can save program space by using Lig
 This saves 742 bytes FLASH and 42 bytes RAM.<br/>
 If you do not need the more complex easing functions like `Sine` etc., which in turn need sin(), cos(), sqrt() and pow(), you can shrink library size by approximately 1850 bytes by commenting out line 97 in ServoEasing.h or define global symbol `KEEP_LIBRARY_SMALL` which is not yet possible in Arduino IDE:-(.<br/>
 
-# Special examples
+# [Examples](https://github.com/ArminJo/ServoEasing/tree/master/examples)
+All examples with up to 2 Servos can be used without modifications with the [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for AVR by by commenting out line 46 in the file ServoEasing.h (see above).
+
 ## Simple example
-This example does not use interrupts and should therefore run on any platform where the Arduino Servo library is available.
+This example does not use interrupts and should therefore run on any platform where the Arduino Servo library is available.<br/><br/>
+**Arduino Serial Plotter** result of Simple example if `#define TRACE_FOR_SERIAL_PLOTTER` in `ServoEasing.cpp` is enabled.
+![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/extras/ServoEasing-Linear-Cubic-Circular.png)
+## OneServo example
+This example moves one Servo with different speeds and using blocking and interrupt commands. The internal LED blinks when using interrupt based commands
+
+## TwoServo and ThreeServo examples
+This example shows how to move 2 or 3 servos synchronized or independently.
 
 ## SymmetricEasing example
 This example shows symmetric (end movement is mirror of start movement) linear, quadratic and cubic movements for 3 servos synchronously.
 
 ## AsymmetricEasing example
 This example shows asymmetric (end movement is different from start movement) partially **user defined** (line 134) non linear movements for 3 servos synchronously.
+
+## CatMover example
+Demo of using two servos in a pan tilt housing to move a laser pointer.
+
+## QuadrupedControl example
+This example is available [here](https://github.com/ArminJo/QuadrupedControl)
+
+### YouTube Video
+[![mePed V2 in actions](https://i.ytimg.com/vi/cLgj_sr7f1o/hqdefault.jpg)](https://youtu.be/cLgj_sr7f1o)
+
+## RobotArmControl example
+Program for controlling a robot arm with 4 servos using 4 potentiometers and/or an IR Remote.
+
+## PCA9685_Expander example
+The OneServo example modified for using a PCA9685 expander board and the standard Arduino Wire library.
 
 ## EndPositionsTest example
 This example helps you determine the right end values for your servo.<br/>
@@ -87,18 +115,6 @@ This example does not use the ServoEasing functions.
 ## SpeedTest example
 This example gives you a feeling how fast your servo can move, what the end position values are and which refresh rate they accept.<br/>
 This example does not use the ServoEasing functions.
-
-## CatMover example
-Demo of using two servos in a pan tilt housing to move a laser pointer.
-
-## QuadrupedControl example
-Program for controlling a mePed Robot V2 with 8 servos using an IR Remote.<br/>
-YouTube video
-
-[![mePed V2 in actions](https://i.ytimg.com/vi/cLgj_sr7f1o/hqdefault.jpg)](https://youtu.be/cLgj_sr7f1o)
-
-## RobotArmControl example
-Program for controlling a robot arm with 4 servos using 4 potentiometers and/or an IR Remote.
 
 # Revision History
 ### Version 1.3.1
