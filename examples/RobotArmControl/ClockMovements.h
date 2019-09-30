@@ -63,6 +63,8 @@
 #define ERASER_GRIP_LENGTH      (35) // the position from eraser base, where to grip the eraser
 #define ERASER_GRIP_Z           (ERASER_POSITION_Z + ERASER_GRIP_LENGTH) // the position from eraser base, where to grip the eraser
 
+void doStartClock();
+
 void doGetPen();
 void doStorePen();
 void doGetEraser();

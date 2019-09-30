@@ -9,8 +9,7 @@
 
 #include "RobotArmServoControl.h"
 #include "RobotArmKinematics.h"
-
-#include "IRCommandDispatcher.h" // for checkIRInput(); and RETURN_IF_STOP;
+#include "RobotArmControl.h"
 
 //#define DEBUG
 
@@ -423,17 +422,17 @@ void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree) {
 void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree, uint16_t aDegreesPerSecond) {
     sServoArray[aServoIndex]->startEaseTo(aDegree, aDegreesPerSecond, false);
     do {
-        checkIRInput();
-        RETURN_IF_STOP;
-        delay(REFRESH_INTERVAL / 1000); // 20ms - REFRESH_INTERVAL is in Microseconds
+        if (delayAndCheck(REFRESH_INTERVAL / 1000)) { // 20 ms - REFRESH_INTERVAL is in Microseconds
+            return;
+        }
     } while (!sServoArray[aServoIndex]->update());
 }
 
 void updateAndCheckInputAndWaitForAllServosToStop() {
     do {
-        checkIRInput();
-        RETURN_IF_STOP;
-        delay(REFRESH_INTERVAL / 1000); // 20ms - REFRESH_INTERVAL is in Microseconds
+        if (delayAndCheck(REFRESH_INTERVAL / 1000)) { // 20 ms - REFRESH_INTERVAL is in Microseconds
+            return;
+        }
     } while (!updateAllServos());
 }
 

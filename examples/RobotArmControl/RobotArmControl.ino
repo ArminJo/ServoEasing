@@ -28,12 +28,20 @@
 
 #include <Arduino.h>
 
-#include "Commands.h"
+#include "RobotArmControl.h"
+
+#if defined(ROBOT_ARM_IR_CONTROL)
 #include "IRCommandDispatcher.h"
+#include "RobotArmRTCControl.h"
+#endif
+
+#if defined(ROBOT_ARM_RTC_CONTROL)
+#include "ClockMovements.h"
+#endif
+
+#include "Commands.h"
 #include "RobotArmServoConfiguration.h"
 #include "RobotArmServoControl.h"
-#include "uRTCLib.h"
-#include "ClockMovements.h"
 
 /*
  * The auto move function. Put your own moves here.
@@ -54,25 +62,14 @@
  * setPivotServos(100, 100, 80, 80);
  */
 
-void doAutoMove() {
-    /*
-     * comment this out and put your own code here
-     */
-    internalAutoMove();
-    return;
-
-}
-
-#define VCC_STOP_THRESHOLD_MILLIVOLT 3500 // We have voltage drop at the connectors, so the battery voltage is assumed higher, than the Arduino VCC.
-#define VCC_STOP_MIN_MILLIVOLT 3200         // We have voltage drop at the connectors, so the battery voltage is assumed higher, than the Arduino VCC.
-#define VCC_STOP_PERIOD_MILLIS 2000         // Period of VCC checks
-#define VCC_STOP_PERIOD_REPETITIONS 9       // Shutdown after 9 times (18 seconds) VCC below VCC_STOP_THRESHOLD_MILLIVOLT or 1 time below VCC_STOP_MIN_MILLIVOLT
-
-#define MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE 30000
-
+/*
+ * comment this out and put your own code here
+ */
+//void doAutoMove() {
+//    return;
+//}
 //#define TRACE
 //#define DEBUG
-
 #define USE_BUTTON_0
 #define USE_ATTACH_INTERRUPT // to be compatible with IRLremote
 #include "EasyButtonAtInt01.h" // for switching easing modes
@@ -85,14 +82,9 @@ void changeEasingType(bool aButtonToggleState);
 EasyButton Button0AtPin2(true, &changeEasingType);
 
 void handleManualControl();
-void checkVCC();
-void printRTC();
-void testRTC();
 
 bool sManualActionHappened = false;
 bool sVCCTooLow = false;
-
-uRTCLib RTC_DS3231;
 
 /*
  * Code starts here
@@ -103,7 +95,7 @@ void setup() {
     Serial.begin(115200);
     while (!Serial)
         ; //delay for Leonardo
-    // Just to know which program is running on my Arduino
+          // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
     /*
@@ -113,14 +105,12 @@ void setup() {
     delay(200);
     setupRobotArmServos();
 
+#if defined(ROBOT_ARM_IR_CONTROL)
     setupIRDispatcher();
+#endif
 
-#ifndef ROBOT_ARM_2
-    Wire.begin();
-    RTC_DS3231.set_model(URTCLIB_MODEL_DS3231);
-    Serial.println("Set date");
-    RTC_DS3231.set(0, 58, 18, 4, 14, 8, 19);
-    //  RTCLib::set(byte second, byte minute, byte hour, byte dayOfWeek, byte dayOfMonth, byte month, byte year)
+#if defined(ROBOT_ARM_RTC_CONTROL)
+    initRTC();
 #endif
 
     // Output VCC Voltage
@@ -139,39 +129,72 @@ void loop() {
         setEasingTypeForAllServos(EASE_LINEAR);
     }
 
-#ifndef ROBOT_ARM_2
-    printRTC();
-#endif
-
     checkVCC();
 
+#if defined(ROBOT_ARM_RTC_CONTROL)
+    printRTC();
+
+    // check for changed time and draw it
+    if (sActionType == ACTION_TYPE_DRAW_TIME) {
+        checkTimeAndDraw(&RTC_DS3231);
+    }
+#endif
+
+#if defined(ROBOT_ARM_IR_CONTROL)
     /*
      * Check for IR commands and execute them
      */
     loopIRDispatcher();
-    // check for changed time and draw it
-    if (sDrawTime) {
-        checkTimeAndDraw(&RTC_DS3231);
-    }
 
     /*
      * Do auto move if timeout after boot was reached and no IR command was received
      */
-    if (!sDrawTime && !sAtLeastOneValidIRCodeReceived && !sManualActionHappened && !sVCCTooLow
+    if (sActionType != ACTION_TYPE_DRAW_TIME && !sAtLeastOneValidIRCodeReceived && !sManualActionHappened && !sVCCTooLow
             && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
         doAutoMove();
     }
 
-    if (!sDrawTime && !sAtLeastOneValidIRCodeReceived) {
+    if (sActionType != ACTION_TYPE_DRAW_TIME  && !sAtLeastOneValidIRCodeReceived) {
         handleManualControl();
     }
+#else
+    handleManualControl();
+#endif
 
+}
+
+/*
+ * Special delay function for the quadruped control.
+ * It checks for low voltage, IR input and US distance sensor
+ * @return  true - if exit condition occurred like stop received
+ */
+bool delayAndCheck(uint16_t aDelayMillis) {
+    uint32_t tStartMillis = millis();
+
+    // check only once per delay
+    if (checkVCC()) {
+        do {
+#if defined(ROBOT_ARM_IR_CONTROL)
+            if (checkIRInput()) {
+                Serial.println(F("IR stop received -> exit from delayAndCheck"));
+                sActionType = ACTION_TYPE_STOP;
+                return true;
+            }
+#endif
+            yield();
+        } while (millis() - tStartMillis < aDelayMillis);
+        return false;
+    }
+#if defined(ROBOT_ARM_IR_CONTROL)
+    sActionType = ACTION_TYPE_STOP;
+#endif
+    return true;
 }
 
 /*
  * checks VCC periodically and sets sVCCTooLow
  */
-void checkVCC() {
+bool checkVCC() {
     static uint8_t sVoltageTooLowCounter;
     static long sLastMillisOfVoltageCheck;
     if (millis() - sLastMillisOfVoltageCheck >= VCC_STOP_PERIOD_MILLIS) {
@@ -211,6 +234,7 @@ void checkVCC() {
             }
         }
     }
+    return sVCCTooLow;
 }
 
 /*
@@ -220,8 +244,10 @@ void changeEasingType(__attribute__((unused)) bool aButtonToggleState) {
     doSwitchEasingType();
 }
 
-void setToAutoMode() {
+void doSetToAutoMode() {
+#if defined(ROBOT_ARM_IR_CONTROL)
     sAtLeastOneValidIRCodeReceived = false;
+#endif
     sManualActionHappened = false;
 }
 
@@ -326,65 +352,5 @@ void handleManualControl() {
         sEndPosition.DownUpDegree = sServoNextPositionArray[SERVO_LIFT];
         unsolve(&sEndPosition);
         printPositionShortWithUnits(&sEndPosition);
-    }
-}
-
-/*
- * Only URTCLIB_SQWG_OFF_1 and URTCLIB_SQWG_1H work on my china module
- */
-void testRTC() {
-    Serial.println("Testing SQWG/INT output:");
-
-    Serial.println("fixed 1:");
-    RTC_DS3231.sqwgSetMode(URTCLIB_SQWG_OFF_1);
-    delay(2000);
-
-    Serial.println("1 hertz:");
-    RTC_DS3231.sqwgSetMode(URTCLIB_SQWG_1H);
-    delay(3000);
-
-    Serial.println("1024 hertz:");
-    RTC_DS3231.sqwgSetMode(URTCLIB_SQWG_1024H);
-    delay(2000);
-
-    Serial.println("4096 hertz:");
-    RTC_DS3231.sqwgSetMode(URTCLIB_SQWG_4096H);
-    delay(2000);
-
-    Serial.println("8192 hertz:");
-    RTC_DS3231.sqwgSetMode(URTCLIB_SQWG_8192H);
-    delay(2000);
-
-}
-
-void printRTC() {
-    static long sLastMillisOfRTCRead;
-
-    if (millis() - sLastMillisOfRTCRead >= 1000) {
-        sLastMillisOfRTCRead = millis();
-        RTC_DS3231.refresh();
-
-        Serial.print("RTC DateTime: ");
-        Serial.print(RTC_DS3231.day());
-        Serial.print('.');
-        Serial.print(RTC_DS3231.month());
-        Serial.print('.');
-        Serial.print(RTC_DS3231.year());
-
-        Serial.print(' ');
-
-        Serial.print(RTC_DS3231.hour());
-        Serial.print(':');
-        Serial.print(RTC_DS3231.minute());
-        Serial.print(':');
-        Serial.print(RTC_DS3231.second());
-
-        Serial.print(" DOW: ");
-        Serial.print(RTC_DS3231.dayOfWeek());
-
-        Serial.print(" - Temp: ");
-        Serial.print(RTC_DS3231.temp());
-
-        Serial.println();
     }
 }

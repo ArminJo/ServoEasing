@@ -40,7 +40,6 @@ void setAllServos(uint8_t aNumberOfValues, ...);
  * Inverse kinematic
  */
 #define KEEP_POSITION (-1000) // Can be used as parameter for goToPosition()
-void internalAutoMove();
 void goToNeutral();
 void openClaw();
 void closeClaw();

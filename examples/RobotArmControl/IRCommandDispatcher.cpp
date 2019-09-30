@@ -47,7 +47,6 @@ bool sExecutingMainCommand;             // set if we just execute a command by d
 bool sCurrentCommandIsRepeat;
 bool sAtLeastOneValidIRCodeReceived = false; // one time flag. Set if we received a valid IR code. Used for breaking timeout for auto move.
 uint32_t sLastTimeOfValidIRCodeReceived; // millis of last IR command
-uint8_t sActionType;
 /*
  * Flag for movements to stop, set by checkIRInput().
  * It works like an exception so we do not need to propagate the return value from the delay up to the movements.
@@ -250,31 +249,4 @@ void printIRCommandString(uint8_t aIRCode) {
     Serial.println(reinterpret_cast<const __FlashStringHelper *>(unknown));
 }
 
-// to be overwritten by example or user function.
-bool __attribute__((weak)) checkOncePerDelay() {
-    return false; // everything OK
-}
 
-/*
- * Special delay function for the quadruped control.
- * It checks for low voltage, IR input and US distance sensor
- * @return  true - if exit condition occurred like stop received
- */
-bool delayAndCheck(uint16_t aDelayMillis) {
-    uint32_t tStartMillis = millis();
-
-    // check only once per delay
-    if (!checkOncePerDelay()) {
-        do {
-            if (checkIRInput()) {
-                Serial.println(F("IR stop received -> exit from delayAndCheck"));
-                sActionType = ACTION_TYPE_STOP;
-                return true;
-            }
-            yield();
-        } while (millis() - tStartMillis < aDelayMillis);
-        return false;
-    }
-    sActionType = ACTION_TYPE_STOP;
-    return true;
-}

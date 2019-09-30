@@ -16,8 +16,7 @@ before_install:
 - rm -rf ~/.arduino15/packages/esp8266
 - source <(curl -SLs https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/install.sh)
 install:
-# Libraries for the QuadrupedControl example
-- arduino --install-library "PinChangeInterrupt","IRLremote","ESP32Servo"
+- arduino --install-library "ESP32Servo"
 script:
 - build_platform uno
 - build_platform leonardo

@@ -29,7 +29,6 @@
 
 #include "ClockMovements.h"
 #include "Commands.h"
-#include "IRCommandDispatcher.h"
 #include "RobotArmServoControl.h"
 
 /******************************************
@@ -86,7 +85,7 @@ void checkTimeAndDraw(uRTCLib * aRTC_DS3231) {
             doGetPenSpecial();
         } else if (sAtLeastOneValidIRCodeReceived) {
             // stop time drawing mode, but not at the first call
-            sDrawTime = false;
+            sActionType = ACTION_TYPE_STOP;
             doStorePen();
             return;
         }
@@ -134,7 +133,7 @@ void checkTimeAndDraw(uRTCLib * aRTC_DS3231) {
 }
 
 void doStartClock() {
-    sDrawTime = true;
+    sActionType = ACTION_TYPE_DRAW_TIME;
     sDrawTimeJustStarted = true;
     sAtLeastOneValidIRCodeReceived = false;
 }

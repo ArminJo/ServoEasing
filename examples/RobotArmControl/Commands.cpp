@@ -28,32 +28,32 @@
 #include <Arduino.h>
 
 #include "Commands.h"
-#include "IRCommandDispatcher.h"
 #include "RobotArmServoControl.h"
 
 bool sInverseKinematicModeActive = true;
-bool sDrawTime = false;
+
+uint8_t sActionType;
 
 /******************************************
  * The Commands to execute
  ******************************************/
 
-void doCenter() {
+void __attribute__((weak)) doCenter() {
     setAllServos(4, PIVOT_NEUTRAL_OFFSET_DEGREE, HORIZONTAL_NEUTRAL_OFFSET_DEGREE, LIFT_NEUTRAL_OFFSET_DEGREE, CLAW_START_ANGLE);
 }
 
-void doFolded() {
+void __attribute__((weak)) doFolded() {
     shutdownServos();
 }
 
-void doGoBack() {
+void __attribute__((weak)) doGoBack() {
     if (sHorizontalServoAngle > 2) {
         sHorizontalServoAngle -= 2;
         HorizontalServo.easeTo(sHorizontalServoAngle);
     }
 }
 
-void doGoForward() {
+void __attribute__((weak)) doGoForward() {
     if (sHorizontalServoAngle < 178) {
         sHorizontalServoAngle += 2;
         HorizontalServo.easeTo(sHorizontalServoAngle);
@@ -61,7 +61,7 @@ void doGoForward() {
 }
 
 // Allow to go to -92
-void doTurnRight() {
+void __attribute__((weak)) doTurnRight() {
     if (sBodyPivotAngle > -90) {
         sBodyPivotAngle -= 2;
         BasePivotServo.easeTo(sBodyPivotAngle);
@@ -69,69 +69,73 @@ void doTurnRight() {
 }
 
 // Allow to go to 82
-void doTurnLeft() {
+void __attribute__((weak)) doTurnLeft() {
     if (sBodyPivotAngle <= 90) {
         sBodyPivotAngle += 2;
         BasePivotServo.easeTo(sBodyPivotAngle);
     }
 }
 
-void doLiftUp() {
+void __attribute__((weak)) doLiftUp() {
     if (sLiftServoAngle <= LIFT_MAX_ANGLE - 2) {
         sLiftServoAngle += 2;
         LiftServo.easeTo(sLiftServoAngle);
     }
 }
 
-void doLiftDown() {
+void __attribute__((weak)) doLiftDown() {
     if (sLiftServoAngle > 2) {
         sLiftServoAngle -= 2;
         LiftServo.easeTo(sLiftServoAngle);
     }
 }
 
-void doOpenClaw() {
+void __attribute__((weak)) doOpenClaw() {
     if (sClawServoAngle > 2) {
         sClawServoAngle -= 2;
         ClawServo.easeTo(sClawServoAngle);
     }
 }
 
-void doCloseClaw() {
+void __attribute__((weak)) doCloseClaw() {
     if (sClawServoAngle <= (CLAW_MAX_ANGLE - 2)) {
         sClawServoAngle += 2;
         ClawServo.easeTo(sClawServoAngle);
     }
 }
 
-void doSwitchToManual() {
+void __attribute__((weak)) doSwitchToManual() {
+#if defined(ROBOT_ARM_IR_CONTROL)
     sRequestToStopReceived = true;
     // this enables manual mode
     sAtLeastOneValidIRCodeReceived = false;
+#endif
 }
 
 /*
  * Switch mode between Inverse-Kinematic and normal easing
  */
-void doInverseKinematicOn() {
+void __attribute__((weak)) doInverseKinematicOn() {
     sInverseKinematicModeActive = true;
 }
 
-void doInverseKinematicOff() {
+void __attribute__((weak)) doInverseKinematicOff() {
     sInverseKinematicModeActive = false;
 }
 
-void doToggleInverseKinematic() {
+void __attribute__((weak)) doToggleInverseKinematic() {
+#if defined(ROBOT_ARM_IR_CONTROL)
     if (!sCurrentCommandIsRepeat) {
         sInverseKinematicModeActive = !sInverseKinematicModeActive;
     }
+#endif
 }
 
-void internalAutoMove() {
+void __attribute__((weak)) doAutoMove() {
     Serial.print(F("Start auto move: InverseKinematicModeActive="));
     Serial.println(sInverseKinematicModeActive);
 
-    setToAutoMode();
+    doSetToAutoMode();
 
     if (sInverseKinematicModeActive) {
         setEasingTypeForAllServos(EASE_USER_DIRECT);
@@ -181,14 +185,17 @@ void internalAutoMove() {
 /*************************
  * Instant Commands
  *************************/
-void doStop() {
+void __attribute__((weak)) doStop() {
+#if defined(ROBOT_ARM_IR_CONTROL)
     sRequestToStopReceived = true;
+    sActionType = ACTION_TYPE_STOP;
+#endif
 }
 
 /*
  * Decrease moving speed by 25%
  */
-void doIncreaseSpeed() {
+void __attribute__((weak)) doIncreaseSpeed() {
     sServoSpeed += sServoSpeed / 4;
     if (sServoSpeed > 0xBF) {
         sServoSpeed = 0xBF;
@@ -200,7 +207,7 @@ void doIncreaseSpeed() {
 /*
  * Increase moving speed by 25%
  */
-void doDecreaseSpeed() {
+void __attribute__((weak)) doDecreaseSpeed() {
     if (sServoSpeed > 2) {
         sServoSpeed -= sServoSpeed / 4;
         if (sServoSpeed < 4) {
@@ -211,7 +218,8 @@ void doDecreaseSpeed() {
     Serial.print(sServoSpeed);
 }
 
-void doSwitchEasingType() {
+void __attribute__((weak)) doSwitchEasingType() {
+#if defined(ROBOT_ARM_IR_CONTROL)
     if (!sInverseKinematicModeActive && !sCurrentCommandIsRepeat) {
         Serial.print(F("Set easing type to "));
         if (sEasingType == EASE_LINEAR) {
@@ -232,4 +240,5 @@ void doSwitchEasingType() {
         }
         Serial.println();
     }
+#endif
 }

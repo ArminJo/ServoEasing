@@ -10,8 +10,23 @@
 #ifndef SRC_COMMANDS_H_
 #define SRC_COMMANDS_H_
 
+#include "RobotArmControl.h"
+
+#if defined(ROBOT_ARM_IR_CONTROL)
+#include "IRCommandDispatcher.h"
+#else
+#define RETURN_IF_STOP
+#endif
+
+#if defined(ROBOT_ARM_RTC_CONTROL)
+#include "ClockMovements.h"
+#endif
+
+#define ACTION_TYPE_STOP        0
+#define ACTION_TYPE_DRAW_TIME   1
+
 extern bool sInverseKinematicModeActive;
-extern bool sDrawTime;
+extern uint8_t sActionType;
 
 void doAutoMove();
 void doCenter();
@@ -25,9 +40,6 @@ void doLiftDown();
 void doOpenClaw();
 void doCloseClaw();
 
-// from ClockMovements.cpp
-void doStartClock();
-
 void doSwitchToManual();
 void doInverseKinematicOff();
 void doInverseKinematicOn();
@@ -37,8 +49,6 @@ void doToggleInverseKinematic();
  * Instant command functions
  */
 void doStop();
-// from RobotArmControl.cpp and used by  doStop()
-void setToAutoMode();
 
 void doIncreaseSpeed();
 void doDecreaseSpeed();

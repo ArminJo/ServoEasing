@@ -96,7 +96,8 @@ This example shows asymmetric (end movement is different from start movement) pa
 Demo of using two servos in a pan tilt housing to move a laser pointer.
 
 ## QuadrupedControl example
-This example is available [here](https://github.com/ArminJo/QuadrupedControl)
+Control 8 servos to move a Quadruped robot.<br/>
+The full example with IR remote control, NeoPixel and US distance sensor support is available [here](https://github.com/ArminJo/QuadrupedControl).
 
 ### YouTube Video
 [![mePed V2 in actions](https://i.ytimg.com/vi/cLgj_sr7f1o/hqdefault.jpg)](https://youtu.be/cLgj_sr7f1o)

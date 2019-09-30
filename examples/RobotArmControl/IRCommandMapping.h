@@ -20,7 +20,6 @@
 //#define USE_KEYES_REMOTE
 //#define USE_WM10_REMOTE
 //#define USE_CAR_MP3_REMOTE
-
 // Take MSI remote as default if not otherwise specified
 #if !defined(USE_KEYES_REMOTE) && !defined(USE_WM10_REMOTE) && !defined(USE_MSI_REMOTE) && !defined(USE_CAR_MP3_REMOTE)
 #define USE_MSI_REMOTE
@@ -245,7 +244,6 @@
 #define IR_8    0x52
 #define IR_9    0x4A
 
-
 /*
  * SECOND:
  * IR button to command mapping for better reading. IR buttons should only referenced here.
@@ -325,7 +323,11 @@ struct IRToCommandMapping {
 struct IRToCommandMapping IRMapping[] = { { COMMAND_FORWARD, &doGoForward, forward }, { COMMAND_BACKWARD, &doGoBack, back }, {
 COMMAND_RIGHT, &doTurnRight, right }, { COMMAND_LEFT, &doTurnLeft, left }, { COMMAND_UP, &doLiftUp, up }, {
 COMMAND_DOWN, &doLiftDown, down }, { COMMAND_OPEN, &doOpenClaw, open }, { COMMAND_CLOSE, &doCloseClaw, close }, { COMMAND_CENTER,
-        &doCenter, center }, { COMMAND_FOLD, &doFolded, fold }, { COMMAND_MOVE, &doAutoMove, move }, { COMMAND_TEST, &doStartClock, test }  };
+        &doCenter, center }, { COMMAND_FOLD, &doFolded, fold }, { COMMAND_MOVE, &doAutoMove, move },
+#if defined(ROBOT_ARM_RTC_CONTROL)
+        {   COMMAND_TEST, &doStartClock, test}
+#endif
+    };
 
 struct IRToCommandMapping IRMappingInstantCommands[] = { { COMMAND_INCREASE_SPEED, &doIncreaseSpeed, volPlus }, {
 COMMAND_DECREASE_SPEED, &doDecreaseSpeed, volMinus }, { COMMAND_STOP, &doSwitchToManual, manual },
