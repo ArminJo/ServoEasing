@@ -1,7 +1,7 @@
 /*
  * RobotArmControl.cpp
  *
- * Program for controlling a RobotArm with 4 servos using 4 potentiometers and/or an IR Remote at pin A0
+ * Program for controlling a RobotArm with 4 servos using 4 potentiometers and/or an IR remote at pin A0
  * See also: https://www.instructables.com/id/4-DOF-Mechanical-Arm-Robot-Controlled-by-Arduino
  *
  * To run this example need to install the "ServoEasing", "IRLremote" and "PinChangeInterrupt" libraries under "Tools -> Manage Libraries..." or "Ctrl+Shift+I"

@@ -61,7 +61,7 @@
 #endif
 
 //
-#define MEASURE_TIMING
+//#define MEASURE_TIMING
 #if defined(MEASURE_TIMING) || defined (LED_FEEDBACK_FOR_DEBOUNCE_TEST)
 #include "digitalWriteFast.h"
 #endif
@@ -139,7 +139,7 @@ public:
 #endif
 
     volatile bool ButtonStateIsActive;          // negative logic: true / active means button pin is LOW
-    volatile bool ButtonToggleState;            // toggle is on press, not on release
+    volatile bool ButtonToggleState;            // Toggle is on press, not on release - initial value is false
     volatile bool ButtonStateHasJustChanged;    // Flag to enable action only once. Only set to true by library
                                                 // Can be checked and set to false my main program to enable only one action per button press
     /*
