@@ -90,8 +90,10 @@
 
 /*
  * Create your own basic movement here
+ * Is mapped to the star on the remote
  */
 void doTest() {
+    doBeep();
     frontLeftLiftServo.write(90);
     backRightLiftServo.easeTo(90);
 }
@@ -121,6 +123,7 @@ void setup() {
     getVCCVoltageMillivoltSimple();
 
 #if defined(QUADRUPED_HAS_US_DISTANCE)
+    Serial.println(F("Init US distance sensor"));
     initUSDistancePins(PIN_TRIGGER_OUT, PIN_ECHO_IN);
 #endif
 
@@ -129,9 +132,7 @@ void setup() {
      */
     resetServosTo90Degree();
 
-#if defined(PIN_SPEAKER)
     tone(PIN_SPEAKER, 2000, 300);
-#endif
     delay(2000);
 
     /*
@@ -154,6 +155,7 @@ void setup() {
 #endif
 
 #if defined(QUADRUPED_HAS_NEOPIXEL)
+    Serial.println(F("Init NeoPixel"));
     initNeoPatterns();
     enableServoEasingInterrupt(); // This enables the interrupt, which synchronizes the NeoPixel update with the servo pulse generation.
 #endif
@@ -177,6 +179,7 @@ void loop() {
      */
     loopIRDispatcher();
 
+#if !defined(EMPTY_MAPPING)
     /*
      * Do auto move if timeout after boot was reached and no IR command was received
      */
@@ -184,6 +187,7 @@ void loop() {
         doAutoMove();
         sAtLeastOneValidIRCodeReceived = true; // do auto move only once
     }
+#endif
 
     /*
      * Get attention that no command was received since 2 minutes and quadruped may be switched off
