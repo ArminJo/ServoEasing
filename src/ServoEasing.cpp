@@ -161,7 +161,7 @@ ServoEasing::ServoEasing() // @suppress("Class members should be properly initia
  *      Return 0/false if not pin 9 or 10 else return aPin
  *      Pin number != 9 results in using pin 10.
  * If USE_PCA9685_SERVO_EXPANDER is enabled:
- *      Return true only if channel number between 0 and 15 since PCA9685 has only 16 channels, else returns false
+ *      Return true only if channel number is between 0 and 15 since PCA9685 has only 16 channels, else returns false
  * Else return servoIndex / internal channel number
  */
 uint8_t ServoEasing::attach(int aPin) {
@@ -800,7 +800,12 @@ void enableServoEasingInterrupt() {
 
     TIFR1 |= _BV(OCF1B);    // clear any pending interrupts;
     TIMSK1 |= _BV(OCIE1B);  // enable the output compare B interrupt
-    TCCR1B |= _BV(ICNC1);   // used as flag, that interrupts are enabled again, if disable is suppressed because interrupt is used to synchronize e.g. NeoPixel
+    /*
+     * Misuse the Input Capture Noise Canceler Bit as a flag, that signals that interrupts are enabled again.
+     * It is needed if disableServoEasingInterrupt() is suppressed e.g. by an overwritten handleServoTimerInterrupt() function
+     * because the servo interrupt is used to synchronize e.g. NeoPixel updates.
+     */
+    TCCR1B |= _BV(ICNC1);
 #ifndef USE_LEIGHTWEIGHT_SERVO_LIB
 // update values 100 us before the new servo period starts
     OCR1B = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL) / 8) - 100;

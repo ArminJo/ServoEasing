@@ -47,7 +47,7 @@ void moveTrot(uint8_t aNumberOfTrots) {
 
     uint8_t tCurrentDirection = sMovingDirection;
     do {
-        uint8_t LiftMaxAngle = sBodyHeightAngle + ((LIFT_MAX_ANGLE - sBodyHeightAngle) / 2);
+        uint8_t LiftMaxAngle = sBodyHeightAngle + ((LIFT_HIGHEST_ANGLE - sBodyHeightAngle) / 2);
         /*
          * first move right front and left back leg up and forward
          */
@@ -77,6 +77,7 @@ void moveTrot(uint8_t aNumberOfTrots) {
 }
 
 void basicTwist(uint8_t aTwistAngle, bool aTurnLeft) {
+    sActionType = ACTION_TYPE_TWIST;
 #ifdef INFO
     Serial.print(F("Twist angle="));
     Serial.print(aTwistAngle);
@@ -90,6 +91,7 @@ void basicTwist(uint8_t aTwistAngle, bool aTurnLeft) {
     aTurnLeft ? tTwistAngle = -aTwistAngle : tTwistAngle = aTwistAngle;
 
     setPivotServos(90 + tTwistAngle, 90 + tTwistAngle, 90 + tTwistAngle, 90 + tTwistAngle);
+    sActionType = ACTION_TYPE_STOP;
 }
 
 /*
@@ -153,7 +155,7 @@ void basicQuarterTurn(uint8_t aMoveLegIndex, bool aTurnLeft) {
         tTurnAngle = TURN_BODY_ANGLE;
     }
     sServoNextPositionArray[tServoIndex] = 90 + tMoveAngle;
-    sServoNextPositionArray[tServoIndex + LIFT_SERVO_OFFSET] = LIFT_MAX_ANGLE;
+    sServoNextPositionArray[tServoIndex + LIFT_SERVO_OFFSET] = LIFT_HIGHEST_ANGLE;
     tServoIndex += SERVOS_PER_LEG;
 
     /*
@@ -221,7 +223,7 @@ void basicHalfCreep(uint8_t aDirection, bool doMirror) {
     Serial.println(F("Move front leg"));
 #endif
     transformAndSetAllServos(180 - Y_POSITION_OPEN_ANGLE, Y_POSITION_OPEN_ANGLE, 180 - Y_POSITION_CLOSE_ANGLE,
-    Y_POSITION_FRONT_ANGLE, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle, LIFT_MAX_ANGLE, aDirection, doMirror);
+    Y_POSITION_FRONT_ANGLE, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle, LIFT_HIGHEST_ANGLE, aDirection, doMirror);
     RETURN_IF_STOP;
 
 // check if body height has changed
@@ -245,7 +247,7 @@ void basicHalfCreep(uint8_t aDirection, bool doMirror) {
 #endif
 // Move to Y position with other side legs together
     transformAndSetAllServos(180 - Y_POSITION_CLOSE_ANGLE, Y_POSITION_CLOSE_ANGLE, 180 - Y_POSITION_OPEN_ANGLE,
-    Y_POSITION_OPEN_ANGLE, sBodyHeightAngle, LIFT_MAX_ANGLE, sBodyHeightAngle, sBodyHeightAngle, aDirection, doMirror);
+    Y_POSITION_OPEN_ANGLE, sBodyHeightAngle, LIFT_HIGHEST_ANGLE, sBodyHeightAngle, sBodyHeightAngle, aDirection, doMirror);
     RETURN_IF_STOP;
 
     checkIfBodyHeightHasChanged();
@@ -284,7 +286,7 @@ void basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
 #ifdef INFO
     Serial.println(F("Move front leg"));
 #endif
-    moveOneServoAndCheckInputAndWait(tLeftLegPivotServoIndex + LIFT_SERVO_OFFSET, LIFT_MAX_ANGLE);
+    moveOneServoAndCheckInputAndWait(tLeftLegPivotServoIndex + LIFT_SERVO_OFFSET, LIFT_HIGHEST_ANGLE);
     RETURN_IF_STOP;
 
 // go CREEP_BODY_MOVE_ANGLE ahead of Y_POSITION_OPEN_ANGLE
@@ -343,7 +345,7 @@ void basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
 #endif
 // Move to Y position with right legs together / 120, 60, 180, 0
     uint8_t tDiagonalIndex = (tLeftLegPivotServoIndex + DIAGONAL_SERVO_OFFSET) % NUMBER_OF_SERVOS;
-    moveOneServoAndCheckInputAndWait(tDiagonalIndex + LIFT_SERVO_OFFSET, LIFT_MAX_ANGLE);
+    moveOneServoAndCheckInputAndWait(tDiagonalIndex + LIFT_SERVO_OFFSET, LIFT_HIGHEST_ANGLE);
     RETURN_IF_STOP;
 
     aMoveMirrored ? tEffectiveAngle = 180 - Y_POSITION_CLOSE_ANGLE : tEffectiveAngle = Y_POSITION_CLOSE_ANGLE;

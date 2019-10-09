@@ -53,6 +53,8 @@
 #include "Commands.h"
 #include "ADCUtils.h"
 
+#include <PlayRtttl.h>
+
 /*
  * The auto move function. Put your own moves here.
  *
@@ -61,6 +63,8 @@
  *  backLeftPivotServo, backLeftLiftServo
  *  backRightPivotServo, backRightLiftServo
  *  frontRightPivotServo, frontRightLiftServo
+ *
+ * sBodyHeightAngle contains the normal angle of lift servos.
  *
  * Useful commands:
  *
@@ -76,8 +80,12 @@
  * delayAndCheck(1000);
  *
  * To move the front left lift servo use:
- * frontLeftLiftServo.easeTo(LIFT_MIN_ANGLE);
- * setLiftServos(LIFT_MIN_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE);
+ * frontLeftLiftServo.easeTo(LIFT_LOWEST_ANGLE);
+ *
+ * To move all lift servos simultaneously:
+ * setLiftServos(LIFT_LOWEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_HIGHEST_ANGLE);
+ *
+ * To move all pivot servos simultaneously:
  * setPivotServos(100, 100, 80, 80);
  */
 
@@ -87,15 +95,15 @@
 //void doAutoMove() {
 //    return;
 //}
-
 /*
  * Create your own basic movement here
  * Is mapped to the star on the remote
  */
 void doTest() {
     doBeep();
-    frontLeftLiftServo.write(90);
-    backRightLiftServo.easeTo(90);
+    frontLeftLiftServo.easeTo(LIFT_HIGHEST_ANGLE);
+    frontLeftPivotServo.easeTo(20);
+    frontLeftLiftServo.easeTo(sBodyHeightAngle);
 }
 
 #define VERSION_EXAMPLE "3.0"
@@ -104,9 +112,10 @@ void doTest() {
 // 2.0 major refactoring
 // 1.1 mirror computation at transformAndSetPivotServos and transformOneServoIndex
 
-/*
- * Code starts here
- */
+#if !defined(EMPTY_MAPPING)
+static const char Short[] PROGMEM = "Short:d=4,o=3,b=240,s=4:c4,8g,8g,a,g.,b,c4";
+#endif
+
 void setup() {
     // initialize the digital pin as an output.
     pinMode(LED_BUILTIN, OUTPUT);
@@ -132,8 +141,10 @@ void setup() {
      */
     resetServosTo90Degree();
 
-    tone(PIN_SPEAKER, 2000, 300);
-    delay(2000);
+    playRtttlBlockingPGM(PIN_SPEAKER, Short);
+
+//    tone(PIN_SPEAKER, 2000, 300);
+//    delay(2000);
 
     /*
      * set servo to 90 degree with trim and wait
@@ -178,16 +189,25 @@ void loop() {
      * Returns only AFTER finishing of requested movement
      */
     loopIRDispatcher();
+#if defined(QUADRUPED_HAS_NEOPIXEL)
+    if(sJustCalledMainCommand) {
+        sJustCalledMainCommand = false;
+        sStartOrChangeNeoPatterns = true;
+    }
+#endif
 
-#if !defined(EMPTY_MAPPING)
     /*
      * Do auto move if timeout after boot was reached and no IR command was received
      */
     if (!sAtLeastOneValidIRCodeReceived && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
+#if defined(QUADRUPED_HAS_NEOPIXEL)
+        clearPatternsSlowlyBlocking();
+#endif
+#if !defined(EMPTY_MAPPING)
         doAutoMove();
+#endif
         sAtLeastOneValidIRCodeReceived = true; // do auto move only once
     }
-#endif
 
     /*
      * Get attention that no command was received since 2 minutes and quadruped may be switched off
@@ -198,9 +218,9 @@ void loop() {
         sLastTimeOfValidIRCodeReceived += MILLIS_OF_INACTIVITY_BETWEEN_REMINDER_MOVE;
     }
 #else
-    delay(5000);
+    delayAndCheck(5000);
     doAutoMove();
-    delay(25000);
+    delayAndCheck(25000);
 #endif
 
     if (checkForLowVoltage()) {
@@ -212,7 +232,10 @@ void loop() {
         tone(PIN_SPEAKER, 1000, 400);
         delay(800);
         tone(PIN_SPEAKER, 700, 500);
-        delay(10000);  // wait for next check
+#if defined(QUADRUPED_HAS_NEOPIXEL)
+        clearPatternsSlowlyBlocking();
+#endif
+        delay(10000);  // blocking wait for next check
     }
 }
 

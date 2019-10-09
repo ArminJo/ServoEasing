@@ -46,7 +46,7 @@ ServoEasing frontRightPivotServo;   // 6 - Front Right Pivot Servo
 ServoEasing frontRightLiftServo;    // 7 - Front Right Lift Servo
 
 uint16_t sServoSpeed = 90;      // in degree/second
-uint8_t sBodyHeightAngle = LIFT_MIN_ANGLE + 20; // From LIFT_MIN_ANGLE to LIFT_MAX_ANGLE !!! The bigger the angle, the lower the body !!!
+uint8_t sBodyHeightAngle = LIFT_LOWEST_ANGLE + 20; // From LIFT_LOWEST_ANGLE to LIFT_HIGHEST_ANGLE !!! The bigger the angle, the lower the body !!!
 uint8_t sBodyHeight;  // normalized body height from 0 (low) to 255 (high)
 
 // Arrays of trim angles stored in EEPROM
@@ -70,7 +70,7 @@ void setupQuadrupedServos() {
 
 void shutdownServos() {
     Serial.println(F("Shutdown servos"));
-    sBodyHeightAngle = LIFT_MAX_ANGLE;
+    sBodyHeightAngle = LIFT_HIGHEST_ANGLE;
     centerServos();
 }
 
@@ -286,7 +286,7 @@ void setLiftServoHeight(ServoEasing & aLiftServo, uint8_t aHeightPercent) {
     if (aHeightPercent > 100) {
         aHeightPercent = 100;
     }
-    int tDegreeForLiftServo = map(aHeightPercent, 0, 100, LIFT_MAX_ANGLE, LIFT_MIN_ANGLE);
+    int tDegreeForLiftServo = map(aHeightPercent, 0, 100, LIFT_HIGHEST_ANGLE, LIFT_LOWEST_ANGLE);
     aLiftServo.easeTo(tDegreeForLiftServo);
 }
 

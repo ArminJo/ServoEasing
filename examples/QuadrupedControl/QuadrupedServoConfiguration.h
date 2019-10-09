@@ -10,7 +10,10 @@
 
 // some useful constants
 #define LIFT_MAX_ANGLE 135  // upper mechanical limit -> body is low
+#define LIFT_HIGHEST_ANGLE LIFT_MAX_ANGLE
 #define LIFT_MIN_ANGLE 40   // lower mechanical limit -> body is high
+#define LIFT_LOWEST_ANGLE LIFT_MIN_ANGLE
+
 
 #define MOVE_DIRECTION_FORWARD  0x00
 #define MOVE_DIRECTION_LEFT     0x01

@@ -99,7 +99,7 @@ void __attribute__((weak)) doWave() {
     RETURN_IF_STOP;
 
     // move all legs up, except front left -> front right lifts from the ground
-    setLiftServos(LIFT_MIN_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE);
+    setLiftServos(LIFT_LOWEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_HIGHEST_ANGLE);
     RETURN_IF_STOP;
 
     delayAndCheck(1000);
@@ -139,8 +139,8 @@ void __attribute__((weak)) doBow() {
     RETURN_IF_STOP;
 
     // Lift front legs
-    sServoArray[FRONT_LEFT_LIFT]->setEaseTo(LIFT_MIN_ANGLE, sServoSpeed);
-    sServoArray[FRONT_RIGHT_LIFT]->startEaseToD(LIFT_MIN_ANGLE, sServoArray[FRONT_LEFT_LIFT]->mMillisForCompleteMove);
+    sServoArray[FRONT_LEFT_LIFT]->setEaseTo(LIFT_LOWEST_ANGLE, sServoSpeed);
+    sServoArray[FRONT_RIGHT_LIFT]->startEaseToD(LIFT_LOWEST_ANGLE, sServoArray[FRONT_LEFT_LIFT]->mMillisForCompleteMove);
     updateAndCheckInputAndWaitForAllServosToStop();
     RETURN_IF_STOP;
 
@@ -164,25 +164,25 @@ void __attribute__((weak)) doTwist() {
 void __attribute__((weak)) doLeanLeft() {
     Serial.print(F("Lean left."));
     printSpeed();
-    setLiftServos(LIFT_MAX_ANGLE, LIFT_MAX_ANGLE, LIFT_MIN_ANGLE, LIFT_MIN_ANGLE);
+    setLiftServos(LIFT_HIGHEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_LOWEST_ANGLE, LIFT_LOWEST_ANGLE);
 }
 
 void __attribute__((weak)) doLeanRight() {
     Serial.print(F("Lean right."));
     printSpeed();
-    setLiftServos(LIFT_MIN_ANGLE, LIFT_MIN_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE);
+    setLiftServos(LIFT_LOWEST_ANGLE, LIFT_LOWEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_HIGHEST_ANGLE);
 }
 
 void __attribute__((weak)) doLeanBack() {
     Serial.print(F("Lean back."));
     printSpeed();
-    setLiftServos(LIFT_MIN_ANGLE, LIFT_MAX_ANGLE, LIFT_MAX_ANGLE, LIFT_MIN_ANGLE);
+    setLiftServos(LIFT_LOWEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_LOWEST_ANGLE);
 }
 
 void __attribute__((weak)) doLeanFront() {
     Serial.print(F("Lean front."));
     printSpeed();
-    setLiftServos(LIFT_MAX_ANGLE, LIFT_MIN_ANGLE, LIFT_MIN_ANGLE, LIFT_MAX_ANGLE);
+    setLiftServos(LIFT_HIGHEST_ANGLE, LIFT_LOWEST_ANGLE, LIFT_LOWEST_ANGLE, LIFT_HIGHEST_ANGLE);
 }
 
 void __attribute__((weak)) doTurnRight() {
@@ -230,9 +230,9 @@ void __attribute__((weak)) doAttention() {
     Serial.println(F("Move to get attention"));
 //    doBeep();
     // Move down and up and back to starting height
-    setLiftServos(LIFT_MAX_ANGLE);
+    setLiftServos(LIFT_HIGHEST_ANGLE);
     RETURN_IF_STOP;
-    setLiftServos(LIFT_MIN_ANGLE);
+    setLiftServos(LIFT_LOWEST_ANGLE);
     RETURN_IF_STOP;
     setLiftServos(sBodyHeightAngle);
 }
@@ -369,7 +369,7 @@ void __attribute__((weak)) doDecreaseSpeed() {
  * Take two degrees to move faster
  */
 void __attribute__((weak)) doIncreaseHeight() {
-    if (sBodyHeightAngle > (LIFT_MIN_ANGLE + 2)) {
+    if (sBodyHeightAngle > (LIFT_LOWEST_ANGLE + 2)) {
         sBodyHeightAngle -= 2;
         convertBodyHeightAngleToHeight();
 #if defined(QUADRUPED_IR_CONTROL)
@@ -383,7 +383,7 @@ void __attribute__((weak)) doIncreaseHeight() {
 }
 
 void __attribute__((weak)) doDecreaseHeight() {
-    if (sBodyHeightAngle < (LIFT_MAX_ANGLE - 2)) {
+    if (sBodyHeightAngle < (LIFT_HIGHEST_ANGLE - 2)) {
         sBodyHeightAngle += 2;
         convertBodyHeightAngleToHeight();
 #if defined(QUADRUPED_IR_CONTROL)
@@ -397,7 +397,7 @@ void __attribute__((weak)) doDecreaseHeight() {
 }
 
 void convertBodyHeightAngleToHeight() {
-    sBodyHeight = map(sBodyHeightAngle, LIFT_MAX_ANGLE, LIFT_MIN_ANGLE, 0, 255);
+    sBodyHeight = map(sBodyHeightAngle, LIFT_HIGHEST_ANGLE, LIFT_LOWEST_ANGLE, 0, 255);
     Serial.print(F("sBodyHeight="));
     Serial.println(sBodyHeight);
 }
@@ -410,7 +410,7 @@ void convertBodyHeightAngleToHeight() {
  * Signals which leg is to be calibrated
  */
 void signalLeg(uint8_t aPivotServoIndex) {
-    sServoArray[aPivotServoIndex + LIFT_SERVO_OFFSET]->easeTo(LIFT_MAX_ANGLE, 60);
+    sServoArray[aPivotServoIndex + LIFT_SERVO_OFFSET]->easeTo(LIFT_HIGHEST_ANGLE, 60);
     sServoArray[aPivotServoIndex]->easeTo(90, 60);
     sServoArray[aPivotServoIndex + LIFT_SERVO_OFFSET]->easeTo(90, 60);
 }
