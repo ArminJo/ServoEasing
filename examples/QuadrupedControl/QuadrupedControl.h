@@ -13,6 +13,7 @@
 //#define QUADRUPED_IR_CONTROL
 //#define QUADRUPED_HAS_NEOPIXEL
 //#define QUADRUPED_HAS_US_DISTANCE
+//#define QUADRUPED_PLAYS_RTTTL
 
 #if defined(QUADRUPED_IR_CONTROL)
 #define IR_RECEIVER_PIN  A0
@@ -21,6 +22,9 @@
 #if defined(QUADRUPED_HAS_US_DISTANCE)
 #define PIN_TRIGGER_OUT     A3
 #define PIN_ECHO_IN         A4
+
+#define MILLIS_BETWEEN_MEASUREMENTS 200 // 5 per second
+
 void handleUSSensor();
 #endif
 
