@@ -30,6 +30,8 @@
 
 #include "RobotArmControl.h"
 
+#define INFO // enable some prints
+
 #if defined(ROBOT_ARM_IR_CONTROL)
 #include "IRCommandDispatcher.h"
 #include "RobotArmRTCControl.h"
@@ -90,12 +92,12 @@ bool sVCCTooLow = false;
  * Code starts here
  */
 void setup() {
-    // initialize the digital pin as an output.
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
-    while (!Serial)
-        ; //delay for Leonardo
-          // Just to know which program is running on my Arduino
+#if defined(__AVR_ATmega32U4__)
+    while (!Serial); //delay for Leonardo, but this loops forever for Maple Serial
+#endif
+    // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
     /*
@@ -111,14 +113,17 @@ void setup() {
 
 #if defined(ROBOT_ARM_RTC_CONTROL)
     initRTC();
+    Serial.print(F("RTC temperature="));
+    printRTCTemperature();
+    Serial.println();
 #endif
 
-    // Output VCC Voltage
+    // Output VCC voltage
     uint16_t tVoltageMillivolts = getVCCVoltageMillivolt();
     Serial.print(F("VCC="));
     Serial.print(tVoltageMillivolts);
     Serial.println(" mV");
-    Serial.println("Initialized");
+    Serial.println(F("Initialized"));
     delay(300);
 }
 
@@ -132,7 +137,16 @@ void loop() {
     checkVCC();
 
 #if defined(ROBOT_ARM_RTC_CONTROL)
-    printRTC();
+#ifdef DEBUG
+    if (printRTCEveryPeriod(1)) {
+        printRTC(DATE_FORMAT_EUROPEAN);
+        printRTC(DATE_FORMAT_EUROPEAN_LONG);
+        printRTC(DATE_FORMAT_AMERICAN);
+        printRTC(DATE_FORMAT_AMERICAN_LONG);
+    }
+#else
+    printRTCEveryPeriod(60, DATE_FORMAT_EUROPEAN_LONG);
+#endif
 
     // check for changed time and draw it
     if (sActionType == ACTION_TYPE_DRAW_TIME) {
@@ -151,10 +165,10 @@ void loop() {
      */
     if (sActionType != ACTION_TYPE_DRAW_TIME && !sAtLeastOneValidIRCodeReceived && !sManualActionHappened && !sVCCTooLow
             && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
-        doAutoMove();
+        doRobotArmAutoMove();
     }
 
-    if (sActionType != ACTION_TYPE_DRAW_TIME  && !sAtLeastOneValidIRCodeReceived) {
+    if (sActionType != ACTION_TYPE_DRAW_TIME && !sAtLeastOneValidIRCodeReceived) {
         handleManualControl();
     }
 #else
@@ -168,7 +182,7 @@ void loop() {
  * It checks for low voltage, IR input and US distance sensor
  * @return  true - if exit condition occurred like stop received
  */
-bool delayAndCheck(uint16_t aDelayMillis) {
+bool delayAndCheckForRobotArm(uint16_t aDelayMillis) {
     uint32_t tStartMillis = millis();
 
     // check only once per delay
@@ -196,14 +210,20 @@ bool delayAndCheck(uint16_t aDelayMillis) {
  */
 bool checkVCC() {
     static uint8_t sVoltageTooLowCounter;
+    static uint16_t sLastVoltage;
     static long sLastMillisOfVoltageCheck;
-    if (millis() - sLastMillisOfVoltageCheck >= VCC_STOP_PERIOD_MILLIS) {
+    if (millis() - sLastMillisOfVoltageCheck >= VCC_CHECK_PERIOD_MILLIS) {
         sLastMillisOfVoltageCheck = millis();
         uint16_t tVCC = getVCCVoltageMillivolt();
 
-        Serial.print(F("VCC="));
-        Serial.print(tVCC);
-        Serial.println(" mV");
+#ifdef INFO
+        if (sLastVoltage != tVCC) {
+            sLastVoltage = tVCC;
+            Serial.print(F("VCC="));
+            Serial.print(tVCC);
+            Serial.println(" mV");
+        }
+#endif
 
         // one time flag
         if (!sVCCTooLow) {
@@ -214,10 +234,10 @@ bool checkVCC() {
                 if (tVCC < VCC_STOP_MIN_MILLIVOLT) {
                     // emergency shutdown
                     sVoltageTooLowCounter = VCC_STOP_PERIOD_REPETITIONS;
-                    Serial.println(F("Voltage < 3.2 Volt detected"));
+                    Serial.println(F("Voltage < 3.2 volt detected"));
                 } else {
                     sVoltageTooLowCounter++;
-                    Serial.println(F("Voltage < 3.4 Volt detected"));
+                    Serial.println(F("Voltage < 3.4 volt detected"));
                 }
                 if (sVoltageTooLowCounter == VCC_STOP_PERIOD_REPETITIONS) {
                     Serial.println(F("Shut down"));
@@ -244,9 +264,9 @@ void changeEasingType(__attribute__((unused)) bool aButtonToggleState) {
     doSwitchEasingType();
 }
 
-void doSetToAutoMode() {
+void doSetToAutoModeForRobotArm() {
 #if defined(ROBOT_ARM_IR_CONTROL)
-    sAtLeastOneValidIRCodeReceived = false;
+    sAtLeastOneValidIRCodeReceived = true;
 #endif
     sManualActionHappened = false;
 }
@@ -254,8 +274,8 @@ void doSetToAutoMode() {
 /*
  * Sets sManualActionHappened if potentiometers has once been operated
  */
-#define ANALOG_HYSTERESIS 2
-#define ANALOG_HYSTERESIS_FOR_MANUAL_ACTION 16
+#define ANALOG_HYSTERESIS 10 // 1 degree at a 100 degree scale
+#define ANALOG_HYSTERESIS_FOR_MANUAL_ACTION 20
 void handleManualControl() {
     static bool isInitialized = false;
 
@@ -264,93 +284,108 @@ void handleManualControl() {
     static int sFirstLift, sLastLift;
     static int sFirstClaw, sLastClaw;
 
-    /*
-     * Dummy read to set the reference and let it settle
-     */
-    analogRead(PIVOT_INPUT_PIN);
-    delay(1);
+    static long sLastMillisOfManualCheck;
+    if (millis() - sLastMillisOfManualCheck >= MANUAL_CHECK_PERIOD_MILLIS) {
+        sLastMillisOfManualCheck = millis();
 
-    bool tValueChanged = false; // do only one servo at a time
-    bool tManualAction = false; // gets true if value changed more than ANALOG_HYSTERESIS_FOR_MANUAL_ACTION
+        /*
+         * Dummy read to set the reference and let it settle
+         */
+        analogRead(PIVOT_INPUT_PIN);
+        delay(1);
 
-    int tTargetAngle = 0; // to avoid compiler warnings
+        bool tValueChanged = false; // do only one servo at a time
+        bool tManualAction = false; // gets true if value changed more than ANALOG_HYSTERESIS_FOR_MANUAL_ACTION
+
+        int tTargetAngle = 0; // to avoid compiler warnings
 
 // reset manual action after the first move to manual start position
-    if (!isInitialized) {
-        sFirstPivot = sLastPivot = analogRead(PIVOT_INPUT_PIN);
-        sFirstHorizontal = sLastHorizontal = analogRead(HORIZONTAL_INPUT_PIN);
-        sFirstLift = sLastLift = analogRead(LIFT_INPUT_PIN);
-        sFirstClaw = sLastClaw = analogRead(CLAW_INPUT_PIN);
-        isInitialized = true;
-    }
-
-    int tPivot = analogRead(PIVOT_INPUT_PIN);
-    if (abs(sLastPivot - tPivot) > ANALOG_HYSTERESIS) {
-        tValueChanged = true;
-        // check for manual action
-        if (abs(sFirstPivot - tPivot) > ANALOG_HYSTERESIS_FOR_MANUAL_ACTION) {
-            tManualAction = true;
+        if (!isInitialized) {
+            sFirstPivot = sLastPivot = analogRead(PIVOT_INPUT_PIN);
+            sFirstHorizontal = sLastHorizontal = analogRead(HORIZONTAL_INPUT_PIN);
+            sFirstLift = sLastLift = analogRead(LIFT_INPUT_PIN);
+            sFirstClaw = sLastClaw = analogRead(CLAW_INPUT_PIN);
+            isInitialized = true;
         }
-        sLastPivot = tPivot;
-        tTargetAngle = map(tPivot, 0, 1023, 10 + PIVOT_OFFSET, -10 - PIVOT_OFFSET);
-        moveOneServoAndCheckInputAndWait(SERVO_BASE_PIVOT, tTargetAngle);
-        Serial.print("BasePivotServo: micros=");
-        Serial.print(BasePivotServo.getEndMicrosecondsOrUnitsWithTrim());
-    }
 
-    int tHorizontal = analogRead(HORIZONTAL_INPUT_PIN);
-    if (!tValueChanged && abs(sLastHorizontal - tHorizontal) > ANALOG_HYSTERESIS) {
-        tValueChanged = true;
-        // check for manual action
-        if (abs(sFirstHorizontal - tHorizontal) > ANALOG_HYSTERESIS_FOR_MANUAL_ACTION) {
-            tManualAction = true;
+        int tPivot = analogRead(PIVOT_INPUT_PIN);
+        if (abs(sLastPivot - tPivot) > ANALOG_HYSTERESIS) {
+            tValueChanged = true;
+            // check for manual action
+            if (abs(sFirstPivot - tPivot) > ANALOG_HYSTERESIS_FOR_MANUAL_ACTION) {
+                tManualAction = true;
+            }
+            sLastPivot = tPivot;
+            tTargetAngle = map(tPivot, 0, 1023, 10 + PIVOT_OFFSET, -10 - PIVOT_OFFSET);
+            moveOneServoAndCheckInputAndWait(SERVO_BASE_PIVOT, tTargetAngle);
+#ifdef INFO
+            Serial.print("BasePivotServo: micros=");
+            Serial.print(BasePivotServo.getEndMicrosecondsOrUnitsWithTrim());
+#endif
         }
-        sLastHorizontal = tHorizontal;
-        tTargetAngle = map(tHorizontal, 0, 1023, 0, 180);
-        moveOneServoAndCheckInputAndWait(SERVO_HORIZONTAL, tTargetAngle);
-        Serial.print("HorizontalServo: micros=");
-        Serial.print(HorizontalServo.getEndMicrosecondsOrUnits());
-    }
 
-    int tLift = analogRead(LIFT_INPUT_PIN);
-    if (!tValueChanged && abs(sLastLift - tLift) > ANALOG_HYSTERESIS) {
-        tValueChanged = true;
-        // check for manual action
-        if (abs(sFirstLift - tLift) > ANALOG_HYSTERESIS_FOR_MANUAL_ACTION) {
-            tManualAction = true;
+        int tHorizontal = analogRead(HORIZONTAL_INPUT_PIN);
+        if (!tValueChanged && abs(sLastHorizontal - tHorizontal) > ANALOG_HYSTERESIS) {
+            tValueChanged = true;
+            // check for manual action
+            if (abs(sFirstHorizontal - tHorizontal) > ANALOG_HYSTERESIS_FOR_MANUAL_ACTION) {
+                tManualAction = true;
+            }
+            sLastHorizontal = tHorizontal;
+            tTargetAngle = map(tHorizontal, 0, 1023, 0, 180);
+            moveOneServoAndCheckInputAndWait(SERVO_HORIZONTAL, tTargetAngle);
+#ifdef INFO
+            Serial.print("HorizontalServo: micros=");
+            Serial.print(HorizontalServo.getEndMicrosecondsOrUnits());
+#endif
         }
-        sLastLift = tLift;
-        tTargetAngle = map(tLift, 0, 1023, 0, LIFT_MAX_ANGLE);
-        moveOneServoAndCheckInputAndWait(SERVO_LIFT, tTargetAngle);
-        Serial.print("LiftServo: micros=");
-        Serial.print(LiftServo.getEndMicrosecondsOrUnits());
-    }
 
-    int tClaw = analogRead(CLAW_INPUT_PIN);
-    if (!tValueChanged && abs(sLastClaw - tClaw) > (ANALOG_HYSTERESIS)) {
-        tValueChanged = true;
-        // check for manual action
-        if (abs(sFirstClaw - tClaw) > ANALOG_HYSTERESIS_FOR_MANUAL_ACTION) {
-            tManualAction = true;
+        int tLift = analogRead(LIFT_INPUT_PIN);
+        if (!tValueChanged && abs(sLastLift - tLift) > ANALOG_HYSTERESIS) {
+            tValueChanged = true;
+            // check for manual action
+            if (abs(sFirstLift - tLift) > ANALOG_HYSTERESIS_FOR_MANUAL_ACTION) {
+                tManualAction = true;
+            }
+            sLastLift = tLift;
+            tTargetAngle = map(tLift, 0, 1023, 0, LIFT_MAX_ANGLE);
+            moveOneServoAndCheckInputAndWait(SERVO_LIFT, tTargetAngle);
+#ifdef INFO
+            Serial.print("LiftServo: micros=");
+            Serial.print(LiftServo.getEndMicrosecondsOrUnits());
+#endif
         }
-        sLastClaw = tClaw;
-        tTargetAngle = map(tClaw, 0, 1023, 0, CLAW_MAX_ANGLE);
-        moveOneServoAndCheckInputAndWait(SERVO_CLAW, tTargetAngle);
-        Serial.print("ClawServo: micros=");
-        Serial.print(ClawServo.getEndMicrosecondsOrUnits());
-    }
 
-    if (tValueChanged) {
-        if (tManualAction) {
-            sManualActionHappened = true;
+        int tClaw = analogRead(CLAW_INPUT_PIN);
+        if (!tValueChanged && abs(sLastClaw - tClaw) > (ANALOG_HYSTERESIS)) {
+            tValueChanged = true;
+            // check for manual action
+            if (abs(sFirstClaw - tClaw) > ANALOG_HYSTERESIS_FOR_MANUAL_ACTION) {
+                tManualAction = true;
+            }
+            sLastClaw = tClaw;
+            tTargetAngle = map(tClaw, 0, 1023, 0, CLAW_MAX_ANGLE);
+            moveOneServoAndCheckInputAndWait(SERVO_CLAW, tTargetAngle);
+#ifdef INFO
+            Serial.print("ClawServo: micros=");
+            Serial.print(ClawServo.getEndMicrosecondsOrUnits());
+#endif
         }
-        Serial.print(" degree=");
-        Serial.print(tTargetAngle);
-        Serial.print(" | ");
-        sEndPosition.LeftRightDegree = sServoNextPositionArray[SERVO_BASE_PIVOT];
-        sEndPosition.BackFrontDegree = sServoNextPositionArray[SERVO_HORIZONTAL];
-        sEndPosition.DownUpDegree = sServoNextPositionArray[SERVO_LIFT];
-        unsolve(&sEndPosition);
-        printPositionShortWithUnits(&sEndPosition);
+
+        if (tValueChanged) {
+            if (tManualAction) {
+                sManualActionHappened = true;
+            }
+#ifdef INFO
+            Serial.print(" degree=");
+            Serial.print(tTargetAngle);
+            Serial.print(" | ");
+#endif
+            sEndPosition.LeftRightDegree = sServoNextPositionArray[SERVO_BASE_PIVOT];
+            sEndPosition.BackFrontDegree = sServoNextPositionArray[SERVO_HORIZONTAL];
+            sEndPosition.DownUpDegree = sServoNextPositionArray[SERVO_LIFT];
+            unsolve(&sEndPosition);
+            printPositionShortWithUnits(&sEndPosition);
+        }
     }
 }

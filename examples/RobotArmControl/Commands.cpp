@@ -131,11 +131,11 @@ void __attribute__((weak)) doToggleInverseKinematic() {
 #endif
 }
 
-void __attribute__((weak)) doAutoMove() {
+void __attribute__((weak)) doRobotArmAutoMove() {
     Serial.print(F("Start auto move: InverseKinematicModeActive="));
     Serial.println(sInverseKinematicModeActive);
 
-    doSetToAutoMode();
+    doSetToAutoModeForRobotArm();
 
     if (sInverseKinematicModeActive) {
         setEasingTypeForAllServos(EASE_USER_DIRECT);
@@ -180,7 +180,7 @@ void __attribute__((weak)) doAutoMove() {
     goToPosition(0, 148, 80);
     RETURN_IF_STOP;
 
-    delayAndCheck(2000);
+    delayAndCheckForRobotArm(2000);
 }
 /*************************
  * Instant Commands

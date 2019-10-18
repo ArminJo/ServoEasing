@@ -13,7 +13,7 @@
  *  With the potentiometer at pin A3 you can change the refresh interval of the servo pulse between 2.5 and 20 ms.
  *  The layout if pins is chosen to be able to directly put this potentiometer at the breadboard without additional wiring.
  *
- * These are the fastest values for my SG90 servos at 5 Volt (4.2 with servo active)
+ * These are the fastest values for my SG90 servos at 5 volt (4.2 with servo active)
  *   180 degree 400 ms  -> 450 degree per second
  *    90 degree 300 ms   -> 300 degree per second
  *    45 degree 180 ms
@@ -85,9 +85,15 @@ const int SERVO_UNDER_TEST_PIN = 9;
 void doSwipe(uint8_t aDegreePerStep);
 
 void setup() {
-// initialize the digital pin as an output.
-//    pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(LED_BUILTIN, OUTPUT);
+    Serial.begin(115200);
+#if defined(__AVR_ATmega32U4__)
+    while (!Serial); //delay for Leonardo, but this loops forever for Maple Serial
+#endif
+    // Just to know which program is running on my Arduino
+    Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
+    // initialize the digital pin as an output.
 #ifdef USE_LEIGHTWEIGHT_SERVO_LIB
     // Enable Potentiometer between A1 and A5
     pinMode(A1, OUTPUT);
@@ -95,12 +101,6 @@ void setup() {
     digitalWrite(A1, LOW);
     digitalWrite(A5, HIGH);
 #endif
-
-    Serial.begin(115200);
-    while (!Serial)
-        ; //delay for Leonardo
-    // Just to know which program is running on my Arduino
-    Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
     Serial.print(F("Value for 0 degree="));
     Serial.print(ZERO_DEGREE_VALUE_MICROS);

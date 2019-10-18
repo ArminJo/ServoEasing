@@ -28,7 +28,7 @@
 extern bool sInverseKinematicModeActive;
 extern uint8_t sActionType;
 
-void doAutoMove();
+void doRobotArmAutoMove();
 void doCenter();
 void doFolded();
 void doGoForward();

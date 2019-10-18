@@ -45,7 +45,7 @@ void doLeanRight();
 void doLeanBack();
 void doLeanFront();
 
-void doAutoMove();
+void doQuadrupedAutoMove();
 void doAttention();
 
 // Special commands

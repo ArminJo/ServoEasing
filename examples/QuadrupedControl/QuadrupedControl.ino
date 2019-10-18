@@ -101,7 +101,7 @@ COLOR32_GREEN_QUARTER, COLOR32_GREEN_QUARTER, COLOR32_GREEN_QUARTER };
 /*
  * comment this out and put your own code here
  */
-//void doAutoMove() {
+//void doQuadrupedAutoMove() {
 //    return;
 //}
 /*
@@ -129,11 +129,11 @@ void doTest() {
 // 1.1 mirror computation at transformAndSetPivotServos and transformOneServoIndex
 
 void setup() {
-    // initialize the digital pin as an output.
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
-    while (!Serial)
-        ; //delay for Leonardo
+#if defined(__AVR_ATmega32U4__)
+    while (!Serial); //delay for Leonardo, but this loops forever for Maple Serial
+#endif
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
@@ -219,7 +219,7 @@ void loop() {
         clearPatternsSlowlyBlocking();
 #endif
 #if !defined(EMPTY_MAPPING)
-        doAutoMove();
+        doQuadrupedAutoMove();
 #endif
         sAtLeastOneValidIRCodeReceived = true; // do auto move only once
     }
@@ -234,7 +234,7 @@ void loop() {
     }
 #else
     delayAndCheck(5000);
-    doAutoMove();
+    doQuadrupedAutoMove();
     delayAndCheck(25000);
 #endif
 

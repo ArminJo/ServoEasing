@@ -237,7 +237,7 @@ void __attribute__((weak)) doAttention() {
     setLiftServos(sBodyHeightAngle);
 }
 
-void __attribute__((weak)) doAutoMove() {
+void __attribute__((weak)) doQuadrupedAutoMove() {
     uint16_t tOriginalSpeed = sServoSpeed;
 
     centerServos();

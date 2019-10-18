@@ -5,6 +5,11 @@
  *  The library is totally based on interrupt.
  *  Debouncing is implemented in a not blocking way! It is merely done by ignoring a button change within the debouncing time.
  *
+ *  Usage:
+ *  #define USE_BUTTON_0
+ *  #include "EasyButtonAtInt01.h"
+ *  EasyButton Button0AtPin2(true);
+ *
  *  Copyright (C) 2018  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
@@ -56,7 +61,7 @@
 //#define LED_FEEDBACK_FOR_DEBOUNCE_TEST
 #if defined (LED_FEEDBACK_FOR_DEBOUNCE_TEST)
 #ifndef BUTTON_TEST_FEEDBACK_LED_PIN
-#define BUTTON_TEST_FEEDBACK_LED_PIN LED_BUILTIN  // if not specified, use build in led - pin 13 on Uno board
+#define BUTTON_TEST_FEEDBACK_LED_PIN LED_BUILTIN  // if not specified, use built in led - pin 13 on Uno board
 #endif
 #endif
 

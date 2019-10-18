@@ -89,11 +89,11 @@
 #define LIFT_NEUTRAL_OFFSET_DEGREE         122
 
 #define LIFT_MAX_ANGLE          160
-#define CLAW_MAX_ANGLE          70
+#define CLAW_MAX_ANGLE          54
 
+#define CLAW_OPEN_ANGLE         (CLAW_MAX_ANGLE - 30)
 #define CLAW_START_ANGLE        CLAW_OPEN_ANGLE
 #define CLAW_CLOSE_ANGLE        CLAW_MAX_ANGLE
-#define CLAW_OPEN_ANGLE         (CLAW_MAX_ANGLE - 30)
 #endif
 
 #endif /* SRC_ROBOTARMSERVOCONFIGURATION_H_ */

@@ -30,7 +30,7 @@ void handleUSSensor();
 
 #define PIN_SPEAKER     3
 
-#define VCC_STOP_THRESHOLD_MILLIVOLT 3600 // stop moving if below 3.6 Volt
+#define VCC_STOP_THRESHOLD_MILLIVOLT 3600 // stop moving if below 3.6 volt
 #define MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE 20000 // 20 seconds
 #define MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE 120000 // 2 Minutes
 #define MILLIS_OF_INACTIVITY_BETWEEN_REMINDER_MOVE 60000 // 1 Minute

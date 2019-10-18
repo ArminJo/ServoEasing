@@ -6,9 +6,9 @@
  *
  *  Turn the potentiometer until the servo begins to move and see the serial output for the value at this position.
  *
- *  Some of my SG90 servos have 620 and 2400 micro seconds for 0 and 180 degree at 4.8 Volt, others have 544 and 2300 micro seconds at 4.8 Volt
- *  My Modelcraft RS-2 servo has 535 and 2400 micro seconds for 0 and 180 degree at 4.8 Volt
- *  My M-1504 servo has 545 and 2325 micro seconds for 0 and 180 degree at 4.6 Volt
+ *  Some of my SG90 servos have 620 and 2400 micro seconds for 0 and 180 degree at 4.8 volt, others have 544 and 2300 micro seconds at 4.8 volt
+ *  My Modelcraft RS-2 servo has 535 and 2400 micro seconds for 0 and 180 degree at 4.8 volt
+ *  My M-1504 servo has 545 and 2325 micro seconds for 0 and 180 degree at 4.6 volt
  *
  *  Copyright (C) 2019  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
@@ -57,12 +57,11 @@ const int POSITION_ANALOG_INPUT_PIN = A1;
 Servo ServoUnderTest;
 
 void setup() {
-// initialize the digital pin as an output.
-//    pinMode(LED_BUILTIN, OUTPUT);
-
+    pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
-    while (!Serial)
-        ; //delay for Leonardo
+#if defined(__AVR_ATmega32U4__)
+    while (!Serial); //delay for Leonardo, but this loops forever for Maple Serial
+#endif
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
