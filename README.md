@@ -20,6 +20,9 @@ For instructions how to enable these alternatives see [Modifying library propert
 - **Linear** and 9 other ease movements are provided.
 - All servos can move **synchronized** or **independently**.
 - **Non blocking** movements are enabled by using **startEaseTo\* functions** by reusing the interrupts of the servo timer Timer1 or using a dedicated timer on other platforms. This function is not available for all platforms.
+- Trim value for each servo may be set.
+- Reverse operation of servo is possible eg. if it is mounted head down.
+- Allow to specify an arbitrary mapping between degreen and microseconds by 'attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree)' 
 
 ## Usage
 Just call **myServo.startEaseTo()** instead of **myServo.write()** and you are done. Or if you want to wait (blocking) until servo has arrived, use **myServo.easeTo()**. Speed of movement can be set by **myServo.setSpeed()**.<br/>
@@ -120,6 +123,10 @@ This example gives you a feeling how fast your servo can move, what the end posi
 This example does not use the ServoEasing functions.
 
 # Revision History
+### Version 1.4.0
+- setTrim has additional parameter 'doWrite' which is default 'false' in contrast to older versions, where a write was always performed.
+- New attach( aPin,  aMicrosecondsForServoLowDegree,  aMicrosecondsForServoHighDegree,  aServoLowDegree,  aServoHighDegree) function for arbitrary mapping of servo degree to servo pulse width.
+- Order of Servos in 'sServoArray[]' now depends from order of calling attach() and not from order of declaration.
 ### Version 1.3.1
 - Added detach() function.
 ### Version 1.3.0

@@ -35,7 +35,6 @@
  * To enable it, open the library file ServoEasing.h and comment out line 32.
  */
 //#define USE_PCA9685_SERVO_EXPANDER
-
 /*
  * If you have only one or two servos, then you can save program space by defining symbol `USE_LEIGHTWEIGHT_SERVO_LIB`.
  * This saves 742 bytes FLASH and 42 bytes RAM.
@@ -261,11 +260,14 @@ public:
     uint8_t attach(int aPin);
     // Here no units accepted, only microseconds!
     uint8_t attach(int aPin, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree);
+    uint8_t attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree,
+            int aServoHighDegree);
+
     void detach();
     void setReverseOperation(bool aOperateServoReverse);  // You should call it before using setTrim
 
-    void setTrim(int aTrimDegrees);
-    void setTrimMicrosecondsOrUnits(int aTrimMicrosecondsOrUnits);
+    void setTrim(int aTrimDegrees, bool aDoWrite = false);
+    void setTrimMicrosecondsOrUnits(int aTrimMicrosecondsOrUnits, bool aDoWrite = false);
 
 #ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
     void setEasingType(uint8_t aEasingType);
@@ -303,6 +305,7 @@ public:
 
     int MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits);
     int DegreeToMicrosecondsOrUnits(int aDegree);
+    int DegreeToMicrosecondsOrUnitsWithTrimAndReverse(int aDegree);
 
     void synchronizeServosAndStartInterrupt(bool doUpdateByInterrupt);
 
@@ -344,7 +347,7 @@ public:
     uint16_t mMillisForCompleteMove;
 
     bool mOperateServoReverse; // true -> direction is reversed only at writeMicrosecondsOrUnits() by: aValue = mServo180DegreeMicrosecondsOrUnits - (aValue - mServo0DegreeMicrosecondsOrUnits)
-    int mTrimMicrosecondsOrUnits; // This value will be added only at writeMicrosecondsOrUnits()
+    int mTrimMicrosecondsOrUnits; // This value is internally only used/added at writeMicrosecondsOrUnits()
 
     int mServo0DegreeMicrosecondsOrUnits;
     int mServo180DegreeMicrosecondsOrUnits;
