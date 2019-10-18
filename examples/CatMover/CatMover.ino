@@ -58,16 +58,17 @@ ServoEasing ServoHorizontal;
 ServoEasing ServoVertical;
 
 void setup() {
-// initialize the digital pin as an output.
-//    pinMode(LED_BUILTIN, OUTPUT);
-    pinMode(LASER_POWER_PIN, OUTPUT);
-    digitalWrite(LASER_POWER_PIN, HIGH);
-
+    pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
-    while (!Serial)
-        ; //delay for Leonardo
+#if defined(__AVR_ATmega32U4__)
+    while (!Serial); //delay for Leonardo, but this loops forever for Maple Serial
+#endif
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from  " __DATE__));
+
+    // initialize the digital pin as an output.
+    pinMode(LASER_POWER_PIN, OUTPUT);
+    digitalWrite(LASER_POWER_PIN, HIGH);
 
     /*
      * Set up servos
