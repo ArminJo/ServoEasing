@@ -442,19 +442,21 @@ void doCalibration() {
         switch (tIRCode) {
         case COMMAND_RIGHT:
             sServoTrimAngles[tPivotServoIndex]++;
-            sServoArray[tPivotServoIndex]->setTrim(sServoTrimAngles[tPivotServoIndex]);
+            sServoArray[tPivotServoIndex]->setTrim(sServoTrimAngles[tPivotServoIndex], true);
             break;
         case COMMAND_LEFT:
             sServoTrimAngles[tPivotServoIndex]--;
-            sServoArray[tPivotServoIndex]->setTrim(sServoTrimAngles[tPivotServoIndex]);
+            sServoArray[tPivotServoIndex]->setTrim(sServoTrimAngles[tPivotServoIndex], true);
             break;
         case COMMAND_FORWARD:
             sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET]++;
-            sServoArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->setTrim(sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET]);
+            sServoArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->setTrim(sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET],
+                    true);
             break;
         case COMMAND_BACKWARD:
             sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET]--;
-            sServoArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->setTrim(sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET]);
+            sServoArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->setTrim(sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET],
+                    true);
             break;
         case COMMAND_ENTER:
             // show 135 and 45 degree positions

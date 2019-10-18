@@ -22,6 +22,7 @@
 #if defined(QUADRUPED_HAS_US_DISTANCE)
 #define PIN_TRIGGER_OUT     A3
 #define PIN_ECHO_IN         A4
+#define PIN_US_SERVO        13
 
 #define MILLIS_BETWEEN_MEASUREMENTS 200 // 5 per second
 

@@ -69,7 +69,7 @@ uint8_t transformOneServoIndex(uint8_t aServoIndexToTransform, uint8_t aDirectio
 /*
  * Servo trim handling
  */
-void printTrimAngles();
+void printAndSetTrimAngles();
 void eepromReadAndSetServoTrim();
 void eepromWriteServoTrim();
 

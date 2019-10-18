@@ -67,6 +67,9 @@ void setup() {
 #if defined(__AVR_ATmega32U4__)
     while (!Serial); //delay for Leonardo, but this loops forever for Maple Serial
 #endif
+#if defined(SERIAL_USB)
+    delay(2000); // To be able to connect Serial monitor after reset and before first printout
+#endif
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 

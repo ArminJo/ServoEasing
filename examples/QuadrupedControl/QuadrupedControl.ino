@@ -45,10 +45,6 @@
 #include "IRCommandMapping.h" // for IR_REMOTE_NAME
 #endif
 
-#if defined(QUADRUPED_HAS_US_DISTANCE)
-#include "HCSR04.h"
-#endif
-
 #if defined(QUADRUPED_PLAYS_RTTTL)
 #include <PlayRtttl.h>
 #endif
@@ -58,6 +54,10 @@
 #include "Commands.h"
 #include "ADCUtils.h"
 
+#if defined(QUADRUPED_HAS_US_DISTANCE)
+#include "HCSR04.h"
+ServoEasing USServo;    // Servo for US sensor
+#endif
 
 #if defined(QUADRUPED_HAS_NEOPIXEL)
 color32_t sBarBackgroundColorArray[PIXELS_ON_ONE_BAR] = { COLOR32_RED_QUARTER, COLOR32_RED_QUARTER, COLOR32_RED_QUARTER,
@@ -146,27 +146,29 @@ void setup() {
 #if defined(QUADRUPED_HAS_US_DISTANCE)
     Serial.println(F("Init US distance sensor"));
     initUSDistancePins(PIN_TRIGGER_OUT, PIN_ECHO_IN);
+    USServo.attach(PIN_US_SERVO);
+    USServo.write(90); // start value
 #endif
 
     /*
-     * set servo to 90 degree WITHOUT trim and wait
+     * set servo to 90 degree WITHOUT trim and wait 2 seconds
      */
     resetServosTo90Degree();
+    delay(2000);
 
     /*
-     * set servo to 90 degree with trim and wait
+     * Read trim values and set servo to 90 degree with trim and wait
      */
     eepromReadAndSetServoTrim();
-    resetServosTo90Degree();
+//    resetServosTo90Degree();
 
-    delay(500); // Otherwise it starts to play after reset and is then interrupted
 #if defined(QUADRUPED_PLAYS_RTTTL)
     playRtttlBlockingPGM(PIN_SPEAKER, Short);
 #else
     tone(PIN_SPEAKER, 2000, 300);
 #endif
 
-    delay(2000);
+    delay(1000);
 
     /*
      * Set to initial height

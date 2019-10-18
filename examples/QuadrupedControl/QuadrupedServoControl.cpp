@@ -35,7 +35,6 @@
 #include "QuadrupedServoControl.h"
 #include "QuadrupedControl.h"
 
-// Define 8 servos in exact this order!
 ServoEasing frontLeftPivotServo;    // 0 - Front Left Pivot Servo
 ServoEasing frontLeftLiftServo;     // 1 - Front Left Lift Servo
 ServoEasing backLeftPivotServo;     // 2 - Back Left Pivot Servo
@@ -54,7 +53,7 @@ EEMEM int8_t sServoTrimAnglesEEPROM[NUMBER_OF_SERVOS]; // The one which resides 
 int8_t sServoTrimAngles[NUMBER_OF_SERVOS]; // RAM copy for easy setting trim angles by remote, filled by eepromReadServoTrim
 
 void setupQuadrupedServos() {
-    // Attach servos to Arduino Pins
+    // Attach servos to Arduino Pins in exact this order!
     frontLeftPivotServo.attach(FRONT_LEFT_PIVOT_SERVO_PIN);
     frontLeftLiftServo.attach(FRONT_LEFT_PIVOT_SERVO_PIN + 1);
     backLeftPivotServo.attach(FRONT_LEFT_PIVOT_SERVO_PIN + 2);
@@ -89,13 +88,13 @@ void printSpeed() {
     Serial.println(sServoSpeed);
 }
 
-void printTrimAngles() {
+void printAndSetTrimAngles() {
     for (uint8_t i = 0; i < NUMBER_OF_SERVOS; ++i) {
         Serial.print(F("ServoTrimAngle["));
         Serial.print(i);
         Serial.print(F("]="));
         Serial.println(sServoTrimAngles[i]);
-        sServoArray[i]->setTrim(sServoTrimAngles[i]);
+        sServoArray[i]->setTrim(sServoTrimAngles[i], true);
     }
 }
 
@@ -111,12 +110,12 @@ void resetServosTo90Degree() {
 void eepromReadAndSetServoTrim() {
     Serial.println(F("eepromReadAndSetServoTrim()"));
     eeprom_read_block((void*) &sServoTrimAngles, &sServoTrimAnglesEEPROM, NUMBER_OF_SERVOS);
-    printTrimAngles();
+    printAndSetTrimAngles();
 }
 
 void eepromWriteServoTrim() {
     eeprom_write_block((void*) &sServoTrimAngles, &sServoTrimAnglesEEPROM, NUMBER_OF_SERVOS);
-    printTrimAngles();
+    printAndSetTrimAngles();
 }
 
 void setEasingTypeToLinear() {
