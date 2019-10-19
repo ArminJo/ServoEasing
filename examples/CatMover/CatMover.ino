@@ -27,18 +27,23 @@
 
 #include "ServoEasing.h"
 
-#define VERSION_EXAMPLE "1.1"
+#define VERSION_EXAMPLE "1.4"
 
 #if defined(ESP8266)
 const int LASER_POWER_PIN = 13;
-
 const int HORIZONTAL_SERVO_PIN = 14; // D5
 const int VERTICAL_SERVO_PIN = 12; // D6
+
 #elif defined(ESP32)
 const int LASER_POWER_PIN = 13;
-
 const int HORIZONTAL_SERVO_PIN = 5;
 const int VERTICAL_SERVO_PIN = 18;
+
+#elif defined(__STM32F1__)
+const int LASER_POWER_PIN = PC13;
+const int SERVO1_PIN = PB8;
+const int SERVO1_PIN = PB9; // Needs timer 4 for Servo library
+
 #else
 const int LASER_POWER_PIN = 5;
 

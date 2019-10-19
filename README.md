@@ -84,6 +84,7 @@ All examples with up to 2 Servos can be used without modifications with the [Lig
 This example does not use interrupts and should therefore run on any platform where the Arduino Servo library is available.<br/><br/>
 **Arduino Serial Plotter** result of Simple example if `#define TRACE_FOR_SERIAL_PLOTTER` in `ServoEasing.cpp` is enabled.
 ![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/extras/ServoEasing-Linear-Cubic-Circular.png)
+
 ## OneServo example
 This example moves one Servo with different speeds and using blocking and interrupt commands. The internal LED blinks when using interrupt based commands
 
@@ -122,10 +123,15 @@ This example does not use the ServoEasing functions.
 This example gives you a feeling how fast your servo can move, what the end position values are and which refresh rate they accept.<br/>
 This example does not use the ServoEasing functions.
 
+# Supported Platforms
+AVR, ESP8266, ESP32, STMF1
+Every platform with a Servo library will work in blocking mode. If timer support is available for a platform the library can be ported by adding code for the Timer20ms like is was done for ESP and STM.
+Non blocking behavior can always be achieved manually by calling update() in a loop - see last movement in [Simple example](https://github.com/ArminJo/ServoEasing/blob/master/examples/Simple/Simple.ino).
+
 # Revision History
 ### Version 1.4.0
 - setTrim has additional parameter 'doWrite' which is default 'false' in contrast to older versions, where a write was always performed.
-- New attach( aPin,  aMicrosecondsForServoLowDegree,  aMicrosecondsForServoHighDegree,  aServoLowDegree,  aServoHighDegree) function for arbitrary mapping of servo degree to servo pulse width.
+- **New attach**( aPin,  aMicrosecondsForServoLowDegree,  aMicrosecondsForServoHighDegree,  aServoLowDegree,  aServoHighDegree) function for arbitrary mapping of servo degree to servo pulse width.
 - Order of Servos in 'sServoArray[]' now depends from order of calling attach() and not from order of declaration.
 ### Version 1.3.1
 - Added detach() function.

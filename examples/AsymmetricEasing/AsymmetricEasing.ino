@@ -26,25 +26,30 @@
 
 #include "ServoEasing.h"
 
-#define VERSION_EXAMPLE "2.0"
+#define VERSION_EXAMPLE "1.4"
 
 #if defined(ESP8266)
 const int SERVO1_PIN = 14; // D5
 const int SERVO2_PIN = 12; // D6
 const int SERVO3_PIN = 13; // D7
-
 const int SPEED_IN_PIN = 0;
+
 #elif defined(ESP32)
 const int SERVO1_PIN = 5;
 const int SERVO2_PIN = 18;
 const int SERVO3_PIN = 19;
-
 const int SPEED_IN_PIN = 36;
+
+#elif defined(__STM32F1__)
+const int SERVO1_PIN = PB7;
+const int SERVO1_PIN = PB8;
+const int SERVO1_PIN = PB9; // Needs timer 4 for Servo library
+const int SPEED_IN_PIN = PA0;
+
 #else
 const int SERVO1_PIN = 9;
 const int SERVO2_PIN = 10;
 const int SERVO3_PIN = 11;
-
 const int SPEED_IN_PIN = A0;
 #endif
 
@@ -121,7 +126,11 @@ void setup() {
 void loop() {
 
     uint16_t tSpeed = analogRead(SPEED_IN_PIN);
+#if defined(__STM32F1__)
+    tSpeed = map(tSpeed, 0, 4096, 5, 150); // 12 bit ADC
+#else
     tSpeed = map(tSpeed, 0, 1023, 5, 150);
+#endif
     setSpeedForAllServos(tSpeed);
 
     /*

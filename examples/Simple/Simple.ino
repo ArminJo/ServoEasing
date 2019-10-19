@@ -27,12 +27,14 @@
 
 #include "ServoEasing.h"
 
-#define VERSION_EXAMPLE "1.1"
+#define VERSION_EXAMPLE "1.4"
 
 #if defined(ESP8266)
 const int SERVO1_PIN = 14; // D5
 #elif defined(ESP32)
 const int SERVO1_PIN = 5;
+#elif defined(__STM32F1__)
+const int SERVO1_PIN = PB9; // Needs timer 4 for Servo library
 #else
 const int SERVO1_PIN = 9;
 #endif
@@ -88,6 +90,9 @@ void setup() {
 
     Serial.println(F("Move back to 0 degree using circular easing"));
     Servo1.setEasingType(EASE_CIRCULAR_IN_OUT);
+    /*
+     * Call non blocking function and call update() in the loop below
+     */
     Servo1.startEaseTo(0, 40, false);
     /*
      * Now do the updates and wait until servo finished

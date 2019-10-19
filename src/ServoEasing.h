@@ -43,7 +43,7 @@
  * If not using the Arduino IDE take care that Arduino Servo library sources are not compiled / included in the project.
  */
 //#define USE_LEIGHTWEIGHT_SERVO_LIB
-#if ( defined(ESP8266) || defined(ESP32) ) && defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#if ( defined(ESP8266) || defined(ESP32) || defined(__STM32F1__)) && defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 #error "No Lightweight Servo Library available (and needed) for ESP boards"
 #endif
 
@@ -102,8 +102,12 @@
 //
 // Enable this if you want to measure timing by toggling pin12 on an arduino
 //#define MEASURE_TIMING
-#define VERSION_SERVO_EASING 1.3.1
+#define VERSION_SERVO_EASING 1.4.0
 /*
+ * Version 1.4.0
+ * - setTrim has additional parameter 'doWrite' which is default 'false' in contrast to older versions, where a write was always performed.
+ * - New attach( aPin,  aMicrosecondsForServoLowDegree,  aMicrosecondsForServoHighDegree,  aServoLowDegree,  aServoHighDegree) function for arbitrary mapping of servo degree to servo pulse width.
+ * - Order of Servos in 'sServoArray[]' now depends from order of calling attach() and not from order of declaration.
  * Version 1.3.1
  * - Added detach() function.
  * Version 1.3.0

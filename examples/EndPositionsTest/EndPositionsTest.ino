@@ -41,16 +41,24 @@
 #include "ADCUtils.h" // for get getVCCVoltageMillivolt
 #endif
 
-#define VERSION_EXAMPLE "1.1"
+#define VERSION_EXAMPLE "1.4"
 
-const int SERVO_UNDER_TEST_PIN = 9;
 
 // Attach the sliding contact of the potentiometer here
 #if defined(ESP8266)
+const int SERVO_UNDER_TEST_PIN = 14; // D5
 const int POSITION_ANALOG_INPUT_PIN = 0;
+
 #elif defined(ESP32)
+const int SERVO_UNDER_TEST_PIN = 5;
 const int POSITION_ANALOG_INPUT_PIN = 36;
+
+#elif defined(__STM32F1__)
+const int SERVO_UNDER_TEST_PIN = PB9; // Needs timer 4 for Servo library
+const int SPEED_IN_PIN = PA0;
+
 #else
+const int SERVO_UNDER_TEST_PIN = 9;
 const int POSITION_ANALOG_INPUT_PIN = A1;
 #endif
 
@@ -87,7 +95,13 @@ void loop() {
     static int sLastPulseMicros;
 
     int tPosition = analogRead(POSITION_ANALOG_INPUT_PIN);
+
+#if defined(__STM32F1__)
+    int tPulseMicros = map(tPosition, 0, 4096, 400, 2500); // 12 bit ADC
+#else
     int tPulseMicros = map(tPosition, 0, 1023, 400, 2500);
+#endif
+
     if (sLastPulseMicros != tPulseMicros) {
         sLastPulseMicros = tPulseMicros;
         Serial.print("Micros=");

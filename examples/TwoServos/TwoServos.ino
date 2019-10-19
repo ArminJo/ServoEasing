@@ -27,14 +27,20 @@
 
 #include "ServoEasing.h"
 
-#define VERSION_EXAMPLE "1.1"
+#define VERSION_EXAMPLE "1.4"
 
 #if defined(ESP8266)
 const int SERVO1_PIN = 14; // D5
 const int SERVO2_PIN = 12; // D6
+
 #elif defined(ESP32)
 const int SERVO1_PIN = 5;
 const int SERVO2_PIN = 18;
+
+#elif defined(__STM32F1__)
+const int SERVO1_PIN = PB8;
+const int SERVO1_PIN = PB9; // Needs timer 4 for Servo library
+
 #else
 const int SERVO1_PIN = 9;
 const int SERVO2_PIN = 10;
