@@ -1,20 +1,22 @@
 language: c
 sudo: false
 cache:
-  directories:
-  - ~/arduino_ide
-  - ~/.arduino15/packages/
+   directories:
+   - ~/arduino_ide
+   - ~/.arduino15/packages/
 git:
-  depth: false
-  quiet: true
+   depth: false
+   quiet: true
 env:
-  global:
-  - PRETTYNAME="ServoEasing Arduino Library"
+   global:
+   - PRETTYNAME="ServoEasing Arduino Library"
 before_install:
 # Workaround for avoiding "fork/exec /bin/xtensa-lx106-elf-g++: no such file or directory"
 - echo "Removing ESP8266 cache"
 - rm -rf ~/.arduino15/packages/esp8266
 - source <(curl -SLs https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/install.sh)
+- arduino --save-prefs --pref "boardsmanager.additional.urls=https://github.com/stm32duino/BoardManagerFiles/raw/dev/STM32/package_stm_index.json"
+- arduino --install-boards STM32:stm32
 install:
 - arduino --install-library "ESP32Servo"
 script:
@@ -24,9 +26,10 @@ script:
 - build_platform mega2560
 - build_platform esp8266
 - build_platform esp32
+- build_platform "Generic STMF1 series"
 notifications:
-  email:
-    recipients:
+   email:
+      recipients:
       - armin.arduino@gmail.com
-    on_success: always
-    on_failure: always
+      on_success: always
+      on_failure: always
