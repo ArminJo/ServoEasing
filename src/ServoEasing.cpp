@@ -39,7 +39,7 @@ Ticker Timer20ms;
 
 // Enable this to see information on each call
 // There should be no library which uses Serial, so enable it only for debugging purposes
-#define TRACE
+//#define TRACE
 // output can be directly used for Arduino Serial Plotter (Ctrl-Shift-L)
 //#define TRACE_FOR_SERIAL_PLOTTER
 
@@ -159,41 +159,12 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServo0Degree, int aMic
  */
 uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree,
         int aServoHighDegree) {
-
-    int tServoLowDegree, tServoHighDegree;
-
     /*
-     * Check for implicitly reverse operation
+     * Get the 0 and 180 degree values.
      */
-    if (aServoLowDegree < aServoHighDegree) {
-        mOperateServoReverse = false;
-        tServoHighDegree = aServoHighDegree;
-        tServoLowDegree = aServoLowDegree;
-    } else {
-        // set reverse and switch values
-        mOperateServoReverse = true;
-        tServoHighDegree = aServoLowDegree;
-        tServoLowDegree = aServoHighDegree;
-    }
-
-    /*
-     * Normalize to positive values.
-     * If values are negative use trim (later) to compensate normalizing effect.
-     */
-    int tServoTrimDegree = 0;
-    if (tServoLowDegree < 0) {
-        tServoTrimDegree = -tServoLowDegree;
-        tServoHighDegree += tServoTrimDegree;
-        tServoLowDegree = 0;
-    }
-
-    /*
-     * Here BOTH degree values are positive!
-     * Now get the 0 and 180 degree values.
-     */
-    int tMicrosecondsForServo0Degree = map(0, tServoLowDegree, tServoHighDegree, aMicrosecondsForServoLowDegree,
+    int tMicrosecondsForServo0Degree = map(0, aServoLowDegree, aServoHighDegree, aMicrosecondsForServoLowDegree,
             aMicrosecondsForServoHighDegree);
-    int tMicrosecondsForServo180Degree = map(180, tServoLowDegree, tServoHighDegree, aMicrosecondsForServoLowDegree,
+    int tMicrosecondsForServo180Degree = map(180, aServoLowDegree, aServoHighDegree, aMicrosecondsForServoLowDegree,
             aMicrosecondsForServoHighDegree);
 
     mServoPin = aPin;
@@ -204,13 +175,6 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
     mServo0DegreeMicrosecondsOrUnits = tMicrosecondsForServo0Degree;
     mServo180DegreeMicrosecondsOrUnits = tMicrosecondsForServo180Degree;
 #endif
-
-    /*
-     * Set trim if aServoLowDegree value was negative before
-     */
-    if (tServoTrimDegree > 0) {
-        setTrim(tServoTrimDegree);
-    }
 
     /*
      * Now put this servo instance into list of servos
@@ -268,7 +232,12 @@ void ServoEasing::detach() {
 //    mServoPin = INVALID_SERVO; // not used yet
 }
 
-// Set a flag which is only used at writeMicrosecondsOrUnits
+/*
+ * Reverse means, that values for 180 and 0 degrees are swapped by: aValue = mServo180DegreeMicrosecondsOrUnits - (aValue - mServo0DegreeMicrosecondsOrUnits)
+ * Be careful, if you specify different end values, it may not behave, as you expect.
+ * For this case better use the attach function with 5 parameter.
+ * This flag is only used at writeMicrosecondsOrUnits()
+ */
 void ServoEasing::setReverseOperation(bool aOperateServoReverse) {
     mOperateServoReverse = aOperateServoReverse;
 }
@@ -294,6 +263,7 @@ void ServoEasing::setTrim(int aTrimDegrees, bool aDoWrite) {
 
 /*
  * Trim value is always added to the degree/units/microseconds value requested
+ * It is only used/added at writeMicrosecondsOrUnits()
  */
 void ServoEasing::setTrimMicrosecondsOrUnits(int aTrimMicrosecondsOrUnits, bool aDoWrite) {
     mTrimMicrosecondsOrUnits = aTrimMicrosecondsOrUnits;
@@ -330,8 +300,7 @@ void ServoEasing::write(int aValue) {
 }
 
 /*
- * Adds trim value and call LeightweightServo or Servo library for generating the pulse
- * Before sending to the underlying Servo library trim and reverse is applied
+ * Before sending the value to the underlying Servo library, trim and reverse is applied
  */
 void ServoEasing::writeMicrosecondsOrUnits(int aValue) {
     mCurrentMicrosecondsOrUnits = aValue;
@@ -354,7 +323,7 @@ void ServoEasing::writeMicrosecondsOrUnits(int aValue) {
 // Apply trim - this is the only place mTrimMicrosecondsOrUnits is evaluated
     aValue += mTrimMicrosecondsOrUnits;
 // Apply reverse, values for 0 to 180 are swapped if reverse - this is the only place mOperateServoReverse is evaluated
-// except in the DegreeToMicrosecondsOrUnitsWithTrimAndReverse() function for external testing purposes.
+// (except in the DegreeToMicrosecondsOrUnitsWithTrimAndReverse() function for external testing purposes)
     if (mOperateServoReverse) {
         aValue = mServo180DegreeMicrosecondsOrUnits - (aValue - mServo0DegreeMicrosecondsOrUnits);
 #if defined(TRACE)

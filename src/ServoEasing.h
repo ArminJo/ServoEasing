@@ -346,8 +346,13 @@ public:
     uint32_t mMillisAtStartMove;
     uint16_t mMillisForCompleteMove;
 
-    bool mOperateServoReverse; // true -> direction is reversed only at writeMicrosecondsOrUnits() by: aValue = mServo180DegreeMicrosecondsOrUnits - (aValue - mServo0DegreeMicrosecondsOrUnits)
-    int mTrimMicrosecondsOrUnits; // This value is internally only used/added at writeMicrosecondsOrUnits()
+    /*
+     * Reverse means, that values for 180 and 0 degrees are swapped by: aValue = mServo180DegreeMicrosecondsOrUnits - (aValue - mServo0DegreeMicrosecondsOrUnits)
+     * Be careful, if you specify different end values, it may not behave, as you expect.
+     * For this case better use the attach function with 5 parameter.
+     */
+    bool mOperateServoReverse; // true -> direction is reversed
+    int mTrimMicrosecondsOrUnits; // This value is always added to the degree/units/microseconds value requested
 
     int mServo0DegreeMicrosecondsOrUnits;
     int mServo180DegreeMicrosecondsOrUnits;
