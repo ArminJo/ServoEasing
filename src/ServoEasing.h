@@ -156,6 +156,20 @@
 
 #define DEFAULT_PCA9685_UNITS_FOR_0_DEGREE  111 // 111.411 = 544 us
 #define DEFAULT_PCA9685_UNITS_FOR_180_DEGREE 491 // 491.52 = 2400 us
+
+/*
+ * Definitions for continuous rotating servo - Values are taken from the Parallax Continuous Rotation Servo manual.
+ * Use attach(PIN, MICROSECONDS_FOR_ROTATING_SERVO_CLOCKWISE_MAX, MICROSECONDS_FOR_ROTATING_SERVO_COUNTER_CLOCKWISE_MAX, 100, -100);
+ * Use write(100) for maximum clockwise and write(-100) for maximum counter clockwise rotation.
+ */
+#define MICROSECONDS_FOR_ROTATING_SERVO_STOP 1500
+#define MICROSECONDS_FOR_ROTATING_SERVO_CLOCKWISE_MAX 1300
+#define MICROSECONDS_FOR_ROTATING_SERVO_CLOCKWISE_HALF 1400
+#define MICROSECONDS_FOR_ROTATING_SERVO_CLOCKWISE_QUARTER 1450
+#define MICROSECONDS_FOR_ROTATING_SERVO_COUNTER_CLOCKWISE_MAX 1700
+#define MICROSECONDS_FOR_ROTATING_SERVO_COUNTER_CLOCKWISE_HALF 1600
+#define MICROSECONDS_FOR_ROTATING_SERVO_COUNTER_CLOCKWISE_QUARTER 1550
+
 /*
  * The different easing functions:
  *
@@ -177,12 +191,12 @@
 #define CALL_STYLE_DIRECT           0x00 // == IN
 #define CALL_STYLE_OUT              0x20
 #define CALL_STYLE_IN_OUT           0x40
-#define CALL_STYLE_BOUNCING_OUT_IN  0x60
+#define CALL_STYLE_BOUNCING_OUT_IN  0x60 // Bouncing has double movement, so double time (half speed) is taken for this modes
 
 #define CALL_STYLE_MASK             0xE0 // for future extensions
 #define EASE_TYPE_MASK          0x0F
 
-#define EASE_LINEAR             0x00
+#define EASE_LINEAR             0x00 // No bouncing available
 
 #define EASE_QUADRATIC_IN       0x01
 #define EASE_QUADRATIC_OUT      0x21
@@ -279,13 +293,13 @@ public:
 
     void registerUserEaseInFunction(float (*aUserEaseInFunction)(float aPercentageOfCompletion));
 
-    float callEasingFunction(float aPercentageOfCompletion);        // used in update()
+    float callEasingFunction(float aPercentageOfCompletion);    // used in update()
 #endif
 
-    void write(int aValue);                                         // write value direct to servo
+    void write(int aValue);                         // Apply trim and reverse to the value and write it direct to the Servo library.
     void writeMicrosecondsOrUnits(int aValue);
 
-    void setSpeed(uint16_t aDegreesPerSecond);                      // This speed is taken if no speed argument is given.
+    void setSpeed(uint16_t aDegreesPerSecond);                  // This speed is taken if no speed argument is given.
     uint16_t getSpeed();
     void easeTo(int aDegree);                                   // blocking move to new position using mLastSpeed
     void easeTo(int aDegree, uint16_t aDegreesPerSecond);       // blocking move to new position using speed

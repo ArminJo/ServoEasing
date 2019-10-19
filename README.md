@@ -97,6 +97,9 @@ This example shows symmetric (end movement is mirror of start movement) linear, 
 ## AsymmetricEasing example
 This example shows asymmetric (end movement is different from start movement) partially **user defined** (line 134) non linear movements for 3 servos synchronously.
 
+## ContinuousRotatingServo example
+Example for using the servoEasing library to create speed ramps for a continuous rotating servo.
+
 ## CatMover example
 Demo of using two servos in a pan tilt housing to move a laser pointer.
 
