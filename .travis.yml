@@ -15,7 +15,9 @@ before_install:
 - echo "Removing ESP8266 cache"
 - rm -rf ~/.arduino15/packages/esp8266
 - source <(curl -SLs https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/install.sh)
-#- arduino --save-prefs --pref "boardsmanager.additional.urls=https://github.com/stm32duino/BoardManagerFiles/raw/dev/STM32/package_stm_index.json"
+- arduino --save-prefs --pref "boardsmanager.additional.urls=https://github.com/stm32duino/BoardManagerFiles/raw/dev/STM32/package_stm_index.json"
+- ls -la
+- ls -la ~/.arduino15/packages/
 #- arduino --install-boards STM32:stm32
 install:
 - arduino --install-library "ESP32Servo"

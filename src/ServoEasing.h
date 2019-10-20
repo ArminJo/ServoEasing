@@ -89,11 +89,12 @@
 #endif
 
 /*
- * Define `KEEP_LIBRARY_SMALL` if space (1850 Bytes) matters.
+ * Define `KEEP_SERVO_EASING_LIBRARY_SMALL` if space (1850 Bytes) matters.
+ * It disables the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings.
  * The saving comes mainly from avoiding the sin() cos() sqrt() and pow() library functions in this code.
  * If you need only one complex easing function and want to save space, you can specify it any time as a user functions. See AsymmetricEasing example line 58.
  */
-//#define KEEP_LIBRARY_SMALL
+//#define KEEP_SERVO_EASING_LIBRARY_SMALL
 //
 /*
  * If you need only the linear movement you may define `PROVIDE_ONLY_LINEAR_MOVEMENT`. This saves additional 1540 Bytes FLASH.
@@ -108,6 +109,7 @@
  * - setTrim has additional parameter 'doWrite' which is default 'false' in contrast to older versions, where a write was always performed.
  * - New attach( aPin,  aMicrosecondsForServoLowDegree,  aMicrosecondsForServoHighDegree,  aServoLowDegree,  aServoHighDegree) function for arbitrary mapping of servo degree to servo pulse width.
  * - Order of Servos in 'sServoArray[]' now depends from order of calling attach() and not from order of declaration.
+ * - New example for continuous rotating servo.
  * Version 1.3.1
  * - Added detach() function.
  * Version 1.3.0
@@ -159,6 +161,7 @@
 
 /*
  * Definitions for continuous rotating servo - Values are taken from the Parallax Continuous Rotation Servo manual.
+ * My modified MG90 servo has 1630 and 1400 as max.
  * Use attach(PIN, MICROSECONDS_FOR_ROTATING_SERVO_CLOCKWISE_MAX, MICROSECONDS_FOR_ROTATING_SERVO_COUNTER_CLOCKWISE_MAX, 100, -100);
  * Use write(100) for maximum clockwise and write(-100) for maximum counter clockwise rotation.
  */
@@ -213,7 +216,7 @@
 #define EASE_QUARTIC_IN_OUT     0x43
 #define EASE_QUARTIC_BOUNCING   0x63
 
-#ifndef KEEP_LIBRARY_SMALL
+#ifndef KEEP_SERVO_EASING_LIBRARY_SMALL
 #define EASE_SINE_IN            0x08
 #define EASE_SINE_OUT           0x28
 #define EASE_SINE_IN_OUT        0x48

@@ -202,11 +202,11 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
 #if defined(TRACE)
 	Serial.print("Index=");
 	Serial.print(mServoIndex);
-	Serial.print(" Low=");
+	Serial.print(" low=");
 	Serial.print(aServoLowDegree);
 	Serial.print('|');
 	Serial.print(aMicrosecondsForServoLowDegree);
-	Serial.print(" High=");
+	Serial.print(" high=");
 	Serial.print(aServoHighDegree);
 	Serial.print('|');
 	Serial.print(aMicrosecondsForServoHighDegree);
@@ -641,7 +641,7 @@ float ServoEasing::callEasingFunction(float aPercentageOfCompletion) {
         return CubicEaseIn(aPercentageOfCompletion);
     case EASE_QUARTIC_IN:
         return QuarticEaseIn(aPercentageOfCompletion);
-#ifndef KEEP_LIBRARY_SMALL
+#ifndef KEEP_SERVO_EASING_LIBRARY_SMALL
     case EASE_SINE_IN:
         return SineEaseIn(aPercentageOfCompletion);
     case EASE_CIRCULAR_IN:

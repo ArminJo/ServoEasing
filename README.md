@@ -52,10 +52,6 @@ Do not forget to **set the start position** for the Servo by simply calling **my
 - [C functions on Github](https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c)
 - [Interactive cubic-bezier](http://cubic-bezier.com)
 
-# Internals
-Internally only microseconds (or units (= 4.88 us) if using PCA9685 expander) and not degree are used to speed up things. Other expander or libraries can therefore easily be added.<br/>
-On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking easing functions its unused **Channel B** is used to generate an interrupt 100 us before the end of the 20 ms Arduino Servo refresh period. This interrupt then updates all servo values for the next refresh period.
-
 # Modifying library properties
 To access the Arduino library files from a sketch, you have to first use `Sketch/Show Sketch Folder (Ctrl+K)` in the Arduino IDE.<br/>
 Then navigate to the parallel `libraries` folder and select the library you want to access.<br/>
@@ -75,7 +71,7 @@ If not using the Arduino IDE, take care that Arduino Servo library sources are n
 ## Reducing library size
 If you have only one or two servos, then you can save program space by using Lightweight Servo library .
 This saves 742 bytes FLASH and 42 bytes RAM.<br/>
-If you do not need the more complex easing functions like `Sine` etc., which in turn need sin(), cos(), sqrt() and pow(), you can shrink library size by approximately 1850 bytes by commenting out line 97 in ServoEasing.h or define global symbol `KEEP_LIBRARY_SMALL` which is not yet possible in Arduino IDE:-(.<br/>
+If you do not need the more complex easing functions like `Sine` etc., which in turn need sin(), cos(), sqrt() and pow(), you can shrink library size by approximately 1850 bytes by commenting out line 97 in ServoEasing.h or define global symbol `KEEP_SERVO_EASING_LIBRARY_SMALL` which is not yet possible in Arduino IDE:-(.<br/>
 
 # [Examples](https://github.com/ArminJo/ServoEasing/tree/master/examples)
 All examples with up to 2 Servos can be used without modifications with the [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for AVR by by commenting out line 46 in the file ServoEasing.h (see above).
@@ -126,6 +122,10 @@ This example does not use the ServoEasing functions.
 This example gives you a feeling how fast your servo can move, what the end position values are and which refresh rate they accept.<br/>
 This example does not use the ServoEasing functions.
 
+# Internals
+Internally only microseconds (or units (= 4.88 us) if using PCA9685 expander) and not degree are used to speed up things. Other expander or libraries can therefore easily be added.<br/>
+On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking easing functions its unused **Channel B** is used to generate an interrupt 100 us before the end of the 20 ms Arduino Servo refresh period. This interrupt then updates all servo values for the next refresh period.
+
 # Supported Platforms
 AVR, ESP8266, ESP32, STMF1
 Every platform with a Servo library will work in blocking mode. If timer support is available for a platform the library can be ported by adding code for the Timer20ms like is was done for ESP and STM.
@@ -136,8 +136,11 @@ Non blocking behavior can always be achieved manually by calling update() in a l
 - setTrim has additional parameter 'doWrite' which is default 'false' in contrast to older versions, where a write was always performed.
 - **New attach**( aPin,  aMicrosecondsForServoLowDegree,  aMicrosecondsForServoHighDegree,  aServoLowDegree,  aServoHighDegree) function for arbitrary mapping of servo degree to servo pulse width.
 - Order of Servos in 'sServoArray[]' now depends from order of calling attach() and not from order of declaration.
+- New example for continuous rotating servo.
+
 ### Version 1.3.1
 - Added detach() function.
+
 ### Version 1.3.0
 - Added ESP32 support by using ESP32Servo.h and Ticker.h instead of Servo.h timer interrupts.
 - Changed degree parameter and values from uint8_t to integer to support operating a servo from -90 to + 90 degree with 90 degree trim.
