@@ -2,6 +2,7 @@
  *  SpeedTest.cpp
  *
  * This example gives you a feeling how fast your servo can move, what the end position values are and which refresh rate they accept.
+ * It starts with setting the servo to 90 degree, to easily put your servos in a reference position.
  * This example does not use the ServoEasing functions.
  *
  *  With the potentiometer at pin A0 choose the mode to test.
@@ -10,8 +11,9 @@
  *  The interval/speed is determined by the other potentiometer at pin A1.
  *  If the servo makes no breaks, but reaches 0 and 180 degree then you have specified the smallest delay / fastest speed for this stepping.
  *
+ *  By using the lightweight servo library it is also possible to modify the servo refresh interval.
  *  With the potentiometer at pin A3 you can change the refresh interval of the servo pulse between 2.5 and 20 ms.
- *  The layout if pins is chosen to be able to directly put this potentiometer at the breadboard without additional wiring.
+ *  The layout of pins for this potentiometer is chosen to be able to directly put this potentiometer at the breadboard without additional wiring.
  *
  * These are the fastest values for my SG90 servos at 5 volt (4.2 with servo active)
  *   180 degree 400 ms  -> 450 degree per second
@@ -47,29 +49,46 @@
 
 #include <Arduino.h>
 
+#define VERSION_EXAMPLE "1.0"
+
+#if defined(AVR)
+#include "ADCUtils.h" // for get getVCCVoltageMillivolt
 /*
  * By using LightweightServo library we can change the refresh period.
  * ... and discover that at least SG90 and MG90 servos accept a refresh period down to 2.5 ms!
  */
-//#define USE_LEIGHTWEIGHT_SERVO_LIB
+//#define USE_LEIGHTWEIGHT_SERVO_LIB  // Only available for AVR
 #ifdef USE_LEIGHTWEIGHT_SERVO_LIB
 #include "LightweightServo.h"
+#endif
+#endif
+
+#if defined(ESP32)
+#include <ESP32Servo.h>
 #else
 #include <Servo.h>
 #endif
 
-#include "ADCUtils.h" // for get getVCCVoltageMillivolt
+#if defined(ESP32)
+const int SERVO_UNDER_TEST_PIN = 5;
+const int SPEED_OR_POSITION_ANALOG_INPUT_PIN = 36;
+const int MODE_ANALOG_INPUT_PIN = 39;
 
-#define VERSION_EXAMPLE "1.0"
+#elif defined(__STM32F1__)
+const int SERVO_UNDER_TEST_PIN = PB9; // Needs timer 4 for Servo library
+const int SPEED_OR_POSITION_ANALOG_INPUT_PIN = PA0;
+const int MODE_ANALOG_INPUT_PIN = PA1;
 
+#else
+const int SERVO_UNDER_TEST_PIN = 9;
 #define MODE_ANALOG_INPUT_PIN A0
 #define SPEED_OR_POSITION_ANALOG_INPUT_PIN A4
+#endif
 
 #ifdef USE_LEIGHTWEIGHT_SERVO_LIB
 #define REFRESH_PERIOD_ANALOG_INPUT_PIN A3
 #else
 Servo ServoUnderTest;
-const int SERVO_UNDER_TEST_PIN = 9;
 #endif
 
 /*
@@ -96,9 +115,9 @@ void setup() {
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
-    // initialize the digital pin as an output.
 #ifdef USE_LEIGHTWEIGHT_SERVO_LIB
-    // Enable Potentiometer between A1 and A5
+    // Enable servo refresh period potentiometer between A1 and A5
+    // initialize the analog pins as an digital outputs.
     pinMode(A1, OUTPUT);
     pinMode(A5, OUTPUT);
     digitalWrite(A1, LOW);
@@ -111,22 +130,39 @@ void setup() {
     Serial.print(AT_180_DEGREE_VALUE_MICROS);
     Serial.println(F("us."));
 
-    // attach servo to pin 9
+    /*
+     * Attach servo to pin 9
+     * Set the servo to 90 degree for 3 seconds and show this by lighting the internal LED.
+     */
 #ifdef USE_LEIGHTWEIGHT_SERVO_LIB
     write9(90);
 #else
     ServoUnderTest.attach(SERVO_UNDER_TEST_PIN, ZERO_DEGREE_VALUE_MICROS, AT_180_DEGREE_VALUE_MICROS);
     ServoUnderTest.write(90);
 #endif
+    digitalWrite(LED_BUILTIN, HIGH);
     delay(3000);
+    digitalWrite(LED_BUILTIN, LOW);
+}
+
+void printVCCAndMode(int aVCCMillivolt, uint8_t aMode) {
+    Serial.print(F("VCC="));
+    Serial.print(aVCCMillivolt);
+    Serial.print(F(" mV"));
+    Serial.print(F(" Mode="));
+    Serial.print(aMode);
+    Serial.print(' ');
 }
 
 void loop() {
     int tPulseMicros;
     static int sLastPulseMicros;
-    static int sLastVoltageMillivolts;
 
+#if defined(AVR)
     int tVoltageMillivolts = getVCCVoltageMillivolt();
+#else
+    int tVoltageMillivolts = 3333; // Dummy value
+#endif
 
     // needed to switch ADC reference
     analogRead(MODE_ANALOG_INPUT_PIN);
@@ -149,20 +185,15 @@ void loop() {
     /*
      * Avoid print for mode 0 if nothing changed
      */
-    if (tMode != 0 || sLastVoltageMillivolts != tVoltageMillivolts || abs(sLastPulseMicros - tPulseMicros) > 3) {
-        sLastVoltageMillivolts = tVoltageMillivolts;
-
-        Serial.print(F("VCC="));
-        Serial.print(tVoltageMillivolts);
-        Serial.print(F(" mV"));
-        Serial.print(F(" Mode="));
-        Serial.print(tMode);
-        Serial.print(' ');
+    if (tMode != 0) {
+        printVCCAndMode(tVoltageMillivolts, tMode);
+    } else if (abs(sLastPulseMicros - tPulseMicros) > 3) {
+        printVCCAndMode(tVoltageMillivolts, tMode);
     }
 
     switch (tMode) {
     case 0:
-        // direct position from 0 to 180 degree. Choose bigger range just to be sure both ends are reached.
+        // direct position from 0 to 180 degree. We choose bigger range just to be sure both ends are reached.
 #ifdef USE_LEIGHTWEIGHT_SERVO_LIB
         writeMicroseconds9(tPulseMicros);
 #else
@@ -179,7 +210,7 @@ void loop() {
             Serial.print(F(" degree="));
 #ifdef USE_LEIGHTWEIGHT_SERVO_LIB
             Serial.print(MicrosecondsToDegreeLightweightServo(tPulseMicros));
-            Serial.print(F(" period="));
+            Serial.print(F(" refresh period="));
             Serial.print(ICR1 / 2000);
             Serial.print('.');
             Serial.print((ICR1 / 200) % 10);
@@ -258,7 +289,7 @@ void doSwipe(uint8_t aDegreePerStep) {
     Serial.print(tDelayMillis);
     Serial.print(F(" ms"));
 #ifdef USE_LEIGHTWEIGHT_SERVO_LIB
-    Serial.print(F(", period="));
+    Serial.print(F(", refresh period="));
     Serial.print(ICR1 / 2000);
     Serial.print('.');
     Serial.print((ICR1 / 200) % 10);
