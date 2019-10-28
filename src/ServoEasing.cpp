@@ -833,18 +833,16 @@ void enableServoEasingInterrupt() {
 #if defined(__AVR__)
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
 #if defined(USE_PCA9685_SERVO_EXPANDER)
-	// TODO convert to timer 5
-	TCCR1
 	// set timer 1 to 20 ms
-	TCCR1A = _BV(WGM11);// FastPWM Mode mode TOP (20 ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
-	TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);// set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
-	ICR1 = 40000;// set period to 20 ms
+	TCCR5A = _BV(WGM11);// FastPWM Mode mode TOP (20 ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
+	TCCR5B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);// set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
+	ICR5 = 40000;// set period to 20 ms
 #endif
 
 	TIFR5 |= _BV(OCF5B);     // clear any pending interrupts;
 	TIMSK5 |= _BV(OCIE5B);// enable the output compare B interrupt
 	OCR5B = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL) / 8) - 100;// update values 100 us before the new servo period starts
-#else
+#else // defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 //    // set timer 1 to 20 ms
