@@ -24,6 +24,7 @@ extern ServoEasing frontRightLiftServo;    // 7 - Front Right Lift Servo
 extern uint16_t sServoSpeed;      //  = 90 in degree/second
 extern uint8_t sBodyHeightAngle;  //  = 60 From LIFT_MIN_ANGLE to LIFT_MAX_ANGLE !!! The bigger the angle, the lower the body !!!
 extern uint8_t sBodyHeight;       // normalized body height from 0 (low) to 255 (high)
+extern uint8_t sBodyHeightPercent;     // normalized body height from 0% (low) to 100% (high)
 
 extern int8_t sServoTrimAngles[];
 
@@ -55,6 +56,10 @@ void setPivotServos(int aFrontLeftPivot, int aBackLeftPivot, int aBackRightPivot
 void setLiftServos(int aFrontLeftLift, int aBackLeftLift, int aBackRightLift, int aFrontRightLift);
 void setLiftServos(int aBodyHeightAngle);
 void setLiftServoHeight(ServoEasing & aLiftServo, uint8_t aHeightPercent);
+
+void convertBodyHeightAngleToHeight();
+uint8_t convertLegPercentHeightToAngle(uint8_t aLegHeightPercent);
+
 
 /*
  * Main transformation functions

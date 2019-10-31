@@ -35,6 +35,8 @@
 #include "QuadrupedServoControl.h"
 #include "QuadrupedControl.h"
 
+//#define INFO // comment this out to see serial info output
+
 ServoEasing frontLeftPivotServo;    // 0 - Front Left Pivot Servo
 ServoEasing frontLeftLiftServo;     // 1 - Front Left Lift Servo
 ServoEasing backLeftPivotServo;     // 2 - Back Left Pivot Servo
@@ -46,7 +48,8 @@ ServoEasing frontRightLiftServo;    // 7 - Front Right Lift Servo
 
 uint16_t sServoSpeed = 90;      // in degree/second
 uint8_t sBodyHeightAngle = LIFT_LOWEST_ANGLE + 20; // From LIFT_LOWEST_ANGLE to LIFT_HIGHEST_ANGLE !!! The bigger the angle, the lower the body !!!
-uint8_t sBodyHeight;  // normalized body height from 0 (low) to 255 (high)
+uint8_t sBodyHeight;            // normalized body height from 0 (low) to 255 (high)
+uint8_t sBodyHeightPercent;     // normalized body height from 0% (low) to 100% (high)
 
 // Arrays of trim angles stored in EEPROM
 EEMEM int8_t sServoTrimAnglesEEPROM[NUMBER_OF_SERVOS]; // The one which resides in EEPROM and IR read out at startup - filled by eepromWriteServoTrim
@@ -68,7 +71,9 @@ void setupQuadrupedServos() {
 }
 
 void shutdownServos() {
+#ifdef INFO
     Serial.println(F("Shutdown servos"));
+#endif
     sBodyHeightAngle = LIFT_HIGHEST_ANGLE;
     centerServos();
 }
@@ -84,16 +89,20 @@ void setSpeed(uint16_t aSpeed) {
 }
 
 void printSpeed() {
+#ifdef INFO
     Serial.print(F(" Speed="));
     Serial.println(sServoSpeed);
+#endif
 }
 
 void printAndSetTrimAngles() {
     for (uint8_t i = 0; i < NUMBER_OF_SERVOS; ++i) {
+#ifdef INFO
         Serial.print(F("ServoTrimAngle["));
         Serial.print(i);
         Serial.print(F("]="));
         Serial.println(sServoTrimAngles[i]);
+#endif
         sServoArray[i]->setTrim(sServoTrimAngles[i], true);
     }
 }
@@ -108,7 +117,9 @@ void resetServosTo90Degree() {
  * Copy calibration array from EEPROM to RAM and set uninitialized values to 0
  */
 void eepromReadAndSetServoTrim() {
+#ifdef INFO
     Serial.println(F("eepromReadAndSetServoTrim()"));
+#endif
     eeprom_read_block((void*) &sServoTrimAngles, &sServoTrimAnglesEEPROM, NUMBER_OF_SERVOS);
     printAndSetTrimAngles();
 }
@@ -316,6 +327,25 @@ void setLiftServosToBodyHeight() {
     for (uint8_t i = LIFT_SERVO_OFFSET; i < NUMBER_OF_SERVOS; i += SERVOS_PER_LEG) {
         sServoArray[i]->write(sBodyHeightAngle);
     }
+}
+
+void convertBodyHeightAngleToHeight() {
+    sBodyHeight = map(sBodyHeightAngle, LIFT_HIGHEST_ANGLE, LIFT_LOWEST_ANGLE, 0, 255);
+    sBodyHeightPercent = map(sBodyHeightAngle, LIFT_HIGHEST_ANGLE, LIFT_LOWEST_ANGLE, 0, 100);
+#ifdef INFO
+    Serial.print(F("BodyHeight="));
+    Serial.print(sBodyHeight);
+    Serial.print(F(" -> "));
+    Serial.print(sBodyHeightPercent);
+    Serial.println('%');
+#endif
+}
+
+/*
+ * Attention!!! Leg height is inverse to body height!
+ */
+uint8_t convertLegPercentHeightToAngle(uint8_t aLegHeightPercent) {
+    return map(aLegHeightPercent, 0, 100, LIFT_LOWEST_ANGLE, LIFT_HIGHEST_ANGLE);
 }
 
 void setAllServos(int aFrontLeftPivot, int aBackLeftPivot, int aBackRightPivot, int aFrontRightPivot, int aFrontLeftLift,

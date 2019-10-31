@@ -178,8 +178,8 @@ void loop() {
 }
 
 /*
- * Special delay function for the quadruped control.
- * It checks for low voltage, IR input and US distance sensor
+ * Special delay function for the robot arm control.
+ * It checks for low voltage and IR input
  * @return  true - if exit condition occurred like stop received
  */
 bool delayAndCheckForRobotArm(uint16_t aDelayMillis) {
@@ -189,8 +189,8 @@ bool delayAndCheckForRobotArm(uint16_t aDelayMillis) {
     if (checkVCC()) {
         do {
 #if defined(ROBOT_ARM_IR_CONTROL)
-            if (checkIRInput()) {
-                Serial.println(F("IR stop received -> exit from delayAndCheck"));
+            if (checkIRInputForNonExclusiveCommand()) {
+                Serial.println(F("Invalid command received -> set stop and exit from delayAndCheck"));
                 sActionType = ACTION_TYPE_STOP;
                 return true;
             }

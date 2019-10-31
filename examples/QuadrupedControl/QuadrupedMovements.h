@@ -18,7 +18,7 @@ extern uint8_t sMovingDirection;
  * Movements
  */
 void basicHalfCreep(uint8_t aDirection = MOVE_DIRECTION_FORWARD, bool doMirror = false);
-void basicTwist(uint8_t aTwistAngle, bool aTurnLeft = true);
+void basicTwist(int8_t aTwistAngle, bool aTurnLeft = true);
 void basicQuarterTurn(uint8_t aMoveLegIndex, bool aTurnLeft = false);
 void moveTurn(uint8_t aNumberOfTurns = 0);          // 0 -> 256 turns
 void moveTrot(uint8_t aNumberOfTrots = 0);      // 0 -> 256 trots

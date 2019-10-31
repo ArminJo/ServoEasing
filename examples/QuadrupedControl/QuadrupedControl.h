@@ -10,12 +10,14 @@
 
 #include <stdint.h>
 
-//#define QUADRUPED_IR_CONTROL
+//#define INFO // comment this out to see serial info output
+
+//#define QUADRUPED_HAS_IR_CONTROL
 //#define QUADRUPED_HAS_NEOPIXEL
 //#define QUADRUPED_HAS_US_DISTANCE
 //#define QUADRUPED_PLAYS_RTTTL
 
-#if defined(QUADRUPED_IR_CONTROL)
+#if defined(QUADRUPED_HAS_IR_CONTROL)
 #define IR_RECEIVER_PIN  A0
 #endif
 
@@ -35,9 +37,6 @@ void handleUSSensor();
 #define MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE 20000 // 20 seconds
 #define MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE 120000 // 2 Minutes
 #define MILLIS_OF_INACTIVITY_BETWEEN_REMINDER_MOVE 60000 // 1 Minute
-
-void doBeep();
-void doTest();
 
 bool checkForLowVoltage();
 bool delayAndCheck(uint16_t aDelayMillis);

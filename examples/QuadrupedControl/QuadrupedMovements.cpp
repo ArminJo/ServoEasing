@@ -32,7 +32,8 @@
 #include "QuadrupedMovements.h"
 #include "QuadrupedServoControl.h"
 
-#define INFO
+//#define INFO // comment this out to see serial info output
+
 uint8_t sMovingDirection = MOVE_DIRECTION_FORWARD;
 
 /*
@@ -76,7 +77,7 @@ void moveTrot(uint8_t aNumberOfTrots) {
     sActionType = ACTION_TYPE_STOP;
 }
 
-void basicTwist(uint8_t aTwistAngle, bool aTurnLeft) {
+void basicTwist(int8_t aTwistAngle, bool aTurnLeft) {
     sActionType = ACTION_TYPE_TWIST;
 #ifdef INFO
     Serial.print(F("Twist angle="));
@@ -200,6 +201,9 @@ void moveCreep(uint8_t aNumberOfCreeps) {
 // now mirror movement
         basicHalfCreep(tCurrentDirection, true);
         RETURN_IF_STOP;
+        /*
+         * Check if we have to change direction
+         */
         if (sMovingDirection != tCurrentDirection) {
             tCurrentDirection = sMovingDirection;
         }
