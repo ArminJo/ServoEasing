@@ -52,10 +52,11 @@
 #endif
 
 #if defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 #include <Wire.h>
 #ifndef MAX_EASING_SERVOS
-#define MAX_EASING_SERVOS 16 // one PCA9685 has 16 outputs.
+#define MAX_EASING_SERVOS 16 // One PCA9685 has 16 outputs. You must MODIFY this, if you have more than one PCA9685 attached!
 #endif
 
 #elif defined(USE_LEIGHTWEIGHT_SERVO_LIB)
@@ -74,9 +75,9 @@
 
 #ifndef MAX_EASING_SERVOS
 #ifdef MAX_SERVOS
-#define MAX_EASING_SERVOS MAX_SERVOS // =12 default value from Servo.h for UNO etc.
+#define MAX_EASING_SERVOS MAX_SERVOS // =12 use default value from Servo.h for UNO etc.
 #else
-#define MAX_EASING_SERVOS 12 // default value from Servo.h for UNO etc.
+#define MAX_EASING_SERVOS 12 // just take default value from Servo.h for UNO etc.
 #endif
 #endif
 #endif // defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_LEIGHTWEIGHT_SERVO_LIB)
@@ -110,6 +111,7 @@
  * - New attach( aPin,  aMicrosecondsForServoLowDegree,  aMicrosecondsForServoHighDegree,  aServoLowDegree,  aServoHighDegree) function for arbitrary mapping of servo degree to servo pulse width.
  * - Order of Servos in 'sServoArray[]' now depends from order of calling attach() and not from order of declaration.
  * - New example for continuous rotating servo.
+ * - Support for multiple PCA9685 expander.
  * Version 1.3.1
  * - Added detach() function.
  * Version 1.3.0
@@ -270,6 +272,7 @@ public:
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
     ServoEasing(uint8_t aPCA9685I2CAddress = PCA9685_DEFAULT_ADDRESS, TwoWire *aI2CClass = &Wire);
+    void PCA9685Reset();
     void PCA9685Init();
     void I2CWriteByte(uint8_t aAddress, uint8_t aData);
     void setPWM(uint16_t aOffUnits);

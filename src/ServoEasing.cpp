@@ -72,56 +72,62 @@ int sServoNextPositionArray[MAX_EASING_SERVOS];
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 // Constructor with I2C address needed
 ServoEasing::ServoEasing(uint8_t aPCA9685I2CAddress, TwoWire *aI2CClass) { // @suppress("Class members should be properly initialized")
-	mPCA9685I2CAddress = aPCA9685I2CAddress;
-	mI2CClass = aI2CClass;
+    mPCA9685I2CAddress = aPCA9685I2CAddress;
+    mI2CClass = aI2CClass;
 
-	mTrimMicrosecondsOrUnits = 0;
-	mEasingType = EASE_LINEAR;
-	mOperateServoReverse = false;
+    mTrimMicrosecondsOrUnits = 0;
+    mEasingType = EASE_LINEAR;
+    mOperateServoReverse = false;
 
-	mUserEaseInFunction = NULL;
+    mUserEaseInFunction = NULL;
 
 #if defined(MEASURE_TIMING)
 	pinMode(TIMING_PIN, OUTPUT);
 #endif
 }
 
+/*
+ * Initialize I2C and software reset all PCA9685 expanders
+ */
+void ServoEasing::PCA9685Reset() {
+    // Initialize I2C
+    mI2CClass->begin();
+    mI2CClass->setClock(800000); // 1000000 does not work for me, maybe because of parasitic breadboard capacities
+    // Send software reset to expander(s)
+    mI2CClass->beginTransmission(PCA9685_GENERAL_CALL_ADDRESS);
+    mI2CClass->write(PCA9685_SOFTWARE_RESET);
+    mI2CClass->endTransmission();
+}
+
 void ServoEasing::PCA9685Init() {
-	// initialize I2C
-	mI2CClass->begin();
-	mI2CClass->setClock(800000);// 1000000 does not work - maybe because of parasitic breadboard capacities
-	// Send software reset to expander
-	mI2CClass->beginTransmission(PCA9685_GENERAL_CALL_ADDRESS);
-	mI2CClass->write(PCA9685_SOFTWARE_RESET);
-	mI2CClass->endTransmission();
-	// set to 20 ms period
-	I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_SLEEP));// go to sleep
-	I2CWriteByte(PCA9685_PRESCALE_REGISTER, PCA9685_PRESCALER_FOR_20_MS);// set the prescaler
-	I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_AUTOINCREMENT));// reset sleep and enable auto increment
-	delay(2);// 500 us according to datasheet
+    // Set expander to 20 ms period
+    I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_SLEEP));	// go to sleep
+    I2CWriteByte(PCA9685_PRESCALE_REGISTER, PCA9685_PRESCALER_FOR_20_MS);	// set the prescaler
+    I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_AUTOINCREMENT));	// reset sleep and enable auto increment
+    delay(2);	// 500 us according to datasheet
 }
 
 void ServoEasing::I2CWriteByte(uint8_t aAddress, uint8_t aData) {
-	mI2CClass->beginTransmission(mPCA9685I2CAddress);
-	mI2CClass->write(aAddress);
-	mI2CClass->write(aData);
-	mI2CClass->endTransmission();
+    mI2CClass->beginTransmission(mPCA9685I2CAddress);
+    mI2CClass->write(aAddress);
+    mI2CClass->write(aData);
+    mI2CClass->endTransmission();
 }
 
 void ServoEasing::setPWM(uint16_t aOffUnits) {
-	mI2CClass->beginTransmission(mPCA9685I2CAddress);
-	// +2 since we we do not set the begin, it is fixed at 0
-	mI2CClass->write((PCA9685_FIRST_PWM_REGISTER + 2) + 4 * mServoPin);
-	mI2CClass->write(aOffUnits);
-	mI2CClass->write(aOffUnits >> 8);
-	mI2CClass->endTransmission();
+    mI2CClass->beginTransmission(mPCA9685I2CAddress);
+    // +2 since we we do not set the begin, it is fixed at 0
+    mI2CClass->write((PCA9685_FIRST_PWM_REGISTER + 2) + 4 * mServoPin);
+    mI2CClass->write(aOffUnits);
+    mI2CClass->write(aOffUnits >> 8);
+    mI2CClass->endTransmission();
 }
 
 int ServoEasing::MicrosecondsToPCA9685Units(int aMicroseconds) {
-	/*
-	 * 4096 units per 20 milliseconds
-	 */
-	return ((4096L * aMicroseconds) / REFRESH_INTERVAL);
+    /*
+     * 4096 units per 20 milliseconds
+     */
+    return ((4096L * aMicroseconds) / REFRESH_INTERVAL);
 }
 
 #else
@@ -166,6 +172,12 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServo0Degree, int aMic
 /*
  * @param aMicrosecondsForServoLowDegree no units accepted, only microseconds!
  * @param aServoLowDegree can be negative. For this case an appropriate trim value is added, since this is the only way to handle negative values.
+ * If USE_LEIGHTWEIGHT_SERVO_LIB is enabled:
+ *      Return 0/false if not pin 9 or 10 else return aPin
+ *      Pin number != 9 results in using pin 10.
+ * If USE_PCA9685_SERVO_EXPANDER is enabled:
+ *      Return true only if channel number is between 0 and 15 since PCA9685 has only 16 channels, else returns false.
+ * Else return servoIndex / internal channel number
  */
 uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree,
         int aServoHighDegree) {
@@ -179,8 +191,8 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
 
     mServoPin = aPin;
 #if defined(USE_PCA9685_SERVO_EXPANDER)
-	mServo0DegreeMicrosecondsOrUnits = MicrosecondsToPCA9685Units(tMicrosecondsForServo0Degree);
-	mServo180DegreeMicrosecondsOrUnits = MicrosecondsToPCA9685Units(tMicrosecondsForServo180Degree);
+    mServo0DegreeMicrosecondsOrUnits = MicrosecondsToPCA9685Units(tMicrosecondsForServo0Degree);
+    mServo180DegreeMicrosecondsOrUnits = MicrosecondsToPCA9685Units(tMicrosecondsForServo180Degree);
 #else
     mServo0DegreeMicrosecondsOrUnits = tMicrosecondsForServo0Degree;
     mServo180DegreeMicrosecondsOrUnits = tMicrosecondsForServo180Degree;
@@ -215,17 +227,19 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
 #endif
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
-	if (mServoIndex == 0) {
-		PCA9685Init();
-	}
-	return (aPin <= PCA9685_MAX_CHANNELS);
+    if (mServoIndex == 0) {
+        PCA9685Reset(); // reset only once
+    }
+    PCA9685Init(); // initialize at every attach
+
+    return (aPin <= PCA9685_MAX_CHANNELS);
 #elif defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-	if(aPin != 9 && aPin != 10) {
-		return false;
-	}
-	return aPin;
+if(aPin != 9 && aPin != 10) {
+    return false;
+}
+return aPin;
 #else
-    return Servo::attach(aPin, tMicrosecondsForServo0Degree, tMicrosecondsForServo180Degree);
+return Servo::attach(aPin, tMicrosecondsForServo0Degree, tMicrosecondsForServo180Degree);
 #endif
 }
 
@@ -233,7 +247,7 @@ void ServoEasing::detach() {
     sServoArray[mServoIndex] = NULL;
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
-	setPWM(4096); // set signal fully off
+    setPWM(4096); // set signal fully off
 #elif defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 	deinitLightweightServoPin9_10(mServoPin == 9); // disable output and change to input
 #else
@@ -349,7 +363,7 @@ void ServoEasing::writeMicrosecondsOrUnits(int aValue) {
 #if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 	writeMicrosecondsLightweightServo(aValue, (mServoPin == 9));
 #elif defined(USE_PCA9685_SERVO_EXPANDER)
-	setPWM(aValue);
+    setPWM(aValue);
 #else
     Servo::writeMicroseconds(aValue); // needs 7 us
 #endif
@@ -368,7 +382,7 @@ int ServoEasing::MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits) {
 // map with rounding
     int32_t tResult = aMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits;
 #if defined(USE_PCA9685_SERVO_EXPANDER)
-	tResult = (tResult * 180) + 190;
+    tResult = (tResult * 180) + 190;
 #else
     tResult = (tResult * 180) + 928;
 #endif
@@ -814,8 +828,8 @@ int clipDegreeSpecial(uint8_t aDegreeToClip) {
  */
 __attribute__((weak)) void handleServoTimerInterrupt() {
 #if defined(USE_PCA9685_SERVO_EXPANDER)
-	// Otherwise it will hang forever in I2C transfer
-	sei();
+// Otherwise it will hang forever in I2C transfer
+    sei();
 #endif
     if (updateAllServos()) {
         // disable interrupt only if all servos stopped. This enables independent movements of servos with this interrupt handler.
@@ -827,7 +841,7 @@ __attribute__((weak)) void handleServoTimerInterrupt() {
  * Timer1 is used for the Arduino Servo library.
  * To have non blocking easing functions its unused channel B is used to generate an interrupt 100 us before the end of the 20 ms Arduino Servo refresh period.
  * This interrupt then updates all servo values for the next refresh period.
- * First interrupt is triggered not directly, but after 20 ms, since we are often called here at the time of the last interrupt of the preceeding servo move.
+ * First interrupt is triggered not directly, but after 20 ms, since we are often called here at the time of the last interrupt of the preceding servo move.
  */
 void enableServoEasingInterrupt() {
 #if defined(__AVR__)
@@ -846,18 +860,18 @@ void enableServoEasingInterrupt() {
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 //    // set timer 1 to 20 ms
-	TCCR1A = _BV(WGM11);// FastPWM Mode mode TOP (20 ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
-	TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);// set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
-	ICR1 = 40000;// set period to 20 ms
+    TCCR1A = _BV(WGM11);     // FastPWM Mode mode TOP (20 ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
+    TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);     // set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
+    ICR1 = 40000;     // set period to 20 ms
 #endif
 
     TIFR1 |= _BV(OCF1B);    // clear any pending interrupts;
     TIMSK1 |= _BV(OCIE1B);    // enable the output compare B interrupt
-    /*
-     * Misuse the Input Capture Noise Canceler Bit as a flag, that signals that interrupts are enabled again.
-     * It is needed if disableServoEasingInterrupt() is suppressed e.g. by an overwritten handleServoTimerInterrupt() function
-     * because the servo interrupt is used to synchronize e.g. NeoPixel updates.
-     */
+            /*
+             * Misuse the Input Capture Noise Canceler Bit as a flag, that signals that interrupts are enabled again.
+             * It is needed if disableServoEasingInterrupt() is suppressed e.g. by an overwritten handleServoTimerInterrupt() function
+             * because the servo interrupt is used to synchronize e.g. NeoPixel updates.
+             */
     TCCR1B |= _BV(ICNC1);
 #ifndef USE_LEIGHTWEIGHT_SERVO_LIB
 // update values 100 us before the new servo period starts
@@ -950,7 +964,7 @@ void synchronizeAndEaseToArrayPositions(uint16_t aDegreesPerSecond) {
 void printArrayPositions(Stream * aSerial) {
 //    uint8_t tServoIndex = 0;
     aSerial->print(F("ServoNextPositionArray="));
-// AJ 22.05.2019 This does not work with gcc 7.3.0 atmel6.3.1 and -Os
+// AJ 22.05.2019 This does not work with GCC 7.3.0 atmel6.3.1 and -Os
 // It drops the tServoIndex < MAX_EASING_SERVOS condition, since  MAX_EASING_SERVOS is equal to the size of sServoArray
 // This has only an effect if the whole sServoArray is filled up, i.e we have declared MAX_EASING_SERVOS ServoEasing objects.
 //    while (sServoArray[tServoIndex] != NULL && tServoIndex < MAX_EASING_SERVOS) {
