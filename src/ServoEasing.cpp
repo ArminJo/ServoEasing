@@ -229,6 +229,8 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
 #if defined(USE_PCA9685_SERVO_EXPANDER)
     if (mServoIndex == 0) {
         PCA9685Reset(); // reset only once
+    } else if (mServoIndex == INVALID_SERVO) {
+        mServoIndex = MAX_EASING_SERVOS - 1; // to avoid out of array access in write() etc.
     }
     PCA9685Init(); // initialize at every attach
 
@@ -239,7 +241,11 @@ if(aPin != 9 && aPin != 10) {
 }
 return aPin;
 #else
-return Servo::attach(aPin, tMicrosecondsForServo0Degree, tMicrosecondsForServo180Degree);
+    if (mServoIndex == INVALID_SERVO) {
+        mServoIndex = MAX_EASING_SERVOS - 1; // to avoid out of array access in write() etc.
+        return INVALID_SERVO;
+    }
+    return Servo::attach(aPin, tMicrosecondsForServo0Degree, tMicrosecondsForServo180Degree);
 #endif
 }
 
@@ -867,11 +873,11 @@ void enableServoEasingInterrupt() {
 
     TIFR1 |= _BV(OCF1B);    // clear any pending interrupts;
     TIMSK1 |= _BV(OCIE1B);    // enable the output compare B interrupt
-            /*
-             * Misuse the Input Capture Noise Canceler Bit as a flag, that signals that interrupts are enabled again.
-             * It is needed if disableServoEasingInterrupt() is suppressed e.g. by an overwritten handleServoTimerInterrupt() function
-             * because the servo interrupt is used to synchronize e.g. NeoPixel updates.
-             */
+    /*
+     * Misuse the Input Capture Noise Canceler Bit as a flag, that signals that interrupts are enabled again.
+     * It is needed if disableServoEasingInterrupt() is suppressed e.g. by an overwritten handleServoTimerInterrupt() function
+     * because the servo interrupt is used to synchronize e.g. NeoPixel updates.
+     */
     TCCR1B |= _BV(ICNC1);
 #ifndef USE_LEIGHTWEIGHT_SERVO_LIB
 // update values 100 us before the new servo period starts

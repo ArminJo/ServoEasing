@@ -55,10 +55,11 @@ const int SERVO1_PIN = 9;
  * This can be done for each servo separately, but you can not (yet) mix the 3 different
  * Servo implementation libraries (Arduino Servo, Lightweight Servo and I2C Expansion Board)
  */
-ServoEasing Servo1(PCA9685_DEFAULT_ADDRESS, &Wire);
+ServoEasing Servo1(PCA9685_DEFAULT_ADDRESS, &Wire); // If you use more than one PCA9685 you should modify MAX_EASING_SERVOS at line 68 in ServoEasing.h
+
 /*
  * If you have only one Expander at default address and want to use the Arduino Wire library,
- * you can use the short constructor below instead, so that there is no difference to the OneServo example!
+ * you can use the short constructor "ServoEasing Servo1;" instead, so that there is no difference to the OneServo example!
  */
 //ServoEasing Servo1;
 void setup() {

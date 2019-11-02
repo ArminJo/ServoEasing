@@ -51,6 +51,15 @@
 #error "Please define only one of the symbols USE_PCA9685_SERVO_EXPANDER or USE_LEIGHTWEIGHT_SERVO_LIB"
 #endif
 
+/*****************************************************************************************
+ * Important definition of MAX_EASING_SERVOS !!!
+ * If this value is smaller than the amount of servos declared,
+ * attach() will return error and detach() will not work as expected.
+ * As well as all *AllServos*() functions and isOneServoMoving()
+ * won't work correctly! (they will only work for the first MAX_EASING_SERVOS -2 servos)
+ *
+ * If you do not need these functions, you may define MAX_EASING_SERVOS as 1
+ ****************************************************************************************/
 #if defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
