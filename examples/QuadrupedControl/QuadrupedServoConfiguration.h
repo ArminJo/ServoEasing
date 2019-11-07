@@ -19,19 +19,23 @@
 #define DIAGONAL_SERVO_OFFSET (2 * SERVOS_PER_LEG)
 #define LIFT_SERVO_OFFSET 1 // lift servo number is 1 more than base/pivot servo number
 
+#define FRONT_LEFT 0
 // Index into (external) servo array. Order must be the same as of definitions in main.
 #define FRONT_LEFT_PIVOT 0
 #define FRONT_LEFT_LEG (FRONT_LEFT_PIVOT / SERVOS_PER_LEG)
 #define FRONT_LEFT_LIFT 1
 
+#define BACK_LEFT 1
 #define BACK_LEFT_PIVOT 2
 #define BACK_LEFT_LEG (BACK_LEFT_PIVOT / SERVOS_PER_LEG)
 #define BACK_LEFT_LIFT 3
 
+#define BACK_RIGHT 2
 #define BACK_RIGHT_PIVOT 4
 #define BACK_RIGHT_LEG (BACK_RIGHT_PIVOT / SERVOS_PER_LEG)
 #define BACK_RIGHT_LIFT 5
 
+#define FRONT_RIGHT 3
 #define FRONT_RIGHT_PIVOT 6
 #define FRONT_RIGHT_LEG (FRONT_RIGHT_PIVOT / SERVOS_PER_LEG)
 #define FRONT_RIGHT_LIFT 7

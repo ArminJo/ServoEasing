@@ -102,7 +102,7 @@ void moveTurn(uint8_t aNumberOfQuarterTurns) {
     sActionType = ACTION_TYPE_TURN;
     centerServos();
     setEasingTypeForMoving();
-    uint8_t tNextLegIndex = FRONT_LEFT_PIVOT;
+    uint8_t tNextLegIndex = FRONT_LEFT;
 
     /*
      * Move one leg out of center position, otherwise the COG is not supported at the first move
@@ -130,6 +130,7 @@ void moveTurn(uint8_t aNumberOfQuarterTurns) {
 
 /*
  * One quarter turn is approximately 12 degree
+ * @param aMoveLegIndex from 0 FRONT_LEFT to 3 FRONT_RIGHT
  */
 void basicQuarterTurn(uint8_t aMoveLegIndex, bool aTurnLeft) {
 #ifdef INFO
