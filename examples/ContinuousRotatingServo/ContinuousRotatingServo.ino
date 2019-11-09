@@ -26,7 +26,7 @@
 
 #include "ServoEasing.h"
 
-#define VERSION_EXAMPLE "1.4"
+#define VERSION_EXAMPLE "1.4.1"
 
 #if defined(ESP8266)
 const int SERVO1_PIN = 14; // D5
@@ -62,7 +62,9 @@ void setup() {
     Serial.println(SERVO1_PIN);
 
     /*
-     * Special attach parameters for continuous rotating servo
+     * Special attach parameters for continuous rotating servo. Only usable if stop value of your servo is exactly 1500 microseconds.
+     * If the stop value of your servo is not exactly 1500 microseconds, you must modify the "MICROSECONDS_FOR_ROTATING_SERVO_STOP" value in ServoEasing.h
+     *
      * -100 and +100 can be replaced with any value you like but do not forget to change them below and in loop too.
      */
     Servo1.attach(SERVO1_PIN, MICROSECONDS_FOR_ROTATING_SERVO_CLOCKWISE_MAX, MICROSECONDS_FOR_ROTATING_SERVO_COUNTER_CLOCKWISE_MAX,

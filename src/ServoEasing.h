@@ -113,8 +113,10 @@
 //
 // Enable this if you want to measure timing by toggling pin12 on an arduino
 //#define MEASURE_TIMING
-#define VERSION_SERVO_EASING 1.4.0
+#define VERSION_SERVO_EASING 1.4.1
 /*
+ * Version 1.4.1
+ * - Improved documentation and definitions for continuous rotating servo. Thanks to Eebel!
  * Version 1.4.0
  * - setTrim has additional parameter 'doWrite' which is default 'false' in contrast to older versions, where a write was always performed.
  * - New attach( aPin,  aMicrosecondsForServoLowDegree,  aMicrosecondsForServoHighDegree,  aServoLowDegree,  aServoHighDegree) function for arbitrary mapping of servo degree to servo pulse width.
@@ -171,18 +173,25 @@
 #define DEFAULT_PCA9685_UNITS_FOR_180_DEGREE 491 // 491.52 = 2400 us
 
 /*
- * Definitions for continuous rotating servo - Values are taken from the Parallax Continuous Rotation Servo manual.
+ * Definitions for continuous rotating servo - Values are taken from the Parallax Continuous Rotation Servo manual
+ * and rely on a stop value of exactly 1500 microseconds.
+ * If the stop value of your servo is NOT exactly 1500 microseconds, you must change the value of MICROSECONDS_FOR_ROTATING_SERVO_STOP.
  * My modified MG90 servo has 1630 and 1400 as max.
+ *
  * Use attach(PIN, MICROSECONDS_FOR_ROTATING_SERVO_CLOCKWISE_MAX, MICROSECONDS_FOR_ROTATING_SERVO_COUNTER_CLOCKWISE_MAX, 100, -100);
  * Use write(100) for maximum clockwise and write(-100) for maximum counter clockwise rotation.
  */
-#define MICROSECONDS_FOR_ROTATING_SERVO_STOP 1500
-#define MICROSECONDS_FOR_ROTATING_SERVO_CLOCKWISE_MAX 1300
-#define MICROSECONDS_FOR_ROTATING_SERVO_CLOCKWISE_HALF 1400
-#define MICROSECONDS_FOR_ROTATING_SERVO_CLOCKWISE_QUARTER 1450
-#define MICROSECONDS_FOR_ROTATING_SERVO_COUNTER_CLOCKWISE_MAX 1700
-#define MICROSECONDS_FOR_ROTATING_SERVO_COUNTER_CLOCKWISE_HALF 1600
-#define MICROSECONDS_FOR_ROTATING_SERVO_COUNTER_CLOCKWISE_QUARTER 1550
+#define MICROSECONDS_FOR_ROTATING_SERVO_STOP 1500 // Change this value to your servos real stop value
+
+/*
+ * Definitions here are only for convenience. You may freely modify them.
+ */
+#define MICROSECONDS_FOR_ROTATING_SERVO_CLOCKWISE_MAX (MICROSECONDS_FOR_ROTATING_SERVO_STOP - 200)
+#define MICROSECONDS_FOR_ROTATING_SERVO_CLOCKWISE_HALF (MICROSECONDS_FOR_ROTATING_SERVO_STOP - 100)
+#define MICROSECONDS_FOR_ROTATING_SERVO_CLOCKWISE_QUARTER (MICROSECONDS_FOR_ROTATING_SERVO_STOP - 50)
+#define MICROSECONDS_FOR_ROTATING_SERVO_COUNTER_CLOCKWISE_MAX (MICROSECONDS_FOR_ROTATING_SERVO_STOP + 200)
+#define MICROSECONDS_FOR_ROTATING_SERVO_COUNTER_CLOCKWISE_HALF (MICROSECONDS_FOR_ROTATING_SERVO_STOP + 100)
+#define MICROSECONDS_FOR_ROTATING_SERVO_COUNTER_CLOCKWISE_QUARTER (MICROSECONDS_FOR_ROTATING_SERVO_STOP + 50)
 
 /*
  * The different easing functions:
