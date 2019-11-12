@@ -120,28 +120,33 @@
 #define VERSION_SERVO_EASING 1.4.1
 
 /*
- * Version 1.4.1
+ * Version 1.4.1 - 11/2019
  * - Improved documentation and definitions for continuous rotating servo. Thanks to Eebel!
  * - Improved support and documentation for generating Arduino Serial Plotter output.
  * - Support of STM32F1 / BluePill boards.
- * Version 1.4.0
+ *
+ * Version 1.4.0 - 11/2019
  * - setTrim has additional parameter 'doWrite' which is default 'false' in contrast to older versions, where a write was always performed.
  * - New attach( aPin,  aMicrosecondsForServoLowDegree,  aMicrosecondsForServoHighDegree,  aServoLowDegree,  aServoHighDegree) function for arbitrary mapping of servo degree to servo pulse width.
  * - Order of Servos in 'sServoArray[]' now depends from order of calling attach() and not from order of declaration.
  * - New example for continuous rotating servo.
  * - Support for multiple PCA9685 expander.
- * Version 1.3.1
+ *
+ * Version 1.3.1 - 6/2019
  * - Added detach() function.
- * Version 1.3.0
+ *
+ * Version 1.3.0 - 6/2019
  * - Added ESP32 support by using ESP32Servo.h and Ticker.h instead of Servo.h timer interrupts.
  * - Changed degree parameter and values from uint8_t to integer to support operating a servo from -90 to + 90 degree with 90 degree trim.
  * - RobotArmControl + QuadrupedControl examples refactored.
  * - Extended SpeedTest example. Now also able to change the width of the refresh period.
  * - Changed "while" to "for" loops to avoid a gcc 7.3.0 atmel6.3.1 bug.
- * Version 1.2
+ *
+ * Version 1.2 - 5/2019
  * - Added ESP8266 support by using Ticker instead of timer interrupts for ESP.
  * - AsymetricEasing example overhauled.
- * Version 1.1
+ *
+ * Version 1.1 - 4/2019
  * - corrected sine, circular, back and elastic IN functions.
  * - easeTo() and write() store their degree parameter now also in sServoNextPositionArray.
  * - added setSpeed(), getSpeed(), setSpeedForAllServos().

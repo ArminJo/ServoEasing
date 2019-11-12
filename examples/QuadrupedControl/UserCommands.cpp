@@ -76,6 +76,11 @@
  * To move the front left lift servo, use e.g.:
  * frontLeftLiftServo.easeTo(convertLegPercentHeightToAngle(100));
  *
+ * To move multiple servos simultaneously:
+ * frontLeftPivotServo.setEaseTo(0);
+ * frontLeftLiftServo.setEaseTo(LIFT_MAX_ANGLE);
+ * synchronizeAllServosStartAndWaitForAllServosToStop();
+ *
  * To move all lift servos simultaneously:
  * setLiftServos(LIFT_LOWEST_ANGLE, LIFT_LOWEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_HIGHEST_ANGLE);
  *
@@ -98,6 +103,9 @@
 /*
  * Here you can create your own movements.
  *
+ * The speed and height commands on the remote are already active.
+ * They modify the variables sServoSpeed and sBodyHeightAngle.
+ *
  * I recommend to implement the following movements:
  * 1. A twist forth and back.
  * 2. Bows in different directions.
@@ -106,7 +114,7 @@
  *
  */
 
-// doTwist() is mapped to the star on the remote
+// doTest() is mapped to the star on the remote
 void doTest() {
     sActionType = ACTION_TYPE_TEST;
 
@@ -124,9 +132,9 @@ void doTest() {
      * Here the movement starts
      * Set multiple servos simultaneously
      */
-    sServoNextPositionArray[FRONT_LEFT_LIFT] = convertLegPercentHeightToAngle(100);
-    sServoNextPositionArray[BACK_RIGHT_LIFT] = convertLegPercentHeightToAngle(20);
-    synchronizeMoveAllServosAndCheckInputAndWait();
+    frontLeftLiftServo.setEaseTo(convertLegPercentHeightToAngle(100)); // 100 is leg at upper limit
+    backRightLiftServo.setEaseTo(convertLegPercentHeightToAngle(20)); // 20 is leg low
+    synchronizeAllServosStartAndWaitForAllServosToStop();
 
     frontLeftPivotServo.easeTo(25);
     /*

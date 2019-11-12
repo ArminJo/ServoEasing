@@ -8,7 +8,7 @@ YouTube video of SymmetricEasing and AsymmetricEasing example
 
 ## Simple example
 This example does not use interrupts and should therefore run on any platform where the Arduino Servo library is available.<br/><br/>
-**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` in the library file /ServoEasing.h/ is enabled.
+**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` in the library file *ServoEasing.h* is enabled.
 ![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/ServoEasing-Linear-Cubic-Circular.png)
 
 ## OneServo example
@@ -19,17 +19,17 @@ This example shows how to move 2 or 3 servos synchronized or independently.
 
 ## SymmetricEasing example
 This example shows symmetric (end movement is mirror of start movement) linear, quadratic and cubic movements for 3 servos synchronously.
-**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` in the library file /ServoEasing.h/ is enabled.
+**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` in the library file *ServoEasing.h* is enabled.
 ![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/SymmetricEasing.png)
 
 ## AsymmetricEasing example
 This example shows asymmetric (end movement is different from start movement) non linear movements for 3 servos synchronously.
 It includes a partially **user defined easing function**  `EaseQuadraticInQuarticOut()`.
-**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` in the library file /ServoEasing.h/ is enabled.
+**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` in the library file *ServoEasing.h* is enabled.
 ![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/AsymmetricEasing.png)
 
 ## ContinuousRotatingServo example
-Example for using the servoEasing library to create speed ramps for a continuous rotating servo. This example rely on your servos stop value being **exacly 1500 microseconds**. If the stop value of your servo is NOT exactly 1500 microseconds, you must modify the `MICROSECONDS_FOR_ROTATING_SERVO_STOP` value in the library file /ServoEasing.h/.
+Example for using the servoEasing library to create speed ramps for a continuous rotating servo. This example rely on your servos stop value being **exacly 1500 microseconds**. If the stop value of your servo is NOT exactly 1500 microseconds, you must modify the `MICROSECONDS_FOR_ROTATING_SERVO_STOP` value in the library file *ServoEasing.h*.
 
 ## CatMover example
 Demo of using two servos in a pan tilt housing to move a laser pointer.
