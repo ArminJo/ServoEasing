@@ -61,7 +61,7 @@ void setup() {
     // Attach servo to pin
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO1_PIN);
-    if (Servo1.attach(SERVO1_PIN) == false) {
+    if (Servo1.attach(SERVO1_PIN) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
 

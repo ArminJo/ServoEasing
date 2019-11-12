@@ -29,6 +29,8 @@
 
 #define VERSION_EXAMPLE "1.4"
 
+#define INFO // to see serial output of loop
+
 #if defined(ESP8266)
 const int SERVO1_PIN = 14; // D5
 const int SERVO2_PIN = 12; // D6
@@ -69,12 +71,12 @@ void setup() {
     // Attach servos to pins
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO1_PIN);
-    if (Servo1.attach(SERVO1_PIN) == false) {
+    if (Servo1.attach(SERVO1_PIN) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO2_PIN);
-    if (Servo1.attach(SERVO2_PIN) == false) {
+    if (Servo1.attach(SERVO2_PIN) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
     Servo1.setTrim(90); // Operate the servo from -90 to +90 degree
@@ -103,7 +105,9 @@ void loop() {
     /*
      * Move both servos blocking
      */
+#ifdef INFO
     Serial.println(F("Move to 0/90 degree with 30 degree per second blocking"));
+#endif
     setSpeedForAllServos(30);
     Servo1.setEaseTo(0);
     Servo2.setEaseTo(90);
@@ -112,7 +116,9 @@ void loop() {
     /*
      * Now continue faster.
      */
+#ifdef INFO
     Serial.println(F("Move to 90/10 degree with 60 degree per second using interrupts"));
+#endif
     Servo1.setEaseTo(90, 60);
     /*
      * An alternative method to synchronize and start
@@ -132,7 +138,9 @@ void loop() {
      *  The first servo moves with the specified speed.
      *  The second will be synchronized to slower speed (longer duration, than specified) because it has to move only 80 degree.
      */
+#ifdef INFO
     Serial.println(F("Move to 0/90 degree with 90 degree per second using interrupts. Use cubic easing for first servo."));
+#endif
     Servo1.setEasingType(EASE_CUBIC_IN_OUT);
     /*
      * Another method to specify moves
@@ -153,7 +161,9 @@ void loop() {
     /*
      * Move both servos independently
      */
+#ifdef INFO
     Serial.println(F("Move independently to -90/0 degree with 80/60 degree per second using interrupts"));
+#endif
     Servo1.setEaseTo(-90, 80);
     Servo2.startEaseTo(0, 60); // This start interrupt for all servos
     // blink until both servos stop

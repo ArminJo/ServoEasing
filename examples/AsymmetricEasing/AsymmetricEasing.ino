@@ -24,9 +24,12 @@
 
 #include <Arduino.h>
 
+/*
+ * To generate the Arduino plotter output, you must comment out line 118 #define PRINT_FOR_SERIAL_PLOTTER
+ */
 #include "ServoEasing.h"
 
-#define VERSION_EXAMPLE "1.4"
+#define VERSION_EXAMPLE "2.0"
 
 #if defined(ESP8266)
 const int SERVO1_PIN = 14; // D5
@@ -70,26 +73,34 @@ void setup() {
     delay(2000); // To be able to connect Serial monitor after reset and before first printout
 #endif
     // Just to know which program is running on my Arduino
+#ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
+#endif
 
 #if defined(ESP32)
     analogReadResolution(10);
 #endif
 
     // Attach servos to pins
+#ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO1_PIN);
-    if (Servo1.attach(Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE)) == false) {
+#endif
+    if (Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
+#ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO2_PIN);
-    if (Servo1.attach(Servo2.attach(SERVO2_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE)) == false) {
+#endif
+    if (Servo2.attach(SERVO2_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
+#ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO3_PIN);
-    if (Servo1.attach(Servo3.attach(SERVO3_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE)) == false) {
+#endif
+    if (Servo3.attach(SERVO3_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
 
@@ -104,6 +115,9 @@ void setup() {
     // Wait for servos to reach start position.
     delay(2000);
 
+#ifndef PRINT_FOR_SERIAL_PLOTTER
+    Serial.println(F("Move from 90 to 45 degree in 1 second"));
+#endif
     Servo1.startEaseToD(45, 1000);
     Servo2.startEaseToD(45, 1000);
     Servo3.startEaseToD(45, 1000);
@@ -118,6 +132,7 @@ void setup() {
     Servo3.setEasingType(EASE_USER_DIRECT);
     Servo3.registerUserEaseInOutFunction(EaseOutBounce);
 #endif
+    Serial.println("QuadraticInQuarticOut, ElasticOut, BounceOut");
 
     delay(500);
 
@@ -136,14 +151,17 @@ void loop() {
     /*
      * Move three servos synchronously without interrupt handler
      */
+#ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.print(F("Move to 135 degree with "));
     Serial.print(tSpeed);
     Serial.println(F(" degree per second with own update loop"));
-    Servo1.setEaseTo(135);
-    Servo2.setEaseToD(135, Servo1.mMillisForCompleteMove);
-    Servo3.setEaseToD(135, Servo1.mMillisForCompleteMove);
-
-    // No need to call synchronizeAllServosAndStartInterrupt(false), since in this case I know that all durations are the same
+#endif
+    /*
+     * Here we use the allServos functions
+     */
+    setDegreeForAllServos(3, 135, 135, 135);
+    setEaseToForAllServos();
+    synchronizeAllServosAndStartInterrupt(false); // false, since we call updateAllServos() manually below
 
     do {
         // here you can call your own program
@@ -153,15 +171,19 @@ void loop() {
     /*
      * Move three servos synchronously with interrupt handler
      */
+#ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.print(F("Move to 45 degree with "));
     Serial.print(tSpeed);
     Serial.println(F(" degree per second using interrupts"));
+#endif
     Servo1.setEaseTo(45);
     Servo2.setEaseToD(45, Servo1.mMillisForCompleteMove);
     Servo3.startEaseToD(45, Servo1.mMillisForCompleteMove);
-    // No need to call synchronizeAllServosAndStartInterrupt(), since in this case I know that all durations are the same
-    // Since all servos stops at the same time I have to check only one
-    // Must call yield here for the ESP boards, since we have no delay called
+    /*
+     * No need to call synchronizeAllServosAndStartInterrupt(), since I know that all durations are the same
+     * Since all servos stops at the same time I have to check only one
+     * Must call yield here for the ESP boards, since we do not call delay in the loop
+     */
     while (Servo3.isMovingAndCallYield()) {
         ; // no delays here to avoid break between forth and back movement
     }

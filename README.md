@@ -46,6 +46,10 @@ Do not forget to **set the start position** for the Servo by simply calling **my
 - InOut
 - Bouncing (mirrored Out) e.g. Bouncing of the Sine function results in the upper (positive) half of the sine.
 
+### Comparison between Quadratic, Cubic and Sine easings.
+**Arduino Serial Plotter** result of a modified SymmetricEasing example with `#define PRINT_FOR_SERIAL_PLOTTER` in the library file /ServoEasing.h/ enabled.
+![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/ComparisonQuadraticCubicSine.png)
+
 ## Useful resources
 - [Easings Cheat Sheet](https://easings.net/)
 - [Robert Penner](http://www.robertpenner.com/easing/)
@@ -59,27 +63,27 @@ The library files itself are located in the `src` sub-directory.<br/>
 If you did not yet store the example as your own sketch, then with Ctrl+K you are instantly in the right library folder.
 
 ## Using PCA9685 16-Channel Servo Expander
-To enable the use of the expander, open the library file ServoEasing.h and comment out line 37 or define global symbol `USE_PCA9685_SERVO_EXPANDER` which is not yet possible in Arduino IDE:-(.<br/>
+To enable the use of the expander, open the library file /ServoEasing.h/ and comment out line 37 `#define USE_PCA9685_SERVO_EXPANDER` or define global symbol `USE_PCA9685_SERVO_EXPANDER` which is not yet possible in Arduino IDE:-(.<br/>
 Timer1 is then only needed for the startEaseTo* functions.
 
 ## Using the included [Lightweight Servo library](https://github.com/ArminJo/LightweightServo)
 Using the **Lightweight Servo Library** reduces sketch size and makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
 Up to 2 servos are supported by this library and they must be attached to pin 9 and/or 10.<br/>
-To enable it, open the library file ServoEasing.h and comment out line 46 or define global symbol `USE_LEIGHTWEIGHT_SERVO_LIB` which is not yet possible in Arduino IDE:-(.<br/>
+To enable it, open the library file /ServoEasing.h/ and comment out line 44 or define global symbol `USE_LEIGHTWEIGHT_SERVO_LIB` which is not yet possible in Arduino IDE:-(.<br/>
 If not using the Arduino IDE, take care that Arduino Servo library sources are not compiled / included in the project.
 
 ## Reducing library size
 If you have only one or two servos, then you can save program space by using Lightweight Servo library .
 This saves 742 bytes FLASH and 42 bytes RAM.<br/>
-If you do not need the more complex easing functions like `Sine` etc., which in turn need sin(), cos(), sqrt() and pow(), you can shrink library size by approximately 1850 bytes by commenting out line 97 in ServoEasing.h or define global symbol `KEEP_SERVO_EASING_LIBRARY_SMALL` which is not yet possible in Arduino IDE:-(.<br/>
+If you do not need the more complex easing functions like `Sine` etc., which in turn need sin(), cos(), sqrt() and pow(), you can shrink library size by approximately 1850 bytes by commenting out line 107 `#define KEEP_SERVO_EASING_LIBRARY_SMALL` in the library file /ServoEasing.h/ or define global symbol `KEEP_SERVO_EASING_LIBRARY_SMALL` which is not yet possible in Arduino IDE:-(.<br/>
 
 # [Examples](https://github.com/ArminJo/ServoEasing/tree/master/examples)
-All examples with up to 2 Servos can be used without modifications with the [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for AVR by by commenting out line 46 in the file ServoEasing.h (see above).
+All examples with up to 2 Servos can be used without modifications with the [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for AVR by by commenting out line 44 `#define USE_LEIGHTWEIGHT_SERVO_LIB` in the library file /ServoEasing.h/ (see above).
 
 ## Simple example
 This example does not use interrupts and should therefore run on any platform where the Arduino Servo library is available.<br/><br/>
-**Arduino Serial Plotter** result of Simple example if `#define TRACE_FOR_SERIAL_PLOTTER` in `ServoEasing.cpp` is enabled.
-![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/extras/ServoEasing-Linear-Cubic-Circular.png)
+**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` in the library file /ServoEasing.h/ is enabled.
+![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/ServoEasing-Linear-Cubic-Circular.png)
 
 ## OneServo example
 This example moves one Servo with different speeds and using blocking and interrupt commands. The internal LED blinks when using interrupt based commands
@@ -89,12 +93,17 @@ This example shows how to move 2 or 3 servos synchronized or independently.
 
 ## SymmetricEasing example
 This example shows symmetric (end movement is mirror of start movement) linear, quadratic and cubic movements for 3 servos synchronously.
+**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` in the library file /ServoEasing.h/ is enabled.
+![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/SymmetricEasing.png)
 
 ## AsymmetricEasing example
-This example shows asymmetric (end movement is different from start movement) partially **user defined** (line 134) non linear movements for 3 servos synchronously.
+This example shows asymmetric (end movement is different from start movement) non linear movements for 3 servos synchronously.
+It includes a partially **user defined easing function**  `EaseQuadraticInQuarticOut()`.
+**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` in the library file /ServoEasing.h/ is enabled.
+![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/AsymmetricEasing.png)
 
 ## ContinuousRotatingServo example
-Example for using the servoEasing library to create speed ramps for a continuous rotating servo.
+Example for using the servoEasing library to create speed ramps for a continuous rotating servo. This example rely on your servos stop value being **exacly 1500 microseconds**. If the stop value of your servo is NOT exactly 1500 microseconds, you must modify the `MICROSECONDS_FOR_ROTATING_SERVO_STOP` value in the library file /ServoEasing.h/.
 
 ## CatMover example
 Demo of using two servos in a pan tilt housing to move a laser pointer.
@@ -132,6 +141,11 @@ Every platform with a Servo library will work in blocking mode. If timer support
 Non blocking behavior can always be achieved manually by calling update() in a loop - see last movement in [Simple example](https://github.com/ArminJo/ServoEasing/blob/master/examples/Simple/Simple.ino).
 
 # Revision History
+### Version 1.4.1
+- Improved documentation and definitions for continuous rotating servo. Thanks to Eebel!
+- Improved support and documentation for generating Arduino Serial Plotter output.
+- Support of STM32F1 / BluePill boards.
+
 ### Version 1.4.0
 - setTrim has additional parameter 'doWrite' which is default 'false' in contrast to older versions, where a write was always performed.
 - **New attach**( aPin,  aMicrosecondsForServoLowDegree,  aMicrosecondsForServoHighDegree,  aServoLowDegree,  aServoHighDegree) function for arbitrary mapping of servo degree to servo pulse width.
@@ -142,7 +156,7 @@ Non blocking behavior can always be achieved manually by calling update() in a l
 - Added detach() function.
 
 ### Version 1.3.0
-- Added ESP32 support by using ESP32Servo.h and Ticker.h instead of Servo.h timer interrupts.
+- Added ESP32 support by using /ESP32Servo.h/ and /Ticker.h/ instead of /Servo.h/ timer interrupts.
 - Changed degree parameter and values from uint8_t to integer to support operating a servo from -90 to + 90 degree with 90 degree trim.
 - RobotArmControl + QuadrupedControl examples refactored.
 - Changed "while" to "for" loops to avoid a gcc 7.3.0 atmel6.3.1 bug.

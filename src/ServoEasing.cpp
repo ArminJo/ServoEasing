@@ -50,8 +50,8 @@ HardwareTimer Timer20ms(3);
 // Enable this to see information on each call
 // There should be no library which uses Serial, so enable it only for debugging purposes
 //#define TRACE
-// output can be directly used for Arduino Serial Plotter (Ctrl-Shift-L)
-//#define TRACE_FOR_SERIAL_PLOTTER
+// Enable this to generate output for Arduino Serial Plotter (Ctrl-Shift-L)
+//#define PRINT_FOR_SERIAL_PLOTTER
 
 // Enable this if you want to measure timing by toggling pin12 on an arduino
 //#define MEASURE_TIMING
@@ -346,8 +346,9 @@ void ServoEasing::writeMicrosecondsOrUnits(int aValue) {
 		Serial.print(aValue + mTrimMicrosecondsOrUnits);
 	}
 #endif // TRACE
-#if defined(TRACE_FOR_SERIAL_PLOTTER)
-	Serial.println(aValue);
+#if defined(PRINT_FOR_SERIAL_PLOTTER)
+    Serial.print(' ');
+    Serial.print(aValue);
 #endif
 
 // Apply trim - this is the only place mTrimMicrosecondsOrUnits is evaluated
@@ -506,7 +507,7 @@ bool ServoEasing::startEaseToD(int aDegree, uint16_t aMillisForMove, bool aStart
     mMillisAtStartMove = millis();
 
 #if defined(TRACE)
-	printDynamic(&Serial);
+	printDynamic(&Serial, true);
 #elif defined(DEBUG)
 	printDynamic(&Serial);
 #endif
@@ -640,6 +641,12 @@ bool ServoEasing::update() {
     if (tNewMicrosecondsOrUnits != mCurrentMicrosecondsOrUnits) {
         writeMicrosecondsOrUnits(tNewMicrosecondsOrUnits);
     }
+#if defined(PRINT_FOR_SERIAL_PLOTTER)
+    // call it anyway
+    else {
+        writeMicrosecondsOrUnits(tNewMicrosecondsOrUnits);
+    }
+#endif
     return false;
 }
 
@@ -1003,18 +1010,24 @@ void setSpeedForAllServos(uint16_t aDegreesPerSecond) {
 }
 
 #if defined(va_arg)
-void setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues) {
-    for (uint8_t tServoIndex = 0; tServoIndex < aNumberOfValues; ++tServoIndex) {
+/*
+ * Sets the sServoNextPositionArray[] of the first aNumberOfServos to the specified values
+ */
+void setDegreeForAllServos(uint8_t aNumberOfServos, va_list * aDegreeValues) {
+    for (uint8_t tServoIndex = 0; tServoIndex < aNumberOfServos; ++tServoIndex) {
         sServoNextPositionArray[tServoIndex] = va_arg(*aDegreeValues, int);
     }
 }
 #endif
 
 #if defined(va_start)
-void setDegreeForAllServos(uint8_t aNumberOfValues, ...) {
+/*
+ * Sets the sServoNextPositionArray[] of the first aNumberOfServos to the specified values
+ */
+void setDegreeForAllServos(uint8_t aNumberOfServos, ...) {
     va_list aDegreeValues;
-    va_start(aDegreeValues, aNumberOfValues);
-    setDegreeForAllServos(aNumberOfValues, &aDegreeValues);
+    va_start(aDegreeValues, aNumberOfServos);
+    setDegreeForAllServos(aNumberOfServos, &aDegreeValues);
     va_end(aDegreeValues);
 }
 #endif
@@ -1084,6 +1097,10 @@ bool updateAllServos() {
             tAllServosStopped = sServoArray[tServoIndex]->update() && tAllServosStopped;
         }
     }
+#if defined(PRINT_FOR_SERIAL_PLOTTER)
+    // End of one data set
+    Serial.println();
+#endif
     return tAllServosStopped;
 }
 

@@ -32,7 +32,6 @@
  *  *****************************************************************************************************************************/
 /*
  * For use with e.g. the Adafruit PCA9685 16-Channel Servo Driver aOffUnits.
- * To enable it, open the library file ServoEasing.h and comment out line 32.
  */
 //#define USE_PCA9685_SERVO_EXPANDER
 /*
@@ -102,7 +101,8 @@
  * Define `KEEP_SERVO_EASING_LIBRARY_SMALL` if space (1850 Bytes) matters.
  * It disables the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings.
  * The saving comes mainly from avoiding the sin() cos() sqrt() and pow() library functions in this code.
- * If you need only one complex easing function and want to save space, you can specify it any time as a user functions. See AsymmetricEasing example line 58.
+ * If you need only one complex easing function and want to save space,
+ * you can specify it any time as a user functions. See EaseQuadraticInQuarticOut() function in AsymmetricEasing example line 195.
  */
 //#define KEEP_SERVO_EASING_LIBRARY_SMALL
 //
@@ -113,10 +113,17 @@
 //
 // Enable this if you want to measure timing by toggling pin12 on an arduino
 //#define MEASURE_TIMING
+//
+// Enable this to generate output for Arduino Serial Plotter (Ctrl-Shift-L)
+//#define PRINT_FOR_SERIAL_PLOTTER
+//
 #define VERSION_SERVO_EASING 1.4.1
+
 /*
  * Version 1.4.1
  * - Improved documentation and definitions for continuous rotating servo. Thanks to Eebel!
+ * - Improved support and documentation for generating Arduino Serial Plotter output.
+ * - Support of STM32F1 / BluePill boards.
  * Version 1.4.0
  * - setTrim has additional parameter 'doWrite' which is default 'false' in contrast to older versions, where a write was always performed.
  * - New attach( aPin,  aMicrosecondsForServoLowDegree,  aMicrosecondsForServoHighDegree,  aServoLowDegree,  aServoHighDegree) function for arbitrary mapping of servo degree to servo pulse width.

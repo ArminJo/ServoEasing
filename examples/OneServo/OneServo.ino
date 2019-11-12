@@ -28,6 +28,8 @@
 
 #define VERSION_EXAMPLE "1.4"
 
+#define INFO // to see serial output of loop
+
 #if defined(ESP8266)
 const int SERVO1_PIN = 14; // D5
 #elif defined(ESP32)
@@ -60,7 +62,7 @@ void setup() {
     // Attach servo to pin
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO1_PIN);
-    if(Servo1.attach(SERVO1_PIN) == false) {
+    if (Servo1.attach(SERVO1_PIN) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
 
@@ -83,12 +85,16 @@ void blinkLED() {
 
 void loop() {
     // Move slow
+#ifdef INFO
     Serial.println(F("Move to 90 degree with 10 degree per second blocking"));
+#endif
     Servo1.setSpeed(10);  // This speed is taken if no speed argument is given.
     Servo1.easeTo(90);
 
     // Now move faster without any delay between the moves
+#ifdef INFO
     Serial.println(F("Move to 180 degree with 30 degree per second using interrupts"));
+#endif
     Servo1.startEaseTo(180, 30);
     /*
      * Now you can run your program while the servo is moving.
@@ -100,7 +106,9 @@ void loop() {
 
     delay(1000);
 
+#ifdef INFO
     Serial.println(F("Move to 45 degree in one second using interrupts"));
+#endif
     Servo1.startEaseToD(45, 1000);
     // Blink until servo stops
     while (Servo1.isMoving()) {
@@ -109,7 +117,9 @@ void loop() {
 
     delay(1000);
 
+#ifdef INFO
     Serial.println(F("Move to 135 degree and back nonlinear in one second each using interrupts"));
+#endif
     Servo1.setEasingType(EASE_CUBIC_IN_OUT);
 
     for (int i = 0; i < 2; ++i) {
@@ -127,13 +137,14 @@ void loop() {
 
     delay(1000);
 
-
     /*
      * The LED goes on if servo reaches 120 degree
      */
+#ifdef INFO
     Serial.println(F("Move to 180 degree with 50 degree per second blocking"));
+#endif
     Servo1.startEaseTo(180, 50);
-    while(Servo1.getCurrentAngle() < 120  ){
+    while (Servo1.getCurrentAngle() < 120) {
         delay(20); // just wait until angle is above 120 degree
     }
     digitalWrite(LED_BUILTIN, HIGH);
@@ -145,7 +156,9 @@ void loop() {
     /*
      * Very fast move. The LED goes off when servo theoretical reaches 90 degree
      */
+#ifdef INFO
     Serial.println(F("Move from 180 to 0 degree with 360 degree per second using interrupts of Timer1"));
+#endif
     Servo1.startEaseTo(0, 360, true);
     // Wait for 250 ms. The servo should have moved 90 degree.
     delay(250);

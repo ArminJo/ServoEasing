@@ -83,12 +83,12 @@ void setup() {
      */
     Serial.print(F("Attach servo at pin "));
     Serial.println(HORIZONTAL_SERVO_PIN);
-    if (ServoHorizontal.attach(HORIZONTAL_SERVO_PIN) == false) {
+    if (ServoHorizontal.attach(HORIZONTAL_SERVO_PIN) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
     Serial.print(F("Attach servo at pin "));
     Serial.println(VERTICAL_SERVO_PIN);
-    if (ServoVertical.attach(VERTICAL_SERVO_PIN) == false) {
+    if (ServoVertical.attach(VERTICAL_SERVO_PIN) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
 

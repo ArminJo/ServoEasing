@@ -24,6 +24,9 @@
 
 #include <Arduino.h>
 
+/*
+ * To generate the Arduino plotter output, you must comment out line 118 #define PRINT_FOR_SERIAL_PLOTTER
+ */
 #include "ServoEasing.h"
 
 #define VERSION_EXAMPLE "1.4"
@@ -68,22 +71,30 @@ void setup() {
     delay(2000); // To be able to connect Serial monitor after reset and before first printout
 #endif
     // Just to know which program is running on my Arduino
+#ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
+#endif
 
     // Attach servos to pins
+#ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO1_PIN);
-    if (Servo1.attach(SERVO1_PIN) == false) {
+#endif
+    if (Servo1.attach(SERVO1_PIN) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
+#ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO2_PIN);
-    if (Servo1.attach(SERVO2_PIN) == false) {
+#endif
+    if (Servo1.attach(SERVO2_PIN) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
+#ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO3_PIN);
-    if (Servo1.attach(SERVO3_PIN) == false) {
+#endif
+    if (Servo1.attach(SERVO3_PIN) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
 
@@ -94,6 +105,8 @@ void setup() {
     Servo1.write(0);
     Servo2.write(0);
     Servo3.write(0);
+    // Legend for Arduino plotter
+    Serial.println("Servo 1, Servo 2, Servo 3");
 
     // Wait for servos to reach start position.
     delay(500);
@@ -111,7 +124,9 @@ void loop() {
     /*
      * Move three servos synchronously without interrupt handler
      */
+#ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.println(F("Move to 90/90/180 degree with 20 degree per second with own update loop"));
+#endif
     setSpeedForAllServos(20);
     Servo1.setEaseTo(90);
     Servo2.setEaseTo(90);
@@ -128,7 +143,9 @@ void loop() {
     /*
      * Move three servos synchronously with interrupt handler
      */
+#ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.println(F("Move to 180/180/0 degree with 30 degree per second using interrupts"));
+#endif
     sServoNextPositionArray[0] = 180;
     sServoNextPositionArray[1] = 180;
     sServoNextPositionArray[2] = 0;
@@ -147,7 +164,9 @@ void loop() {
     /*
      * Move first and second servo synchronously with interrupt handler
      */
+#ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.println(F("Move to 90/90 degree with 40 degree per second using interrupts"));
+#endif
     Servo1.setEaseTo(90, 80);
     Servo2.startEaseToD(90, Servo1.mMillisForCompleteMove);
     // No timing synchronization needed :-)
@@ -159,7 +178,9 @@ void loop() {
     delay(1000);
 
     // Move only third servo
+#ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.println(F("Move third to 90 degree with 80 degree per second blocking"));
+#endif
     Servo3.easeTo(90, 80);
 
     delay(1000);
@@ -167,7 +188,9 @@ void loop() {
     /*
      * Move all 3 servos independently
      */
+#ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.println(F("Move independently to 0/0/0 degree with 80/40/20 degree per second using interrupts"));
+#endif
     Servo1.setEaseTo(0, 80);
     Servo2.setEaseTo(0, 40);
     Servo3.startEaseTo(0, 20); // Start interrupt for all servos. No synchronization here since the servos should move independently.
