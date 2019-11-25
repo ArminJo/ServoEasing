@@ -117,9 +117,14 @@
 // Enable this to generate output for Arduino Serial Plotter (Ctrl-Shift-L)
 //#define PRINT_FOR_SERIAL_PLOTTER
 //
-#define VERSION_SERVO_EASING 1.4.1
+#define VERSION_SERVO_EASING 1.4.2
 
 /*
+ * Version 1.4.2 - 11/2019
+ * - Improved INVALID_SERVO handling.
+ * - Speed 0 (not initialized) handling.
+ * - Fixed bug in ThreeServos example.
+ *
  * Version 1.4.1 - 11/2019
  * - Improved documentation and definitions for continuous rotating servo. Thanks to Eebel!
  * - Improved support and documentation for generating Arduino Serial Plotter output.
@@ -395,7 +400,7 @@ public:
 #endif
     uint8_t mServoPin; // pin number or NO_SERVO_ATTACHED_PIN_NUMBER - at least needed for Lightweight Servo Lib
 
-    uint8_t mServoIndex; // Index in sServoArray
+    uint8_t mServoIndex; // Index in sServoArray or INVALID_SERVO if error while attach()
 
     uint32_t mMillisAtStartMove;
     uint16_t mMillisForCompleteMove;

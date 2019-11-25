@@ -89,6 +89,7 @@ void setup() {
     if (Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
+
 #ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO2_PIN);
@@ -96,14 +97,14 @@ void setup() {
     if (Servo2.attach(SERVO2_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
-#ifndef PRINT_FOR_SERIAL_PLOTTER
-    Serial.print(F("Attach servo at pin "));
-    Serial.println(SERVO3_PIN);
-#endif
 
     /*
      * Check at least the last call to attach()
      */
+#ifndef PRINT_FOR_SERIAL_PLOTTER
+    Serial.print(F("Attach servo at pin "));
+    Serial.println(SERVO3_PIN);
+#endif
     if (Servo3.attach(SERVO3_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
         while (true) {

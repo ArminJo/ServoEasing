@@ -85,22 +85,23 @@ void setup() {
     if (Servo1.attach(SERVO1_PIN) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
+
 #ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO2_PIN);
 #endif
-    if (Servo1.attach(SERVO2_PIN) == INVALID_SERVO) {
+    if (Servo2.attach(SERVO2_PIN) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
-#ifndef PRINT_FOR_SERIAL_PLOTTER
-    Serial.print(F("Attach servo at pin "));
-    Serial.println(SERVO3_PIN);
-#endif
 
     /*
      * Check at least the last call to attach()
      */
-    if (Servo1.attach(SERVO3_PIN) == INVALID_SERVO) {
+#ifndef PRINT_FOR_SERIAL_PLOTTER
+    Serial.print(F("Attach servo at pin "));
+    Serial.println(SERVO3_PIN);
+#endif
+    if (Servo3.attach(SERVO3_PIN) == INVALID_SERVO) {
         Serial.print(F("Error attaching servo - maybe MAX_EASING_SERVOS="));
         Serial.print(MAX_EASING_SERVOS);
         Serial.println(F(" is to small to hold all servos"));
@@ -108,6 +109,10 @@ void setup() {
             blinkLED();
         }
     }
+
+    Servo1.print(&Serial);
+    Servo2.print(&Serial);
+    Servo3.print(&Serial);
 
     /**************************************************
      * Set servos to start position.

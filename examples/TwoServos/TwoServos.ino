@@ -76,20 +76,26 @@ void setup() {
     if (Servo1.attach(SERVO1_PIN) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
-    Serial.print(F("Attach servo at pin "));
-    Serial.println(SERVO2_PIN);
 
     /*
      * Check at least the last call to attach()
      */
-    if (Servo1.attach(SERVO2_PIN) == INVALID_SERVO) {
-        Serial.println(F("Error attaching servo"));
+    Serial.print(F("Attach servo at pin "));
+    Serial.println(SERVO2_PIN);
+    if (Servo2.attach(SERVO2_PIN) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
         while (true) {
             blinkLED();
         }
     }
-    Servo1.setTrim(90); // Operate the servo from -90 to +90 degree
+
+    /*
+     * Operate the servo from -90 to +90 degree
+     * Instead of specifying a trim you can use above:
+     *   if (Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, -90, 90) == INVALID_SERVO) {
+     */
+    Servo1.setTrim(90);
+
 
     /**************************************************
      * Set servos to start position.

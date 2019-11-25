@@ -86,10 +86,20 @@ void setup() {
     if (ServoHorizontal.attach(HORIZONTAL_SERVO_PIN) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
+
+    /*
+     * Check at least the last call to attach()
+     */
     Serial.print(F("Attach servo at pin "));
     Serial.println(VERTICAL_SERVO_PIN);
     if (ServoVertical.attach(VERTICAL_SERVO_PIN) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
+        while (true) {
+            digitalWrite(LED_BUILTIN, HIGH);
+            delay(100);
+            digitalWrite(LED_BUILTIN, LOW);
+            delay(100);
+        }
     }
 
     ServoHorizontalControl.minDegree = 45;

@@ -45,6 +45,8 @@ const int SERVO1_PIN = 9;
 
 ServoEasing Servo1;
 
+void blinkLED();
+
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
@@ -67,8 +69,13 @@ void setup() {
      *
      * -100 and +100 can be replaced with any value you like but do not forget to change them below and in loop too.
      */
-    Servo1.attach(SERVO1_PIN, MICROSECONDS_FOR_ROTATING_SERVO_CLOCKWISE_MAX, MICROSECONDS_FOR_ROTATING_SERVO_COUNTER_CLOCKWISE_MAX,
-            100, -100);
+    if (Servo1.attach(SERVO1_PIN, MICROSECONDS_FOR_ROTATING_SERVO_CLOCKWISE_MAX,
+            MICROSECONDS_FOR_ROTATING_SERVO_COUNTER_CLOCKWISE_MAX, 100, -100) == INVALID_SERVO) {
+        Serial.println(F("Error attaching servo"));
+        while (true) {
+            blinkLED();
+        }
+    }
 
     /**************************************************
      * Set servo to stop.

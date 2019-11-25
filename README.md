@@ -62,6 +62,9 @@ To access the Arduino library files from a sketch, you have to first use *Sketch
 Then navigate to the parallel `libraries` folder and select the library you want to access.<br/>
 The library files itself are located in the `src` sub-directory.<br/>
 If you did not yet store the example as your own sketch, then with *Ctrl+K* you are instantly in the right library folder.
+### Using [Sloeber](http://eclipse.baeyens.it/stable.php?OS=Windows)
+If you are using Sloeber as your IDE, you can easily define global symbols at *Properties/Arduino/CompileOptions*.<br/>
+![Sloeber settings](https://github.com/ArminJo/ServoEasing/blob/master/pictures/SloeberDefineSymbols.png)
 
 ## Using PCA9685 16-Channel Servo Expander
 To enable the use of the expander, open the library file *ServoEasing.h* and comment out line 37 `#define USE_PCA9685_SERVO_EXPANDER` or define global symbol with `-DUSE_PCA9685_SERVO_EXPANDER` which is not yet possible in Arduino IDE:-(.<br/>
@@ -142,6 +145,11 @@ Every platform with a Servo library will work in blocking mode. If timer support
 Non blocking behavior can always be achieved manually by calling `update()` in a loop - see last movement in [Simple example](https://github.com/ArminJo/ServoEasing/blob/master/examples/Simple/Simple.ino).
 
 # Revision History
+### Version 1.4.2
+- Improved INVALID_SERVO handling.
+- Speed 0 (not initialized) handling.
+- Fixed bug in ThreeServos example.
+
 ### Version 1.4.1
 - Improved documentation and definitions for continuous rotating servo. Thanks to Eebel!
 - Improved support and documentation for generating Arduino Serial Plotter output.
