@@ -56,6 +56,8 @@ const int SERVO2_PIN = 10;
 ServoEasing Servo1;
 ServoEasing Servo2;
 
+void blinkLED();
+
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
@@ -76,8 +78,16 @@ void setup() {
     }
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO2_PIN);
+
+    /*
+     * Check at least the last call to attach()
+     */
     if (Servo1.attach(SERVO2_PIN) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
+        Serial.println(F("Error attaching servo"));
+        while (true) {
+            blinkLED();
+        }
     }
     Servo1.setTrim(90); // Operate the servo from -90 to +90 degree
 

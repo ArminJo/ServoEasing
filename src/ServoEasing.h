@@ -413,8 +413,10 @@ public:
 };
 
 /*
- * List of all servos to enable synchronized movings
- * Servos are inserted in the order, in which they are declared
+ * Array of all servos to enable synchronized movings
+ * Servos are inserted in the order, in which they are attached
+ * I use an fixed array and not a list, since accessing an array is much easier and faster.
+ * Using an dynamic array may be possible, but in this case we must first malloc(), then memcpy() and then free(), which leads to heap fragmentation.
  */
 extern uint8_t sServoCounter;
 extern ServoEasing * sServoArray[MAX_EASING_SERVOS];

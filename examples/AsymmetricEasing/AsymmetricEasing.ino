@@ -100,8 +100,18 @@ void setup() {
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO3_PIN);
 #endif
+
+    /*
+     * Check at least the last call to attach()
+     */
     if (Servo3.attach(SERVO3_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
+        while (true) {
+            digitalWrite(LED_BUILTIN, HIGH);
+            delay(100);
+            digitalWrite(LED_BUILTIN, LOW);
+            delay(100);
+        }
     }
 
     /**************************************************

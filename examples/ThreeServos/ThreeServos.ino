@@ -61,6 +61,8 @@ ServoEasing Servo1;
 ServoEasing Servo2;
 ServoEasing Servo3;
 
+void blinkLED();
+
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
@@ -94,8 +96,17 @@ void setup() {
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO3_PIN);
 #endif
+
+    /*
+     * Check at least the last call to attach()
+     */
     if (Servo1.attach(SERVO3_PIN) == INVALID_SERVO) {
-        Serial.println(F("Error attaching servo"));
+        Serial.print(F("Error attaching servo - maybe MAX_EASING_SERVOS="));
+        Serial.print(MAX_EASING_SERVOS);
+        Serial.println(F(" is to small to hold all servos"));
+        while (true) {
+            blinkLED();
+        }
     }
 
     /**************************************************

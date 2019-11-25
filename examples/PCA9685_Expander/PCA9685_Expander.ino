@@ -75,7 +75,20 @@ void setup() {
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
     Serial.println(F("Attach servo to port 9 of PCA9685 expander"));
-    Servo1.attach(SERVO1_PIN);
+    /*
+     * Check at least the last call to attach()
+     */
+    if (Servo1.attach(SERVO1_PIN) == INVALID_SERVO) {
+        Serial.print(F("Error attaching servo - maybe MAX_EASING_SERVOS="));
+        Serial.print(MAX_EASING_SERVOS);
+        Serial.println(F(" is to small to hold all servos"));
+        while (true) {
+            digitalWrite(LED_BUILTIN, HIGH);
+            delay(100);
+            digitalWrite(LED_BUILTIN, LOW);
+            delay(100);
+        }
+    }
 
     /**************************************************
      * Set servos to start position.

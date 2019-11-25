@@ -47,7 +47,7 @@ const int SERVO1_PIN = PB9; // Needs timer 4 for Servo library
 #else
 const int LASER_POWER_PIN = 5;
 
-// These pins are used by Timer 2 and can be used without overhead by using Lightweight Servo library
+// These pins are used by timer 2 and can be used without overhead by using Lightweight Servo library
 const int HORIZONTAL_SERVO_PIN = 10;
 const int VERTICAL_SERVO_PIN = 9;
 #endif
