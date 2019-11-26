@@ -470,6 +470,9 @@ bool ServoEasing::startEaseTo(int aDegree, uint16_t aDegreesPerSecond, bool aSta
         return !mServoMoves;
     }
     if (aDegreesPerSecond == 0) {
+#if defined(DEBUG)
+    Serial.println(F("Speed is 0 -> set to 1"));
+#endif
         aDegreesPerSecond = 1;
     }
     uint16_t tMillisForCompleteMove = abs(aDegree - tCurrentAngle) * 1000L / aDegreesPerSecond;
