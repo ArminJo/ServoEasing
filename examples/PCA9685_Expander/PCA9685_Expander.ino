@@ -1,7 +1,8 @@
 /*
  * PCA9685_Expander.cpp
  *
- *  Shows smooth linear movement from one servo position to another using PCA9685 Expander Board.
+ *  Shows smooth linear movement from one servo position to another using PCA9685 expander board.
+ *  The PCA9685 library was successfully tested with 3 expander boards.
  *
  *  *****************************************************************************************************************************
  *  !!! Comment out line 36 / "#define USE_PCA9685_SERVO_EXPANDER" in ServoEasing.h to make the expander example work !!!
@@ -42,6 +43,10 @@
 
 #define VERSION_EXAMPLE "1.0"
 
+/*
+ * This example is the OneServo example with only one modification to figure out that there is almost no difference between using the PCA9685 expander or the default Arduino Servo interface.
+ * The PCA9685 library was successfully tested with 3 expander boards :-)
+ */
 const int SERVO1_PIN = 9;
 
 // for ESP32 LED_BUILTIN is defined as static const uint8_t LED_BUILTIN = 2;
@@ -114,11 +119,16 @@ void blinkLED() {
 
 void loop() {
     // Move slow
+#ifdef INFO
     Serial.println(F("Move to 90 degree with 10 degree per second blocking"));
-    Servo1.easeTo(90, 10);
+#endif
+    Servo1.setSpeed(10);  // This speed is taken if no further speed argument is given.
+    Servo1.easeTo(90);
 
     // Now move faster without any delay between the moves
-    Serial.println(F("Move to 180 degree with 30 degree per second using interrupts of Timer1"));
+#ifdef INFO
+    Serial.println(F("Move to 180 degree with 30 degree per second using interrupts"));
+#endif
     Servo1.startEaseTo(180, 30);
     /*
      * Now you can run your program while the servo is moving.
@@ -130,36 +140,25 @@ void loop() {
 
     delay(1000);
 
-    Serial.println(F("Move to 45 degree in one second NOT using interrupts of Timer1"));
-    Servo1.startEaseToD(45, 1000, false);
+#ifdef INFO
+    Serial.println(F("Move to 45 degree in one second using interrupts"));
+#endif
+    Servo1.startEaseToD(45, 1000);
     // Blink until servo stops
-    uint32_t tLastLEDChangeMillis = 0;
-    uint32_t tLastServoUpdateMillis = Servo1.mMillisAtStartMove;
     while (Servo1.isMoving()) {
-        /*
-         * Update servo position each 20ms
-         */
-        if (millis() - tLastServoUpdateMillis > (REFRESH_INTERVAL / 1000)) { // 20ms - REFRESH_INTERVAL is in Microseconds
-            Servo1.update();
-            tLastServoUpdateMillis = millis();
-        }
-
-        /*
-         * Toggle LED every 50 ms
-         */
-        if (millis() - tLastLEDChangeMillis > 50) {
-            digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-            tLastLEDChangeMillis = millis();
-        }
+        blinkLED();
     }
 
     delay(1000);
 
-    Serial.println(F("Move to 135 degree and back nonlinear in one second each using interrupts of Timer1"));
+#ifdef INFO
+    Serial.println(F("Move to 135 degree and back nonlinear in one second each using interrupts"));
+#endif
     Servo1.setEasingType(EASE_CUBIC_IN_OUT);
 
     for (int i = 0; i < 2; ++i) {
         Servo1.startEaseToD(135, 1000);
+        // Must call yield here for the ESP boards, since we have no delay called
         while (Servo1.isMovingAndCallYield()) {
             ; // no delays here to avoid break between forth and back movement
         }
@@ -175,7 +174,9 @@ void loop() {
     /*
      * The LED goes on if servo reaches 120 degree
      */
+#ifdef INFO
     Serial.println(F("Move to 180 degree with 50 degree per second blocking"));
+#endif
     Servo1.startEaseTo(180, 50);
     while (Servo1.getCurrentAngle() < 120) {
         delay(20); // just wait until angle is above 120 degree
@@ -190,7 +191,9 @@ void loop() {
     /*
      * Very fast move. The LED goes off when servo theoretical reaches 90 degree
      */
+#ifdef INFO
     Serial.println(F("Move from 180 to 0 degree with 360 degree per second using interrupts of Timer1"));
+#endif
     Servo1.startEaseTo(0, 360, true);
     // Wait for 250 ms. The servo should have moved 90 degree.
     delay(250);

@@ -68,7 +68,8 @@ If you are using Sloeber as your IDE, you can easily define global symbols at *P
 
 ## Using PCA9685 16-Channel Servo Expander
 To enable the use of the expander, open the library file *ServoEasing.h* and comment out line 37 `#define USE_PCA9685_SERVO_EXPANDER` or define global symbol with `-DUSE_PCA9685_SERVO_EXPANDER` which is not yet possible in Arduino IDE:-(.<br/>
-Timer1 is then only needed for the startEaseTo* functions.
+Timer1 is then only needed for the startEaseTo* functions.<br/>
+You can use this library and e.g. the `Adafruit_PWMServoDriver` library concurrently to control your servos. Be aware that the PCA9685 expander is **reset** at the first `attach()` and **initialized** at every further `attach()`.
 
 ## Using the included [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for AVR
 Using the **Lightweight Servo Library** reduces sketch size and makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
@@ -153,6 +154,7 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 # Revision History
 ### Version 1.4.3
 - Improved detach() handling.
+- Initialize variables explicitly to 0 in constructor. On an ESP8266 they were NOT initialized to 0 :-(.
 
 ### Version 1.4.2
 - Improved INVALID_SERVO handling.

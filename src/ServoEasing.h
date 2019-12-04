@@ -141,7 +141,8 @@
 
 /*
  * Version 1.4.3 - 12/2019
- * - Improved detach() handling
+ * - Improved detach() handling.
+ * - Initialize mSpeed explicitly to 0 in constructor. On an ESP8266 it was NOT initialized to 0 :-(.
  *
  * Version 1.4.2 - 11/2019
  * - Improved INVALID_SERVO handling.

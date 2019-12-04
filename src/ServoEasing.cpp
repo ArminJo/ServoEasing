@@ -75,11 +75,16 @@ ServoEasing::ServoEasing(uint8_t aPCA9685I2CAddress, TwoWire *aI2CClass) { // @s
     mPCA9685I2CAddress = aPCA9685I2CAddress;
     mI2CClass = aI2CClass;
 
+    // On an ESP8266 it was NOT initialized to 0 :-(.
     mTrimMicrosecondsOrUnits = 0;
-    mEasingType = EASE_LINEAR;
+    mSpeed = 0;
+    mServoMoves = false;
     mOperateServoReverse = false;
 
+#ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
+    mEasingType = EASE_LINEAR;
     mUserEaseInFunction = NULL;
+#endif
 
 #if defined(MEASURE_TIMING)
 	pinMode(TIMING_PIN, OUTPUT);
@@ -160,7 +165,10 @@ ServoEasing::ServoEasing() // @suppress("Class members should be properly initia
         Servo()
 #endif
 {
+    // On an ESP8266 it was NOT initialized to 0 :-(.
     mTrimMicrosecondsOrUnits = 0;
+    mSpeed = 0;
+    mServoMoves = false;
     mOperateServoReverse = false;
 
 #ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
