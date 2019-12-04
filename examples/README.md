@@ -8,7 +8,7 @@ YouTube video of SymmetricEasing and AsymmetricEasing example
 
 ## Simple example
 This example does not use interrupts and should therefore run on any platform where the Arduino Servo library is available.<br/><br/>
-**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` in the library file *ServoEasing.h* is enabled.
+**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` in the library file *ServoEasing.h* is enabled.<br/>
 ![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/ServoEasing-Linear-Cubic-Circular.png)
 
 ## OneServo example
@@ -19,13 +19,13 @@ This example shows how to move 2 or 3 servos synchronized or independently.
 
 ## SymmetricEasing example
 This example shows symmetric (end movement is mirror of start movement) linear, quadratic and cubic movements for 3 servos synchronously.
-**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` in the library file *ServoEasing.h* is enabled.
+**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` in the library file *ServoEasing.h* is enabled.<br/>
 ![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/SymmetricEasing.png)
 
 ## AsymmetricEasing example
 This example shows asymmetric (end movement is different from start movement) non linear movements for 3 servos synchronously.
 It includes a partially **user defined easing function**  `EaseQuadraticInQuarticOut()`.
-**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` in the library file *ServoEasing.h* is enabled.
+**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` in the library file *ServoEasing.h* is enabled.<br/>
 ![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/AsymmetricEasing.png)
 
 ## ContinuousRotatingServo example
@@ -42,12 +42,12 @@ The full example with IR remote control, NeoPixel and US distance sensor support
 [![mePed V2 in actions](https://i.ytimg.com/vi/cLgj_sr7f1o/hqdefault.jpg)](https://youtu.be/cLgj_sr7f1o)
 
 ## RobotArmControl example
-Program for controlling a robot arm with 4 servos using 4 potentiometers and/or an IR Remote.
+Program for controlling a [robot arm with 4 servos](https://www.instructables.com/id/4-DOF-Mechanical-Arm-Robot-Controlled-by-Arduino) using 4 potentiometers and/or an IR Remote.
 
 ## PCA9685_Expander example
 The OneServo example modified for using a PCA9685 expander board and the standard Arduino Wire library.
 
-# Other examples
+# Servo utilities
 
 ## EndPositionsTest example
 This example helps you determine the right end values for your servo.<br/>

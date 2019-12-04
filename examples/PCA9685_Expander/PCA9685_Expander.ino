@@ -34,10 +34,10 @@
 
 #include <Arduino.h>
 
-/*
+/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  * !!! Comment out line 36 / "#define USE_PCA9685_SERVO_EXPANDER" in ServoEasing.h to make the expander example work !!!
  * Otherwise you will see errors like: "PCA9685_Expander:44:46: error: 'Wire' was not declared in this scope"
- */
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 #include "ServoEasing.h"
 
 #define VERSION_EXAMPLE "1.0"
@@ -55,11 +55,14 @@ const int SERVO1_PIN = 9;
  * This can be done for each servo separately, but you can not (yet) mix the 3 different
  * Servo implementation libraries (Arduino Servo, Lightweight Servo and I2C Expansion Board)
  */
+#if defined(ARDUINO_SAM_DUE)
+ServoEasing Servo1(PCA9685_DEFAULT_ADDRESS, &Wire1); // If you use more than one PCA9685 you should modify MAX_EASING_SERVOS at line 67 in ServoEasing.h
+#else
 ServoEasing Servo1(PCA9685_DEFAULT_ADDRESS, &Wire); // If you use more than one PCA9685 you should modify MAX_EASING_SERVOS at line 67 in ServoEasing.h
-
+#endif
 /*
  * If you have only one Expander at default address and want to use the Arduino Wire library,
- * you can use the short constructor "ServoEasing Servo1;" instead, so that there is no difference to the OneServo example!
+ * you can use the short constructor "ServoEasing Servo1();" instead, so that there is no difference to the OneServo example!
  */
 //ServoEasing Servo1;
 void setup() {
@@ -181,6 +184,7 @@ void loop() {
     while (Servo1.isMovingAndCallYield()) {
         ; // wait for servo to stop
     }
+
     delay(1000);
 
     /*

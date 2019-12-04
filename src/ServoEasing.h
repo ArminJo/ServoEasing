@@ -117,9 +117,32 @@
 // Enable this to generate output for Arduino Serial Plotter (Ctrl-Shift-L)
 //#define PRINT_FOR_SERIAL_PLOTTER
 //
-#define VERSION_SERVO_EASING 1.4.2
+/*
+ * Enable this to see information on each call.
+ * Since there should be no library which uses Serial, enable TRACE only for development purposes.
+ */
+//#define TRACE
+//#define DEBUG
+// Propagate debug level
+#ifdef TRACE
+#define DEBUG
+#endif
+#ifdef DEBUG
+#define INFO
+#endif
+#ifdef INFO
+#define WARN
+#endif
+#ifdef WARN
+#define ERROR
+#endif
+
+#define VERSION_SERVO_EASING 1.4.3
 
 /*
+ * Version 1.4.3 - 12/2019
+ * - Improved detach() handling
+ *
  * Version 1.4.2 - 11/2019
  * - Improved INVALID_SERVO handling.
  * - Speed 0 (not initialized) handling.
@@ -162,26 +185,6 @@
  * - added compile switch PROVIDE_ONLY_LINEAR_MOVEMENT to save additional 1500 bytes FLASH if enabled.
  * - added convenience function clipDegreeSpecial().
  */
-
-/*
- * Enable this to see information on each call.
- * Since there should be no library which uses Serial, enable TRACE only for development purposes.
- */
-//#define TRACE
-//#define DEBUG
-// Propagate debug level
-#ifdef TRACE
-#define DEBUG
-#endif
-#ifdef DEBUG
-#define INFO
-#endif
-#ifdef INFO
-#define WARN
-#endif
-#ifdef WARN
-#define ERROR
-#endif
 
 #define DEFAULT_MICROSECONDS_FOR_0_DEGREE 544
 #define DEFAULT_MICROSECONDS_FOR_180_DEGREE 2400
@@ -306,11 +309,16 @@ class ServoEasing
 public:
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
+#if defined(ARDUINO_SAM_DUE)
+    ServoEasing(uint8_t aPCA9685I2CAddress = PCA9685_DEFAULT_ADDRESS, TwoWire *aI2CClass = &Wire1);
+#else
     ServoEasing(uint8_t aPCA9685I2CAddress = PCA9685_DEFAULT_ADDRESS, TwoWire *aI2CClass = &Wire);
+#endif
     void PCA9685Reset();
     void PCA9685Init();
     void I2CWriteByte(uint8_t aAddress, uint8_t aData);
     void setPWM(uint16_t aOffUnits);
+    void setPWM(uint16_t aPWMOnValueAsUnits, uint16_t aPWMOffValueAsUnits);
     // main mapping function for us to PCA9685 Units (20000/4096 = 4.88 us)
     int MicrosecondsToPCA9685Units(int aMicroseconds);
 #else
@@ -400,7 +408,7 @@ public:
 #endif
     uint8_t mServoPin; // pin number or NO_SERVO_ATTACHED_PIN_NUMBER - at least needed for Lightweight Servo Lib
 
-    uint8_t mServoIndex; // Index in sServoArray or INVALID_SERVO if error while attach()
+    uint8_t mServoIndex; // Index in sServoArray or INVALID_SERVO if error while attach() or if detached
 
     uint32_t mMillisAtStartMove;
     uint16_t mMillisForCompleteMove;

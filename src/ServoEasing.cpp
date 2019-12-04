@@ -99,6 +99,9 @@ void ServoEasing::PCA9685Reset() {
     mI2CClass->endTransmission();
 }
 
+/*
+ * Set expander to 20 ms period and wait 2 milliseconds
+ */
 void ServoEasing::PCA9685Init() {
     // Set expander to 20 ms period
     I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_SLEEP));	// go to sleep
@@ -114,15 +117,34 @@ void ServoEasing::I2CWriteByte(uint8_t aAddress, uint8_t aData) {
     mI2CClass->endTransmission();
 }
 
-void ServoEasing::setPWM(uint16_t aOffUnits) {
+/*
+ * aPWMValueAsUnits - The point in the 4096-part cycle, where the output goes OFF (LOW). On is fixed at 0.
+ * Useful values are from 111 (111.411 = 544 us) to 491 (491.52 = 2400 us)
+ * 4096 means output is signal fully off
+ */
+void ServoEasing::setPWM(uint16_t aPWMOffValueAsUnits) {
     mI2CClass->beginTransmission(mPCA9685I2CAddress);
     // +2 since we we do not set the begin, it is fixed at 0
     mI2CClass->write((PCA9685_FIRST_PWM_REGISTER + 2) + 4 * mServoPin);
-    mI2CClass->write(aOffUnits);
-    mI2CClass->write(aOffUnits >> 8);
+    mI2CClass->write(aPWMOffValueAsUnits);
+    mI2CClass->write(aPWMOffValueAsUnits >> 8);
     mI2CClass->endTransmission();
 }
 
+/*
+ * Here you can specify an on value for the pulse in order not to start all pulses at the same time
+ * Not used yet
+ */
+void ServoEasing::setPWM(uint16_t aPWMOnValueAsUnits, uint16_t aPWMPulseDurationAsUnits) {
+    mI2CClass->beginTransmission(mPCA9685I2CAddress);
+    // +2 since we we do not set the begin, it is fixed at 0
+    mI2CClass->write((PCA9685_FIRST_PWM_REGISTER) + 4 * mServoPin);
+    mI2CClass->write(aPWMOnValueAsUnits);
+    mI2CClass->write(aPWMOnValueAsUnits >> 8);
+    mI2CClass->write(aPWMOnValueAsUnits + aPWMPulseDurationAsUnits);
+    mI2CClass->write((aPWMOnValueAsUnits + aPWMPulseDurationAsUnits) >> 8);
+    mI2CClass->endTransmission();
+}
 int ServoEasing::MicrosecondsToPCA9685Units(int aMicroseconds) {
     /*
      * 4096 units per 20 milliseconds
@@ -251,13 +273,15 @@ void ServoEasing::detach() {
         sServoArray[mServoIndex] = NULL;
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
-    setPWM(4096); // set signal fully off
+        setPWM(0); // set signal fully off
 #elif defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 	deinitLightweightServoPin9_10(mServoPin == 9); // disable output and change to input
 #else
         Servo::detach();
 #endif
     }
+    mServoMoves = false; // safety net to enable right update handling if accidentally called
+    mServoIndex = INVALID_SERVO;
 }
 
 /*
@@ -320,7 +344,16 @@ void ServoEasing::write(int aValue) {
     Serial.print(aValue);
     Serial.print(' ');
 #endif
-    if (aValue < 400 && mServoIndex != INVALID_SERVO) { // treat values less than 400 as angles in degrees (valid values in microseconds are handled as microseconds)
+    /*
+     * Check for valid initialization of servo.
+     */
+    if (mServoIndex == INVALID_SERVO) {
+#if defined(TRACE)
+        Serial.print(F("Error: detached servo"));
+#endif
+        return;
+    }
+    if (aValue < 400) { // treat values less than 400 as angles in degrees (valid values in microseconds are handled as microseconds)
         sServoNextPositionArray[mServoIndex] = aValue;
         aValue = DegreeToMicrosecondsOrUnits(aValue);
     }
@@ -335,6 +368,9 @@ void ServoEasing::writeMicrosecondsOrUnits(int aValue) {
      * Check for valid initialization of servo.
      */
     if (mServoIndex == INVALID_SERVO) {
+#if defined(TRACE)
+        Serial.print(F("Error: detached servo"));
+#endif
         return;
     }
 
@@ -497,10 +533,17 @@ bool ServoEasing::setEaseToD(int aDegree, uint16_t aMillisForMove) {
  * returns false if servo was still moving
  */
 bool ServoEasing::startEaseToD(int aDegree, uint16_t aMillisForMove, bool aStartUpdateByInterrupt) {
-// write the position also to sServoNextPositionArray
-    if (mServoIndex != INVALID_SERVO) {
-        sServoNextPositionArray[mServoIndex] = aDegree;
+    /*
+     * Check for valid initialization of servo.
+     */
+    if (mServoIndex == INVALID_SERVO) {
+#if defined(TRACE)
+        Serial.print(F("Error: detached servo"));
+#endif
+        return true;
     }
+    // write the position also to sServoNextPositionArray
+    sServoNextPositionArray[mServoIndex] = aDegree;
     mEndMicrosecondsOrUnits = DegreeToMicrosecondsOrUnits(aDegree);
     int tCurrentMicrosecondsOrUnits = mCurrentMicrosecondsOrUnits;
     mDeltaMicrosecondsOrUnits = mEndMicrosecondsOrUnits - tCurrentMicrosecondsOrUnits;
@@ -568,7 +611,7 @@ bool ServoEasing::update() {
 	return false;
 }
 
-#else
+#else // PROVIDE_ONLY_LINEAR_MOVEMENT
 bool ServoEasing::update() {
 
     if (!mServoMoves) {
@@ -634,16 +677,12 @@ bool ServoEasing::update() {
             }
         }
 
-#ifndef PROVIDE_ONLY_LINEAR_MOVEMENT // 44 bytes used here for this degree handling
         if (tEaseResult >= 2) {
             tNewMicrosecondsOrUnits = DegreeToMicrosecondsOrUnits(tEaseResult - EASE_FUNCTION_DEGREE_INDICATOR_OFFSET + 0.5);
         } else {
-#endif
             int tDeltaMicroseconds = mDeltaMicrosecondsOrUnits * tEaseResult;
             tNewMicrosecondsOrUnits = mStartMicrosecondsOrUnits + tDeltaMicroseconds;
-#ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
         }
-#endif
     }
 
     /*
@@ -696,7 +735,7 @@ float ServoEasing::callEasingFunction(float aPercentageOfCompletion) {
     }
 }
 
-#endif
+#endif //PROVIDE_ONLY_LINEAR_MOVEMENT
 
 bool ServoEasing::isMoving() {
     return mServoMoves;

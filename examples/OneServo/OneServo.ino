@@ -88,7 +88,7 @@ void loop() {
 #ifdef INFO
     Serial.println(F("Move to 90 degree with 10 degree per second blocking"));
 #endif
-    Servo1.setSpeed(10);  // This speed is taken if no speed argument is given.
+    Servo1.setSpeed(10);  // This speed is taken if no further speed argument is given.
     Servo1.easeTo(90);
 
     // Now move faster without any delay between the moves

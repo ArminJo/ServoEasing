@@ -1,5 +1,5 @@
 # [ServoEasing](https://github.com/ArminJo/ServoEasing) - move your servo more natural
-### Version 1.4.2
+### Version 1.4.3
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
 [![Commits since latest](https://img.shields.io/github/commits-since/ArminJo/ServoEasing/latest)](https://github.com/ArminJo/ServoEasing/commits/master)
@@ -70,9 +70,9 @@ If you are using Sloeber as your IDE, you can easily define global symbols at *P
 To enable the use of the expander, open the library file *ServoEasing.h* and comment out line 37 `#define USE_PCA9685_SERVO_EXPANDER` or define global symbol with `-DUSE_PCA9685_SERVO_EXPANDER` which is not yet possible in Arduino IDE:-(.<br/>
 Timer1 is then only needed for the startEaseTo* functions.
 
-## Using the included [Lightweight Servo library](https://github.com/ArminJo/LightweightServo)
+## Using the included [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for AVR
 Using the **Lightweight Servo Library** reduces sketch size and makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
-Up to 2 servos are supported by this library and they must be attached to pin 9 and/or 10.<br/>
+Up to 2 servos are supported by this library and they must be attached to pin 9 and/or 10 of the Arduino board.<br/>
 To enable it, open the library file *ServoEasing.h* and comment out line 44 `#define USE_LEIGHTWEIGHT_SERVO_LIB` or define global symbol with `-DUSE_LEIGHTWEIGHT_SERVO_LIB` which is not yet possible in Arduino IDE:-(.<br/>
 If not using the Arduino IDE, take care that Arduino Servo library sources are not compiled / included in the project.
 
@@ -120,10 +120,12 @@ The full example with IR remote control, NeoPixel and US distance sensor support
 [![mePed V2 in actions](https://i.ytimg.com/vi/cLgj_sr7f1o/hqdefault.jpg)](https://youtu.be/cLgj_sr7f1o)
 
 ## RobotArmControl example
-Program for controlling a robot arm with 4 servos using 4 potentiometers and/or an IR Remote.
+Program for controlling a [robot arm with 4 servos](https://www.instructables.com/id/4-DOF-Mechanical-Arm-Robot-Controlled-by-Arduino) using 4 potentiometers and/or an IR Remote.
 
 ## PCA9685_Expander example
 The OneServo example modified for using a PCA9685 expander board and the standard Arduino Wire library.
+
+# Servo utilities
 
 ## EndPositionsTest example
 This example helps you determine the right end values for your servo.<br/>
@@ -144,7 +146,14 @@ AVR, ESP8266, ESP32, STMF1
 Every platform with a Servo library will work in blocking mode. If timer support is available for a platform the library can be ported by adding code for the Timer20ms like is was done for ESP and STM.
 Non blocking behavior can always be achieved manually by calling `update()` in a loop - see last movement in [Simple example](https://github.com/ArminJo/ServoEasing/blob/master/examples/Simple/Simple.ino).
 
+# Troubleshooting
+If you see strange behavior, you can open the library file *ServoEasing.h* and comment out the line `#define TRACE` or `#define DEBUG`.
+This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
+
 # Revision History
+### Version 1.4.3
+- Improved detach() handling.
+
 ### Version 1.4.2
 - Improved INVALID_SERVO handling.
 - Speed 0 (not initialized) handling.
