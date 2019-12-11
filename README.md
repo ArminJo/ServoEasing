@@ -1,5 +1,5 @@
 # [ServoEasing](https://github.com/ArminJo/ServoEasing) - move your servo more natural
-### Version 1.4.3
+### Version 1.4.4
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
 [![Commits since latest](https://img.shields.io/github/commits-since/ArminJo/ServoEasing/latest)](https://github.com/ArminJo/ServoEasing/commits/master)
@@ -62,7 +62,7 @@ To access the Arduino library files from a sketch, you have to first use *Sketch
 Then navigate to the parallel `libraries` folder and select the library you want to access.<br/>
 The library files itself are located in the `src` sub-directory.<br/>
 If you did not yet store the example as your own sketch, then with *Ctrl+K* you are instantly in the right library folder.
-### Using [Sloeber](http://eclipse.baeyens.it/stable.php?OS=Windows)
+## Consider to use [Sloeber](http://eclipse.baeyens.it/stable.php?OS=Windows) as IDE
 If you are using Sloeber as your IDE, you can easily define global symbols at *Properties/Arduino/CompileOptions*.<br/>
 ![Sloeber settings](https://github.com/ArminJo/ServoEasing/blob/master/pictures/SloeberDefineSymbols.png)
 
@@ -152,6 +152,9 @@ If you see strange behavior, you can open the library file *ServoEasing.h* and c
 This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
 
 # Revision History
+### Version 1.4.4
+- New PCA9685_ExpanderFor32Servos example.
+
 ### Version 1.4.3
 - Improved detach() handling.
 - Initialize variables explicitly to 0 in constructor. On an ESP8266 they were NOT initialized to 0 :-(.

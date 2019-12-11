@@ -43,6 +43,8 @@
 
 #define VERSION_EXAMPLE "1.0"
 
+#define INFO // to see serial output of loop
+
 /*
  * This example is the OneServo example with only one modification to figure out that there is almost no difference between using the PCA9685 expander or the default Arduino Servo interface.
  * The PCA9685 library was successfully tested with 3 expander boards :-)
@@ -82,6 +84,21 @@ void setup() {
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
+    /*
+     * Check if I2C communication is possible. If not, we will wait forever at endTransmission.
+     */
+    Serial.println(F("Try to communicate with PCA9685 Expander by TWI / I2C"));
+    Serial.flush();
+    Wire.beginTransmission(PCA9685_DEFAULT_ADDRESS);
+    if (Wire.endTransmission(true) == 0) {
+        Serial.print(F("Found"));
+    } else {
+        Serial.print(F("Error: Communication with I2C was successful, but found no"));
+    }
+    Serial.print(F(" I2C device attached at address: 0x"));
+    Serial.println(PCA9685_DEFAULT_ADDRESS, HEX);
+
+
     Serial.println(F("Attach servo to port 9 of PCA9685 expander"));
     /*
      * Check at least the last call to attach()
@@ -102,9 +119,8 @@ void setup() {
      * Set servos to start position.
      * This is the position where the movement starts.
      *************************************************/
-    Serial.println(F("Try to communicate with PCA9685 Expander by TWI / I2C"));
     Servo1.write(0);
-    Serial.println(F("Communication with with PCA9685 Expander was successful"));
+
 
     // Wait for servos to reach start position.
     delay(500);

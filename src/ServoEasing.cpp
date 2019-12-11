@@ -91,13 +91,15 @@ ServoEasing::ServoEasing(uint8_t aPCA9685I2CAddress, TwoWire *aI2CClass) { // @s
 #endif
 }
 
+void ServoEasing::I2CInit() {
+// Initialize I2C
+    mI2CClass->begin();
+    mI2CClass->setClock(800000); // 1000000 does not work for me, maybe because of parasitic breadboard capacities
+}
 /*
  * Initialize I2C and software reset all PCA9685 expanders
  */
 void ServoEasing::PCA9685Reset() {
-    // Initialize I2C
-    mI2CClass->begin();
-    mI2CClass->setClock(800000); // 1000000 does not work for me, maybe because of parasitic breadboard capacities
     // Send software reset to expander(s)
     mI2CClass->beginTransmission(PCA9685_GENERAL_CALL_ADDRESS);
     mI2CClass->write(PCA9685_SOFTWARE_RESET);
@@ -137,8 +139,7 @@ void ServoEasing::setPWM(uint16_t aPWMOffValueAsUnits) {
 }
 
 /*
- * Here you can specify an on value for the pulse in order not to start all pulses at the same time
- * Not used yet
+ * Here you can specify an on/start value for the pulse in order not to start all pulses at the same time
  */
 void ServoEasing::setPWM(uint16_t aPWMOnValueAsUnits, uint16_t aPWMPulseDurationAsUnits) {
     mI2CClass->beginTransmission(mPCA9685I2CAddress);
@@ -258,6 +259,7 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
     if (mServoIndex == 0) {
+        I2CInit();      // init only once
         PCA9685Reset(); // reset only once
     }
     PCA9685Init(); // initialize at every attach
@@ -412,16 +414,25 @@ void ServoEasing::writeMicrosecondsOrUnits(int aValue) {
 #endif
     }
 
-#if defined(TRACE)
-    Serial.println();
-#endif
-
 #if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 	writeMicrosecondsLightweightServo(aValue, (mServoPin == 9));
 #elif defined(USE_PCA9685_SERVO_EXPANDER)
-    setPWM(aValue);
+#if defined(TRACE)
+        Serial.print(F(" s="));
+        Serial.print((mServoPin >> 1) << 8));
+#endif
+    /*
+     * Distribute the servo start time over the first half of the 20 ms period.
+     * Could not use the complete period, since the last (15.) pulse is then clipped at 256 units.
+     * Needs additional 18 bytes Flash
+     */
+    setPWM(((mServoPin >> 1) << 8), aValue);
 #else
     Servo::writeMicroseconds(aValue); // needs 7 us
+#endif
+
+#if defined(TRACE)
+    Serial.println();
 #endif
 }
 
@@ -515,7 +526,7 @@ bool ServoEasing::startEaseTo(int aDegree, uint16_t aDegreesPerSecond, bool aSta
     }
     if (aDegreesPerSecond == 0) {
 #if defined(DEBUG)
-    Serial.println(F("Speed is 0 -> set to 1"));
+        Serial.println(F("Speed is 0 -> set to 1"));
 #endif
         aDegreesPerSecond = 1;
     }
@@ -865,13 +876,25 @@ void ServoEasing::printStatic(Stream * aSerial) {
     aSerial->print(mEasingType, HEX);
 #endif
 
+#if defined(USE_PCA9685_SERVO_EXPANDER)
+    aSerial->print(F(" PCA9685I2CAddress=0x"));
+    aSerial->print(mPCA9685I2CAddress, HEX);
+    aSerial->print(" &Wire=0x");
+
+#if __PTRDIFF_WIDTH__ == 16
+    aSerial->print((uint16_t) mI2CClass, HEX);
+#else
+    aSerial->print((uint32_t) mI2CClass, HEX);
+#endif
+#endif
+
     aSerial->print(F(" MAX_EASING_SERVOS="));
     aSerial->print(MAX_EASING_SERVOS);
 
     aSerial->print(" this=0x");
 //#ifdef __ets__
-#if _PTRDIFF_WIDTH_ == 16
-	aSerial->println((uint32_t) this, HEX);
+#if __PTRDIFF_WIDTH__ == 16
+    aSerial->println((uint16_t) this, HEX);
 #else
     aSerial->println((uint32_t) this, HEX);
 #endif

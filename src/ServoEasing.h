@@ -32,6 +32,7 @@
  *  *****************************************************************************************************************************/
 /*
  * For use with e.g. the Adafruit PCA9685 16-Channel Servo Driver aOffUnits.
+ * One PCA9685 has 16 outputs. You must modify MAX_EASING_SERVOS below, if you have more than one PCA9685 attached!
  */
 //#define USE_PCA9685_SERVO_EXPANDER
 /*
@@ -140,6 +141,9 @@
 #define VERSION_SERVO_EASING 1.4.3
 
 /*
+ * Version 1.4.4
+ * - New PCA9685_ExpanderFor32Servos example.
+ *
  * Version 1.4.3 - 12/2019
  * - Improved detach() handling.
  * - Initialize mSpeed explicitly to 0 in constructor. On an ESP8266 it was NOT initialized to 0 :-(.
@@ -315,6 +319,7 @@ public:
 #else
     ServoEasing(uint8_t aPCA9685I2CAddress = PCA9685_DEFAULT_ADDRESS, TwoWire *aI2CClass = &Wire);
 #endif
+    void I2CInit();
     void PCA9685Reset();
     void PCA9685Init();
     void I2CWriteByte(uint8_t aAddress, uint8_t aData);

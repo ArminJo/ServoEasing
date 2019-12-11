@@ -35,6 +35,22 @@
 #include <Arduino.h>
 
 /*
+ * Usage:
+ * #define USE_BUTTON_0  // Enable code for Button at PCINT0
+ * #define USE_BUTTON_1  // Enable code for Button at PCINT1
+ * #include "EasyButtonAtInt01.h"
+ * EasyButton Button0AtPin2(true);  // true  -> Button is connected to PCINT0
+ * EasyButton Button0AtPin3(false, &Button3CallbackHandler); // false -> Button is not connected to PCINT0 => connected to PCINT1
+ * ...
+ * digitalWrite(LED_BUILTIN, Button0AtPin2.ButtonToggleState);
+ * ...
+ *
+ */
+#define EASY_BUTTON_LONG_PRESS_STILL_POSSIBLE 0
+#define EASY_BUTTON_LONG_PRESS_ABORT 1
+#define EASY_BUTTON_LONG_PRESS_DETECTED 2
+
+/*
  * You can define your own value if you have buttons which are worse or better than the one I have.
  * Since debouncing is not done with blocking wait, reducing this value makes not much sense.
  * Test your value with just commenting out the line #define LED_FEEDBACK_FOR_DEBOUNCE_TEST below.
@@ -273,7 +289,6 @@ public:
     }
 
     /*
-     * Used for long button press recognition.
      * Updates the ButtonPressDurationMillis by polling, since this cannot be done by interrupt.
      */
     uint16_t updateButtonPressDuration() {
@@ -282,6 +297,34 @@ public:
             ButtonPressDurationMillis = millis() - ButtonLastChangeMillis;
         }
         return ButtonPressDurationMillis;
+    }
+
+    /*
+     * Used for long button press recognition.
+     */
+    uint8_t checkForLongPress(uint16_t aLongPressThresholdMillis) {
+        if (readButtonState()) {
+            if (millis() - ButtonLastChangeMillis > aLongPressThresholdMillis) {
+                // long press detected
+                ButtonPressDurationMillis = millis() - ButtonLastChangeMillis;
+                return EASY_BUTTON_LONG_PRESS_DETECTED;
+            }
+            return EASY_BUTTON_LONG_PRESS_STILL_POSSIBLE;
+        }
+        return EASY_BUTTON_LONG_PRESS_ABORT;
+    }
+
+    /*
+     * Checks blocking for long press of button
+     * @return true if long press was detected
+     */
+    bool checkForLongPressBlocking(uint16_t aLongPressThresholdMillis) {
+        uint8_t tLongPressCheckResult;
+        do {
+            tLongPressCheckResult = checkForLongPress(aLongPressThresholdMillis);
+            delay(1);
+        } while (!tLongPressCheckResult);
+        return (tLongPressCheckResult == EASY_BUTTON_LONG_PRESS_DETECTED);
     }
 };
 
@@ -294,49 +337,50 @@ EasyButton * EasyButton::sPointerToButton1ForISR;
 
 void handleINT01Interrupts(EasyButton * aButtonControlPtr) {
     // Read button value
-    bool tActualButtonStateIsActive;
+    bool tCurrentButtonStateIsActive;
     /*
      * This is faster than aButtonControlPtr->readButtonState();
      */
 #if defined(USE_BUTTON_0) && not defined(USE_BUTTON_1)
-    tActualButtonStateIsActive = INT0_IN_PORT & _BV(INT0_BIT);  //  = digitalReadFast(2);
+    tCurrentButtonStateIsActive = INT0_IN_PORT & _BV(INT0_BIT);  //  = digitalReadFast(2);
 #endif
 
 #if defined(USE_BUTTON_1) && not defined(USE_BUTTON_0)
-    tActualButtonStateIsActive = INT1_IN_PORT & _BV(INT1_BIT);  //  = digitalReadFast(3);
+    tCurrentButtonStateIsActive = INT1_IN_PORT & _BV(INT1_BIT);  //  = digitalReadFast(3);
 #endif
 
 #if defined(USE_BUTTON_0) && defined(USE_BUTTON_1)
     if (aButtonControlPtr->isButtonAtINT0) {
-        tActualButtonStateIsActive = INT0_IN_PORT & _BV(INT0_BIT);  //  = digitalReadFast(2);
+        tCurrentButtonStateIsActive = INT0_IN_PORT & _BV(INT0_BIT);  //  = digitalReadFast(2);
     } else {
-        tActualButtonStateIsActive = INT1_IN_PORT & _BV(INT1_BIT);  //  = digitalReadFast(3);
+        tCurrentButtonStateIsActive = INT1_IN_PORT & _BV(INT1_BIT);  //  = digitalReadFast(3);
     }
 #endif
 
-    tActualButtonStateIsActive = !tActualButtonStateIsActive; // negative logic for ButtonStateIsActive! true means button pin is LOW
+    tCurrentButtonStateIsActive = !tCurrentButtonStateIsActive; // negative logic for ButtonStateIsActive! true means button pin is LOW
 
     long tMillis = millis();
     long tDeltaMillis = tMillis - aButtonControlPtr->ButtonLastChangeMillis;
-    // Check for bouncing
+    // Check for bouncing - state change during debounce period
     if (tDeltaMillis <= BUTTON_DEBOUNCING_MILLIS) {
 #ifdef TRACE
-        Serial.println("Button bouncing");
-//        Serial.print("ms=");
+        Serial.println(F("Button bouncing"));
+//        Serial.print(F("ms="));
 //        Serial.print(tMillis);
-//        Serial.print(" D=");
+//        Serial.print(F(" D="));
 //        Serial.println(tDeltaMillis);
 #endif
         /*
          * Button signal is ringing - do nothing, ignore and wait for next interrupt
          */
     } else {
-        if (tActualButtonStateIsActive == aButtonControlPtr->ButtonStateIsActive) {
+        if (tCurrentButtonStateIsActive == aButtonControlPtr->ButtonStateIsActive) {
 #ifdef TRACE
-            Serial.println("Spike detected");
+            Serial.print(F("Spike detected. State="));
+            Serial.println(tCurrentButtonStateIsActive);
 #endif
             /*
-             * ActualButtonStateIsActive == OldButtonStateIsActive. We had an interrupt, but nothing seems to have changed -> spike
+             * tCurrentButtonStateIsActive == OldButtonStateIsActive. We had an interrupt, but nothing seems to have changed -> spike
              * Do nothing, ignore and wait for next interrupt
              */
         } else {
@@ -346,12 +390,12 @@ void handleINT01Interrupts(EasyButton * aButtonControlPtr) {
             aButtonControlPtr->ButtonLastChangeMillis = tMillis;
             aButtonControlPtr->ButtonPressDurationMillis = tDeltaMillis;
 #ifdef TRACE
-            Serial.print("Change detected. State=");
-            Serial.println(tActualButtonStateIsActive);
+            Serial.print(F("Change detected. State="));
+            Serial.println(tCurrentButtonStateIsActive);
 #endif
-            aButtonControlPtr->ButtonStateIsActive = tActualButtonStateIsActive;
+            aButtonControlPtr->ButtonStateIsActive = tCurrentButtonStateIsActive;
             aButtonControlPtr->ButtonStateHasJustChanged = true;
-            if (tActualButtonStateIsActive) {
+            if (tCurrentButtonStateIsActive) {
                 /*
                  * Action on button press, no action on release
                  */
@@ -360,18 +404,23 @@ void handleINT01Interrupts(EasyButton * aButtonControlPtr) {
 #endif
                 aButtonControlPtr->ButtonToggleState = !aButtonControlPtr->ButtonToggleState;
                 if (aButtonControlPtr->ButtonPressCallback != NULL) {
-                    // call callback function
+                    /*
+                     * Call callback function.
+                     * sei() is needed if callback function needs more time to allow millis() to proceed.
+                     * Otherwise we may see bouncing instead of button release and then spike instead of button press
+                     */
+                    sei();
                     aButtonControlPtr->ButtonPressCallback(aButtonControlPtr->ButtonToggleState);
                     /*
                      * Check button again since it may changed back while processing callback function
                      */
-                    tActualButtonStateIsActive = aButtonControlPtr->readButtonState();
-                    if (aButtonControlPtr->ButtonStateIsActive != tActualButtonStateIsActive) {
+                    tCurrentButtonStateIsActive = aButtonControlPtr->readButtonState();
+                    if (aButtonControlPtr->ButtonStateIsActive != tCurrentButtonStateIsActive) {
                         // button released now, so maintain status
 #ifdef TRACE
-                        Serial.println("Button release during callback processing detected.");
+                        Serial.println(F("Button release during callback processing detected."));
 #endif
-                        aButtonControlPtr->ButtonStateIsActive = tActualButtonStateIsActive;
+                        aButtonControlPtr->ButtonStateIsActive = tCurrentButtonStateIsActive;
                         aButtonControlPtr->ButtonStateHasJustChanged = true;
                     }
                 }
@@ -386,7 +435,6 @@ void handleINT01Interrupts(EasyButton * aButtonControlPtr) {
             }
         }
     }
-
 }
 
 /*
