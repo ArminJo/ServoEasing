@@ -50,7 +50,7 @@
 
 //#define USE_ONLY_ONE_EXPANDER
 #if !defined(USE_ONLY_ONE_EXPANDER) && (MAX_EASING_SERVOS < 32)
-#warning "You use at least 2 expanders but you have no space for 32 servos (which might be ok, since you must not use 16 servos on one expander)"
+#warning "You use at least 2 expanders but MAX_EASING_SERVOS is less than 32, so you have no space for 32 servos (which might be ok, since you must not use 16 servos on one expander)"
 #endif
 
 // for ESP32 LED_BUILTIN is defined as static const uint8_t LED_BUILTIN = 2;
@@ -65,100 +65,44 @@
 
 #define NUMBER_OF_SERVOS MAX_EASING_SERVOS
 
+void checkI2CConnection(uint8_t aI2CAddress);
+void getAndAttach16ServosToPCA9685Expander(uint8_t aPCA9685I2CAddress);
 uint16_t getFreeRam(void);
 
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
 #if defined(__AVR_ATmega32U4__)
-    while (!Serial); //delay for Leonardo, but this loops forever for Maple Serial
+	while (!Serial); //delay for Leonardo, but this loops forever for Maple Serial
 #endif
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
-    Serial.print(F("Example for "));
+    Serial.print(F("Example for a maximum of "));
     Serial.print(NUMBER_OF_SERVOS);
     Serial.println(F(" servos"));
     Serial.println();
 
-    ServoEasing * tServoEasingObjectPtr;
-
-    /*
-     * Check if I2C communication is possible. If not, we will wait forever at endTransmission.
-     */
-    Serial.println(F("Try to communicate with PCA9685 Expander by TWI / I2C"));
-    Serial.flush();
-    Wire.beginTransmission(FIRST_PCA9685_EXPANDER_ADDRESS);
-    if (Wire.endTransmission(true) == 0) {
-        Serial.print(F("Found"));
-    } else {
-        Serial.print(F("Error: Communication with I2C was successful, but found no"));
-    }
-    Serial.print(F(" I2C device attached at address: 0x"));
-    Serial.println(FIRST_PCA9685_EXPANDER_ADDRESS, HEX);
-
-    /*
-     * Get the 16 ServoEasing objects for the first expander
-     * The attach() function inserts them in the sServoArray[] array.
-     */
-    Serial.println(F("Get ServoEasing objects and attach servos to first PCA9685 expander"));
-    for (uint8_t i = 0; i < PCA9685_MAX_CHANNELS; ++i) {
-#if defined(ARDUINO_SAM_DUE)
-        tServoEasingObjectPtr= new ServoEasing(FIRST_PCA9685_EXPANDER_ADDRESS, &Wire1);
-#else
-        tServoEasingObjectPtr = new ServoEasing(FIRST_PCA9685_EXPANDER_ADDRESS, &Wire);
-#endif
-        if (tServoEasingObjectPtr->attach(i) == INVALID_SERVO) {
-            Serial.print(F("i="));
-            Serial.print(i);
-            Serial.print(F(" Error attaching servo - maybe MAX_EASING_SERVOS="));
-            Serial.print(MAX_EASING_SERVOS);
-            Serial.println(F(" is to small to hold all servos"));
-        }
-    }
+    // Initialize wire before checkI2CConnection()
+    Wire.begin();  // starts with 100000 Hz
+    checkI2CConnection(FIRST_PCA9685_EXPANDER_ADDRESS);
+    getAndAttach16ServosToPCA9685Expander(FIRST_PCA9685_EXPANDER_ADDRESS);
 
 #if !defined(USE_ONLY_ONE_EXPANDER)
-
-    Wire.beginTransmission(SECOND_PCA9685_EXPANDER_ADDRESS);
-    if (Wire.endTransmission(true) == 0) {
-        Serial.print(F("Found"));
-    } else {
-        Serial.print(F("Error: Found no"));
-    }
-    Serial.print(F(" I2C device at address: 0x"));
-    Serial.println(SECOND_PCA9685_EXPANDER_ADDRESS, HEX);
-
-    /*
-     * Get the 16 ServoEasing objects for the second expander
-     * The attach() function inserts them in the sServoArray[] array.
-     */
-    Serial.println(F("Get ServoEasing objects and attach servos to second PCA9685 expander"));
-    for (uint8_t i = 0; i < PCA9685_MAX_CHANNELS; ++i) {
-#if defined(ARDUINO_SAM_DUE)
-        tServoEasingObjectPtr = new ServoEasing(SECOND_PCA9685_EXPANDER_ADDRESS, &Wire1);
-#else
-        tServoEasingObjectPtr = new ServoEasing(SECOND_PCA9685_EXPANDER_ADDRESS, &Wire);
-#endif
-        if (tServoEasingObjectPtr->attach(i) == INVALID_SERVO) {
-            Serial.print(F("i="));
-            Serial.print(i);
-            Serial.print(F(" Error attaching servo - maybe MAX_EASING_SERVOS="));
-            Serial.print(MAX_EASING_SERVOS);
-            Serial.println(F(" is to small to hold all servos"));
-        }
-    }
+	checkI2CConnection(SECOND_PCA9685_EXPANDER_ADDRESS);
+	getAndAttach16ServosToPCA9685Expander(SECOND_PCA9685_EXPANDER_ADDRESS);
 #endif
 
     /**************************************************
      * Set servos to start position.
      * This is the position where the movement starts.
      *************************************************/
-    for (uint8_t i = 0; i < NUMBER_OF_SERVOS; ++i) {
-        sServoArray[i]->write(0);
+    writeAllServos(0);
 #ifdef DEBUG
-        sServoArray[i]->print(&Serial);
+	for (uint8_t i = 0; i <= sServoArrayMaxIndex; ++i) {
+		sServoArray[i]->print(&Serial);
+	}
 #endif
-    }
 
 #if defined (SP)
     Serial.print(F("Free Ram/Stack[bytes]="));
@@ -171,16 +115,16 @@ void setup() {
 void loop() {
 #ifdef INFO
     Serial.print(F("Move all to 180 degree with 20 degree per second with "));
-    Serial.print((180 * (1000L / 20)) / NUMBER_OF_SERVOS);
+    Serial.print((180 * (1000L / 20)) / (sServoArrayMaxIndex + 1));
     Serial.println(F(" ms delay"));
 #endif
     setSpeedForAllServos(20);  // This speed is taken if no further speed argument is given.
-    for (uint8_t i = 0; i < NUMBER_OF_SERVOS; ++i) {
+    for (uint8_t i = 0; i <= sServoArrayMaxIndex; ++i) {
         sServoArray[i]->startEaseTo(180);
         /*
          * Choose delay so that the last servo starts when the first is about to end
          */
-        delay((180 * (1000L / 20)) / NUMBER_OF_SERVOS);
+        delay((180 * (1000L / 20)) / (sServoArrayMaxIndex + 1));
     }
     delay(1000);
 
@@ -188,19 +132,64 @@ void loop() {
 #ifdef INFO
     Serial.println(F("Move all back to 0 degree with 20 degree per second"));
 #endif
-    for (uint8_t i = 0; i < NUMBER_OF_SERVOS; ++i) {
+    for (uint8_t i = 0; i <= sServoArrayMaxIndex; ++i) {
         sServoArray[i]->startEaseTo(0);
 #ifdef DEBUG
-        Serial.print(F("Start i="));
-        Serial.println(i);
+		Serial.print(F("Start i="));
+		Serial.println(i);
 #endif
         /*
          * Choose delay so that the last servo starts when the first is about to end
          */
-        delay((180 * (1000L / 20)) / NUMBER_OF_SERVOS);
+        delay((180 * (1000L / 20)) / (sServoArrayMaxIndex + 1));
     }
 
     delay(1000);
+}
+
+/*
+ * Check if I2C communication is possible. If not, we will wait forever at endTransmission.
+ */
+void checkI2CConnection(uint8_t aI2CAddress) {
+    Serial.print(F("Try to communicate with I2C device at address=0x"));
+    Serial.println(aI2CAddress, HEX);
+    Serial.flush();
+
+    Wire.beginTransmission(aI2CAddress);
+    if (Wire.endTransmission(true) == 0) {
+        Serial.print(F("Found"));
+    } else {
+        Serial.print(F("ERROR: Communication with I2C was successful, but found no"));
+    }
+    Serial.print(F(" I2C device attached at address: 0x"));
+    Serial.println(aI2CAddress, HEX);
+}
+
+/*
+ * Get the 16 ServoEasing objects for the PCA9685 expander
+ * The attach() function inserts them in the sServoArray[] array.
+ */
+void getAndAttach16ServosToPCA9685Expander(uint8_t aPCA9685I2CAddress) {
+    ServoEasing * tServoEasingObjectPtr;
+
+    Serial.print(F("Get ServoEasing objects and attach servos to PCA9685 expander at address=0x"));
+    Serial.println(aPCA9685I2CAddress, HEX);
+    for (uint8_t i = 0; i < PCA9685_MAX_CHANNELS; ++i) {
+#if defined(ARDUINO_SAM_DUE)
+		tServoEasingObjectPtr= new ServoEasing(aPCA9685I2CAddress, &Wire1);
+#else
+        tServoEasingObjectPtr = new ServoEasing(aPCA9685I2CAddress, &Wire);
+#endif
+        if (tServoEasingObjectPtr->attach(i) == INVALID_SERVO) {
+            Serial.print(F("Address=0x"));
+            Serial.print(aPCA9685I2CAddress, HEX);
+            Serial.print(F(" i="));
+            Serial.print(i);
+            Serial.print(F(" ERROR attaching servo - maybe MAX_EASING_SERVOS="));
+            Serial.print(MAX_EASING_SERVOS);
+            Serial.println(F(" is to small to hold all servos"));
+        }
+    }
 }
 
 #if defined (SP)

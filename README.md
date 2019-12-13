@@ -126,6 +126,10 @@ Program for controlling a [robot arm with 4 servos](https://www.instructables.co
 ## PCA9685_Expander example
 The OneServo example modified for using a PCA9685 expander board and the standard Arduino Wire library.
 
+## PCA9685_ExpanderFor32Servos example
+Program to show the usage of 2 PCA9685 expander boards with 32 servos. 
+On the ESP32, the I2C library interferes with the 29 millisecond timer and therefore can only run at 100000 Hz or lower.
+
 # Servo utilities
 
 ## EndPositionsTest example

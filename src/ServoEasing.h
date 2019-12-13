@@ -64,6 +64,16 @@
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 #include <Wire.h>
+// PCA9685 works with up to 1 MHz I2C frequency
+#if defined(ESP32)
+// The ESP32 I2C interferes with the Ticker / Timer library used.
+// Even with 100000 we have some dropouts / NAK's because of sending address again instead of first data.
+#define I2C_CLOCK_FREQUENCY 100000 // 200000 does not work for my ESP32 module together with the timer :-(
+#elif defined(ESP8266)
+#define I2C_CLOCK_FREQUENCY 400000 // 400000 is the maximum for 80 MHz clocked ESP8266 (I measured real 330000 Hz for this setting)
+#else
+#define I2C_CLOCK_FREQUENCY 800000 // 1000000 does not work for my Arduino Nano, maybe because of parasitic breadboard capacities
+#endif
 #ifndef MAX_EASING_SERVOS
 #define MAX_EASING_SERVOS 16 // One PCA9685 has 16 outputs. You must MODIFY this, if you have more than one PCA9685 attached!
 #endif
@@ -437,13 +447,14 @@ public:
  * I use an fixed array and not a list, since accessing an array is much easier and faster.
  * Using an dynamic array may be possible, but in this case we must first malloc(), then memcpy() and then free(), which leads to heap fragmentation.
  */
-extern uint8_t sServoCounter;
+extern uint8_t sServoArrayMaxIndex; // maximum index of an attached servo in sServoArray[]
 extern ServoEasing * sServoArray[MAX_EASING_SERVOS];
 extern int sServoNextPositionArray[MAX_EASING_SERVOS]; // use int since we want to support negative values
 
 /*
  * Functions working on all servos in the list
  */
+void writeAllServos(int aValue);
 void setSpeedForAllServos(uint16_t aDegreesPerSecond);
 #if defined(va_arg)
 void setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues);
