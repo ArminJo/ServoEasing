@@ -25,7 +25,7 @@
 #include <Arduino.h>
 
 /*
- * To generate the Arduino plotter output, you must comment out line 118 #define PRINT_FOR_SERIAL_PLOTTER
+ * To generate the Arduino plotter output, you must comment out the line #define PRINT_FOR_SERIAL_PLOTTER in ServoEasing.h
  */
 #include "ServoEasing.h"
 

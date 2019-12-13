@@ -1,6 +1,6 @@
 # ServoEasing examples
 All examples with up to 2 Servos can be used without modifications with the [Lightweight Servo library](https://github.com/ArminJo/LightweightServo)
-for AVR by by [commenting out line 44 `#define USE_LEIGHTWEIGHT_SERVO_LIB` in the file ServoEasing.h](https://github.com/ArminJo/ServoEasing#using-the-included-lightweight-servo-library).
+for AVR by by [commenting out line 50 `#define USE_LEIGHTWEIGHT_SERVO_LIB` in the file ServoEasing.h](https://github.com/ArminJo/ServoEasing#using-the-included-lightweight-servo-library).
 
 YouTube video of SymmetricEasing and AsymmetricEasing example
 
@@ -45,11 +45,13 @@ The full example with IR remote control, NeoPixel and US distance sensor support
 Program for controlling a [robot arm with 4 servos](https://www.instructables.com/id/4-DOF-Mechanical-Arm-Robot-Controlled-by-Arduino) using 4 potentiometers and/or an IR Remote.
 
 ## PCA9685_Expander example
-The OneServo example modified for using a PCA9685 expander board and the standard Arduino Wire library.
+The OneServo example modified for using a PCA9685 expander board and the standard Arduino Wire library.<br/>
+You must comment out line 40 `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.h* to make the expander example work.
 
 ## PCA9685_ExpanderFor32Servos example
 Program to show the usage of 2 PCA9685 expander boards with 32 servos.
-On the ESP32, the I2C library interferes with the 29 millisecond timer and therefore can only run at 100000 Hz or lower.
+On the ESP32, the I2C library interferes with the 29 millisecond timer and therefore can only run at 100000 Hz or lower.<br/>
+You must comment out line 40 `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.h* to make the expander example work.
 
 # Servo utilities
 
