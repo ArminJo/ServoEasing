@@ -45,8 +45,8 @@ const int SPEED_IN_PIN = 36;
 
 #elif defined(__STM32F1__)
 const int SERVO1_PIN = PB7;
-const int SERVO1_PIN = PB8;
-const int SERVO1_PIN = PB9; // Needs timer 4 for Servo library
+const int SERVO2_PIN = PB8;
+const int SERVO3_PIN = PB9; // Needs timer 4 for Servo library
 const int SPEED_IN_PIN = PA0;
 
 #else

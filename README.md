@@ -116,12 +116,14 @@ Demo of using two servos in a pan tilt housing to move a laser pointer.
 ## QuadrupedControl example
 Control 8 servos to move a Quadruped robot.<br/>
 The full example with IR remote control, NeoPixel and US distance sensor support is available [here](https://github.com/ArminJo/QuadrupedControl).
+Only for AVR, because it uses EEPROM.
 
 ### YouTube Video
 [![mePed V2 in actions](https://i.ytimg.com/vi/cLgj_sr7f1o/hqdefault.jpg)](https://youtu.be/cLgj_sr7f1o)
 
 ## RobotArmControl example
 Program for controlling a [robot arm with 4 servos](https://www.instructables.com/id/4-DOF-Mechanical-Arm-Robot-Controlled-by-Arduino) using 4 potentiometers and/or an IR Remote.
+Only for AVR, because it uses EEPROM.
 
 ## PCA9685_Expander example
 The OneServo example modified for using a PCA9685 expander board and the standard Arduino Wire library.<br/>
@@ -143,13 +145,14 @@ This example does not use the ServoEasing functions.
 ## SpeedTest example
 This example gives you a feeling how fast your servo can move, what the end position values are and which refresh rate they accept.<br/>
 This example does not use the ServoEasing functions.
+Not for ESP8266 because it needs 2 analog inputs.
 
 # Internals
 Internally only microseconds (or units (= 4.88 us) if using PCA9685 expander) and not degree are used to speed up things. Other expander or libraries can therefore easily be added.<br/>
 On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking easing functions its unused **Channel B** is used to generate an interrupt 100 us before the end of the 20 ms Arduino Servo refresh period. This interrupt then updates all servo values for the next refresh period.
 
 # Supported Platforms
-AVR, ESP8266, ESP32, STMF1
+AVR, ESP8266, ESP32, STM32
 Every platform with a Servo library will work in blocking mode. If timer support is available for a platform the library can be ported by adding code for the Timer20ms like is was done for ESP and STM.
 Non blocking behavior can always be achieved manually by calling `update()` in a loop - see last movement in [Simple example](https://github.com/ArminJo/ServoEasing/blob/master/examples/Simple/Simple.ino).
 
