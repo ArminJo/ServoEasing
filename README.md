@@ -119,7 +119,8 @@ The full example with IR remote control, NeoPixel and US distance sensor support
 Only for AVR, because it uses EEPROM.
 
 ### YouTube Video
-[![mePed V2 in actions](https://i.ytimg.com/vi/cLgj_sr7f1o/hqdefault.jpg)](https://youtu.be/cLgj_sr7f1o)
+[![mePed V2 in actions](https://i.ytimg.com/vi/MsIjTRRUyGU/hqdefault.jpg)](https://youtu.be/MsIjTRRUyGU )
+[![Another implementation](https://i.ytimg.com/vi/CSodffeebyg/hqdefault.jpg)](https://youtu.be/CSodffeebyg)
 
 ## RobotArmControl example
 Program for controlling a [robot arm with 4 servos](https://www.instructables.com/id/4-DOF-Mechanical-Arm-Robot-Controlled-by-Arduino) using 4 potentiometers and/or an IR Remote.
@@ -133,6 +134,10 @@ You must comment out line 40 `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasin
 Program to show the usage of 2 PCA9685 expander boards with 32 servos.
 On the ESP32, the I2C library interferes with the 29 millisecond timer and therefore can only run at 100000 Hz or lower.<br/>
 You must comment out line 40 `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.h* to make the expander example work.
+
+### YouTube Video
+[![Servos 16-19 and 28-31 in action](https://i.ytimg.com/vi/XMVh3IT5BgU/hqdefault.jpg)](https://youtu.be/XMVh3IT5BgU)
+ 
 
 # Servo utilities
 
