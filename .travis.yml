@@ -10,13 +10,11 @@ git:
 env:
    global:
    - PRETTYNAME="ServoEasing Arduino Library"
-   - INSTALL_PLATFORMS="avr,esp8266,esp32,STM32"
+   - INSTALL_PLATFORMS="avr,esp8266,esp32,stm32"
+#--verbose --verbose-build --version
+   - ARDUINO_SWITCHES=""
 before_install:
 - source <(curl -SLs https://raw.githubusercontent.com/ArminJo/travis-ci-arduino/master/install.sh)
-- pwd
-- ls -laR
-- echo "TRAVIS_BUILD_DIR=$TRAVIS_BUILD_DIR"
-- ls -laR $TRAVIS_BUILD_DIR
 install:
 - arduino --install-library "ESP32Servo"
 script:

@@ -76,9 +76,13 @@
  */
 //#define LED_FEEDBACK_FOR_DEBOUNCE_TEST
 #if defined (LED_FEEDBACK_FOR_DEBOUNCE_TEST)
-#ifndef BUTTON_TEST_FEEDBACK_LED_PIN
-#define BUTTON_TEST_FEEDBACK_LED_PIN LED_BUILTIN  // if not specified, use built in led - pin 13 on Uno board
-#endif
+#  if ! defined(BUTTON_TEST_FEEDBACK_LED_PIN)
+#    if defined (LED_BUILTIN)
+#    define BUTTON_TEST_FEEDBACK_LED_PIN LED_BUILTIN  // if not specified, use built in led - pin 13 on Uno board
+#    else
+#    error "LED_FEEDBACK_FOR_DEBOUNCE_TEST defined but no BUTTON_TEST_FEEDBACK_LED_PIN or LED_BUILTIN defined"
+#    endif
+#  endif
 #endif
 
 //
