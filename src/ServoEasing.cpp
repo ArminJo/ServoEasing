@@ -826,7 +826,7 @@ int ServoEasing::getMillisForCompleteMove() {
 	return mMillisForCompleteMove;
 }
 
-void ServoEasing::print(Stream * aSerial, bool doExtendedOutput) {
+void ServoEasing::print(Print * aSerial, bool doExtendedOutput) {
 	printDynamic(aSerial, doExtendedOutput);
 	printStatic(aSerial);
 }
@@ -834,7 +834,7 @@ void ServoEasing::print(Stream * aSerial, bool doExtendedOutput) {
 /*
  * Prints values which may change from move to move.
  */
-void ServoEasing::printDynamic(Stream * aSerial, bool doExtendedOutput) {
+void ServoEasing::printDynamic(Print * aSerial, bool doExtendedOutput) {
 // pin is static but it is needed for identifying the servo
 	aSerial->print(mServoIndex);
 	aSerial->print('/');
@@ -886,7 +886,7 @@ void ServoEasing::printDynamic(Stream * aSerial, bool doExtendedOutput) {
  * Prints values which normally does NOT change from move to move.
  * call with
  */
-void ServoEasing::printStatic(Stream * aSerial) {
+void ServoEasing::printStatic(Print * aSerial) {
 
 	aSerial->print(F("0="));
 	aSerial->print(mServo0DegreeMicrosecondsOrUnits);
@@ -916,7 +916,8 @@ void ServoEasing::printStatic(Stream * aSerial) {
 	aSerial->print(" &Wire=0x");
 
 #if __PTRDIFF_WIDTH__ == 16
-	aSerial->print((uint16_t) mI2CClass, HEX);
+//    aSerial->print((uintptr_t) mI2CClass, HEX); // defined since C++11
+    aSerial->print((uint16_t) mI2CClass, HEX);
 #else
 	aSerial->print((uint32_t) mI2CClass, HEX);
 #endif
@@ -1089,7 +1090,7 @@ void synchronizeAndEaseToArrayPositions(uint16_t aDegreesPerSecond) {
 	synchronizeAllServosStartAndWaitForAllServosToStop();
 }
 
-void printArrayPositions(Stream * aSerial) {
+void printArrayPositions(Print * aSerial) {
 //    uint8_t tServoIndex = 0;
 	aSerial->print(F("ServoNextPositionArray="));
 // AJ 22.05.2019 This does not work with GCC 7.3.0 atmel6.3.1 and -Os

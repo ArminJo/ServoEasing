@@ -270,6 +270,9 @@ void __attribute__((weak)) doAttention() {
 void __attribute__((weak)) doQuadrupedAutoMove() {
     uint16_t tOriginalSpeed = sServoSpeed;
 
+#ifdef INFO
+    Serial.println(F("Start auto move sequence"));
+#endif
     centerServos();
     RETURN_IF_STOP;
 
@@ -339,6 +342,9 @@ void __attribute__((weak)) doQuadrupedAutoMove() {
     // restore speed
     setSpeed(tOriginalSpeed);
 
+#ifdef INFO
+    Serial.println(F("Stop auto move sequence and wait 10 seconds"));
+#endif
     delayAndCheck(10000);
 }
 /*************************

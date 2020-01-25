@@ -1,5 +1,5 @@
 # [ServoEasing](https://github.com/ArminJo/ServoEasing) - move your servo more natural
-### Version 1.4.4
+### Version 1.5.0
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
 [![Commits since latest](https://img.shields.io/github/commits-since/ArminJo/ServoEasing/latest)](https://github.com/ArminJo/ServoEasing/commits/master)
@@ -67,14 +67,14 @@ If you are using Sloeber as your IDE, you can easily define global symbols at *P
 ![Sloeber settings](https://github.com/ArminJo/ServoEasing/blob/master/pictures/SloeberDefineSymbols.png)
 
 ## Using PCA9685 16-Channel Servo Expander
-To enable the use of the expander, open the library file *ServoEasing.h* and comment out line 40 `#define USE_PCA9685_SERVO_EXPANDER` or define global symbol with `-DUSE_PCA9685_SERVO_EXPANDER` which is not yet possible in Arduino IDE:-(.<br/>
+To enable the use of the expander, open the library file *ServoEasing.h* and comment out the line `#define USE_PCA9685_SERVO_EXPANDER` or define global symbol with `-DUSE_PCA9685_SERVO_EXPANDER` which is not yet possible in Arduino IDE:-(.<br/>
 Timer1 is then only needed for the startEaseTo* functions.<br/>
 You can use this library and e.g. the `Adafruit_PWMServoDriver` library concurrently to control your servos. Be aware that the PCA9685 expander is **reset** at the first `attach()` and **initialized** at every further `attach()`.
 
 ## Using the included [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for AVR
 Using the **Lightweight Servo Library** reduces sketch size and makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
 Up to 2 servos are supported by this library and they must be attached to pin 9 and/or 10 of the Arduino board.<br/>
-To enable it, open the library file *ServoEasing.h* and comment out line 50 `#define USE_LEIGHTWEIGHT_SERVO_LIB` or define global symbol with `-DUSE_LEIGHTWEIGHT_SERVO_LIB` which is not yet possible in Arduino IDE:-(.<br/>
+To enable it, open the library file *ServoEasing.h* and comment out the line `#define USE_LEIGHTWEIGHT_SERVO_LIB` or define global symbol with `-DUSE_LEIGHTWEIGHT_SERVO_LIB` which is not yet possible in Arduino IDE:-(.<br/>
 If not using the Arduino IDE, take care that Arduino Servo library sources are not compiled / included in the project.
 
 ## Reducing library size
@@ -83,7 +83,7 @@ This saves 742 bytes FLASH and 42 bytes RAM.<br/>
 If you do not need the more complex easing functions like `Sine` etc., which in turn need sin(), cos(), sqrt() and pow(), you can shrink library size by approximately 1850 bytes by commenting out the line `#define KEEP_SERVO_EASING_LIBRARY_SMALL` in the library file *ServoEasing.h* or define global symbol with `-DKEEP_SERVO_EASING_LIBRARY_SMALL` which is not yet possible in Arduino IDE:-(.<br/>
 
 # [Examples](https://github.com/ArminJo/ServoEasing/tree/master/examples)
-All examples with up to 2 Servos can be used without modifications with the [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for AVR by by commenting out line 50 `#define USE_LEIGHTWEIGHT_SERVO_LIB` in the library file *ServoEasing.h* (see above).
+All examples with up to 2 Servos can be used without modifications with the [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for AVR by by commenting out the line `#define USE_LEIGHTWEIGHT_SERVO_LIB` in the library file *ServoEasing.h* (see above).
 
 ## Simple example
 This example does not use interrupts and should therefore run on any platform where the Arduino Servo library is available.<br/><br/>
@@ -91,7 +91,7 @@ This example does not use interrupts and should therefore run on any platform wh
 ![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/ServoEasing-Linear-Cubic-Circular.png)
 
 ## OneServo example
-This example moves one Servo with different speeds and using blocking and interrupt commands. The internal LED blinks when using interrupt based commands
+This example moves one Servo with different speeds and using blocking and interrupt commands. The internal LED blinks when using interrupt based commands.
 
 ## TwoServo and ThreeServo examples
 This example shows how to move 2 or 3 servos synchronized or independently.
@@ -109,6 +109,9 @@ It includes a partially **user defined easing function**  `EaseQuadraticInQuarti
 
 ## ContinuousRotatingServo example
 Example for using the servoEasing library to create speed ramps for a continuous rotating servo. This example rely on your servos stop value being **exacly 1500 microseconds**. If the stop value of your servo is NOT exactly 1500 microseconds, you must modify the `MICROSECONDS_FOR_ROTATING_SERVO_STOP` value in the library file *ServoEasing.h*.
+
+## LightweightServoExample example
+This example moves 2 servos attached at pin 9 and 10 using the LightweightServo library for ATmega328*.
 
 ## CatMover example
 Demo of using two servos in a pan tilt housing to move a laser pointer.
@@ -128,12 +131,12 @@ Only for AVR, because it uses EEPROM.
 
 ## PCA9685_Expander example
 The OneServo example modified for using a PCA9685 expander board and the standard Arduino Wire library.<br/>
-You must comment out line 40 `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.h* to make the expander example work.
+You must comment out the line `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.h* to make the expander example work.
 
 ## PCA9685_ExpanderFor32Servos example
 Program to show the usage of 2 PCA9685 expander boards with 32 servos.
 On the ESP32, the I2C library interferes with the 29 millisecond timer and therefore can only run at 100000 Hz or lower.<br/>
-You must comment out line 40 `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.h* to make the expander example work.
+You must comment out the line `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.h* to make the expander example work.
 
 ### YouTube Video
 [![Servos 16-19 and 28-31 in action](https://i.ytimg.com/vi/XMVh3IT5BgU/hqdefault.jpg)](https://youtu.be/XMVh3IT5BgU)
@@ -166,6 +169,10 @@ If you see strange behavior, you can open the library file *ServoEasing.h* and c
 This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
 
 # Revision History
+### Version 1.5.0
+- Use type `Print *` instead of `Stream *`.
+- New LightweightServoExample.
+
 ### Version 1.4.4
 - New PCA9685_ExpanderFor32Servos example.
 

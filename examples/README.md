@@ -1,6 +1,6 @@
 # ServoEasing examples
 All examples with up to 2 Servos can be used without modifications with the [Lightweight Servo library](https://github.com/ArminJo/LightweightServo)
-for AVR by by [commenting out line 50 `#define USE_LEIGHTWEIGHT_SERVO_LIB` in the file ServoEasing.h](https://github.com/ArminJo/ServoEasing#using-the-included-lightweight-servo-library).
+for AVR by by [commenting out the line `#define USE_LEIGHTWEIGHT_SERVO_LIB` in the file ServoEasing.h](https://github.com/ArminJo/ServoEasing#using-the-included-lightweight-servo-library).
 
 YouTube video of SymmetricEasing and AsymmetricEasing example
 
@@ -31,6 +31,9 @@ It includes a partially **user defined easing function**  `EaseQuadraticInQuarti
 ## ContinuousRotatingServo example
 Example for using the servoEasing library to create speed ramps for a continuous rotating servo. This example rely on your servos stop value being **exacly 1500 microseconds**. If the stop value of your servo is NOT exactly 1500 microseconds, you must modify the `MICROSECONDS_FOR_ROTATING_SERVO_STOP` value in the library file *ServoEasing.h*.
 
+## LightweightServoExample example
+This example moves 2 servos attached at pin 9 and 10 using the LightweightServo library for ATmega328*.
+
 ## CatMover example
 Demo of using two servos in a pan tilt housing to move a laser pointer.
 
@@ -47,12 +50,12 @@ Program for controlling a [robot arm with 4 servos](https://www.instructables.co
 
 ## PCA9685_Expander example
 The OneServo example modified for using a PCA9685 expander board and the standard Arduino Wire library.<br/>
-You must comment out line 40 `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.h* to make the expander example work.
+You must comment out the line `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.h* to make the expander example work.
 
 ## PCA9685_ExpanderFor32Servos example
 Program to show the usage of 2 PCA9685 expander boards with 32 servos.
 On the ESP32, the I2C library interferes with the 29 millisecond timer and therefore can only run at 100000 Hz or lower.<br/>
-You must comment out line 40 `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.h* to make the expander example work.
+You must comment out the line `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.h* to make the expander example work.
 
 ### YouTube Video
 [![Servos 16-19 and 28-31 in action](https://i.ytimg.com/vi/XMVh3IT5BgU/hqdefault.jpg)](https://youtu.be/XMVh3IT5BgU)

@@ -85,7 +85,7 @@ void setup() {
     setSpeedForAllServos(sServoSpeed);
 
     // Just for setting channel and reference
-    getVCCVoltageMillivoltSimple();
+    printVCCVoltageMillivolt(&Serial);
 
 #if defined(QUADRUPED_HAS_US_DISTANCE)
     Serial.println(F("Init US distance sensor"));
@@ -175,6 +175,7 @@ void loop() {
      */
     if (millis() - sLastTimeOfIRCodeReceived > MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE) {
         doAttention();
+        printVCCVoltageMillivolt(&Serial);
         // next attention in 1 minute
         sLastTimeOfIRCodeReceived += MILLIS_OF_INACTIVITY_BETWEEN_REMINDER_MOVE;
     }

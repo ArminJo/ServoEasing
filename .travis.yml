@@ -10,7 +10,7 @@ git:
 env:
    global:
    - PRETTYNAME="ServoEasing Arduino Library"
-   - INSTALL_PLATFORMS="avr,esp8266,esp32,stm32"
+   - INSTALL_PLATFORMS="avr,esp8266,esp32,STM32"
 #--verbose --verbose-build --version
    - ARDUINO_SWITCHES=""
 before_install:

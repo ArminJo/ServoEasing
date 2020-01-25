@@ -164,12 +164,16 @@
 #include <stdarg.h>
 #endif
 
-#define VERSION_SERVO_EASING 1.4.3
+#define VERSION_SERVO_EASING 1.5.0
 
 // @formatter:on
 
 /*
- * Version 1.4.4
+ * Version 1.5.0
+ * - Use type `Print *` instead of `Stream *`.
+ * - New LightweightServoExample.
+ *
+ * Version 1.4.4 - 12/2019
  * - New PCA9685_ExpanderFor32Servos example.
  *
  * Version 1.4.3 - 12/2019
@@ -410,9 +414,9 @@ public:
 
     void synchronizeServosAndStartInterrupt(bool doUpdateByInterrupt);
 
-    void print(Stream * aSerial, bool doExtendedOutput = true); // Print dynamic and static info
-    void printDynamic(Stream * aSerial, bool doExtendedOutput = true);
-    void printStatic(Stream * aSerial);
+    void print(Print * aSerial, bool doExtendedOutput = true); // Print dynamic and static info
+    void printDynamic(Print * aSerial, bool doExtendedOutput = true);
+    void printStatic(Print * aSerial);
 
     /*
      * Internally only microseconds (or units (= 4.88 us) if using PCA9685 expander) and not degree are used to speed up things.
@@ -489,7 +493,7 @@ void setEaseToForAllServosSynchronizeAndStartInterrupt(uint16_t aDegreesPerSecon
 void synchronizeAndEaseToArrayPositions();
 void synchronizeAndEaseToArrayPositions(uint16_t aDegreesPerSecond);
 
-void printArrayPositions(Stream * aSerial);
+void printArrayPositions(Print * aSerial);
 bool isOneServoMoving();
 void stopAllServos();
 bool updateAllServos();
@@ -527,3 +531,5 @@ float EaseOutBounce(float aPercentageOfCompletion);
 extern float (*sEaseFunctionArray[])(float aPercentageOfCompletion);
 
 #endif /* SERVOEASING_H_ */
+
+#pragma once

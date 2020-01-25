@@ -27,9 +27,10 @@
  */
 
 #include <Arduino.h>
-#include "LightweightServo.h"
 
 #if defined (__AVR_ATmega328P__) || defined (__AVR_ATmega328__)
+#include "LightweightServo.h"
+
 /*
  * Commenting out this saves 70 bytes flash memory. You must then use the init function initLightweightServoPin9And10() manually.
  */

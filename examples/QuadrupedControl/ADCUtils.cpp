@@ -3,11 +3,12 @@
  *
  * ADC utility functions. Conversion time is defined as 0.104 milliseconds for 16 MHz Arduinos in ADCUtils.h.
  *
- *  Created on: 23.02.2018
- *  Copyright (C) 2018  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
+ *  Copyright (C) 2018-2020  Armin Joachimsmeyer
+ *  Email: armin.joachimsmeyer@gmail.com
  *
- *  ADCUtils is free software: you can redistribute it and/or modify
+ *  This file is part of ArduinoUtils https://github.com/ArminJo/ArduinoUtils.
+ *
+ *  ArduinoUtils is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
@@ -269,6 +270,12 @@ uint16_t getVCCVoltageMillivolt(void) {
      * Do not wait for reference to settle here, since it may not be necessary
      */
     return ((1023L * 1100) / tVCC);
+}
+
+void printVCCVoltageMillivolt(Print* aSerial) {
+    aSerial->print(F("VCC="));
+    aSerial->print(getVCCVoltageMillivolt());
+    aSerial->println(" mV");
 }
 
 /*

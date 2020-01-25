@@ -81,7 +81,7 @@
 #define VERSION_EXAMPLE "2.0"
 
 void changeEasingType(bool aButtonToggleState);
-EasyButton Button0AtPin2(true, &changeEasingType);
+EasyButton OnOffButtonAtPin3(true, &changeEasingType);
 
 void handleManualControl();
 
@@ -119,10 +119,7 @@ void setup() {
 #endif
 
     // Output VCC voltage
-    uint16_t tVoltageMillivolts = getVCCVoltageMillivolt();
-    Serial.print(F("VCC="));
-    Serial.print(tVoltageMillivolts);
-    Serial.println(" mV");
+    printVCCVoltageMillivolt(&Serial);
     Serial.println(F("Initialized"));
     delay(300);
 }
