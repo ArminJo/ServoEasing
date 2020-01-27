@@ -74,7 +74,7 @@
 //#define DEBUG
 #define USE_BUTTON_0
 #define USE_ATTACH_INTERRUPT // to be compatible with IRLremote
-#include "EasyButtonAtInt01.h" // for switching easing modes
+#include "EasyButtonAtInt01.cpp.h" // for switching easing modes
 
 #include "ADCUtils.h" // for get getVCCVoltageMillivolt
 

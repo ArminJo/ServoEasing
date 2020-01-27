@@ -3,10 +3,10 @@
  *
  * ADC utility functions. Conversion time is defined as 0.104 milliseconds for 16 MHz Arduinos in ADCUtils.h.
  *
- *  Copyright (C) 2018-2020  Armin Joachimsmeyer
+ *  Copyright (C) 2016-2020  Armin Joachimsmeyer
  *  Email: armin.joachimsmeyer@gmail.com
  *
- *  This file is part of ArduinoUtils https://github.com/ArminJo/ArduinoUtils.
+ *  This file is part of Arduino-Utils https://github.com/ArminJo/Arduino-Utils.
  *
  *  ArduinoUtils is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
