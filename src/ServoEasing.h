@@ -24,6 +24,9 @@
 #ifndef SERVOEASING_H_
 #define SERVOEASING_H_
 
+#define VERSION_SERVO_EASING "1.5.0"
+#define VERSION_SERVO_EASING_NUMERICAL 150
+
 // @formatter:off
 /*  *****************************************************************************************************************************
  *  To access the library files from your sketch, you have to first use `Sketch/Show Sketch Folder (Ctrl+K)` in the Arduino IDE.
@@ -56,6 +59,10 @@
 
 #if defined(USE_PCA9685_SERVO_EXPANDER) && defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 #error "Please define only one of the symbols USE_PCA9685_SERVO_EXPANDER or USE_LEIGHTWEIGHT_SERVO_LIB"
+#endif
+
+#if ! ( defined(__AVR__) || defined(ESP8266) || defined(ESP32) || defined(__STM32F1__) )
+#warning "No periodic timer support existent (or known) for this platform. Only blocking functions and simple example will run!"
 #endif
 
 /*****************************************************************************************
@@ -138,10 +145,14 @@
 // Enable this to generate output for Arduino Serial Plotter (Ctrl-Shift-L)
 //#define PRINT_FOR_SERIAL_PLOTTER
 
+#if ! defined(va_arg)
+// workaround for STM32
+#include <stdarg.h>
+#endif
 
 /*
  * Enable this to see information on each call.
- * Since there should be no library which uses Serial, enable TRACE only for development purposes.
+ * Since there should be no library which uses Serial, enable it only for development purposes.
  */
 //#define TRACE
 //#define DEBUG
@@ -149,22 +160,6 @@
 #ifdef TRACE
 #define DEBUG
 #endif
-#ifdef DEBUG
-#define INFO
-#endif
-#ifdef INFO
-#define WARN
-#endif
-#ifdef WARN
-#define ERROR
-#endif
-
-#if ! defined(va_arg)
-// workaround for STM32
-#include <stdarg.h>
-#endif
-
-#define VERSION_SERVO_EASING 1.5.0
 
 // @formatter:on
 
@@ -172,6 +167,7 @@
  * Version 1.5.0
  * - Use type `Print *` instead of `Stream *`.
  * - New LightweightServoExample.
+ * - Porting to apollo3 architecture.
  *
  * Version 1.4.4 - 12/2019
  * - New PCA9685_ExpanderFor32Servos example.

@@ -35,6 +35,8 @@ const int SERVO1_PIN = 14; // D5
 const int SERVO1_PIN = 5;
 #elif defined(__STM32F1__)
 const int SERVO1_PIN = PB9; // Needs timer 4 for Servo library
+#elif defined(PART_apollo3)
+const int SERVO1_PIN = 4;  // Apollo software for Arduino supports only one servo and no periodic interrupts (2/2020)
 #else
 const int SERVO1_PIN = 9;
 #endif

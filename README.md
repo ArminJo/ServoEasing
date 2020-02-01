@@ -172,6 +172,7 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 ### Version 1.5.0
 - Use type `Print *` instead of `Stream *`.
 - New LightweightServoExample.
+- Porting to apollo3 architecture.
 
 ### Version 1.4.4
 - New PCA9685_ExpanderFor32Servos example.
