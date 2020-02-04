@@ -1253,6 +1253,26 @@ void updateAndWaitForAllServosToStop() {
     } while (!updateAllServos());
 }
 
+/*
+ * returns true if all Servos reached endAngle / stopped
+ */
+bool delayAndUpdateAndWaitForAllServosToStop(unsigned long aMillisDelay, bool aTerminateDelayIfAllServosStopped) {
+    while (true) {
+        // First do the delay, then check for update, since we are likely called directly after start and there is nothing to move yet
+        if (aMillisDelay > REFRESH_INTERVAL / 1000) {
+            aMillisDelay -= REFRESH_INTERVAL / 1000;
+            delay(REFRESH_INTERVAL / 1000); // 20 ms - REFRESH_INTERVAL is in Microseconds
+            if (updateAllServos() && aTerminateDelayIfAllServosStopped) {
+                // terminate delay here and return
+                return true;
+            }
+        } else {
+            delay(aMillisDelay);
+            return updateAllServos();
+        }
+    }
+}
+
 void synchronizeAllServosStartAndWaitForAllServosToStop() {
     synchronizeAllServosAndStartInterrupt(false);
     updateAndWaitForAllServosToStop();

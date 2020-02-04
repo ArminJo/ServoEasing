@@ -167,7 +167,7 @@
  * Version 1.5.0
  * - Use type `Print *` instead of `Stream *`.
  * - New LightweightServoExample.
- * - Porting to apollo3 architecture.
+ * - Added function `delayAndUpdateAndWaitForAllServosToStop()`.
  *
  * Version 1.4.4 - 12/2019
  * - New PCA9685_ExpanderFor32Servos example.
@@ -501,6 +501,7 @@ void setEasingTypeForAllServos(uint8_t aEasingType);
 
 // blocking wait functions
 void updateAndWaitForAllServosToStop();
+bool delayAndUpdateAndWaitForAllServosToStop(unsigned long aMillisDelay, bool aTerminateDelayIfAllServosStopped = false);
 void synchronizeAllServosStartAndWaitForAllServosToStop();
 
 void enableServoEasingInterrupt();
