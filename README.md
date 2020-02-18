@@ -27,7 +27,7 @@ For instructions how to enable these alternatives see [Modifying library propert
 
 ## Usage
 Just call **myServo.startEaseTo()** instead of **myServo.write()** and you are done. Or if you want to wait (blocking) until servo has arrived, use **myServo.easeTo()**. Speed of movement can be set by **myServo.setSpeed()**.<br/>
-Do not forget to **set the start position** for the Servo by simply calling **myServo.write()**, since the library has **no knowledge about your servos initial position** and therefore starts at **0 degree** at the first move, which may be undesirable.
+Do not forget to **initially set the start position** for the Servo by simply calling **myServo.write()**, since the library has **no knowledge about your servos initial position** and therefore starts at **0 degree** at the first move, which may be undesirable.
 
 ### Includes the following **easing functions**:
 - Linear
@@ -156,7 +156,7 @@ This example does not use the ServoEasing functions.
 Not for ESP8266 because it needs 2 analog inputs.
 
 # Internals
-Internally only microseconds (or units (= 4.88 us) if using PCA9685 expander) and not degree are used to speed up things. Other expander or libraries can therefore easily be added.<br/>
+The API accepts only degree (except for write() and writeMicrosecondsOrUnits()) but internally only microseconds (or units (= 4.88 us) if using PCA9685 expander) and not degree are used to speed up things. Other expander or servo libraries can therefore easily be used.<br/>
 On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking easing functions its unused **Channel B** is used to generate an interrupt 100 us before the end of the 20 ms Arduino Servo refresh period. This interrupt then updates all servo values for the next refresh period.
 
 # Supported Platforms
@@ -172,9 +172,8 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 ### Version 1.5.0
 - Use type `Print *` instead of `Stream *`.
 - New LightweightServoExample.
-- Porting to apollo3 architecture.
-
-### Version 1.4.4
+- Added function `delayAndUpdateAndWaitForAllServosToStop()`.
+- Added Arduino Due support by using timer 8.
 - New PCA9685_ExpanderFor32Servos example.
 
 ### Version 1.4.3

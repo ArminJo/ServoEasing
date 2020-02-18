@@ -61,7 +61,7 @@
 #error "Please define only one of the symbols USE_PCA9685_SERVO_EXPANDER or USE_LEIGHTWEIGHT_SERVO_LIB"
 #endif
 
-#if ! ( defined(__AVR__) || defined(ESP8266) || defined(ESP32) || defined(__STM32F1__) )
+#if ! ( defined(__AVR__) || defined(ESP8266) || defined(ESP32) || defined(__STM32F1__) || defined(__SAM3X8E__) )
 #warning "No periodic timer support existent (or known) for this platform. Only blocking functions and simple example will run!"
 #endif
 
@@ -164,12 +164,11 @@
 // @formatter:on
 
 /*
- * Version 1.5.0
+ * Version 1.5.0 - 2/2020
  * - Use type `Print *` instead of `Stream *`.
  * - New LightweightServoExample.
  * - Added function `delayAndUpdateAndWaitForAllServosToStop()`.
- *
- * Version 1.4.4 - 12/2019
+ * - Added Arduino Due support by using timer 8.
  * - New PCA9685_ExpanderFor32Servos example.
  *
  * Version 1.4.3 - 12/2019
@@ -221,9 +220,11 @@
 
 #define DEFAULT_MICROSECONDS_FOR_0_DEGREE 544
 #define DEFAULT_MICROSECONDS_FOR_180_DEGREE 2400
+// Approximately 10 microseconds per degree
 
 #define DEFAULT_PCA9685_UNITS_FOR_0_DEGREE  111 // 111.411 = 544 us
 #define DEFAULT_PCA9685_UNITS_FOR_180_DEGREE 491 // 491.52 = 2400 us
+// Approximately 2 units per degree
 
 /*
  * Definitions for continuous rotating servo - Values are taken from the Parallax Continuous Rotation Servo manual
