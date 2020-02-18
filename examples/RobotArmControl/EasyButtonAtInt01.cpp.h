@@ -39,13 +39,13 @@
 
 /*
  * Usage:
- * #define USE_BUTTON_0  // Enable code for button at INT0
+ * #define USE_BUTTON_0  // Enable code for button at INT0 (pin2 on 328P)
  * #define USE_BUTTON_1  // Enable code for button at INT1 (PCINT0 for ATtinyX5)
  * #include "EasyButtonAtInt01.h"
  * EasyButton Button0AtPin2(true);  // true  -> Button is connected to INT0
  * EasyButton Button0AtPin3(false, &Button3CallbackHandler); // false -> button is not connected to INT0 => connected to INT1
  * ...
- * digitalWrite(LED_BUILTIN, Button0AtPin2.ButtonToggleState);
+ * digitalWrite(LED_BUILTIN, Button0AtPin2.ButtonToggleState); // initial value is false
  * ...
  *
  */
@@ -155,6 +155,12 @@ void EasyButton::init(bool aIsButtonAtINT0) {
     GIMSK |= 1 << PCIE;//PCINT enable, we have only one
     PCMSK = digitalPinToBitMask(INT1_PIN);
 #    endif
+#  elif (INT1_PIN != 3)
+    /*
+     * ATmega328 (Uno, Nano ) etc. Enable pin change interrupt for port PD0 to PD7 (Arduino pin 0 to 7)
+     */
+    PCICR |= 1 << PCIE2;
+    PCMSK2 = digitalPinToBitMask(INT1_PIN);
 #  else
 #    if defined(USE_ATTACH_INTERRUPT)
     attachInterrupt(digitalPinToInterrupt(INT1_PIN), &handleINT1Interrupt, CHANGE);
@@ -167,6 +173,9 @@ void EasyButton::init(bool aIsButtonAtINT0) {
 
 #elif defined(USE_BUTTON_0) && defined(USE_BUTTON_1)
         if (isButtonAtINT0) {
+            /*
+             * Button 0
+             */
             INT0_DDR_PORT &= ~(_BV(INT0_BIT)); // pinModeFast(2, INPUT_PULLUP);
             INT0_OUT_PORT |= _BV(INT0_BIT);
             sPointerToButton0ForISR = this;
@@ -178,7 +187,11 @@ void EasyButton::init(bool aIsButtonAtINT0) {
             EIMSK |= 1 << INT0;     // enable interrupt on next change
 #  endif //USE_ATTACH_INTERRUPT
         } else {
-            INT1_DDR_PORT &= ~(_BV(INT1_BIT));
+            /*
+             * Button 1
+             * Allow PinChangeInterrupt
+             */
+            INT1_DDR_PORT &= ~(_BV(INT1_BIT));  // pinModeFast(INT1_BIT, INPUT_PULLUP);
             INT1_OUT_PORT |= _BV(INT1_BIT);
             sPointerToButton1ForISR = this;
 
@@ -191,6 +204,12 @@ void EasyButton::init(bool aIsButtonAtINT0) {
             GIMSK |= 1 << PCIE; //PCINT enable, we have only one
             PCMSK = digitalPinToBitMask(INT1_PIN);
 #    endif
+#  elif (INT1_PIN != 3)
+    /*
+     * ATmega328 (Uno, Nano ) etc. Enable pin change interrupt for port PD0 to PD7 (Arduino pin 0 to 7)
+     */
+    PCICR |= 1 << PCIE2;
+    PCMSK2 = digitalPinToBitMask(INT1_PIN);
 #  else
 #    if defined(USE_ATTACH_INTERRUPT)
             attachInterrupt(digitalPinToInterrupt(INT1_PIN), &handleINT1Interrupt, CHANGE);
@@ -536,6 +555,9 @@ ISR(INT0_vect) {
 #    if (! defined(ISC10)) || ((defined(__AVR_ATtiny87__) || defined(__AVR_ATtiny167__)) && INT1_PIN != 3)
 // on ATtinyX5 we do not have a INT1_vect but we can use the PCINT0_vect
 ISR(PCINT0_vect)
+#    elif (INT1_PIN != 3)
+// PCINT for ATmega328 Arduino pins 0 to 7
+ISR(PCINT2_vect)
 #    else
 ISR(INT1_vect)
 #    endif

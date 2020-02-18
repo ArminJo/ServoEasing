@@ -133,13 +133,13 @@
  * Pin and port definitions for Arduinos
  */
 #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
-#define INT0_PIN (2)
+#define INT0_PIN 2
 #define INT0_DDR_PORT (DDRB)
 #define INT0_IN_PORT  (PINB)
 #define INT0_OUT_PORT (PORTB)
 
 #  if ! defined(INT1_PIN)
-#define INT1_PIN (3)
+#define INT1_PIN 3
 #  elif (INT1_PIN != 2) && (INT1_PIN > 5)
 #error "INT1_PIN (for PCINT0 interrupt) can only be 0,1,3,4,5"
 #  endif
@@ -148,13 +148,13 @@
 #define INT1_OUT_PORT (PORTB)
 
 #elif defined(__AVR_ATtiny87__) || defined(__AVR_ATtiny167__)
-#define INT0_PIN (14)
+#define INT0_PIN 14
 #define INT0_DDR_PORT (DDRB)
 #define INT0_IN_PORT  (PINB)
 #define INT0_OUT_PORT (PORTB)
 
 #  if ! defined(INT1_PIN)
-#define INT1_PIN (3)
+#define INT1_PIN 3
 #  elif (INT1_PIN != 3) && (INT1_PIN > 7)
 #error "INT1_PIN (for PCINT0 interrupt) can only be 0 to 2 or 4 to 7"
 #  endif
@@ -164,13 +164,15 @@
 #else
 
 // other AVR MCUs
-#define INT0_PIN (2)
+#define INT0_PIN 2
 #define INT0_DDR_PORT (DDRD)
 #define INT0_IN_PORT  (PIND)
 #define INT0_OUT_PORT (PORTD)
 
 #  if ! defined(INT1_PIN)
-#define INT1_PIN (3)
+#define INT1_PIN 3
+#  elif (INT1_PIN > 7)
+#error "INT1_PIN (for PCINT2 interrupt) can only be Arduino pins 0 to 7 (PD0 to PD7)"
 #  endif
 #define INT1_DDR_PORT (DDRD)
 #define INT1_IN_PORT  (PIND)
@@ -227,8 +229,8 @@ public:
     void handleINT01Interrupts();
 
 
-    bool LastChangeWasBouncingToInactive; // Internal state, reflects actual reading with spikes and bouncing. Negative logic: true / active means button pin is LOW
-    volatile bool ButtonStateIsActive; // negative logic: true / active means button pin is LOW. If last press duration < BUTTON_DEBOUNCING_MILLIS it holds wrong value (true instead of false) :-(
+    bool LastChangeWasBouncingToInactive;   // Internal state, reflects actual reading with spikes and bouncing. Negative logic: true / active means button pin is LOW
+    volatile bool ButtonStateIsActive;      // negative logic: true / active means button pin is LOW. If last press duration < BUTTON_DEBOUNCING_MILLIS it holds wrong value (true instead of false) :-(
     volatile bool ButtonToggleState;        // Toggle is on press, not on release - initial value is false
     /*
      * Flag to enable action only once. Only set to true by library. Can be checked and set to false my main program to enable only one action per button press

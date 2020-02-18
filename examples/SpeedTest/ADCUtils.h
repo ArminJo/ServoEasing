@@ -34,7 +34,7 @@
 #define ADC_PRESCALE16   4 // 208 microseconds per ADC conversion at 1 MHz
 #define ADC_PRESCALE32   5 // 416 microseconds per ADC conversion at 1 MHz
 #define ADC_PRESCALE64   6 // 52 microseconds per ADC conversion at 16 MHz
-#define ADC_PRESCALE128  7 // 104 microseconds per ADC conversion at 16 MHz
+#define ADC_PRESCALE128  7 // 104 microseconds per ADC conversion at 16 MHz --- Arduino default
 
 // definitions for 0.1 ms conversion time
 #if (F_CPU == 1000000)
@@ -45,29 +45,41 @@
 #define ADC_PRESCALE ADC_PRESCALE128
 #endif
 
-// Temperature channel definitions - 1 LSB / 1 degree Celsius
+// Reference shift values are different for ATtinyX5
 #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
 #define SHIFT_VALUE_FOR_REFERENCE REFS2
-#define ADC_1_1_VOLT_CHANNEL_MUX 12
+#define MASK_FOR_ADC_REFERENCE (_BV(REFS0) | _BV(REFS1) | _BV(REFS2))
 #else
 #define SHIFT_VALUE_FOR_REFERENCE REFS0
+#define MASK_FOR_ADC_REFERENCE (_BV(REFS0) | _BV(REFS1))
 #endif
 
 // Temperature channel definitions - 1 LSB / 1 degree Celsius
 #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
 #define ADC_TEMPERATURE_CHANNEL_MUX 15
+#define ADC_1_1_VOLT_CHANNEL_MUX    12
+#define ADC_GND_CHANNEL_MUX         13
+
 #elif defined(__AVR_ATtiny87__) || defined(__AVR_ATtiny167__)
-#define ADC_ISCR_CHANNEL_MUX 3
+#define ADC_ISCR_CHANNEL_MUX         3
 #define ADC_TEMPERATURE_CHANNEL_MUX 11
-#define ADC_1_1_VOLT_CHANNEL_MUX 12
+#define ADC_1_1_VOLT_CHANNEL_MUX    12
+#define ADC_GND_CHANNEL_MUX         14
+#define ADC_VCC_4TH_CHANNEL_MUX     13
+
 #elif defined (__AVR_ATmega328P__)
-#define ADC_TEMPERATURE_CHANNEL_MUX 8
-#define ADC_1_1_VOLT_CHANNEL_MUX 14
+#define ADC_TEMPERATURE_CHANNEL_MUX  8
+#define ADC_1_1_VOLT_CHANNEL_MUX    14
+#define ADC_GND_CHANNEL_MUX         15
+
 #elif defined(__AVR_ATmega32U4__)
 #define ADC_TEMPERATURE_CHANNEL_MUX 0x27
-#define ADC_1_1_VOLT_CHANNEL_MUX 0x1E
+#define ADC_1_1_VOLT_CHANNEL_MUX    0x1E
+#define ADC_GND_CHANNEL_MUX         0x1F
+
 #elif defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega1284__) || defined(__AVR_ATmega1284P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega644A__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644PA__)
-#define ADC_1_1_VOLT_CHANNEL_MUX 0x1E
+#define ADC_1_1_VOLT_CHANNEL_MUX    0x1E
+#define ADC_GND_CHANNEL_MUX         0x1F
 #define INTERNAL INTERNAL1V1
 #endif
 
@@ -78,6 +90,9 @@ uint16_t readADCChannelWithReferenceOversample(uint8_t aChannelNumber, uint8_t a
 uint16_t readADCChannelWithReferenceMultiSamples(uint8_t aChannelNumber, uint8_t aReference, uint8_t aNumberOfSamples);
 uint16_t readADCChannelWithReferenceMax(uint8_t aChannelNumber, uint8_t aReference, uint16_t aNumberOfSamples);
 uint16_t readADCChannelWithReferenceMaxMicros(uint8_t aChannelNumber, uint8_t aReference, uint16_t aMicrosecondsToAquire);
+uint16_t readUntil4ConsecutiveValuesAreEqual(uint8_t aChannelNumber, uint8_t aDelay, uint8_t aAllowedDifference, uint8_t aMaxRetries);
+
+uint8_t checkAndWaitForReferenceAndChannelToSwitch(uint8_t aChannelNumber, uint8_t aReference);
 
 float getVCCVoltageSimple(void);
 uint16_t getVCCVoltageMillivoltSimple(void);
