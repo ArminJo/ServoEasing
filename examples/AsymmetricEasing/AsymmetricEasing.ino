@@ -165,7 +165,7 @@ void loop() {
 #ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.print(F("Move to 135 degree with "));
     Serial.print(tSpeed);
-    Serial.println(F(" degree per second with own update loop"));
+    Serial.println(F(" degree per second with with updates by own do-while loop"));
 #endif
     /*
      * Here we use the allServos functions

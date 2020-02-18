@@ -49,6 +49,21 @@ HardwareTimer Timer20ms(7);  // 8 timers and 8. timer is used for tone()
  */
 HardwareTimer Timer20ms(3);  // 4 timers and 4. timer is used for tone()
 #  endif
+#elif defined(__SAM3X8E__)  // Arduino DUE
+/*
+ * Timer 0 to 5 are used by Servo library (by defining handlers)
+ *
+ * Timer 6 is TC2 channel 0
+ * Timer 7 is TC2 channel 1
+ * Timer 8 is TC2 channel 2
+ *
+ * We use timer 8 here
+ */
+#define TC_FOR_20_MS_TIMER  	TC2
+#define CHANNEL_FOR_20_MS_TIMER 2
+#define ID_TC_FOR_20_MS_TIMER   ID_TC8
+#define IRQn_FOR_20_MS_TIMER    TC8_IRQn
+#define HANDLER_FOR_20_MS_TIMER TC8_Handler
 #endif
 
 // Enable this to see information on each call
@@ -1038,19 +1053,20 @@ void enableServoEasingInterrupt() {
 
 #elif defined(__SAM3X8E__)  // Arduino DUE
 	pmc_set_writeprotect(false);
-	pmc_enable_periph_clk(ID_TC8);
-	NVIC_ClearPendingIRQ(TC8_IRQn);
-	NVIC_EnableIRQ(TC8_IRQn);
-	TC_Start(TC2, 2); // Enables the timer clock and performs a software reset to start the counting
+	pmc_enable_periph_clk(ID_TC_FOR_20_MS_TIMER);
+	NVIC_ClearPendingIRQ(IRQn_FOR_20_MS_TIMER);
+	NVIC_EnableIRQ(IRQn_FOR_20_MS_TIMER);
 
 	// MCK/32. Set up the Timer in waveform mode which creates a PWM in UP mode with automatic trigger on RC Compare
-	TC_Configure(TC2, 2, TC_CMR_TCCLKS_TIMER_CLOCK3 | TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC);
-	TC_SetRA(TC2, 2, 52500); // 20ms
+	TC_Configure(TC_FOR_20_MS_TIMER, CHANNEL_FOR_20_MS_TIMER, TC_CMR_TCCLKS_TIMER_CLOCK3 | TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC);
+	TC_SetRC(TC_FOR_20_MS_TIMER, CHANNEL_FOR_20_MS_TIMER, 52500); // 20ms
+
+	TC_Start(TC_FOR_20_MS_TIMER, CHANNEL_FOR_20_MS_TIMER); // Enables the timer clock stopped by TC_Configure() and performs a software reset to start the counting
 
 	// Enable the RC Compare Interrupt
-	TC2->TC_CHANNEL[2].TC_IER = TC_IER_CPCS;
+	TC_FOR_20_MS_TIMER->TC_CHANNEL[CHANNEL_FOR_20_MS_TIMER].TC_IER = TC_IER_CPCS;
 	// Disable all others.
-	TC2->TC_CHANNEL[2].TC_IDR=~TC_IER_CPCS;
+	TC_FOR_20_MS_TIMER->TC_CHANNEL[CHANNEL_FOR_20_MS_TIMER].TC_IDR = ~TC_IER_CPCS;
 #endif
 }
 
@@ -1067,7 +1083,7 @@ void disableServoEasingInterrupt() {
 	Timer20ms.setMode(TIMER_CH1, TIMER_DISABLED);
 	Timer20ms.detachInterrupt(TIMER_CH1);
 #elif defined(__SAM3X8E__)  // Arduino DUE
-	NVIC_DisableIRQ(TC8_IRQn);
+	NVIC_DisableIRQ(IRQn_FOR_20_MS_TIMER);
 #endif
 }
 
@@ -1094,15 +1110,17 @@ ISR(TIMER1_COMPB_vect) {
 #  endif
 
 #elif defined(__SAM3X8E__)  // Arduino DUE
-/*
- * Timer 6 is TC2 channel 0
- * Timer 7 is TC2 channel 1
- * Timer 8 is TC2 channel 2
- */
-void TC8_Handler(void) {
+
+void HANDLER_FOR_20_MS_TIMER(void) {
+#  if defined(MEASURE_TIMING)
+	digitalWrite(TIMING_PIN, HIGH);
+#  endif
 	// clear interrupt
-	TC_GetStatus(TC2, 2); //Clear channel 2 status to fire again the interrupt.
+	TC_GetStatus(TC_FOR_20_MS_TIMER, CHANNEL_FOR_20_MS_TIMER); //Clear channel status to fire again the interrupt.
 	handleServoTimerInterrupt();
+#  if defined(MEASURE_TIMING)
+	digitalWrite(TIMING_PIN, LOW);
+#  endif
 }
 #endif // defined(__AVR__)
 

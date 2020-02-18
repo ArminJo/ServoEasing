@@ -229,6 +229,7 @@ The ServoEasing library examples are built on Travis CI for the following boards
 - Arduino Leonardo
 - Arduino cplayClassic
 - Arduino Mega 2560
+- Arduino Due
 - ESP8266 boards (tested with LOLIN D1 R2 board)
 - ESP32   boards (tested with ESP32 DEVKITV1 board)
 

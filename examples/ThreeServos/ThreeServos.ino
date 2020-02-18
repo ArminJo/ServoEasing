@@ -141,7 +141,7 @@ void loop() {
      * Move three servos synchronously without interrupt handler
      */
 #ifndef PRINT_FOR_SERIAL_PLOTTER
-    Serial.println(F("Move to 90/90/180 degree with 20 degree per second with own update loop"));
+    Serial.println(F("Move to 90/90/180 degree with 20 degree per second with updates by own do-while loop"));
 #endif
     setSpeedForAllServos(20);
     Servo1.setEaseTo(90);
