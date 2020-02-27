@@ -41,7 +41,10 @@ const int SERVO1_PIN = 5;
 const int SERVO2_PIN = 18;
 const int SERVO3_PIN = 19;
 
-#elif defined(__STM32F1__)
+#elif defined(STM32F1xx) || defined(__STM32F1__)
+// BluePill in 2 flavors
+// STM32F1xx is for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
+// __STM32F1__is for "Generic STM32F103C series" from STM32F1 Boards (STM32duino.com) of manual installed hardware folder
 const int SERVO1_PIN = PB7;
 const int SERVO1_PIN = PB8;
 const int SERVO1_PIN = PB9; // Needs timer 4 for Servo library
@@ -102,9 +105,7 @@ void setup() {
     Serial.println(SERVO3_PIN);
 #endif
     if (Servo3.attach(SERVO3_PIN) == INVALID_SERVO) {
-        Serial.print(F("Error attaching servo - maybe MAX_EASING_SERVOS="));
-        Serial.print(MAX_EASING_SERVOS);
-        Serial.println(F(" is to small to hold all servos"));
+        Serial.println(F("Error attaching servo - maybe MAX_EASING_SERVOS=" STR(MAX_EASING_SERVOS) " is to small to hold all servos"));
         while (true) {
             blinkLED();
         }

@@ -104,9 +104,7 @@ void setup() {
      * Check at least the last call to attach()
      */
     if (Servo1.attach(SERVO1_PIN) == INVALID_SERVO) {
-        Serial.print(F("Error attaching servo - maybe MAX_EASING_SERVOS="));
-        Serial.print(MAX_EASING_SERVOS);
-        Serial.println(F(" is to small to hold all servos"));
+        Serial.println(F("Error attaching servo - maybe MAX_EASING_SERVOS=" STR(MAX_EASING_SERVOS) " is to small to hold all servos"));
         while (true) {
             digitalWrite(LED_BUILTIN, HIGH);
             delay(100);

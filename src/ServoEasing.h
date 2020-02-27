@@ -24,8 +24,8 @@
 #ifndef SERVOEASING_H_
 #define SERVOEASING_H_
 
-#define VERSION_SERVO_EASING "1.5.0"
-#define VERSION_SERVO_EASING_NUMERICAL 150
+#define VERSION_SERVO_EASING "1.5.1"
+#define VERSION_SERVO_EASING_NUMERICAL 151
 
 // @formatter:off
 /*  *****************************************************************************************************************************
@@ -61,7 +61,7 @@
 #error "Please define only one of the symbols USE_PCA9685_SERVO_EXPANDER or USE_LEIGHTWEIGHT_SERVO_LIB"
 #endif
 
-#if ! ( defined(__AVR__) || defined(ESP8266) || defined(ESP32) || defined(__STM32F1__) || defined(__SAM3X8E__) )
+#if ! ( defined(__AVR__) || defined(ESP8266) || defined(ESP32) || defined(STM32F1xx) || defined(__STM32F1__) || defined(__SAM3X8E__) )
 #warning "No periodic timer support existent (or known) for this platform. Only blocking functions and simple example will run!"
 #endif
 
@@ -164,6 +164,9 @@
 // @formatter:on
 
 /*
+ * Version 1.5.1 - x/2020
+ * - Added support for STM32 cores of Arduino Board manager. Seen in the Arduino IDE as "Generic STM32F1 series" from STM32 Boards.
+ *
  * Version 1.5.0 - 2/2020
  * - Use type `Print *` instead of `Stream *`.
  * - New LightweightServoExample.
@@ -527,6 +530,9 @@ float ElasticEaseIn(float aPercentageOfCompletion);
 float EaseOutBounce(float aPercentageOfCompletion);
 
 extern float (*sEaseFunctionArray[])(float aPercentageOfCompletion);
+
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
 
 #endif /* SERVOEASING_H_ */
 

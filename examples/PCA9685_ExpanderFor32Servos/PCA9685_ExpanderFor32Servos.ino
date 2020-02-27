@@ -78,9 +78,7 @@ void setup() {
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
-    Serial.print(F("Example for a maximum of "));
-    Serial.print(NUMBER_OF_SERVOS);
-    Serial.println(F(" servos"));
+    Serial.println(F("Example for a maximum of " STR(NUMBER_OF_SERVOS) " servos"));
     Serial.println();
 
     // Initialize wire before checkI2CConnection()
@@ -185,9 +183,8 @@ void getAndAttach16ServosToPCA9685Expander(uint8_t aPCA9685I2CAddress) {
             Serial.print(aPCA9685I2CAddress, HEX);
             Serial.print(F(" i="));
             Serial.print(i);
-            Serial.print(F(" ERROR attaching servo - maybe MAX_EASING_SERVOS="));
-            Serial.print(MAX_EASING_SERVOS);
-            Serial.println(F(" is to small to hold all servos"));
+            Serial.println(F(" Error attaching servo - maybe MAX_EASING_SERVOS=" STR(MAX_EASING_SERVOS) " is to small to hold all servos"));
+
         }
     }
 }

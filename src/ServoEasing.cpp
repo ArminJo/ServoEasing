@@ -36,12 +36,24 @@
 #include "Ticker.h" // for ServoEasingInterrupt functions
 Ticker Timer20ms;
 #elif defined(STM32_HIGH_DENSITY)
+
 #include <HardwareTimer.h> // 8 timers and 8. timer is used for tone()
 HardwareTimer Timer20ms(7);
-#elif defined(__STM32F1__)
+
+// BluePill in 2 flavors
+#elif defined(STM32F1xx)   // for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
+#include <HardwareTimer.h> // 4 timers and 4. timer is used for tone()
+/*
+ * Use timer 3 for ServoEasingInterrupt functions.
+ * Timer 3 blocks PA6, PA7, PB0, PB1, so if you need one them as Servo output, you must choose another timer.
+ */
+HardwareTimer sSTM32Timer(TIM3);
+
+#elif defined(__STM32F1__) // for "Generic STM32F103C series" from STM32F1 Boards (STM32duino.com) of manual installed hardware folder
 #include <HardwareTimer.h>
 #  if defined(STM32_HIGH_DENSITY)
 HardwareTimer Timer20ms(7);  // 8 timers and 8. timer is used for tone()
+
 #  else
 /*
  * Use timer 3 for ServoEasingInterrupt functions.
@@ -988,7 +1000,12 @@ int clipDegreeSpecial(uint8_t aDegreeToClip) {
  * Can not call yield() here, since we are in an ISR context here.
  * Defined weak in order to be able to overwrite it.
  */
-__attribute__((weak)) void handleServoTimerInterrupt() {
+#if defined(STM32F1xx)   // for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
+__attribute__((weak)) void handleServoTimerInterrupt(HardwareTimer * aDummy __attribute__((unused)))
+#else
+__attribute__((weak)) void handleServoTimerInterrupt()
+#endif
+{
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 // Otherwise it will hang forever in I2C transfer
 	interrupts();
@@ -1044,12 +1061,18 @@ void enableServoEasingInterrupt() {
 #elif defined(ESP8266) || defined(ESP32)
 	Timer20ms.attach_ms(20, handleServoTimerInterrupt);
 
-#elif defined(__STM32F1__) // BluePill
+// BluePill in 2 flavors
+#elif defined(STM32F1xx)   // for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
+	sSTM32Timer.setMode(LL_TIM_CHANNEL_CH1, TIMER_OUTPUT_COMPARE, NC); // used for generating only interrupts, no pin specified
+	sSTM32Timer.setOverflow(20000, MICROSEC_FORMAT);// microsecond period
+	sSTM32Timer.attachInterrupt(handleServoTimerInterrupt);// this sets update interrupt enable
+	sSTM32Timer.resume();// Start or resume HardwareTimer: all channels are resumed, interrupts are enabled if necessary
+
+#elif defined(__STM32F1__) // for "Generic STM32F103C series" from STM32F1 Boards (STM32duino.com) of manual installed hardware folder
 	Timer20ms.setMode(TIMER_CH1, TIMER_OUTPUT_COMPARE);
 	Timer20ms.setPeriod(20000); // 20000 microsecond period
-	Timer20ms.setCompare(TIMER_CH1, Timer20ms.getOverflow() - 1);// trigger interrupt next period
 	Timer20ms.attachInterrupt(TIMER_CH1, handleServoTimerInterrupt);
-	Timer20ms.refresh();// Set the timer's count to 0 and update the prescaler and overflow values.
+	Timer20ms.refresh(); // Set the timer's count to 0 and update the prescaler and overflow values.
 
 #elif defined(__SAM3X8E__)  // Arduino DUE
 	pmc_set_writeprotect(false);
@@ -1059,9 +1082,9 @@ void enableServoEasingInterrupt() {
 
 	// MCK/32. Set up the Timer in waveform mode which creates a PWM in UP mode with automatic trigger on RC Compare
 	TC_Configure(TC_FOR_20_MS_TIMER, CHANNEL_FOR_20_MS_TIMER, TC_CMR_TCCLKS_TIMER_CLOCK3 | TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC);
-	TC_SetRC(TC_FOR_20_MS_TIMER, CHANNEL_FOR_20_MS_TIMER, 52500); // 20ms
+	TC_SetRC(TC_FOR_20_MS_TIMER, CHANNEL_FOR_20_MS_TIMER, 52500);// 20ms
 
-	TC_Start(TC_FOR_20_MS_TIMER, CHANNEL_FOR_20_MS_TIMER); // Enables the timer clock stopped by TC_Configure() and performs a software reset to start the counting
+	TC_Start(TC_FOR_20_MS_TIMER, CHANNEL_FOR_20_MS_TIMER);// Enables the timer clock stopped by TC_Configure() and performs a software reset to start the counting
 
 	// Enable the RC Compare Interrupt
 	TC_FOR_20_MS_TIMER->TC_CHANNEL[CHANNEL_FOR_20_MS_TIMER].TC_IER = TC_IER_CPCS;
@@ -1077,11 +1100,18 @@ void disableServoEasingInterrupt() {
 #  else
 	TIMSK1 &= ~(_BV(OCIE1B)); // disable the output compare B interrupt
 #  endif
+
 #elif defined(ESP8266) || defined(ESP32)
 	Timer20ms.detach();
-#elif defined(__STM32F1__)
+
+#elif defined(STM32F1xx)   // for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
+	sSTM32Timer.setMode(LL_TIM_CHANNEL_CH1, TIMER_DISABLED);
+	sSTM32Timer.detachInterrupt();
+
+#elif defined(__STM32F1__) // for "Generic STM32F103C series" from STM32F1 Boards (STM32duino.com) of manual installed hardware folder
 	Timer20ms.setMode(TIMER_CH1, TIMER_DISABLED);
 	Timer20ms.detachInterrupt(TIMER_CH1);
+
 #elif defined(__SAM3X8E__)  // Arduino DUE
 	NVIC_DisableIRQ(IRQn_FOR_20_MS_TIMER);
 #endif
@@ -1116,7 +1146,7 @@ void HANDLER_FOR_20_MS_TIMER(void) {
 	digitalWrite(TIMING_PIN, HIGH);
 #  endif
 	// clear interrupt
-	TC_GetStatus(TC_FOR_20_MS_TIMER, CHANNEL_FOR_20_MS_TIMER); //Clear channel status to fire again the interrupt.
+	TC_GetStatus(TC_FOR_20_MS_TIMER, CHANNEL_FOR_20_MS_TIMER);//Clear channel status to fire again the interrupt.
 	handleServoTimerInterrupt();
 #  if defined(MEASURE_TIMING)
 	digitalWrite(TIMING_PIN, LOW);

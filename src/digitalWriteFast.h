@@ -311,13 +311,22 @@
 (((P) >= 0 && (P) <= 7) ? (P) : (((P) >= 8 && (P) <= 13) ? (P) - 8 : (P) - 14))
 
 // --- ATtinyX4 + ATtinyX7 ---
+#elif  defined(__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__) || defined(__AVR_ATtiny87__) || defined(__AVR_ATtiny167__)
+#if defined(ARDUINO_AVR_DIGISPARKPRO)
+/// Strange enumeration of pins on Digispark board and core library
+#define __digitalPinToPortReg(P) (((P) >= 0 && (P) <= 4) ? &PORTB : &PORTA)
+#define __digitalPinToDDRReg(P)  (((P) >= 0 && (P) <= 4) ? &DDRB : &DDRA)
+#define __digitalPinToPINReg(P)  (((P) >= 0 && (P) <= 4) ? &PINB : &PINA)
+#define __digitalPinToBit(P)     (((P) >= 0 && (P) <= 2) ? (P) : (((P) == 3) ? 6 : (((P) == 4) ? 3 : (((P) == 5) ? 7 : (P) - 6 ))))
+
+#else
 //  ATtinyX4: PORTA for 0 to 7, PORTB for 8 to 11
 //  ATtinyX7: PORTA for 0 to 7, PORTB for 8 to 15
-#elif  defined(__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__) || defined(__AVR_ATtiny87__) || defined(__AVR_ATtiny167__)
 #define __digitalPinToPortReg(P) (((P) >= 0 && (P) <= 7) ? &PORTA : &PORTB)
 #define __digitalPinToDDRReg(P)  (((P) >= 0 && (P) <= 7) ? &DDRA : &DDRB)
 #define __digitalPinToPINReg(P)  (((P) >= 0 && (P) <= 7) ? &PINA : &PINB)
 #define __digitalPinToBit(P)     (((P) >= 0 && (P) <= 7) ? (P) : (P) - 8 )
+#endif
 
 // --- Other ---
 #else

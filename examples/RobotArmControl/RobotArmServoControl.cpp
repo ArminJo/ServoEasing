@@ -45,6 +45,9 @@ float moveInverseKinematicForBase(float aPercentageOfCompletion);
 float moveInverseKinematicForHorizontal(float aPercentageOfCompletion);
 float moveInverseKinematicForLift(float aPercentageOfCompletion);
 
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
+
 void setupRobotArmServos() {
 
     setSpeedForAllServos(sServoSpeed);
@@ -79,11 +82,7 @@ void setupRobotArmServos() {
      */
     LiftServo.registerUserEaseInFunction(&moveInverseKinematicForLift);
 
-    Serial.print(F("Value for 0 degree="));
-    Serial.print(HORIZONTAL_ZERO_DEGREE_VALUE_MICROS);
-    Serial.print(F("us. Value for 180 degree="));
-    Serial.print(HORIZONTAL_AT_180_DEGREE_VALUE_MICROS);
-    Serial.println(F("us."));
+    Serial.println(F("Value for 0 degree=" STR(HORIZONTAL_ZERO_DEGREE_VALUE_MICROS) "us. Value for 180 degree=" STR(HORIZONTAL_AT_180_DEGREE_VALUE_MICROS) "us."));
 }
 
 void shutdownServos() {

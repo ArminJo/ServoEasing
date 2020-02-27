@@ -53,7 +53,10 @@ const int POSITION_ANALOG_INPUT_PIN = 0;
 const int SERVO_UNDER_TEST_PIN = 5;
 const int POSITION_ANALOG_INPUT_PIN = 36;
 
-#elif defined(__STM32F1__)
+#elif defined(STM32F1xx) || defined(__STM32F1__)
+// BluePill in 2 flavors
+// STM32F1xx is for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
+// __STM32F1__is for "Generic STM32F103C series" from STM32F1 Boards (STM32duino.com) of manual installed hardware folder
 const int SERVO_UNDER_TEST_PIN = PB9; // Needs timer 4 for Servo library
 const int SPEED_IN_PIN = PA0;
 
@@ -63,6 +66,9 @@ const int POSITION_ANALOG_INPUT_PIN = A1;
 #endif
 
 Servo ServoUnderTest;
+
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
 
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
@@ -76,11 +82,7 @@ void setup() {
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
-    Serial.print(F("Value for 0 degree="));
-    Serial.print(MIN_PULSE_WIDTH);
-    Serial.print(F("us. Value for 180 degree="));
-    Serial.print(MAX_PULSE_WIDTH);
-    Serial.println(F("us."));
+    Serial.println(F("Value for 0 degree=" STR(MIN_PULSE_WIDTH) "us. Value for 180 degree=" STR(MAX_PULSE_WIDTH) "us."));
 
     // attach servo to pin
     ServoUnderTest.attach(SERVO_UNDER_TEST_PIN);

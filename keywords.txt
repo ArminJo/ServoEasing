@@ -17,7 +17,9 @@ setReverseOperation	KEYWORD2
 setTrim	KEYWORD2
 setTrimMicrosecondsOrUnits	KEYWORD2
 write	KEYWORD2
-writeMicroseconds	KEYWORD2
+writeMicrosecondsOrUnits	KEYWORD2
+setSpeed	KEYWORD2
+getSpeed	KEYWORD2
 easeTo	KEYWORD2
 easeToD	KEYWORD2
 startEaseTo	KEYWORD2
@@ -66,6 +68,7 @@ disableServoEasingInterrupt	KEYWORD2
 #######################################
 # Constants (LITERAL1)
 #######################################
+INVALID_SERVO	LITERAL1
 EASE_LINEAR	LITERAL1
 EASE_QUADRATIC	LITERAL1
 EASE_CUBIC	LITERAL1

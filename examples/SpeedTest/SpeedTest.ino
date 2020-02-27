@@ -74,7 +74,10 @@ const int SERVO_UNDER_TEST_PIN = 5;
 const int SPEED_OR_POSITION_ANALOG_INPUT_PIN = 36;
 const int MODE_ANALOG_INPUT_PIN = 39;
 
-#elif defined(__STM32F1__)
+#elif defined(STM32F1xx) || defined(__STM32F1__)
+// BluePill in 2 flavors
+// STM32F1xx is for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
+// __STM32F1__is for "Generic STM32F103C series" from STM32F1 Boards (STM32duino.com) of manual installed hardware folder
 const int SERVO_UNDER_TEST_PIN = PB9; // Needs timer 4 for Servo library
 const int SPEED_OR_POSITION_ANALOG_INPUT_PIN = PA0;
 const int MODE_ANALOG_INPUT_PIN = PA1;
@@ -103,6 +106,9 @@ Servo ServoUnderTest;
 
 void doSwipe(uint8_t aDegreePerStep);
 
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
+
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
@@ -124,11 +130,7 @@ void setup() {
     digitalWrite(A5, HIGH);
 #endif
 
-    Serial.print(F("Value for 0 degree="));
-    Serial.print(ZERO_DEGREE_VALUE_MICROS);
-    Serial.print(F("us. Value for 180 degree="));
-    Serial.print(AT_180_DEGREE_VALUE_MICROS);
-    Serial.println(F("us."));
+    Serial.println(F("Value for 0 degree=" STR(ZERO_DEGREE_VALUE_MICROS) "us. Value for 180 degree=" STR(AT_180_DEGREE_VALUE_MICROS) "us."));
 
     /*
      * Attach servo to pin 9

@@ -148,10 +148,16 @@
 #define INT1_OUT_PORT (PORTB)
 
 #elif defined(__AVR_ATtiny87__) || defined(__AVR_ATtiny167__)
-#define INT0_PIN 14
+#  if defined(ARDUINO_AVR_DIGISPARKPRO)
+/// Strange enumeration of pins on Digispark board and core library
+#define INT0_PIN 3 // PB6 / INT0 is connected to USB+ on DigisparkPro boards and labeled with 3 (D3)
+#  else
+#define INT0_PIN 14 // PB6 / INT0 is connected to USB+ on DigisparkPro boards
+#  endif
 #define INT0_DDR_PORT (DDRB)
 #define INT0_IN_PORT  (PINB)
 #define INT0_OUT_PORT (PORTB)
+
 
 #  if ! defined(INT1_PIN)
 #define INT1_PIN 3
