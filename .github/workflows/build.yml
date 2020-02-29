@@ -1,0 +1,136 @@
+# Before being able to push to my .github\workflows directories, 
+# I had to create a new personal token with workflow enabled at https://github.com/settings/tokens
+
+# This is the name of the workflow, visible on GitHub UI.
+name: build
+on: [push]
+
+jobs:
+  build:
+    name: ${{ matrix.arduino-boards-fqbn }} - test compiling examples
+    
+    runs-on: ubuntu-latest # I picked Ubuntu to use shell scripts.
+    
+    env: 
+      # Space separated list with or without double quotes around the list. 
+      # If you need a libraries with a space in its name like Adafruit NeoPixel or Adafruit INA219
+      # I am sorry, but you must add them with double quotes in step "Install libraries" after $REQUIRED_LIBRARIES.
+      # e.g. then arduino-cli lib install $REQUIRED_LIBRARIES "Adafruit NeoPixel" "Adafruit INA219"; fi
+      # In this case the required libraries string must contain at least one character, you can use " ".
+      REQUIRED_LIBRARIES: "Servo ESP32Servo"
+      
+      # Output colors
+      RED: '\033[0;31m'
+      GREEN: '\033[0;32m'
+      YELLOW: '\033[1;33m'
+      BLUE: '\033[0;34m'
+      
+    strategy:
+      matrix:
+        # The matrix will produce one job for each configuration parameter of type `arduino-boards-fqbn`
+        # In the Arduino IDE, the fqbn is printed in the first line of the verbose output for compilation as parameter -fqbn=... for the "arduino-builder -dump-prefs" command
+        #
+        # Examples: arduino:avr:uno, arduino:avr:leonardo, arduino:avr:nano, arduino:avr:mega
+        # arduino:sam:arduino_due_x, arduino:samd:arduino_zero_native"
+        # ATTinyCore:avr:attinyx5:chip=85,clock=1internal, digistump:avr:digispark-tiny, digistump:avr:digispark-pro
+        # STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
+        # esp8266:esp8266:huzzah:eesz=4M3M,xtal=80, esp32:esp32:featheresp32:FlashFreq=80
+        #############################################################################################################
+        arduino-boards-fqbn:
+          - arduino:avr:uno
+          - arduino:avr:leonardo
+          - arduino:avr:mega
+          - arduino:sam:arduino_due_x
+          - esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
+          - esp32:esp32:featheresp32:FlashFreq=80
+          - STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
+
+        # Choose the right platform for the boards we want to test. (maybe in the future Arduino will automatically do this for you).
+        # This works like this: when the fqbn is "arduino:avr:uno" the variable `platform` is set to "arduino:avr". 
+        # Just take the first 2 token of the fqbn - this cannot be automatically done by GitHub workflow :-(
+        #############################################################################################################
+        include:
+          - arduino-boards-fqbn: arduino:avr:uno
+            platform: arduino:avr
+            examples-exclude: "PCA9685_Expander PCA9685_ExpanderFor32Servos" # Space separated list of examples to exclude in build
+            
+          - arduino-boards-fqbn: arduino:avr:leonardo
+            platform: arduino:avr          
+            examples-exclude: "PCA9685_Expander PCA9685_ExpanderFor32Servos"
+
+          - arduino-boards-fqbn: arduino:avr:mega
+            platform: arduino:avr          
+            examples-exclude: "PCA9685_Expander PCA9685_ExpanderFor32Servos"
+
+          - arduino-boards-fqbn: arduino:sam:arduino_due_x
+            platform: arduino:sam
+            examples-exclude: "PCA9685_Expander PCA9685_ExpanderFor32Servos QuadrupedControl RobotArmControl" # QuadrupedControl RobotArmControl because of missing EEprom
+            
+          - arduino-boards-fqbn: esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
+            platform: esp8266:esp8266
+            examples-exclude: "PCA9685_Expander PCA9685_ExpanderFor32Servos QuadrupedControl RobotArmControl SpeedTest" # SpeedTest because of only one analog input
+            
+          - arduino-boards-fqbn: esp32:esp32:featheresp32:FlashFreq=80
+            platform: esp32:esp32
+            examples-exclude: "PCA9685_Expander PCA9685_ExpanderFor32Servos QuadrupedControl RobotArmControl"
+
+          - arduino-boards-fqbn: STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
+            platform: STM32:stm32
+            examples-exclude: "PCA9685_Expander PCA9685_ExpanderFor32Servos QuadrupedControl RobotArmControl"
+        
+      # Do not cancel all jobs / architectures if one job fails
+      fail-fast: false
+
+    # This is the list of steps this job will run.
+    steps:
+    
+      # First of all, we clone the repo using the `checkout` action.
+      - name: Checkout
+        uses: actions/checkout@master
+
+      # We use the `arduino/setup-arduino-cli` action to install and
+      # configure the Arduino CLI on the system.
+      - name: Setup Arduino CLI
+        uses: arduino/setup-arduino-cli@v1.0.0
+        
+      - name: Link this repository as Arduino library
+        run: |
+          mkdir -p $HOME/Arduino/libraries
+          ln -s $PWD $HOME/Arduino/libraries/.
+        
+      - name: Install platform from build matrix
+        run: |
+          arduino-cli core update-index
+          if [ "${{  matrix.platform }}" == "" ]; then echo -e ""$RED"ERROR: platform missing for board ${{ matrix.arduino-boards-fqbn }}. Check your matrix.includes entries"; exit 1; fi
+          if [[ ${{  matrix.platform }} != *"arduino"* && ! -f ./arduino-cli.yaml ]]; then echo -e ""$RED"Non Arduino platform ${{  matrix.platform }} requested, but file arduino-cli.yaml is missing."; exit 1; fi
+          arduino-cli core install ${{ matrix.platform }} # for each job / board one platform is installed
+          if [ ${{  matrix.platform }} == "esp32:esp32" ]; then pip install pyserial; fi
+          
+      - name: Install libraries
+        run: if [ "$REQUIRED_LIBRARIES" != "" ]; then arduino-cli lib install $REQUIRED_LIBRARIES; fi
+                
+      # Finally, we compile the sketch, using the FQBN that was set in the build matrix.
+      - name: Compile all examples
+        run: |
+          if [ "${{ matrix.examples-include }}" == "" ]; then
+            echo -e "Compiling ALL examples for board ${{ matrix.arduino-boards-fqbn }} \n"
+            examples=($(find . -name "*.ino"))
+            for example in "${examples[@]}"; do # Loop over all example directories
+              example_name=$(basename $(dirname $example))
+              if [[ "${{ matrix.examples-exclude }}" == *"$example_name"* ]]; then
+                echo -e "Skipping $example_name \xe2\x9e\x9e" # Right arrow
+              else
+                echo -n "Compiling $example_name "
+                build_stdout=$(arduino-cli compile --verbose --warnings all --fqbn ${{ matrix.arduino-boards-fqbn }} $(dirname $example) 2>&1);
+                if [ $? -ne 0 ]; then 
+                  echo -e ""$RED"\xe2\x9c\x96" # If ok output a green checkmark else a red X and the command output.
+                  exit_code=1
+                  echo -e "$build_stdout \n"
+                else 
+                  echo -e ""$GREEN"\xe2\x9c\x93"
+                fi 
+              fi
+            done
+          fi
+          exit $exit_code
+        shell: bash {0} # Needed to avoid an exit at first error

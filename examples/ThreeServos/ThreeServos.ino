@@ -46,8 +46,8 @@ const int SERVO3_PIN = 19;
 // STM32F1xx is for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
 // __STM32F1__is for "Generic STM32F103C series" from STM32F1 Boards (STM32duino.com) of manual installed hardware folder
 const int SERVO1_PIN = PB7;
-const int SERVO1_PIN = PB8;
-const int SERVO1_PIN = PB9; // Needs timer 4 for Servo library
+const int SERVO2_PIN = PB8;
+const int SERVO3_PIN = PB9; // Needs timer 4 for Servo library
 
 #else
 const int SERVO1_PIN = 9;

@@ -3,7 +3,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
 [![Commits since latest](https://img.shields.io/github/commits-since/ArminJo/ServoEasing/latest)](https://github.com/ArminJo/ServoEasing/commits/master)
-[![Build status](https://travis-ci.org/ArminJo/ServoEasing.svg?branch=master)](https://travis-ci.org/ArminJo/ServoEasing)
+[![Build Status](https://github.com/ArminJo/ServoEasing/workflows/build/badge.svg)](https://github.com/ArminJo/ServoEasing/actions)
 [![Hit Counter](https://hitcounter.pythonanywhere.com/count/tag.svg?url=https%3A%2F%2Fgithub.com%2FArminJo%2FServoEasing)](https://github.com/brentvollebregt/hit-counter)
 
 YouTube video of ServoEasing in action
@@ -23,7 +23,7 @@ For instructions how to enable these alternatives see [Modifying library propert
 - **Non blocking** movements are enabled by using **startEaseTo\* functions** by reusing the interrupts of the servo timer Timer1 or using a dedicated timer on other platforms. This function is not available for all platforms.
 - Trim value for each servo may be set.
 - Reverse operation of servo is possible eg. if it is mounted head down.
-- Allow to specify an arbitrary mapping between degreen and microseconds by `attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree)` 
+- Allow to specify an arbitrary mapping between degreen and microseconds by `attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree)`
 
 ## Usage
 Just call **myServo.startEaseTo()** instead of **myServo.write()** and you are done. Or if you want to wait (blocking) until servo has arrived, use **myServo.easeTo()**. Speed of movement can be set by **myServo.setSpeed()**.<br/>
@@ -140,7 +140,7 @@ You must comment out the line `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasi
 
 ### YouTube Video
 [![Servos 16-19 and 28-31 in action](https://i.ytimg.com/vi/XMVh3IT5BgU/hqdefault.jpg)](https://youtu.be/XMVh3IT5BgU)
- 
+
 
 # Servo utilities
 
@@ -225,16 +225,16 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 ### Version 1.0.0
 Initial Arduino library version
 
-# Travis CI
-The ServoEasing library examples are built on Travis CI for the following boards:
+# CI
+Since Travis CI is unreliable and slow (6 times slower 17:43 vs. 3:00 minutes), the library examples are now tested with GitHub Actions for the following boards:
 
-- Arduino Uno
-- Arduino Leonardo
-- Arduino cplayClassic
-- Arduino Mega 2560
-- Arduino Due
-- ESP8266 boards (tested with LOLIN D1 R2 board)
-- ESP32   boards (tested with ESP32 DEVKITV1 board)
+- arduino:avr:uno
+- arduino:avr:leonardo
+- arduino:avr:mega
+- arduino:sam:arduino_due_x
+- esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
+- esp32:esp32:featheresp32:FlashFreq=80
+- STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
 
 ## Requests for modifications / extensions
 Please write me a PM including your motivation/problem if you need a modification or an extension e.g. a callback functionality after move has finished.

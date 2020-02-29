@@ -58,7 +58,7 @@ const int POSITION_ANALOG_INPUT_PIN = 36;
 // STM32F1xx is for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
 // __STM32F1__is for "Generic STM32F103C series" from STM32F1 Boards (STM32duino.com) of manual installed hardware folder
 const int SERVO_UNDER_TEST_PIN = PB9; // Needs timer 4 for Servo library
-const int SPEED_IN_PIN = PA0;
+const int POSITION_ANALOG_INPUT_PIN = PA1;
 
 #else
 const int SERVO_UNDER_TEST_PIN = 9;

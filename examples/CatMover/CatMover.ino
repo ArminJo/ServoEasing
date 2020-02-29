@@ -44,8 +44,8 @@ const int VERTICAL_SERVO_PIN = 18;
 // STM32F1xx is for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
 // __STM32F1__is for "Generic STM32F103C series" from STM32F1 Boards (STM32duino.com) of manual installed hardware folder
 const int LASER_POWER_PIN = PC13;
-const int SERVO1_PIN = PB8;
-const int SERVO1_PIN = PB9; // Needs timer 4 for Servo library
+const int HORIZONTAL_SERVO_PIN = PB8;
+const int VERTICAL_SERVO_PIN = PB9; // Needs timer 4 for Servo library
 
 #else
 const int LASER_POWER_PIN = 5;
