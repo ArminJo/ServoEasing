@@ -170,7 +170,7 @@ void loop() {
     setEaseToForAllServosSynchronizeAndStartInterrupt(90);
 
     // Must call yield here for the ESP boards, since we have no delay called
-    while (Servo1.isMovingAndCallYield()) {
+    while (areInterruptsActive()) {
         ;
     }
     Servo1.setEasingType(EASE_LINEAR);
@@ -186,7 +186,7 @@ void loop() {
     Servo1.setEaseTo(-90, 80);
     Servo2.startEaseTo(0, 60); // This start interrupt for all servos
     // blink until both servos stop
-    while (Servo1.isMoving() || Servo2.isMoving()) {
+    while (areInterruptsActive()) {
         blinkLED();
     }
 

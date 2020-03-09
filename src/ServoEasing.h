@@ -37,14 +37,14 @@
 
 
 /*
- * For use with e.g. the Adafruit PCA9685 16-Channel Servo Driver aOffUnits.
+ * For use with e.g. the Adafruit PCA9685 16-Channel Servo Driver board. It has a resolution of 4096 per 20 ms => 4.88 us per step/unit.
  * One PCA9685 has 16 outputs. You must modify MAX_EASING_SERVOS below, if you have more than one PCA9685 attached!
  */
 //#define USE_PCA9685_SERVO_EXPANDER
 
 
 /*
- * If you have only one or two servos, then you can save program space by defining symbol `USE_LEIGHTWEIGHT_SERVO_LIB`.
+ * If you have only one or two servos and an ATMega328, then you can save program space by defining symbol `USE_LEIGHTWEIGHT_SERVO_LIB`.
  * This saves 742 bytes FLASH and 42 bytes RAM.
  * Using Lightweight Servo library (or PCA9685 servo expander) makes the servo pulse generating immune
  * to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
@@ -99,7 +99,7 @@
 // PCA9685 works with up to 1 MHz I2C frequency
 #    if defined(ESP32)
 // The ESP32 I2C interferes with the Ticker / Timer library used.
-// Even with 100000 we have some dropouts / NAK's because of sending address again instead of first data.
+// Even with 100 kHz clock we have some dropouts / NAK's because of sending address again instead of first data.
 #    define I2C_CLOCK_FREQUENCY 100000 // 200000 does not work for my ESP32 module together with the timer :-(
 #    elif defined(ESP8266)
 #    define I2C_CLOCK_FREQUENCY 400000 // 400000 is the maximum for 80 MHz clocked ESP8266 (I measured real 330000 Hz for this setting)
@@ -164,8 +164,11 @@
 // @formatter:on
 
 /*
- * Version 1.5.1 - x/2020
+ * Version 1.5.1 - 3/2020
  * - Added support for STM32 cores of Arduino Board manager. Seen in the Arduino IDE as "Generic STM32F1 series" from STM32 Boards.
+ * - Inserted missing `Wire.begin()` in setup of `PCA9685_Expander` example.
+ * - In `isMovingAndCallYield()` yield() only called/needed for an ESP8266.
+ * - New function `areInterruptsActive()`, especially for ESP32.
  *
  * Version 1.5.0 - 2/2020
  * - Use type `Print *` instead of `Stream *`.
@@ -383,7 +386,7 @@ public:
     float callEasingFunction(float aPercentageOfCompletion);    // used in update()
 #endif
 
-    void write(int aValue);                         // Apply trim and reverse to the value and write it direct to the Servo library.
+    void write(int aValue);                                     // Apply trim and reverse to the value and write it direct to the Servo library.
     void writeMicrosecondsOrUnits(int aValue);
 
     void setSpeed(uint16_t aDegreesPerSecond);                  // This speed is taken if no speed argument is given.
@@ -462,6 +465,15 @@ public:
     int mServo0DegreeMicrosecondsOrUnits;
     int mServo180DegreeMicrosecondsOrUnits;
 };
+
+/*
+ * It is needed for ESP32, where the timer interrupt routine does not block the loop. Maybe it runs on another CPU?
+ * The interrupt routine sets first the mServoMoves flag to false and then disables the timer,
+ * but on a ESP32 polling the flag and then starting next movement and enabling timer happens BEFORE the timer is disabled.
+ * And this crashes the kernel in esp_timer_delete, which will lead to a reboot.
+ */
+extern volatile bool sInterruptsAreActive; // true if interrupts are still active, i.e. at least one Servo is moving with interrupts.
+bool areInterruptsActive();
 
 /*
  * Array of all servos to enable synchronized movings

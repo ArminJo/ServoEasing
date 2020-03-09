@@ -131,11 +131,11 @@ void loop() {
     for (int i = 0; i < 2; ++i) {
         Servo1.startEaseToD(135, 1000);
         // Must call yield here for the ESP boards, since we have no delay called
-        while (Servo1.isMovingAndCallYield()) {
+        while (areInterruptsActive()) {
             ; // no delays here to avoid break between forth and back movement
         }
         Servo1.startEaseToD(45, 1000);
-        while (Servo1.isMovingAndCallYield()) {
+        while (areInterruptsActive()) {
             ; // no delays here to avoid break between forth and back movement
         }
     }
@@ -154,7 +154,7 @@ void loop() {
         delay(20); // just wait until angle is above 120 degree
     }
     digitalWrite(LED_BUILTIN, HIGH);
-    while (Servo1.isMovingAndCallYield()) {
+    while (areInterruptsActive()) {
         ; // wait for servo to stop
     }
     delay(1000);

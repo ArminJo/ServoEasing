@@ -483,7 +483,7 @@ void EasyButton::handleINT01Interrupts() {
                 if (ButtonPressCallback != NULL) {
                     /*
                      * Call callback function.
-                     * interrupts() is needed if callback function needs more time to allow millis() to proceed.
+                     * interrupts() is required if callback function needs more time to allow millis() to proceed.
                      * Otherwise we may see bouncing instead of button release followed by spike instead of button press
                      */
                     interrupts();

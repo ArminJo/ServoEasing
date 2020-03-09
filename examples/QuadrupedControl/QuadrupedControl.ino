@@ -295,7 +295,6 @@ bool delayAndCheck(uint16_t aDelayMillis) {
                 return true;
             }
 #endif
-            yield();
         } while (millis() - tStartMillis < aDelayMillis);
         return false;
     }

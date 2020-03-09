@@ -3,7 +3,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
 [![Commits since latest](https://img.shields.io/github/commits-since/ArminJo/ServoEasing/latest)](https://github.com/ArminJo/ServoEasing/commits/master)
-[![Build Status](https://github.com/ArminJo/ServoEasing/workflows/build/badge.svg)](https://github.com/ArminJo/ServoEasing/actions)
+[![Build Status](https://github.com/ArminJo/ServoEasing/workflows/LibraryBuild/badge.svg)](https://github.com/ArminJo/ServoEasing/actions)
 [![Hit Counter](https://hitcounter.pythonanywhere.com/count/tag.svg?url=https%3A%2F%2Fgithub.com%2FArminJo%2FServoEasing)](https://github.com/brentvollebregt/hit-counter)
 
 YouTube video of ServoEasing in action
@@ -69,7 +69,10 @@ If you are using Sloeber as your IDE, you can easily define global symbols at *P
 ## Using PCA9685 16-Channel Servo Expander
 To enable the use of the expander, open the library file *ServoEasing.h* and comment out the line `#define USE_PCA9685_SERVO_EXPANDER` or define global symbol with `-DUSE_PCA9685_SERVO_EXPANDER` which is not yet possible in Arduino IDE:-(.<br/>
 Timer1 is then only needed for the startEaseTo* functions.<br/>
-You can use this library and e.g. the `Adafruit_PWMServoDriver` library concurrently to control your servos. Be aware that the PCA9685 expander is **reset** at the first `attach()` and **initialized** at every further `attach()`.
+You can use this library and e.g. the `Adafruit_PWMServoDriver` library concurrently to control your servos. Be aware that the PCA9685 expander is **reset** at the first `attach()` and **initialized** at every further `attach()`.<br/>
+On the **ESP32 the I2C library is only capable to run at 100 kHz**, because it interferes with the Ticker / Timer library used.
+Even with 100 kHz clock we have some dropouts / NAK's because of sending address again instead of first data.<br/>
+Since the raw transmission time of 32 Servo positions is 17.4 us @ 100 kHz, not more than 2 expander boards can be connected to one I2C bus on an ESP32 board, if all servos should move simultaneously.
 
 ## Using the included [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for AVR
 Using the **Lightweight Servo Library** reduces sketch size and makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
@@ -171,6 +174,9 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 # Revision History
 ### Version 1.5.1
 - Added support for STM32 cores of Arduino Board manager. Seen in the Arduino IDE as "Generic STM32F1 series" from STM32 Boards.
+- Inserted missing `Wire.begin()` in setup of `PCA9685_Expander` example.
+- In `isMovingAndCallYield()` yield() only called/needed for an ESP8266.
+- New function `areInterruptsActive()`, especially for ESP32.
 
 ### Version 1.5.0
 - Use type `Print *` instead of `Stream *`.

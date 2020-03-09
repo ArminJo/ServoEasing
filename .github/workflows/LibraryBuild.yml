@@ -2,7 +2,7 @@
 # I had to create a new personal token with workflow enabled at https://github.com/settings/tokens
 
 # This is the name of the workflow, visible on GitHub UI.
-name: build
+name: LibraryBuild
 on: [push]
 
 jobs:
@@ -33,6 +33,7 @@ jobs:
         # ATTinyCore:avr:attinyx5:chip=85,clock=1internal, digistump:avr:digispark-tiny, digistump:avr:digispark-pro
         # STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
         # esp8266:esp8266:huzzah:eesz=4M3M,xtal=80, esp32:esp32:featheresp32:FlashFreq=80
+        # You may add a suffix behind the fqbn with "|" to specify one board for e.g. different compile options like arduino:avr:uno|trace 
         #############################################################################################################
         arduino-boards-fqbn:
           - arduino:avr:uno
@@ -129,9 +130,11 @@ jobs:
           ln -s $PWD $HOME/Arduino/libraries/.
 
       - name: Install platform from build matrix
+        env:
+          FQBN: ${{ matrix.arduino-boards-fqbn }}
         run: |
           arduino-cli core update-index
-          if [ "${{  matrix.platform }}" == "" ]; then echo -e ""$RED"ERROR: platform missing for board ${{ matrix.arduino-boards-fqbn }}. Check your matrix.includes entries"; exit 1; fi
+          if [ "${{  matrix.platform }}" == "" ]; then echo -e ""$RED"ERROR: platform missing for board ${FQBN%|*}. Check your matrix.includes entries"; exit 1; fi
           if [[ ${{  matrix.platform }} != *"arduino"* && ! -f ./arduino-cli.yaml ]]; then echo -e ""$RED"Non Arduino platform ${{  matrix.platform }} requested, but file arduino-cli.yaml is missing."; exit 1; fi
           arduino-cli core install ${{ matrix.platform }} # for each job / board one platform is installed
           if [ ${{  matrix.platform }} == "esp32:esp32" ]; then pip install pyserial; fi
@@ -142,6 +145,7 @@ jobs:
       # Finally, we compile the sketch, using the FQBN that was set in the build matrix.
       - name: Compile all examples
         env:
+          FQBN: ${{ matrix.arduino-boards-fqbn }}
           BUILD_PROPERTIES: ${{ toJson(matrix.examples-build-properties) }}
         run: |
           BUILD_PROPERTIES=${BUILD_PROPERTIES#\{} # remove "{"
@@ -157,7 +161,7 @@ jobs:
               # check if there is an entry in the associative array and create a compile parameter
               echo -n "Compiling $EXAMPLE_NAME "
               if [[ "${PROP_MAP[$EXAMPLE_NAME]}" != "" ]]; then echo -n "with ${PROP_MAP[$EXAMPLE_NAME]} "; fi
-              build_stdout=$(arduino-cli compile --verbose --warnings all --fqbn ${{ matrix.arduino-boards-fqbn }} --build-properties compiler.cpp.extra_flags="${PROP_MAP[$EXAMPLE_NAME]}" $(dirname $example) 2>&1);
+              build_stdout=$(arduino-cli compile --verbose --warnings all --fqbn ${FQBN%|*} --build-properties compiler.cpp.extra_flags="${PROP_MAP[$EXAMPLE_NAME]}" $(dirname $example) 2>&1);
               if [ $? -ne 0 ]; then
                 echo -e ""$RED"\xe2\x9c\x96" # If ok output a green checkmark else a red X and the command output.
                 exit_code=1

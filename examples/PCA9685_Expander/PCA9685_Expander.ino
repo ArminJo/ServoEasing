@@ -87,13 +87,18 @@ void setup() {
     /*
      * Check if I2C communication is possible. If not, we will wait forever at endTransmission.
      */
+	// Initialize wire before checkI2CConnection()
+	Wire.begin();  // Starts with 100 kHz. Clock will eventually be increased at first attach() except for ESP32.
     Serial.println(F("Try to communicate with PCA9685 Expander by TWI / I2C"));
     Serial.flush();
     Wire.beginTransmission(PCA9685_DEFAULT_ADDRESS);
-    if (Wire.endTransmission(true) == 0) {
+    uint8_t tWireReturnCode = Wire.endTransmission(true);
+    if (tWireReturnCode == 0) {
         Serial.print(F("Found"));
     } else {
-        Serial.print(F("Error: Communication with I2C was successful, but found no"));
+        Serial.print(F("Error code="));
+        Serial.print(tWireReturnCode);
+        Serial.print(F(". Communication with I2C was successful, but found no"));
     }
     Serial.print(F(" I2C device attached at address: 0x"));
     Serial.println(PCA9685_DEFAULT_ADDRESS, HEX);
@@ -159,25 +164,25 @@ void loop() {
 #endif
     Servo1.startEaseToD(45, 1000);
     // Blink until servo stops
-    while (Servo1.isMoving()) {
+    while (areInterruptsActive()) {
         blinkLED();
     }
 
     delay(1000);
 
 #ifdef INFO
-    Serial.println(F("Move to 135 degree and back nonlinear in one second each using interrupts"));
+    Serial.println(F("Move to 135 degree and back to 54 degree nonlinear in one second each using interrupts"));
 #endif
     Servo1.setEasingType(EASE_CUBIC_IN_OUT);
 
     for (int i = 0; i < 2; ++i) {
         Servo1.startEaseToD(135, 1000);
         // Must call yield here for the ESP boards, since we have no delay called
-        while (Servo1.isMovingAndCallYield()) {
+        while (areInterruptsActive()) {
             ; // no delays here to avoid break between forth and back movement
         }
         Servo1.startEaseToD(45, 1000);
-        while (Servo1.isMovingAndCallYield()) {
+        while (areInterruptsActive()) {
             ; // no delays here to avoid break between forth and back movement
         }
     }
@@ -196,7 +201,7 @@ void loop() {
         delay(20); // just wait until angle is above 120 degree
     }
     digitalWrite(LED_BUILTIN, HIGH);
-    while (Servo1.isMovingAndCallYield()) {
+    while (areInterruptsActive()) {
         ; // wait for servo to stop
     }
 
