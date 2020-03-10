@@ -52,10 +52,23 @@ jobs:
           - arduino-boards-fqbn: arduino:avr:uno
             platform: arduino:avr
             examples-build-properties: # the flags were put in compiler.cpp.extra_flags
+              SymmetricEasing:
+                -DKEEP_SERVO_EASING_LIBRARY_SMALL
+                -DDEBUG
+              AsymmetricEasing:
+                -DTRACE
+              Simple:
+                -DPRINT_FOR_SERIAL_PLOTTER
+              TwoServos:
+                -DUSE_LEIGHTWEIGHT_SERVO_LIB                
+              ThreeServos:
+                -DPROVIDE_ONLY_LINEAR_MOVEMENT
               PCA9685_Expander:
                 -DUSE_PCA9685_SERVO_EXPANDER
               PCA9685_ExpanderFor32Servos:
                 -DUSE_PCA9685_SERVO_EXPANDER
+                -DMAX_EASING_SERVOS=32
+                -DTRACE
 
           - arduino-boards-fqbn: arduino:avr:leonardo
             platform: arduino:avr
@@ -64,6 +77,8 @@ jobs:
                 -DUSE_PCA9685_SERVO_EXPANDER
               PCA9685_ExpanderFor32Servos:
                 -DUSE_PCA9685_SERVO_EXPANDER
+                -DMAX_EASING_SERVOS=32
+                -DTRACE
 
           - arduino-boards-fqbn: arduino:avr:mega
             platform: arduino:avr
@@ -72,6 +87,8 @@ jobs:
                 -DUSE_PCA9685_SERVO_EXPANDER
               PCA9685_ExpanderFor32Servos:
                 -DUSE_PCA9685_SERVO_EXPANDER
+                -DMAX_EASING_SERVOS=32
+                -DTRACE
 
           - arduino-boards-fqbn: arduino:sam:arduino_due_x
             platform: arduino:sam
@@ -81,6 +98,8 @@ jobs:
                 -DUSE_PCA9685_SERVO_EXPANDER
               PCA9685_ExpanderFor32Servos:
                 -DUSE_PCA9685_SERVO_EXPANDER
+                -DMAX_EASING_SERVOS=32
+                -DTRACE
 
           - arduino-boards-fqbn: esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
             platform: esp8266:esp8266
@@ -90,6 +109,8 @@ jobs:
                 -DUSE_PCA9685_SERVO_EXPANDER
               PCA9685_ExpanderFor32Servos:
                 -DUSE_PCA9685_SERVO_EXPANDER
+                -DMAX_EASING_SERVOS=32
+                -DTRACE
 
           - arduino-boards-fqbn: esp32:esp32:featheresp32:FlashFreq=80
             platform: esp32:esp32
@@ -99,6 +120,8 @@ jobs:
                 -DUSE_PCA9685_SERVO_EXPANDER
               PCA9685_ExpanderFor32Servos:
                 -DUSE_PCA9685_SERVO_EXPANDER
+                -DMAX_EASING_SERVOS=32
+                -DTRACE
 
           - arduino-boards-fqbn: STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
             platform: STM32:stm32
@@ -108,6 +131,8 @@ jobs:
                 -DUSE_PCA9685_SERVO_EXPANDER
               PCA9685_ExpanderFor32Servos:
                 -DUSE_PCA9685_SERVO_EXPANDER
+                -DMAX_EASING_SERVOS=32
+                -DTRACE
 
       # Do not cancel all jobs / architectures if one job fails
       fail-fast: false

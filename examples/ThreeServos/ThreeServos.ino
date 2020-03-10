@@ -172,7 +172,7 @@ void loop() {
      * Just let the LED blink until servos stop.
      * Since all servos stops at the same time I have to check only one
      */
-    while (Servo1.isMoving()) {
+    while (areInterruptsActive()) {
         blinkLED();
     }
 
@@ -188,7 +188,7 @@ void loop() {
     Servo2.startEaseToD(90, Servo1.mMillisForCompleteMove);
     // No timing synchronization needed :-)
     // blink until servo stops
-    while (Servo2.isMoving()) {
+    while (areInterruptsActive()) {
         blinkLED();
     }
 
@@ -212,7 +212,7 @@ void loop() {
     Servo2.setEaseTo(0, 40);
     Servo3.startEaseTo(0, 20); // Start interrupt for all servos. No synchronization here since the servos should move independently.
     // Blink until servos stops
-    while (Servo1.isMoving() || Servo2.isMoving() || Servo3.isMoving()) {
+    while (areInterruptsActive()) {
         blinkLED();
     }
 

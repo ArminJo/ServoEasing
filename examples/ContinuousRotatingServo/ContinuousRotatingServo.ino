@@ -126,7 +126,7 @@ void loop() {
         blinkLED();
     }
     Servo1.startEaseTo(0, 20);
-    while (Servo1.isMoving()) {
+    while (areInterruptsActive()) {
         blinkLED();
     }
     delay(1000);

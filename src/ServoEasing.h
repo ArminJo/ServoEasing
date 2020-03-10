@@ -24,8 +24,8 @@
 #ifndef SERVOEASING_H_
 #define SERVOEASING_H_
 
-#define VERSION_SERVO_EASING "1.5.1"
-#define VERSION_SERVO_EASING_NUMERICAL 151
+#define VERSION_SERVO_EASING "1.5.2"
+#define VERSION_SERVO_EASING_NUMERICAL 152
 
 // @formatter:off
 /*  *****************************************************************************************************************************
@@ -164,6 +164,9 @@
 // @formatter:on
 
 /*
+ * Version 1.5.2 - 3/2020
+ * - More examples using `areInterruptsActive()`.
+ *
  * Version 1.5.1 - 3/2020
  * - Added support for STM32 cores of Arduino Board manager. Seen in the Arduino IDE as "Generic STM32F1 series" from STM32 Boards.
  * - Inserted missing `Wire.begin()` in setup of `PCA9685_Expander` example.

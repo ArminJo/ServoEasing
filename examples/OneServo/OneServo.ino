@@ -117,7 +117,7 @@ void loop() {
 #endif
     Servo1.startEaseToD(45, 1000);
     // Blink until servo stops
-    while (Servo1.isMoving()) {
+    while (areInterruptsActive()) {
         blinkLED();
     }
 

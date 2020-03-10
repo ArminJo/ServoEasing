@@ -148,7 +148,7 @@ void loop() {
      * Now you can run your program while the servos are moving.
      * Just let the LED blink until servos stop.
      */
-    while (Servo1.isMoving()) {
+    while (areInterruptsActive()) {
         blinkLED();
     }
 
