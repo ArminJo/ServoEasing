@@ -32,6 +32,7 @@ getDeltaMicrosecondsOrUnits	KEYWORD2
 getMillisForCompleteMove	KEYWORD2
 isMoving	KEYWORD2
 isMovingAndCallYield	KEYWORD2
+areInterruptsActive   KEYWORD2
 MicrosecondsToDegree	KEYWORD2
 DegreeToMicroseconds	KEYWORD2
 synchronizeServosAndStartInterrupt	KEYWORD2

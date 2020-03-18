@@ -1,9 +1,13 @@
-# Before being able to push to my .github\workflows directories,
-# I had to create a new personal token with workflow enabled at https://github.com/settings/tokens
+# LibraryBuild.yml
+# Github workflow script to test compile all examples of an Arduino library repository.
+#
+# Copyright (C) 2020  Armin Joachimsmeyer
+# https://github.com/ArminJo/Github-Actions
+#
 
 # This is the name of the workflow, visible on GitHub UI.
 name: LibraryBuild
-on: [push]
+on: [push, pull_request] # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows#pull-request-event-pull_request
 
 jobs:
   build:
@@ -16,12 +20,6 @@ jobs:
       # If you need a library with a space in its name, like Adafruit NeoPixel or Adafruit INA219, you must use double quotes
       # around the name and have at least 2 entries, where the first must be without double quotes! You may use Servo as dummy entry.
       REQUIRED_LIBRARIES: Servo ESP32Servo
-
-      # Output colors
-      RED: '\033[0;31m'
-      GREEN: '\033[0;32m'
-      YELLOW: '\033[1;33m'
-      BLUE: '\033[0;34m'
 
     strategy:
       matrix:
@@ -44,13 +42,12 @@ jobs:
           - esp32:esp32:featheresp32:FlashFreq=80
           - STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
 
-        # Choose the right platform for the boards we want to test. (maybe in the future Arduino will automatically do this for you).
-        # This works like this: when the fqbn is "arduino:avr:uno" the variable `platform` is set to "arduino:avr".
-        # Just take the first 2 token of the fqbn - this cannot be automatically done by GitHub workflow :-(
+        # Specify parameters for each board.
+        # Parameters can be: platform-url, examples-exclude and examples-build-properties
+        # With examples-exclude you may exclude specific examples for a board. Use a space separated list.
         #############################################################################################################
         include:
           - arduino-boards-fqbn: arduino:avr:uno
-            platform: arduino:avr
             examples-build-properties: # the flags were put in compiler.cpp.extra_flags
               SymmetricEasing:
                 -DKEEP_SERVO_EASING_LIBRARY_SMALL
@@ -71,7 +68,6 @@ jobs:
                 -DTRACE
 
           - arduino-boards-fqbn: arduino:avr:leonardo
-            platform: arduino:avr
             examples-build-properties:
               PCA9685_Expander:
                 -DUSE_PCA9685_SERVO_EXPANDER
@@ -81,7 +77,6 @@ jobs:
                 -DTRACE
 
           - arduino-boards-fqbn: arduino:avr:mega
-            platform: arduino:avr
             examples-build-properties:
               PCA9685_Expander:
                 -DUSE_PCA9685_SERVO_EXPANDER
@@ -91,7 +86,6 @@ jobs:
                 -DTRACE
 
           - arduino-boards-fqbn: arduino:sam:arduino_due_x
-            platform: arduino:sam
             examples-exclude: QuadrupedControl RobotArmControl # QuadrupedControl RobotArmControl because of missing EEprom
             examples-build-properties:
               PCA9685_Expander:
@@ -102,7 +96,7 @@ jobs:
                 -DTRACE
 
           - arduino-boards-fqbn: esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
-            platform: esp8266:esp8266
+            platform-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
             examples-exclude: QuadrupedControl RobotArmControl SpeedTest # SpeedTest because of only one analog input
             examples-build-properties:
               PCA9685_Expander:
@@ -113,7 +107,7 @@ jobs:
                 -DTRACE
 
           - arduino-boards-fqbn: esp32:esp32:featheresp32:FlashFreq=80
-            platform: esp32:esp32
+            platform-url: https://dl.espressif.com/dl/package_esp32_index.json
             examples-exclude: QuadrupedControl RobotArmControl # Space separated list of (unique substrings of) example names to exclude in build
             examples-build-properties:
               PCA9685_Expander:
@@ -124,7 +118,7 @@ jobs:
                 -DTRACE
 
           - arduino-boards-fqbn: STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
-            platform: STM32:stm32
+            platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/dev/STM32/package_stm_index.json
             examples-exclude: QuadrupedControl RobotArmControl
             examples-build-properties:
               PCA9685_Expander:
@@ -144,57 +138,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@master
 
-      # We use the `arduino/setup-arduino-cli` action to install and
-      # configure the Arduino CLI on the system.
-      - name: Setup Arduino CLI
-        uses: arduino/setup-arduino-cli@v1.0.0
-
-      - name: Link this repository as Arduino library
-        run: |
-          mkdir -p $HOME/Arduino/libraries
-          ln -s $PWD $HOME/Arduino/libraries/.
-
-      - name: Install platform from build matrix
-        env:
-          FQBN: ${{ matrix.arduino-boards-fqbn }}
-        run: |
-          arduino-cli core update-index
-          if [ "${{  matrix.platform }}" == "" ]; then echo -e ""$RED"ERROR: platform missing for board ${FQBN%|*}. Check your matrix.includes entries"; exit 1; fi
-          if [[ ${{  matrix.platform }} != *"arduino"* && ! -f ./arduino-cli.yaml ]]; then echo -e ""$RED"Non Arduino platform ${{  matrix.platform }} requested, but file arduino-cli.yaml is missing."; exit 1; fi
-          arduino-cli core install ${{ matrix.platform }} # for each job / board one platform is installed
-          if [ ${{  matrix.platform }} == "esp32:esp32" ]; then pip install pyserial; fi
-
-      - name: Install libraries
-        run: if [[ "$REQUIRED_LIBRARIES" != "" ]]; then arduino-cli lib install ${{ env.REQUIRED_LIBRARIES }}; fi
-
-      # Finally, we compile the sketch, using the FQBN that was set in the build matrix.
       - name: Compile all examples
-        env:
-          FQBN: ${{ matrix.arduino-boards-fqbn }}
-          BUILD_PROPERTIES: ${{ toJson(matrix.examples-build-properties) }}
-        run: |
-          BUILD_PROPERTIES=${BUILD_PROPERTIES#\{} # remove "{"
-          # if matrix.examples-build-properties are specified, create an associative shell array
-          if [[ $BUILD_PROPERTIES != "null" ]]; then declare -A PROP_MAP="( $(echo $BUILD_PROPERTIES | sed -E 's/"(\w*)": *([^,}]*)[,}]/\[\1\]=\2/g' ) )"; fi
-          echo -e "Compiling examples for board ${{ matrix.arduino-boards-fqbn }} \n"
-          EXAMPLES=($(find . -name "*.ino"))
-          for example in "${EXAMPLES[@]}"; do # Loop over all example directories
-            EXAMPLE_NAME=$(basename $(dirname $example))
-            if [[ "${{ matrix.examples-exclude }}" == *"$EXAMPLE_NAME"* ]]; then
-              echo -e "Skipping $EXAMPLE_NAME \xe2\x9e\x9e" # Right arrow
-            else
-              # check if there is an entry in the associative array and create a compile parameter
-              echo -n "Compiling $EXAMPLE_NAME "
-              if [[ "${PROP_MAP[$EXAMPLE_NAME]}" != "" ]]; then echo -n "with ${PROP_MAP[$EXAMPLE_NAME]} "; fi
-              build_stdout=$(arduino-cli compile --verbose --warnings all --fqbn ${FQBN%|*} --build-properties compiler.cpp.extra_flags="${PROP_MAP[$EXAMPLE_NAME]}" $(dirname $example) 2>&1);
-              if [ $? -ne 0 ]; then
-                echo -e ""$RED"\xe2\x9c\x96" # If ok output a green checkmark else a red X and the command output.
-                exit_code=1
-                echo -e "$build_stdout \n"
-              else
-                echo -e ""$GREEN"\xe2\x9c\x93"
-              fi
-            fi
-          done
-          exit $exit_code
-        shell: bash {0} # Needed to avoid an exit at first error
+        uses: ArminJo/arduino-test-compile@master
+        with:
+          arduino-board-fqbn: ${{ matrix.arduino-boards-fqbn }}
+          platform-url: ${{ matrix.platform-url }}
+          required-libraries: ${{ env.REQUIRED_LIBRARIES }}
+          examples-exclude: ${{ matrix.examples-exclude }}
+          examples-build-properties: ${{ toJson(matrix.examples-build-properties) }}
