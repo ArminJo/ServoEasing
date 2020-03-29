@@ -174,6 +174,7 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 # Revision History
 ### Version 1.5.2
 - More examples using `areInterruptsActive()`.
+- Added support of **Arduino SAMD** boards.
 
 ### Version 1.5.1
 - Added support for STM32 cores of Arduino Board manager. Seen in the Arduino IDE as "Generic STM32F1 series" from STM32 Boards.
@@ -185,7 +186,7 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 - Use type `Print *` instead of `Stream *`.
 - New LightweightServoExample.
 - Added function `delayAndUpdateAndWaitForAllServosToStop()`.
-- Added Arduino Due support by using timer 8.
+- Added **Arduino Due** support by using timer 8.
 - New PCA9685_ExpanderFor32Servos example.
 
 ### Version 1.4.3
@@ -200,7 +201,7 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 ### Version 1.4.1
 - Improved documentation and definitions for continuous rotating servo. Thanks to Eebel!
 - Improved support and documentation for generating Arduino Serial Plotter output.
-- Support of STM32F1 / BluePill boards.
+- Support of **STM32F1 / BluePill** boards.
 
 ### Version 1.4.0
 - setTrim has additional parameter `doWrite` which is default `false` in contrast to older versions, where a write was always performed.
@@ -212,14 +213,14 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 - Added `detach()` function.
 
 ### Version 1.3.0
-- Added ESP32 support by using *ESP32Servo.h* and *Ticker.h* instead of *Servo.h* timer interrupts.
+- Added **ESP32** support by using *ESP32Servo.h* and *Ticker.h* instead of *Servo.h* timer interrupts.
 - Changed degree parameter and values from uint8_t to integer to support operating a servo from -90 to + 90 degree with 90 degree trim.
 - `RobotArmControl` + `QuadrupedControl` examples refactored.
 - Changed "while" to "for" loops to avoid a gcc 7.3.0 atmel6.3.1 bug.
 - Extended `SpeedTest` example. Now also able to change the width of the refresh period.
 
 ### Version 1.2
-- Added ESP8266 support by using Ticker instead of timer interrupts for ESP.
+- Added **ESP8266** support by using Ticker instead of timer interrupts for ESP.
 - `AsymetricEasing` example overhauled.
 
 ### Version 1.1.0
@@ -235,7 +236,7 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 Initial Arduino library version
 
 # CI
-Since Travis CI is unreliable and slow (6 times slower 17:43 vs. 3:00 minutes), the library examples are now tested with GitHub Actions for the following boards:
+Since Travis CI is unreliable and slow (5 times slower 17:43 vs. 3:15 minutes), the library examples are now tested with GitHub Actions for the following boards:
 
 - arduino:avr:uno
 - arduino:avr:leonardo

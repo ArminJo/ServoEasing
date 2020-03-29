@@ -36,6 +36,7 @@ jobs:
           - arduino:avr:leonardo
           - arduino:avr:mega
           - arduino:sam:arduino_due_x
+          - arduino:samd:mkrwifi1010
           - esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
           - esp32:esp32:featheresp32:FlashFreq=80
           - STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
@@ -94,7 +95,7 @@ jobs:
 
           - arduino-boards-fqbn: esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
             platform-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
-            examples-exclude: QuadrupedControl RobotArmControl,SpeedTest # SpeedTest because of only one analog input
+            examples-exclude: QuadrupedControl,RobotArmControl,SpeedTest # SpeedTest because of only one analog input
             examples-build-properties:
               PCA9685_Expander:
                 -DUSE_PCA9685_SERVO_EXPANDER
@@ -116,6 +117,16 @@ jobs:
 
           - arduino-boards-fqbn: STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
             platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/dev/STM32/package_stm_index.json
+            examples-exclude: QuadrupedControl,RobotArmControl
+            examples-build-properties:
+              PCA9685_Expander:
+                -DUSE_PCA9685_SERVO_EXPANDER
+              PCA9685_ExpanderFor32Servos:
+                -DUSE_PCA9685_SERVO_EXPANDER
+                -DMAX_EASING_SERVOS=32
+                -DTRACE
+
+          - arduino-boards-fqbn: arduino:samd:mkrwifi1010
             examples-exclude: QuadrupedControl,RobotArmControl
             examples-build-properties:
               PCA9685_Expander:

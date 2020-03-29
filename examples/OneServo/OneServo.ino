@@ -130,7 +130,7 @@ void loop() {
 
     for (int i = 0; i < 2; ++i) {
         Servo1.startEaseToD(135, 1000);
-        // Must call yield here for the ESP boards, since we have no delay called
+        // areInterruptsActive() calls yield for the ESP8266 boards
         while (areInterruptsActive()) {
             ; // no delays here to avoid break between forth and back movement
         }
