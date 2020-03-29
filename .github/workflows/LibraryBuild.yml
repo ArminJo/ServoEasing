@@ -16,10 +16,8 @@ jobs:
     runs-on: ubuntu-latest # I picked Ubuntu to use shell scripts.
 
     env:
-      # Space separated list without double quotes around the list. 
-      # If you need a library with a space in its name, like Adafruit NeoPixel or Adafruit INA219, you must use double quotes
-      # around the name and have at least 2 entries, where the first must be without double quotes! You may use Servo as dummy entry.
-      REQUIRED_LIBRARIES: Servo ESP32Servo
+      # Comma separated list without double quotes around the list. 
+      REQUIRED_LIBRARIES: Servo,ESP32Servo
 
     strategy:
       matrix:
@@ -43,8 +41,7 @@ jobs:
           - STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
 
         # Specify parameters for each board.
-        # Parameters can be: platform-url, examples-exclude and examples-build-properties
-        # With examples-exclude you may exclude specific examples for a board. Use a space separated list.
+        # With examples-exclude you may exclude specific examples for a board. Use a comma separated list.
         #############################################################################################################
         include:
           - arduino-boards-fqbn: arduino:avr:uno
@@ -86,7 +83,7 @@ jobs:
                 -DTRACE
 
           - arduino-boards-fqbn: arduino:sam:arduino_due_x
-            examples-exclude: QuadrupedControl RobotArmControl # QuadrupedControl RobotArmControl because of missing EEprom
+            examples-exclude: QuadrupedControl,RobotArmControl # QuadrupedControl RobotArmControl because of missing EEprom
             examples-build-properties:
               PCA9685_Expander:
                 -DUSE_PCA9685_SERVO_EXPANDER
@@ -97,7 +94,7 @@ jobs:
 
           - arduino-boards-fqbn: esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
             platform-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
-            examples-exclude: QuadrupedControl RobotArmControl SpeedTest # SpeedTest because of only one analog input
+            examples-exclude: QuadrupedControl RobotArmControl,SpeedTest # SpeedTest because of only one analog input
             examples-build-properties:
               PCA9685_Expander:
                 -DUSE_PCA9685_SERVO_EXPANDER
@@ -108,7 +105,7 @@ jobs:
 
           - arduino-boards-fqbn: esp32:esp32:featheresp32:FlashFreq=80
             platform-url: https://dl.espressif.com/dl/package_esp32_index.json
-            examples-exclude: QuadrupedControl RobotArmControl # Space separated list of (unique substrings of) example names to exclude in build
+            examples-exclude: QuadrupedControl,RobotArmControl # Comma separated list of (unique substrings of) example names to exclude in build
             examples-build-properties:
               PCA9685_Expander:
                 -DUSE_PCA9685_SERVO_EXPANDER
@@ -119,7 +116,7 @@ jobs:
 
           - arduino-boards-fqbn: STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
             platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/dev/STM32/package_stm_index.json
-            examples-exclude: QuadrupedControl RobotArmControl
+            examples-exclude: QuadrupedControl,RobotArmControl
             examples-build-properties:
               PCA9685_Expander:
                 -DUSE_PCA9685_SERVO_EXPANDER
@@ -138,11 +135,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@master
 
-      - name: Compile all examples
-        uses: ArminJo/arduino-test-compile@master
-        with:
-          arduino-board-fqbn: ${{ matrix.arduino-boards-fqbn }}
-          platform-url: ${{ matrix.platform-url }}
-          required-libraries: ${{ env.REQUIRED_LIBRARIES }}
-          examples-exclude: ${{ matrix.examples-exclude }}
-          examples-build-properties: ${{ toJson(matrix.examples-build-properties) }}
+      # Test of the arduino-test-compile script
+      - name: Compile all examples using the bash script arduino-test-compile.sh
+        env:
+          # Passing parameters to the script by setting the appropriate ENV_* variables.
+          ENV_ARDUINO_BOARD_FQBN: ${{ matrix.arduino-boards-fqbn }}
+          ENV_PLATFORM_URL: ${{ matrix.platform-url }}
+          ENV_REQUIRED_LIBRARIES: ${{ env.REQUIRED_LIBRARIES }}
+          ENV_EXAMPLES_EXCLUDE: ${{ matrix.examples-exclude }}
+          ENV_EXAMPLES_BUILD_PROPERTIES: ${{ toJson(matrix.examples-build-properties) }}
+        run: |
+          wget --quiet https://raw.githubusercontent.com/ArminJo/arduino-test-compile/master/arduino-test-compile.sh
+            ls -l arduino-test-compile.sh
+            chmod +x arduino-test-compile.sh
+            ./arduino-test-compile.sh

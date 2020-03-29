@@ -35,6 +35,8 @@ assignees: ArminJo
 * [ ] ContinuousRotatingServo
 * [ ] Other
 
+### Pin(s) used for servo if not default
+
 ### Current behavior
 <!-- Paste the code and output you run -->
 
