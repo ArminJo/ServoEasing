@@ -413,7 +413,7 @@ public:
     int getDeltaMicrosecondsOrUnits();
     int getMillisForCompleteMove();
     bool isMoving();
-    bool isMovingAndCallYield();
+    bool isMovingAndCallYield() __attribute__ ((deprecated ("Most times better use areInterruptsActive()")))  ;
 
     int MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits);
     int DegreeToMicrosecondsOrUnits(int aDegree);

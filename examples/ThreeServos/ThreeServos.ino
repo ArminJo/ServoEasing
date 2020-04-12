@@ -78,6 +78,7 @@ void setup() {
     // Just to know which program is running on my Arduino
 #ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
+    Serial.println(F("Using library version " VERSION_SERVO_EASING));
 #endif
 
     // Attach servos to pins

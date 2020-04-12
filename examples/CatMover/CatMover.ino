@@ -76,6 +76,7 @@ void setup() {
 #endif
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from  " __DATE__));
+    Serial.println(F("Using library version " VERSION_SERVO_EASING));
 
     // initialize the digital pin as an output.
     pinMode(LASER_POWER_PIN, OUTPUT);

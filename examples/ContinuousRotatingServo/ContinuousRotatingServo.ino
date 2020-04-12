@@ -64,6 +64,7 @@ void setup() {
 #endif
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
+    Serial.println(F("Using library version " VERSION_SERVO_EASING));
 
     // Attach servo to pin
     Serial.print(F("Attach servo at pin "));

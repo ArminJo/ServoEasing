@@ -1124,6 +1124,7 @@ void enableServoEasingInterrupt() {
 	while (GCLK->STATUS.bit.SYNCBUSY) {
 		;
 	}
+
 	// Reset TCx
 	TC5->COUNT16.CTRLA.reg = TC_CTRLA_SWRST;
 	while (TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY) {
@@ -1132,6 +1133,7 @@ void enableServoEasingInterrupt() {
 	while (TC5->COUNT16.CTRLA.bit.SWRST) {
 		;
 	}
+
 	TC5->COUNT16.CTRLA.reg |= TC_CTRLA_MODE_COUNT16; // Set Timer counter Mode to 16 bits
 	TC5->COUNT16.CTRLA.reg |= TC_CTRLA_WAVEGEN_MFRQ; // Set TC5 mode as match frequency
 	TC5->COUNT16.CTRLA.reg |= TC_CTRLA_PRESCALER_DIV1 | TC_CTRLA_ENABLE; // Prescaler DIV1 (=no prescaler div), start counter

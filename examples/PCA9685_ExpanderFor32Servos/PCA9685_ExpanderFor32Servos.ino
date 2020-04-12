@@ -48,7 +48,7 @@
 //#define DEBUG // to see all ServoEasing's object info
 #define INFO // to see serial output of loop
 
-//#define USE_ONLY_ONE_EXPANDER
+//#define USE_ONLY_ONE_EXPANDER // Reuse this example for one expander at PCA9685_DEFAULT_ADDRESS
 #if !defined(USE_ONLY_ONE_EXPANDER) && (MAX_EASING_SERVOS < 32)
 #warning "You use at least 2 expanders but MAX_EASING_SERVOS is less than 32, so you have no space for 32 servos (which might be ok, since you must not use 16 servos on one expander)"
 #endif
@@ -79,6 +79,7 @@ void setup() {
 #endif
 	// Just to know which program is running on my Arduino
 	Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
+    Serial.println(F("Using library version " VERSION_SERVO_EASING));
 
 	Serial.println(F("Example for a maximum of " STR(NUMBER_OF_SERVOS) " servos"));
 	Serial.println();

@@ -37,7 +37,11 @@ assignees: ArminJo
 * [ ] ContinuousRotatingServo
 * [ ] Other
 
-### Pin(s) used for servo if not default
+### Pin(s) used for servo, if not default
+
+### Version
+* [ ] Yes I use the latest version
+* [ ] Other - please specify
 
 ### Current behavior
 <!-- Paste the code and output you run -->
@@ -49,6 +53,8 @@ assignees: ArminJo
 ### Expected behavior
 <!-- Add a clear and concise description of what you expected to happen. -->
 
+### Error output
+<!-- Add a the serial output which indicates the error happened. -->
 
 ### Additional context
 <!-- (Optional) Add any other context about the problem here. -->
