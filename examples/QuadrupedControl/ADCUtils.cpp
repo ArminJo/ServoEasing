@@ -22,7 +22,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/gpl.html>.
  */
 
-#if defined(AVR)
+#if defined(__AVR__)
 #include "ADCUtils.h"
 
 // Union to speed up the combination of low and high bytes to a word
@@ -334,4 +334,4 @@ float getTemperature(void) {
     return (tTemp / 1.22);
 #endif
 }
-#endif // defined(AVR)
+#endif // defined(__AVR__)

@@ -32,16 +32,16 @@
 #define VERSION_EXAMPLE "2.0"
 
 #if defined(ESP8266)
-const int SERVO1_PIN = 14; // D5
-const int SERVO2_PIN = 12; // D6
-const int SERVO3_PIN = 13; // D7
-const int SPEED_IN_PIN = 0;
+#define SERVO1_PIN 14 // D5
+#define SERVO2_PIN 12 // D6
+#define SERVO3_PIN 13 // D7
+#define SPEED_IN_PIN 0
 
 #elif defined(ESP32)
 const int SERVO1_PIN = 5;
 const int SERVO2_PIN = 18;
 const int SERVO3_PIN = 19;
-const int SPEED_IN_PIN = 36;
+#define SPEED_IN_PIN A0 // 36/VP
 
 #elif defined(STM32F1xx) || defined(__STM32F1__)
 // BluePill in 2 flavors
@@ -51,6 +51,12 @@ const int SERVO1_PIN = PB7;
 const int SERVO2_PIN = PB8;
 const int SERVO3_PIN = PB9; // Needs timer 4 for Servo library
 const int SPEED_IN_PIN = PA0;
+
+#elif defined(ARDUINO_ARCH_APOLLO3)
+const int SERVO1_PIN = 11;
+const int SERVO2_PIN = 12;
+const int SERVO3_PIN = 13;
+const int SPEED_IN_PIN = A3;
 
 #else
 const int SERVO1_PIN = 9;

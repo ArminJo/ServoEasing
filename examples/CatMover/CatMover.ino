@@ -30,9 +30,9 @@
 #define VERSION_EXAMPLE "1.4"
 
 #if defined(ESP8266)
-const int LASER_POWER_PIN = 13;
-const int HORIZONTAL_SERVO_PIN = 14; // D5
-const int VERTICAL_SERVO_PIN = 12; // D6
+#define LASER_POWER_PIN       13 // D7
+#define HORIZONTAL_SERVO_PIN 14  // D5
+#define VERTICAL_SERVO_PIN    12 // D6
 
 #elif defined(ESP32)
 const int LASER_POWER_PIN = 13;
@@ -46,6 +46,11 @@ const int VERTICAL_SERVO_PIN = 18;
 const int LASER_POWER_PIN = PC13;
 const int HORIZONTAL_SERVO_PIN = PB8;
 const int VERTICAL_SERVO_PIN = PB9; // Needs timer 4 for Servo library
+
+#elif defined(ARDUINO_ARCH_APOLLO3)
+const int LASER_POWER_PIN = 13;
+const int HORIZONTAL_SERVO_PIN = 11;
+const int VERTICAL_SERVO_PIN = 12;
 
 #else
 const int LASER_POWER_PIN = 5;

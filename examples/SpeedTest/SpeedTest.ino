@@ -51,7 +51,7 @@
 
 #define VERSION_EXAMPLE "1.0"
 
-#if defined(AVR)
+#if defined(__AVR__)
 #include "ADCUtils.h" // for get getVCCVoltageMillivolt
 /*
  * By using LightweightServo library we can change the refresh period.
@@ -71,8 +71,8 @@
 
 #if defined(ESP32)
 const int SERVO_UNDER_TEST_PIN = 5;
-const int SPEED_OR_POSITION_ANALOG_INPUT_PIN = 36;
-const int MODE_ANALOG_INPUT_PIN = 39;
+#define SPEED_OR_POSITION_ANALOG_INPUT_PIN A0 // 36/VP
+#define MODE_ANALOG_INPUT_PIN A3 // 39;
 
 #elif defined(STM32F1xx) || defined(__STM32F1__)
 // BluePill in 2 flavors
@@ -81,6 +81,11 @@ const int MODE_ANALOG_INPUT_PIN = 39;
 const int SERVO_UNDER_TEST_PIN = PB9; // Needs timer 4 for Servo library
 const int SPEED_OR_POSITION_ANALOG_INPUT_PIN = PA0;
 const int MODE_ANALOG_INPUT_PIN = PA1;
+
+#elif defined(ARDUINO_ARCH_APOLLO3)
+const int SERVO_UNDER_TEST_PIN = 11;
+const int SPEED_OR_POSITION_ANALOG_INPUT_PIN = A3;
+const int MODE_ANALOG_INPUT_PIN = A2;
 
 #else
 const int SERVO_UNDER_TEST_PIN = 9;
@@ -160,7 +165,7 @@ void loop() {
     int tPulseMicros;
     static int sLastPulseMicros;
 
-#if defined(AVR)
+#if defined(__AVR__)
     int tVoltageMillivolts = getVCCVoltageMillivolt();
 #else
     int tVoltageMillivolts = 3333; // Dummy value

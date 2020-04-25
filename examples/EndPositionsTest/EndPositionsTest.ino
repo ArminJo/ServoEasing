@@ -37,7 +37,7 @@
 #include <Servo.h>
 #endif
 
-#if defined(AVR)
+#if defined(__AVR__)
 #include "ADCUtils.h" // for get getVCCVoltageMillivolt
 #endif
 
@@ -51,7 +51,7 @@ const int POSITION_ANALOG_INPUT_PIN = 0;
 
 #elif defined(ESP32)
 const int SERVO_UNDER_TEST_PIN = 5;
-const int POSITION_ANALOG_INPUT_PIN = 36;
+#define POSITION_ANALOG_INPUT_PIN A0 // 36/VP
 
 #elif defined(STM32F1xx) || defined(__STM32F1__)
 // BluePill in 2 flavors
@@ -59,6 +59,10 @@ const int POSITION_ANALOG_INPUT_PIN = 36;
 // __STM32F1__is for "Generic STM32F103C series" from STM32F1 Boards (STM32duino.com) of manual installed hardware folder
 const int SERVO_UNDER_TEST_PIN = PB9; // Needs timer 4 for Servo library
 const int POSITION_ANALOG_INPUT_PIN = PA1;
+
+#elif defined(ARDUINO_ARCH_APOLLO3)
+const int SERVO_UNDER_TEST_PIN = 11;
+const int POSITION_ANALOG_INPUT_PIN = A3;
 
 #else
 const int SERVO_UNDER_TEST_PIN = 9;
@@ -111,7 +115,7 @@ void loop() {
         Serial.print(" degree=");
         Serial.print(ServoUnderTest.read());
 
-#if defined(AVR)
+#if defined(__AVR__)
         int tVoltageMillivolts = getVCCVoltageMillivolt();
         Serial.print(" VCC=");
         // since the values may depend from the supply voltage, print this value too,

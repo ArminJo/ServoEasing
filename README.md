@@ -1,10 +1,10 @@
 # [ServoEasing](https://github.com/ArminJo/ServoEasing) - move your servo more natural
-### Version 1.5.2
+### Version 1.6.0
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
 [![Commits since latest](https://img.shields.io/github/commits-since/ArminJo/ServoEasing/latest)](https://github.com/ArminJo/ServoEasing/commits/master)
 [![Build Status](https://github.com/ArminJo/ServoEasing/workflows/LibraryBuild/badge.svg)](https://github.com/ArminJo/ServoEasing/actions)
-[![Hit Counter](https://hitcounter.pythonanywhere.com/count/tag.svg?url=https%3A%2F%2Fgithub.com%2FArminJo%2FServoEasing)](https://github.com/brentvollebregt/hit-counter)
+[![Hit Counter](https://hitcounter.pythonanywhere.com/count/tag.svg?url=https://github.com/ArminJo/ServoEasing)](https://github.com/brentvollebregt/hit-counter)
 
 YouTube video of ServoEasing in action
 
@@ -81,7 +81,7 @@ To enable it, open the library file *ServoEasing.h* and comment out the line `#d
 If not using the Arduino IDE, take care that Arduino Servo library sources are not compiled / included in the project.
 
 ## Reducing library size
-If you have only one or two servos, then you can save program space by using Lightweight Servo library .
+If you have only one or two servos, then you can save program space by using Lightweight Servo library.
 This saves 742 bytes FLASH and 42 bytes RAM.<br/>
 If you do not need the more complex easing functions like `Sine` etc., which in turn need sin(), cos(), sqrt() and pow(), you can shrink library size by approximately 1850 bytes by commenting out the line `#define KEEP_SERVO_EASING_LIBRARY_SMALL` in the library file *ServoEasing.h* or define global symbol with `-DKEEP_SERVO_EASING_LIBRARY_SMALL` which is not yet possible in Arduino IDE:-(.<br/>
 
@@ -172,12 +172,16 @@ If you see strange behavior, you can open the library file *ServoEasing.h* and c
 This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
 
 # Revision History
+### Version 1.6.0
+- Added support of **Apollo3** boards.
+- Print library version in examples.
+
 ### Version 1.5.2
 - More examples using `areInterruptsActive()`.
 - Added support of **Arduino SAMD** boards.
 
 ### Version 1.5.1
-- Added support for STM32 cores of Arduino Board manager. Seen in the Arduino IDE as "Generic STM32F1 series" from STM32 Boards.
+- Added support for **STM32** cores of Arduino Board manager. Seen in the Arduino IDE as "Generic STM32F1 series" from STM32 Boards.
 - Inserted missing `Wire.begin()` in setup of `PCA9685_Expander` example.
 - In `isMovingAndCallYield()` yield() only called/needed for an ESP8266.
 - New function `areInterruptsActive()`, especially for ESP32.
@@ -245,6 +249,7 @@ Since Travis CI is unreliable and slow (5 times slower 17:43 vs. 3:15 minutes), 
 - esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
 - esp32:esp32:featheresp32:FlashFreq=80
 - STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
+- SparkFun:apollo3:amap3nano
 
 ## Requests for modifications / extensions
 Please write me a PM including your motivation/problem if you need a modification or an extension e.g. a callback functionality after move has finished.

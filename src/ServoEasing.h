@@ -24,8 +24,8 @@
 #ifndef SERVOEASING_H_
 #define SERVOEASING_H_
 
-#define VERSION_SERVO_EASING "1.5.2"
-#define VERSION_SERVO_EASING_NUMERICAL 152
+#define VERSION_SERVO_EASING "1.6.0"
+#define VERSION_SERVO_EASING_NUMERICAL 160
 
 // @formatter:off
 /*  *****************************************************************************************************************************
@@ -61,7 +61,7 @@
 #error "Please define only one of the symbols USE_PCA9685_SERVO_EXPANDER or USE_LEIGHTWEIGHT_SERVO_LIB"
 #endif
 
-#if ! ( defined(__AVR__) || defined(ESP8266) || defined(ESP32) || defined(STM32F1xx) || defined(__STM32F1__) || defined(__SAM3X8E__) || defined(ARDUINO_ARCH_SAMD))
+#if ! ( defined(__AVR__) || defined(ESP8266) || defined(ESP32) || defined(STM32F1xx) || defined(__STM32F1__) || defined(__SAM3X8E__) || defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_APOLLO3))
 #warning "No periodic timer support existent (or known) for this platform. Only blocking functions and simple example will run!"
 #endif
 
@@ -116,11 +116,14 @@
 #endif // defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 
 #if ! defined(REFRESH_INTERVAL)
-#define REFRESH_INTERVAL 20000   // (from Servo.h)
+#define REFRESH_INTERVAL 20000   // // minimum time to refresh servos in microseconds (from Servo.h)
 #endif
 #if ! defined(INVALID_SERVO)
 #define INVALID_SERVO    255     // flag indicating an invalid servo index (from Servo.h)
 #endif
+#define REFRESH_INTERVAL_MICROS REFRESH_INTERVAL         // 20000
+#define REFRESH_INTERVAL_MILLIS (REFRESH_INTERVAL/1000)  // 20 - used for delay()
+#define REFRESH_FREQUENCY (1000/REFRESH_INTERVAL_MILLIS) // 50
 
 /*
  * Define `KEEP_SERVO_EASING_LIBRARY_SMALL` if space (1850 Bytes) matters.
@@ -164,6 +167,10 @@
 // @formatter:on
 
 /*
+ * Version 1.6.0 - 4/2020
+ * - Added support of Apollo3 boards.
+ * - Print library version in examples.
+ *
  * Version 1.5.2 - 3/2020
  * - More examples using `areInterruptsActive()`.
  * - Added support of Arduino SAMD boards.

@@ -7,7 +7,14 @@
 
 # This is the name of the workflow, visible on GitHub UI.
 name: LibraryBuild
-on: [push, pull_request] # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows#pull-request-event-pull_request
+on:  
+  push: # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows#pull-request-event-pull_request
+    paths:
+    - '**.ino'
+    - '**.cpp'
+    - '**.h'
+    - '**LibraryBuild.yml'
+  pull_request:
 
 jobs:
   build:
@@ -36,10 +43,11 @@ jobs:
           - arduino:avr:leonardo
           - arduino:avr:mega
           - arduino:sam:arduino_due_x
-          - arduino:samd:mkrwifi1010
+          - arduino:samd:arduino_zero_edbg
           - esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
           - esp32:esp32:featheresp32:FlashFreq=80
           - STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
+          - SparkFun:apollo3:amap3nano
 
         # Specify parameters for each board.
         # With examples-exclude you may exclude specific examples for a board. Use a comma separated list.
@@ -126,7 +134,7 @@ jobs:
                 -DMAX_EASING_SERVOS=32
                 -DTRACE
 
-          - arduino-boards-fqbn: arduino:samd:mkrwifi1010
+          - arduino-boards-fqbn: arduino:samd:arduino_zero_edbg
             examples-exclude: QuadrupedControl,RobotArmControl
             examples-build-properties:
               PCA9685_Expander:
@@ -135,6 +143,17 @@ jobs:
                 -DUSE_PCA9685_SERVO_EXPANDER
                 -DMAX_EASING_SERVOS=32
                 -DTRACE
+
+          - arduino-boards-fqbn: SparkFun:apollo3:amap3nano
+            platform-url: https://raw.githubusercontent.com/sparkfun/Arduino_Boards/master/IDE_Board_Manager/package_sparkfun_index.json
+             # 4/2020 For PCA9685_Expander, Wire cannot be found in cli, it works in the regular IDE. SpeedTest and EndPositionsTest give strange BFD assertions
+            examples-exclude: QuadrupedControl,RobotArmControl,PCA9685_Expander,PCA9685_ExpanderFor32Servos,SpeedTest,EndPositionsTest
+            examples-build-properties:
+              PCA9685_Expander:
+                -DUSE_PCA9685_SERVO_EXPANDER
+              PCA9685_ExpanderFor32Servos:
+                -DUSE_PCA9685_SERVO_EXPANDER
+                -DMAX_EASING_SERVOS=32
 
       # Do not cancel all jobs / architectures if one job fails
       fail-fast: false
@@ -146,7 +165,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@master
 
-      # Test of the arduino-test-compile script
+      # Use the arduino-test-compile script, because it is faster
       - name: Compile all examples using the bash script arduino-test-compile.sh
         env:
           # Passing parameters to the script by setting the appropriate ENV_* variables.

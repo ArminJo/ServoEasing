@@ -32,9 +32,9 @@
 #define VERSION_EXAMPLE "1.4"
 
 #if defined(ESP8266)
-const int SERVO1_PIN = 14; // D5
-const int SERVO2_PIN = 12; // D6
-const int SERVO3_PIN = 13; // D7
+#define SERVO1_PIN 14 // D5
+#define SERVO2_PIN 12 // D6
+#define SERVO3_PIN 13 // D7
 
 #elif defined(ESP32)
 const int SERVO1_PIN = 5;
@@ -48,6 +48,11 @@ const int SERVO3_PIN = 19;
 const int SERVO1_PIN = PB7;
 const int SERVO2_PIN = PB8;
 const int SERVO3_PIN = PB9; // Needs timer 4 for Servo library
+
+#elif defined(ARDUINO_ARCH_APOLLO3)
+const int SERVO1_PIN = 11;
+const int SERVO2_PIN = 12;
+const int SERVO3_PIN = 13;
 
 #else
 const int SERVO1_PIN = 9;
