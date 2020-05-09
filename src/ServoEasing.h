@@ -24,8 +24,8 @@
 #ifndef SERVOEASING_H_
 #define SERVOEASING_H_
 
-#define VERSION_SERVO_EASING "1.6.0"
-#define VERSION_SERVO_EASING_NUMERICAL 160
+#define VERSION_SERVO_EASING "1.6.1"
+#define VERSION_SERVO_EASING_NUMERICAL 161
 
 // @formatter:off
 /*  *****************************************************************************************************************************
@@ -76,6 +76,10 @@
  ****************************************************************************************/
 #if !defined(USE_PCA9685_SERVO_EXPANDER) && !defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 #  if defined(ESP32)
+// This does not work in Arduino IDE for "Generating function prototypes..."
+//#    if ! __has_include("ESP32Servo.h")
+//#error This ServoEasing library requires the "ESP32Servo" library for running on an ESP32. Please install it via the Arduino library manager.
+//#    endif
 #  include <ESP32Servo.h>
 #  else
 #  include <Servo.h>
@@ -167,6 +171,9 @@
 // @formatter:on
 
 /*
+ * Version 1.6.1 - 5/2020
+ * - Fix bug for **Arduino SAMD** boards.
+ *
  * Version 1.6.0 - 4/2020
  * - Added support of Apollo3 boards.
  * - Print library version in examples.

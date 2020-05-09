@@ -47,6 +47,14 @@
 
 // Reference shift values are different for ATtinyX5
 #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
+// defines are from Arduino.h, the can be used without bit reordering
+  #define DEFAULT 0
+  #define EXTERNAL 4
+  #define INTERNAL1V1 8
+  #define INTERNAL INTERNAL1V1
+  #define INTERNAL2V56 9
+  #define INTERNAL2V56_EXTCAP 13
+
 #define SHIFT_VALUE_FOR_REFERENCE REFS2
 #define MASK_FOR_ADC_REFERENCE (_BV(REFS0) | _BV(REFS1) | _BV(REFS2))
 #else

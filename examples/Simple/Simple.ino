@@ -27,7 +27,7 @@
 
 #include "ServoEasing.h"
 
-#define VERSION_EXAMPLE "1.4"
+#define VERSION_EXAMPLE "1.5"
 
 #if defined(ESP8266)
 #define SERVO1_PIN 14 // D5
@@ -51,6 +51,10 @@ const int SERVO1_PIN = 9;
 // for ESP32 LED_BUILTIN is defined as: static const uint8_t LED_BUILTIN = 2;
 #if !defined(LED_BUILTIN) && !defined(ESP32)
 #define LED_BUILTIN PB1
+#endif
+// On the Zero and others we switch explicitly to SerialUSB
+#if defined(ARDUINO_ARCH_SAMD)
+#define Serial SerialUSB
 #endif
 
 ServoEasing Servo1;

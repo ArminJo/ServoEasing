@@ -1113,20 +1113,26 @@ void enableServoEasingInterrupt() {
 	TC_FOR_20_MS_TIMER->TC_CHANNEL[CHANNEL_FOR_20_MS_TIMER].TC_IDR = ~TC_IER_CPCS;
 
 #elif defined(ARDUINO_ARCH_SAMD)
+	// Servo uses timer 4 and we use timer 5. therefore we cannot change clock source to 32 kHz.
 	// Enable GCLK for TCC2 and TC5 (timer counter input clock)
-	GCLK->CLKCTRL.reg = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK1 | GCLK_CLKCTRL_ID(GCM_TC4_TC5));// GCLK1=32kHz,  GCLK0=48Mhz
-	while (GCLK->STATUS.bit.SYNCBUSY);
+	GCLK->CLKCTRL.reg = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID(GCM_TC4_TC5)); // GCLK1=32kHz,  GCLK0=48Mhz
+//	while (GCLK->STATUS.bit.SYNCBUSY) // no need to wait
+//		;
 
 	// Reset TCx
 	TC5->COUNT16.CTRLA.reg = TC_CTRLA_SWRST;
-	while (TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY);
-	while (TC5->COUNT16.CTRLA.bit.SWRST);
+	while (TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY)
+		;
+	while (TC5->COUNT16.CTRLA.bit.SWRST)
+		;
 
-	TC5->COUNT16.CTRLA.reg |= TC_CTRLA_MODE_COUNT16;// Set Timer counter Mode to 16 bits
-	TC5->COUNT16.CTRLA.reg |= TC_CTRLA_WAVEGEN_MFRQ;// Set TC5 mode as match frequency
-	TC5->COUNT16.CTRLA.reg |= TC_CTRLA_PRESCALER_DIV1 | TC_CTRLA_ENABLE;// Prescaler DIV1 (=no prescaler div), start counter
-    TC5->COUNT16.CC[0].reg = (uint16_t) ((32768 / REFRESH_FREQUENCY) - 1); // (32kHz / sampleRate - 1);
-	while (TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY);
+	/*
+	 * Set Timer counter mode to 16 bits, set mode as match frequency, prescaler is DIV64 => 750 kHz clock, start counter
+	 */
+	TC5->COUNT16.CTRLA.reg |= TC_CTRLA_MODE_COUNT16| TC_CTRLA_WAVEGEN_MFRQ | TC_CTRLA_PRESCALER_DIV64 | TC_CTRLA_ENABLE;
+	TC5->COUNT16.CC[0].reg = (uint16_t) ((750000 / REFRESH_FREQUENCY) - 1); // (750 kHz / sampleRate - 1);
+//	while (TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY) // The next commands do an implicit wait :-)
+//		;
 
 	// Configure interrupt request
 	NVIC_DisableIRQ(TC5_IRQn);
@@ -1136,7 +1142,8 @@ void enableServoEasingInterrupt() {
 
 	// Enable the TC5 interrupt request
 	TC5->COUNT16.INTENSET.bit.MC0 = 1;
-	while (TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY);// wait until TC5 is done syncing
+//	while (TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY) // No need to wait at end of function
+//		; // wait until TC5 is done syncing
 
 #elif defined(ARDUINO_ARCH_APOLLO3)
 	// use Timer 3 segment A

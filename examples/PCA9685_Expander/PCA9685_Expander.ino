@@ -41,7 +41,7 @@
  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 #include "ServoEasing.h"
 
-#define VERSION_EXAMPLE "1.0"
+#define VERSION_EXAMPLE "1.1"
 
 #define INFO // to see serial output of loop
 
@@ -54,6 +54,10 @@ const int SERVO1_PIN = 9;
 // for ESP32 LED_BUILTIN is defined as static const uint8_t LED_BUILTIN = 2;
 #if !defined(LED_BUILTIN) && !defined(ESP32)
 #define LED_BUILTIN PB1
+#endif
+// On the Zero and others we switch explicitly to SerialUSB
+#if defined(ARDUINO_ARCH_SAMD)
+#define Serial SerialUSB
 #endif
 
 /*

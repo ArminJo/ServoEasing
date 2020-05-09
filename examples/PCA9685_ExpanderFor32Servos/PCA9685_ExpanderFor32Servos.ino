@@ -43,7 +43,7 @@
  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 #include "ServoEasing.h"
 
-#define VERSION_EXAMPLE "1.0"
+#define VERSION_EXAMPLE "1.1"
 
 //#define DEBUG // to see all ServoEasing's object info
 #define INFO // to see serial output of loop
@@ -56,6 +56,10 @@
 // for ESP32 LED_BUILTIN is defined as static const uint8_t LED_BUILTIN = 2;
 #if !defined(LED_BUILTIN) && !defined(ESP32)
 #define LED_BUILTIN PB1
+#endif
+// On the Zero and others we switch explicitly to SerialUSB
+#if defined(ARDUINO_ARCH_SAMD)
+#define Serial SerialUSB
 #endif
 
 #define FIRST_PCA9685_EXPANDER_ADDRESS PCA9685_DEFAULT_ADDRESS

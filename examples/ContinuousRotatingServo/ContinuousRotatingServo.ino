@@ -51,6 +51,10 @@ const int SERVO1_PIN = 9;
 #if !defined(LED_BUILTIN) && !defined(ESP32)
 #define LED_BUILTIN PB1
 #endif
+// On the Zero and others we switch explicitly to SerialUSB
+#if defined(ARDUINO_ARCH_SAMD)
+#define Serial SerialUSB
+#endif
 
 ServoEasing Servo1;
 
