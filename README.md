@@ -1,5 +1,8 @@
 # [ServoEasing](https://github.com/ArminJo/ServoEasing) - move your servo more natural
-### Version 1.6.1
+Available as Arduino library "ServoEasing"
+
+### [Version 1.6.1](https://github.com/ArminJo/ServoEasing/releases)
+
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
 [![Commits since latest](https://img.shields.io/github/commits-since/ArminJo/ServoEasing/latest)](https://github.com/ArminJo/ServoEasing/commits/master)
