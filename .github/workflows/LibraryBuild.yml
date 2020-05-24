@@ -134,7 +134,7 @@ jobs:
                 -DTRACE
 
           - arduino-boards-fqbn: STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
-            platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/dev/STM32/package_stm_index.json
+            platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json
             examples-exclude: QuadrupedControl,RobotArmControl
             examples-build-properties:
               PCA9685_Expander:

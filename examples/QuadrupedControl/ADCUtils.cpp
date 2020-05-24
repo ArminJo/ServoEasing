@@ -269,8 +269,8 @@ uint16_t readUntil4ConsecutiveValuesAreEqual(uint8_t aChannelNumber, uint8_t aDe
  */
 float getVCCVoltageSimple(void) {
 // use AVCC with external capacitor at AREF pin as reference
-    float tVCC = readADCChannelWithReferenceOversample(ADC_1_1_VOLT_CHANNEL_MUX, DEFAULT, 2);
-    return ((1023 * 1.1) / tVCC);
+    float tVCC = readADCChannelWithReferenceMultiSamples(ADC_1_1_VOLT_CHANNEL_MUX, DEFAULT, 4);
+    return ((1023 * 1.1 * 4) / tVCC);
 }
 
 /*
@@ -278,8 +278,8 @@ float getVCCVoltageSimple(void) {
  */
 uint16_t getVCCVoltageMillivoltSimple(void) {
 // use AVCC with external capacitor at AREF pin as reference
-    uint16_t tVCC = readADCChannelWithReferenceOversample(ADC_1_1_VOLT_CHANNEL_MUX, DEFAULT, 2);
-    return ((1023L * 1100) / tVCC);
+    uint16_t tVCC = readADCChannelWithReferenceMultiSamples(ADC_1_1_VOLT_CHANNEL_MUX, DEFAULT, 4);
+    return ((1023L * 1100 * 4) / tVCC);
 }
 
 /*
@@ -291,8 +291,8 @@ float getTemperatureSimple(void) {
     return 0.0;
 #else
 // use internal 1.1 volt as reference
-    float tTemp = (readADCChannelWithReferenceOversample(ADC_TEMPERATURE_CHANNEL_MUX, INTERNAL, 2) - 317);
-    return (tTemp / 1.22);
+    float tTemp = (readADCChannelWithReferenceMultiSamples(ADC_TEMPERATURE_CHANNEL_MUX, INTERNAL, 4) - 317);
+    return (tTemp * (4 / 1.22));
 #endif
 }
 

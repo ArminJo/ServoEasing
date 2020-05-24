@@ -87,10 +87,10 @@ HardwareTimer Timer20ms(3);  // 4 timers and 4. timer is used for tone()
 //#define PRINT_FOR_SERIAL_PLOTTER
 
 // Enable this if you want to measure timing by toggling pin12 on an arduino
-//#define MEASURE_TIMING
-#if defined(MEASURE_TIMING)
+//#define MEASURE_SERVO_EASING_INTERRUPT_TIMING
+#if defined(MEASURE_SERVO_EASING_INTERRUPT_TIMING)
 #include "digitalWriteFast.h"
-#define TIMING_PIN 12
+#define TIMING_OUTPUT_PIN 12
 #endif
 
 volatile bool sInterruptsAreActive = false; // true if interrupts are still active, i.e. at least one Servo is moving with interrupts.
@@ -124,8 +124,8 @@ ServoEasing::ServoEasing(uint8_t aPCA9685I2CAddress, TwoWire *aI2CClass) { // @s
 	mUserEaseInFunction = NULL;
 #endif
 
-#if defined(MEASURE_TIMING)
-	pinMode(TIMING_PIN, OUTPUT);
+#if defined(MEASURE_SERVO_EASING_INTERRUPT_TIMING)
+	pinMode(TIMING_OUTPUT_PIN, OUTPUT);
 #endif
 }
 
@@ -245,8 +245,8 @@ ServoEasing::ServoEasing() // @suppress("Class members should be properly initia
     mUserEaseInFunction = NULL;
 #endif
 
-#if defined(MEASURE_TIMING)
-	pinMode(TIMING_PIN, OUTPUT);
+#if defined(MEASURE_SERVO_EASING_INTERRUPT_TIMING)
+	pinMode(TIMING_OUTPUT_PIN, OUTPUT);
 #endif
 }
 #endif // defined(USE_PCA9685_SERVO_EXPANDER)
@@ -1018,8 +1018,8 @@ bool areInterruptsActive() {
  * Update all servos from list and check if all servos have stopped.
  * Defined weak in order to be able to overwrite it.
  */
-#if defined(STM32F1xx)   // for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
-__attribute__((weak)) void handleServoTimerInterrupt(HardwareTimer * aDummy __attribute__((unused)))
+#if defined(STM32F1xx) && STM32_CORE_VERSION_MAJOR == 1 &&  STM32_CORE_VERSION_MINOR <= 8 // for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
+__attribute__((weak)) void handleServoTimerInterrupt(HardwareTimer * aDummy __attribute__((unused))) // changed in stm32duino 1.9 - 5/2020
 #else
 __attribute__((weak)) void handleServoTimerInterrupt()
 #endif
@@ -1207,39 +1207,39 @@ ISR(TIMER5_COMPB_vect) {
 }
 #  else // defined(__AVR__)
 ISR(TIMER1_COMPB_vect) {
-#    if defined(MEASURE_TIMING)
-	digitalWriteFast(TIMING_PIN, HIGH);
+#    if defined(MEASURE_SERVO_EASING_INTERRUPT_TIMING)
+	digitalWriteFast(TIMING_OUTPUT_PIN, HIGH);
 #    endif
     handleServoTimerInterrupt();
-#    if defined(MEASURE_TIMING)
-	digitalWriteFast(TIMING_PIN, LOW);
+#    if defined(MEASURE_SERVO_EASING_INTERRUPT_TIMING)
+	digitalWriteFast(TIMING_OUTPUT_PIN, LOW);
 #    endif
 }
 #  endif
 
 #elif defined(__SAM3X8E__)  // Arduino DUE
 void HANDLER_FOR_20_MS_TIMER(void) {
-#  if defined(MEASURE_TIMING)
-	digitalWrite(TIMING_PIN, HIGH);
+#  if defined(MEASURE_SERVO_EASING_INTERRUPT_TIMING)
+	digitalWrite(TIMING_OUTPUT_PIN, HIGH);
 #  endif
 	// Clear interrupt
 	TC_GetStatus(TC_FOR_20_MS_TIMER, CHANNEL_FOR_20_MS_TIMER);//Clear channel status to fire again the interrupt.
 	handleServoTimerInterrupt();
-#  if defined(MEASURE_TIMING)
-	digitalWrite(TIMING_PIN, LOW);
+#  if defined(MEASURE_SERVO_EASING_INTERRUPT_TIMING)
+	digitalWrite(TIMING_OUTPUT_PIN, LOW);
 #  endif
 }
 
 #elif defined(ARDUINO_ARCH_SAMD)
 void TC5_Handler(void) {
-#  if defined(MEASURE_TIMING)
-	digitalWrite(TIMING_PIN, HIGH);
+#  if defined(MEASURE_SERVO_EASING_INTERRUPT_TIMING)
+	digitalWrite(TIMING_OUTPUT_PIN, HIGH);
 #  endif
 	// Clear interrupt
 	TC5->COUNT16.INTFLAG.bit.MC0 = 1;
 	handleServoTimerInterrupt();
-#  if defined(MEASURE_TIMING)
-	digitalWrite(TIMING_PIN, LOW);
+#  if defined(MEASURE_SERVO_EASING_INTERRUPT_TIMING)
+	digitalWrite(TIMING_OUTPUT_PIN, LOW);
 #  endif
 }
 
