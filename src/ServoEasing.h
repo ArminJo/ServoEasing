@@ -25,7 +25,8 @@
 #define SERVOEASING_H_
 
 #define VERSION_SERVO_EASING "1.6.1"
-#define VERSION_SERVO_EASING_NUMERICAL 161
+#define VERSION_SERVO_EASING_MAJOR 1
+#define VERSION_SERVO_EASING_MINOR 6
 
 // @formatter:off
 /*  *****************************************************************************************************************************
@@ -171,6 +172,8 @@
 // @formatter:on
 
 /*
+ * - Changed all types to _fast types
+ *
  * Version 1.6.1 - 5/2020
  * - Fix bug for **Arduino SAMD** boards.
  *
@@ -368,25 +371,25 @@ public:
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 #if defined(ARDUINO_SAM_DUE)
-    ServoEasing(uint8_t aPCA9685I2CAddress = PCA9685_DEFAULT_ADDRESS, TwoWire *aI2CClass = &Wire1);
+    ServoEasing(uint_fast8_t aPCA9685I2CAddress = PCA9685_DEFAULT_ADDRESS, TwoWire *aI2CClass = &Wire1);
 #else
-    ServoEasing(uint8_t aPCA9685I2CAddress = PCA9685_DEFAULT_ADDRESS, TwoWire *aI2CClass = &Wire);
+    ServoEasing(uint_fast8_t aPCA9685I2CAddress = PCA9685_DEFAULT_ADDRESS, TwoWire *aI2CClass = &Wire);
 #endif
     void I2CInit();
     void PCA9685Reset();
     void PCA9685Init();
-    void I2CWriteByte(uint8_t aAddress, uint8_t aData);
-    void setPWM(uint16_t aOffUnits);
-    void setPWM(uint16_t aPWMOnValueAsUnits, uint16_t aPWMOffValueAsUnits);
+    void I2CWriteByte(uint_fast8_t aAddress, uint_fast8_t aData);
+    void setPWM(uint_fast16_t aOffUnits);
+    void setPWM(uint_fast16_t aPWMOnValueAsUnits, uint_fast16_t aPWMOffValueAsUnits);
     // main mapping function for us to PCA9685 Units (20000/4096 = 4.88 us)
     int MicrosecondsToPCA9685Units(int aMicroseconds);
 #else
     ServoEasing();
 #endif
-    uint8_t attach(int aPin);
+    uint_fast8_t attach(int aPin);
     // Here no units accepted, only microseconds!
-    uint8_t attach(int aPin, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree);
-    uint8_t attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree,
+    uint_fast8_t attach(int aPin, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree);
+    uint_fast8_t attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree,
             int aServoHighDegree);
 
     void detach();
@@ -396,8 +399,8 @@ public:
     void setTrimMicrosecondsOrUnits(int aTrimMicrosecondsOrUnits, bool aDoWrite = false);
 
 #ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
-    void setEasingType(uint8_t aEasingType);
-    uint8_t getEasingType();
+    void setEasingType(uint_fast8_t aEasingType);
+    uint_fast8_t getEasingType();
 
     void registerUserEaseInFunction(float (*aUserEaseInFunction)(float aPercentageOfCompletion));
 
@@ -407,18 +410,18 @@ public:
     void write(int aValue);                                     // Apply trim and reverse to the value and write it direct to the Servo library.
     void writeMicrosecondsOrUnits(int aValue);
 
-    void setSpeed(uint16_t aDegreesPerSecond);                  // This speed is taken if no speed argument is given.
-    uint16_t getSpeed();
+    void setSpeed(uint_fast16_t aDegreesPerSecond);                  // This speed is taken if no speed argument is given.
+    uint_fast16_t getSpeed();
     void easeTo(int aDegree);                                   // blocking move to new position using mLastSpeed
-    void easeTo(int aDegree, uint16_t aDegreesPerSecond);       // blocking move to new position using speed
-    void easeToD(int aDegree, uint16_t aMillisForMove);         // blocking move to new position using duration
+    void easeTo(int aDegree, uint_fast16_t aDegreesPerSecond);       // blocking move to new position using speed
+    void easeToD(int aDegree, uint_fast16_t aMillisForMove);         // blocking move to new position using duration
 
     bool setEaseTo(int aDegree);                                // shortcut for startEaseTo(..,..,false)
-    bool setEaseTo(int aDegree, uint16_t aDegreesPerSecond);    // shortcut for startEaseTo(..,..,false)
+    bool setEaseTo(int aDegree, uint_fast16_t aDegreesPerSecond);    // shortcut for startEaseTo(..,..,false)
     bool startEaseTo(int aDegree);                              // shortcut for startEaseTo(aDegree, mSpeed, true)
-    bool startEaseTo(int aDegree, uint16_t aDegreesPerSecond, bool aStartUpdateByInterrupt = true);
-    bool setEaseToD(int aDegree, uint16_t aDegreesPerSecond);   // shortcut for startEaseToD(..,..,false)
-    bool startEaseToD(int aDegree, uint16_t aMillisForMove, bool aStartUpdateByInterrupt = true);
+    bool startEaseTo(int aDegree, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt = true);
+    bool setEaseToD(int aDegree, uint_fast16_t aDegreesPerSecond);   // shortcut for startEaseToD(..,..,false)
+    bool startEaseToD(int aDegree, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt = true);
     bool update();
 
     int getCurrentAngle();
@@ -451,10 +454,10 @@ public:
     /*
      * max speed is 450 degree/sec for SG90 and 540 degree/second for MG90 servos -> see speedTest.cpp
      */
-    uint16_t mSpeed; // in DegreesPerSecond only set by setSpeed(int16_t aSpeed);
+    uint_fast16_t mSpeed; // in DegreesPerSecond only set by setSpeed(int16_t aSpeed);
 
 #ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
-    uint8_t mEasingType; // EASE_LINEAR, EASE_QUADRATIC_IN_OUT, EASE_CUBIC_IN_OUT, EASE_QUARTIC_IN_OUT
+    uint_fast8_t mEasingType; // EASE_LINEAR, EASE_QUADRATIC_IN_OUT, EASE_CUBIC_IN_OUT, EASE_QUARTIC_IN_OUT
 
     float (*mUserEaseInFunction)(float aPercentageOfCompletion);
 #endif
@@ -465,12 +468,12 @@ public:
     uint8_t mPCA9685I2CAddress;
     TwoWire * mI2CClass;
 #endif
-    uint8_t mServoPin; // pin number or NO_SERVO_ATTACHED_PIN_NUMBER - at least needed for Lightweight Servo Lib
+    uint_fast8_t mServoPin; // pin number or NO_SERVO_ATTACHED_PIN_NUMBER - at least needed for Lightweight Servo Lib
 
-    uint8_t mServoIndex; // Index in sServoArray or INVALID_SERVO if error while attach() or if detached
+    uint_fast8_t mServoIndex; // Index in sServoArray or INVALID_SERVO if error while attach() or if detached
 
     uint32_t mMillisAtStartMove;
-    uint16_t mMillisForCompleteMove;
+    uint_fast16_t mMillisForCompleteMove;
 
     /*
      * Reverse means, that values for 180 and 0 degrees are swapped by: aValue = mServo180DegreeMicrosecondsOrUnits - (aValue - mServo0DegreeMicrosecondsOrUnits)
@@ -499,7 +502,7 @@ bool areInterruptsActive();
  * I use an fixed array and not a list, since accessing an array is much easier and faster.
  * Using an dynamic array may be possible, but in this case we must first malloc(), then memcpy() and then free(), which leads to heap fragmentation.
  */
-extern uint8_t sServoArrayMaxIndex; // maximum index of an attached servo in sServoArray[]
+extern uint_fast8_t sServoArrayMaxIndex; // maximum index of an attached servo in sServoArray[]
 extern ServoEasing * sServoArray[MAX_EASING_SERVOS];
 extern int sServoNextPositionArray[MAX_EASING_SERVOS]; // use int since we want to support negative values
 
@@ -507,21 +510,21 @@ extern int sServoNextPositionArray[MAX_EASING_SERVOS]; // use int since we want 
  * Functions working on all servos in the list
  */
 void writeAllServos(int aValue);
-void setSpeedForAllServos(uint16_t aDegreesPerSecond);
+void setSpeedForAllServos(uint_fast16_t aDegreesPerSecond);
 #if defined(va_arg)
-void setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues);
+void setDegreeForAllServos(uint_fast8_t aNumberOfValues, va_list * aDegreeValues);
 #endif
 #if defined(va_start)
-void setDegreeForAllServos(uint8_t aNumberOfValues, ...);
+void setDegreeForAllServos(uint_fast8_t aNumberOfValues, ...);
 #endif
 
 bool setEaseToForAllServos();
-bool setEaseToForAllServos(uint16_t aDegreesPerSecond);
-bool setEaseToDForAllServos(uint16_t aMillisForMove);
+bool setEaseToForAllServos(uint_fast16_t aDegreesPerSecond);
+bool setEaseToDForAllServos(uint_fast16_t aMillisForMove);
 void setEaseToForAllServosSynchronizeAndStartInterrupt();
-void setEaseToForAllServosSynchronizeAndStartInterrupt(uint16_t aDegreesPerSecond);
+void setEaseToForAllServosSynchronizeAndStartInterrupt(uint_fast16_t aDegreesPerSecond);
 void synchronizeAndEaseToArrayPositions();
-void synchronizeAndEaseToArrayPositions(uint16_t aDegreesPerSecond);
+void synchronizeAndEaseToArrayPositions(uint_fast16_t aDegreesPerSecond);
 
 void printArrayPositions(Print * aSerial);
 bool isOneServoMoving();
@@ -530,7 +533,7 @@ bool updateAllServos();
 void synchronizeAllServosAndStartInterrupt(bool aStartUpdateByInterrupt = true);
 
 #ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
-void setEasingTypeForAllServos(uint8_t aEasingType);
+void setEasingTypeForAllServos(uint_fast8_t aEasingType);
 #endif
 
 // blocking wait functions
@@ -541,7 +544,7 @@ void synchronizeAllServosStartAndWaitForAllServosToStop();
 void enableServoEasingInterrupt();
 void disableServoEasingInterrupt();
 
-int clipDegreeSpecial(uint8_t aDegreeToClip);
+int clipDegreeSpecial(uint_fast8_t aDegreeToClip);
 
 /*
  * Included easing functions
