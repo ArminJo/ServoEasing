@@ -371,25 +371,25 @@ public:
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 #if defined(ARDUINO_SAM_DUE)
-    ServoEasing(uint_fast8_t aPCA9685I2CAddress = PCA9685_DEFAULT_ADDRESS, TwoWire *aI2CClass = &Wire1);
+    ServoEasing(uint8_t aPCA9685I2CAddress = PCA9685_DEFAULT_ADDRESS, TwoWire *aI2CClass = &Wire1);
 #else
-    ServoEasing(uint_fast8_t aPCA9685I2CAddress = PCA9685_DEFAULT_ADDRESS, TwoWire *aI2CClass = &Wire);
+    ServoEasing(uint8_t aPCA9685I2CAddress = PCA9685_DEFAULT_ADDRESS, TwoWire *aI2CClass = &Wire);
 #endif
     void I2CInit();
     void PCA9685Reset();
     void PCA9685Init();
-    void I2CWriteByte(uint_fast8_t aAddress, uint_fast8_t aData);
-    void setPWM(uint_fast16_t aOffUnits);
-    void setPWM(uint_fast16_t aPWMOnValueAsUnits, uint_fast16_t aPWMOffValueAsUnits);
+    void I2CWriteByte(uint8_t aAddress, uint8_t aData);
+    void setPWM(uint16_t aOffUnits);
+    void setPWM(uint16_t aPWMOnValueAsUnits, uint16_t aPWMOffValueAsUnits);
     // main mapping function for us to PCA9685 Units (20000/4096 = 4.88 us)
     int MicrosecondsToPCA9685Units(int aMicroseconds);
 #else
     ServoEasing();
 #endif
-    uint_fast8_t attach(int aPin);
+    uint8_t attach(int aPin);
     // Here no units accepted, only microseconds!
-    uint_fast8_t attach(int aPin, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree);
-    uint_fast8_t attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree,
+    uint8_t attach(int aPin, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree);
+    uint8_t attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree,
             int aServoHighDegree);
 
     void detach();
@@ -410,17 +410,17 @@ public:
     void write(int aValue);                                     // Apply trim and reverse to the value and write it direct to the Servo library.
     void writeMicrosecondsOrUnits(int aValue);
 
-    void setSpeed(uint_fast16_t aDegreesPerSecond);                  // This speed is taken if no speed argument is given.
+    void setSpeed(uint_fast16_t aDegreesPerSecond);             // This speed is taken if no speed argument is given.
     uint_fast16_t getSpeed();
     void easeTo(int aDegree);                                   // blocking move to new position using mLastSpeed
-    void easeTo(int aDegree, uint_fast16_t aDegreesPerSecond);       // blocking move to new position using speed
-    void easeToD(int aDegree, uint_fast16_t aMillisForMove);         // blocking move to new position using duration
+    void easeTo(int aDegree, uint_fast16_t aDegreesPerSecond);      // blocking move to new position using speed
+    void easeToD(int aDegree, uint_fast16_t aMillisForMove);        // blocking move to new position using duration
 
-    bool setEaseTo(int aDegree);                                // shortcut for startEaseTo(..,..,false)
-    bool setEaseTo(int aDegree, uint_fast16_t aDegreesPerSecond);    // shortcut for startEaseTo(..,..,false)
-    bool startEaseTo(int aDegree);                              // shortcut for startEaseTo(aDegree, mSpeed, true)
+    bool setEaseTo(int aDegree);                                    // shortcut for startEaseTo(..,..,false)
+    bool setEaseTo(int aDegree, uint_fast16_t aDegreesPerSecond);   // shortcut for startEaseTo(..,..,false)
+    bool startEaseTo(int aDegree);                                  // shortcut for startEaseTo(aDegree, mSpeed, true)
     bool startEaseTo(int aDegree, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt = true);
-    bool setEaseToD(int aDegree, uint_fast16_t aDegreesPerSecond);   // shortcut for startEaseToD(..,..,false)
+    bool setEaseToD(int aDegree, uint_fast16_t aDegreesPerSecond);  // shortcut for startEaseToD(..,..,false)
     bool startEaseToD(int aDegree, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt = true);
     bool update();
 
@@ -457,7 +457,7 @@ public:
     uint_fast16_t mSpeed; // in DegreesPerSecond only set by setSpeed(int16_t aSpeed);
 
 #ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
-    uint_fast8_t mEasingType; // EASE_LINEAR, EASE_QUADRATIC_IN_OUT, EASE_CUBIC_IN_OUT, EASE_QUARTIC_IN_OUT
+    uint8_t mEasingType; // EASE_LINEAR, EASE_QUADRATIC_IN_OUT, EASE_CUBIC_IN_OUT, EASE_QUARTIC_IN_OUT
 
     float (*mUserEaseInFunction)(float aPercentageOfCompletion);
 #endif
@@ -468,9 +468,9 @@ public:
     uint8_t mPCA9685I2CAddress;
     TwoWire * mI2CClass;
 #endif
-    uint_fast8_t mServoPin; // pin number or NO_SERVO_ATTACHED_PIN_NUMBER - at least needed for Lightweight Servo Lib
+    uint8_t mServoPin; // pin number or NO_SERVO_ATTACHED_PIN_NUMBER - at least needed for Lightweight Servo Lib
 
-    uint_fast8_t mServoIndex; // Index in sServoArray or INVALID_SERVO if error while attach() or if detached
+    uint8_t mServoIndex; // Index in sServoArray or INVALID_SERVO if error while attach() or if detached
 
     uint32_t mMillisAtStartMove;
     uint_fast16_t mMillisForCompleteMove;

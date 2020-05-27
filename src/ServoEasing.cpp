@@ -109,7 +109,7 @@ int sServoNextPositionArray[MAX_EASING_SERVOS];
 #  define _BV(bit) (1 << (bit))
 #  endif
 // Constructor with I2C address needed
-ServoEasing::ServoEasing(uint_fast8_t aPCA9685I2CAddress, TwoWire *aI2CClass) { // @suppress("Class members should be properly initialized")
+ServoEasing::ServoEasing(uint8_t aPCA9685I2CAddress, TwoWire *aI2CClass) { // @suppress("Class members should be properly initialized")
     mPCA9685I2CAddress = aPCA9685I2CAddress;
     mI2CClass = aI2CClass;
 
@@ -155,7 +155,7 @@ void ServoEasing::PCA9685Init() {
     delay(2);// 500 us according to datasheet
 }
 
-void ServoEasing::I2CWriteByte(uint_fast8_t aAddress, uint_fast8_t aData) {
+void ServoEasing::I2CWriteByte(uint8_t aAddress, uint8_t aData) {
     mI2CClass->beginTransmission(mPCA9685I2CAddress);
     mI2CClass->write(aAddress);
     mI2CClass->write(aData);
@@ -175,7 +175,7 @@ void ServoEasing::I2CWriteByte(uint_fast8_t aAddress, uint_fast8_t aData) {
  * Useful values are from 111 (111.411 = 544 us) to 491 (491.52 = 2400 us)
  * 4096 means output is signal fully off
  */
-void ServoEasing::setPWM(uint_fast16_t aPWMOffValueAsUnits) {
+void ServoEasing::setPWM(uint16_t aPWMOffValueAsUnits) {
     mI2CClass->beginTransmission(mPCA9685I2CAddress);
     // +2 since we we do not set the begin value, it is fixed at 0
     mI2CClass->write((PCA9685_FIRST_PWM_REGISTER + 2) + 4 * mServoPin);
@@ -200,7 +200,7 @@ void ServoEasing::setPWM(uint_fast16_t aPWMOffValueAsUnits) {
  * Needs 550 us to send data => 8.8 ms for 16 Servos, 17.6 ms for 32 servos. => more than 2 expander boards
  * cannot be connected to one I2C bus, if all servos can move simultaneously.
  */
-void ServoEasing::setPWM(uint_fast16_t aPWMOnValueAsUnits, uint_fast16_t aPWMPulseDurationAsUnits) {
+void ServoEasing::setPWM(uint16_t aPWMOnValueAsUnits, uint16_t aPWMPulseDurationAsUnits) {
     mI2CClass->beginTransmission(mPCA9685I2CAddress);
     mI2CClass->write((PCA9685_FIRST_PWM_REGISTER) + 4 * mServoPin);
     mI2CClass->write(aPWMOnValueAsUnits);
@@ -259,12 +259,12 @@ ServoEasing::ServoEasing() // @suppress("Class members should be properly initia
  *      Return true only if channel number is between 0 and 15 since PCA9685 has only 16 channels, else returns false
  * Else return servoIndex / internal channel number
  */
-uint_fast8_t ServoEasing::attach(int aPin) {
+uint8_t ServoEasing::attach(int aPin) {
     return attach(aPin, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
 }
 
 // Here no units accepted, only microseconds!
-uint_fast8_t ServoEasing::attach(int aPin, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree) {
+uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree) {
     return attach(aPin, aMicrosecondsForServo0Degree, aMicrosecondsForServo180Degree, 0, 180);
 }
 
@@ -276,7 +276,7 @@ uint_fast8_t ServoEasing::attach(int aPin, int aMicrosecondsForServo0Degree, int
  *      Pin number != 9 results in using pin 10.
  * Else return servoIndex / internal channel number
  */
-uint_fast8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree,
+uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree,
         int aServoHighDegree) {
     /*
      * Get the 0 and 180 degree values.
@@ -972,24 +972,15 @@ void ServoEasing::printStatic(Print * aSerial) {
     aSerial->print(mPCA9685I2CAddress, HEX);
     aSerial->print(" &Wire=0x");
 
-#  if __PTRDIFF_WIDTH__ == 16
 //    aSerial->print((uintptr_t) mI2CClass, HEX); // defined since C++11
-    aSerial->print((uint16_t) mI2CClass, HEX);
-#  else
-    aSerial->print((uint32_t) mI2CClass, HEX);
-#  endif
+    aSerial->print((uint_fast16_t) mI2CClass, HEX);
 #endif
 
     aSerial->print(F(" MAX_EASING_SERVOS="));
     aSerial->print(MAX_EASING_SERVOS);
 
     aSerial->print(" this=0x");
-//#ifdef __ets__
-#if __PTRDIFF_WIDTH__ == 16
-    aSerial->println((uint16_t) this, HEX);
-#else
-    aSerial->println((uint32_t) this, HEX);
-#endif
+    aSerial->println((uint_fast16_t) this, HEX);
 }
 
 /*
@@ -1083,13 +1074,13 @@ void enableServoEasingInterrupt() {
     Timer20ms.attach_ms(REFRESH_INTERVAL_MILLIS, handleServoTimerInterrupt);
 
 // BluePill in 2 flavors
-#elif defined(STM32F1xx)   // for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
+#elif defined(STM32F1xx)   // for "STM32:stm32" from STM32 Boards from STM32 cores of Arduino Board manager
     Timer20ms.setMode(LL_TIM_CHANNEL_CH1, TIMER_OUTPUT_COMPARE, NC); // used for generating only interrupts, no pin specified
     Timer20ms.setOverflow(REFRESH_INTERVAL_MICROS, MICROSEC_FORMAT);// microsecond period
     Timer20ms.attachInterrupt(handleServoTimerInterrupt);// this sets update interrupt enable
     Timer20ms.resume();// Start or resume HardwareTimer: all channels are resumed, interrupts are enabled if necessary
 
-#elif defined(__STM32F1__) // for "Generic STM32F103C series" from STM32F1 Boards (STM32duino.com) of manual installed hardware folder
+#elif defined(__STM32F1__) // for "stm32duino:STM32F1 Generic STM32F103C series" from STM32F1 Boards (Roger Clark STM32duino.com)
     Timer20ms.setMode(TIMER_CH1, TIMER_OUTPUT_COMPARE);
     Timer20ms.setPeriod(REFRESH_INTERVAL_MICROS); // 20000 microsecond period
     Timer20ms.attachInterrupt(TIMER_CH1, handleServoTimerInterrupt);
