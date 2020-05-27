@@ -92,8 +92,8 @@ void setup() {
     /*
      * Check if I2C communication is possible. If not, we will wait forever at endTransmission.
      */
-	// Initialize wire before checkI2CConnection()
-	Wire.begin();  // Starts with 100 kHz. Clock will eventually be increased at first attach() except for ESP32.
+    // Initialize wire before checkI2CConnection()
+    Wire.begin();  // Starts with 100 kHz. Clock will eventually be increased at first attach() except for ESP32.
     Serial.println(F("Try to communicate with PCA9685 Expander by TWI / I2C"));
     Serial.flush();
     Wire.beginTransmission(PCA9685_DEFAULT_ADDRESS);

@@ -47,7 +47,7 @@
 #include "ADCUtils.h"
 
 #if defined(QUADRUPED_PLAYS_RTTTL)
-#include <PlayRtttl.h>
+#include <PlayRtttl.h> // Click here to get the library: http://librarymanager/All#PlayRtttl
 #endif
 
 #if defined(QUADRUPED_HAS_NEOPIXEL)

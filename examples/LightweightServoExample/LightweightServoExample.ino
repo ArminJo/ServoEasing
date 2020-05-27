@@ -36,6 +36,9 @@ void setup() {
 #endif
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
+#if defined (__AVR_ATmega328P__) || defined (__AVR_ATmega328__) || defined (__AVR_ATmega328PB__)
+    Serial.println(F("Using library version " VERSION_LIGHTWEIGHT_SERVO));
+#endif
     // no initialization needed for LightweightServo :-)
 }
 

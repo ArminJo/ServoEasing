@@ -26,6 +26,10 @@
 
 #if defined (__AVR_ATmega328P__) || defined (__AVR_ATmega328__)
 
+#define VERSION_LIGHTWEIGHT_SERVO "1.0.0"
+#define VERSION_LIGHTWEIGHT_SERVO_MAJOR 1
+#define VERSION_LIGHTWEIGHT_SERVO_MINOR 0
+
 #include <stdint.h>
 
 #define ISR1_COUNT_FOR_20_MILLIS 40000 // you can modify this if you have servos which accept a higher rate
