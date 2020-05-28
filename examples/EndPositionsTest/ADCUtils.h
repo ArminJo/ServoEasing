@@ -24,6 +24,7 @@
 #ifndef SRC_ADCUTILS_H_
 #define SRC_ADCUTILS_H_
 
+#if defined(__AVR__)
 #include <Arduino.h>
 
 // PRESCALE4 => 13 * 4 = 52 microseconds per ADC conversion at 1 Mhz Clock => 19,2 kHz
@@ -110,6 +111,7 @@ uint16_t getVCCVoltageMillivolt(void);
 void printVCCVoltageMillivolt(Print* aSerial);
 float getTemperature(void);
 
+#endif //  defined(__AVR__)
 #endif /* SRC_ADCUTILS_H_ */
 
 #pragma once

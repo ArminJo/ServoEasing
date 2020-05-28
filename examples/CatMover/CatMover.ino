@@ -27,38 +27,23 @@
 
 #include "ServoEasing.h"
 
-#define VERSION_EXAMPLE "1.4"
+#include "PinDefinitionsAndMore.h"
+/*
+ * Pin mapping table for different platforms
+ *
+ * Platform     Servo1      Servo2      Servo3      Analog
+ * -------------------------------------------------------
+ * AVR          9           10          11          A0
+ * ESP8266      14 // D5    12 // D6    13 // D7    0
+ * ESP32        5           18          19          A0
+ * BluePill     PB7         PB8         PB9         PA0
+ * APOLLO3      11          12          13          A3
+ */
+// For ATmega328 pins 9 + 10 are connected to timer 2 and can therefore be used also by the Lightweight Servo library
+const int HORIZONTAL_SERVO_PIN = SERVO1_PIN;
+const int VERTICAL_SERVO_PIN = SERVO2_PIN;
 
-#if defined(ESP8266)
-#define LASER_POWER_PIN       13 // D7
-#define HORIZONTAL_SERVO_PIN 14  // D5
-#define VERTICAL_SERVO_PIN    12 // D6
-
-#elif defined(ESP32)
-const int LASER_POWER_PIN = 13;
-const int HORIZONTAL_SERVO_PIN = 5;
-const int VERTICAL_SERVO_PIN = 18;
-
-#elif defined(STM32F1xx) || defined(__STM32F1__)
-// BluePill in 2 flavors
-// STM32F1xx is for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
-// __STM32F1__is for "Generic STM32F103C series" from STM32F1 Boards (STM32duino.com) of manual installed hardware folder
-const int LASER_POWER_PIN = PC13;
-const int HORIZONTAL_SERVO_PIN = PB8;
-const int VERTICAL_SERVO_PIN = PB9; // Needs timer 4 for Servo library
-
-#elif defined(ARDUINO_ARCH_APOLLO3)
-const int LASER_POWER_PIN = 13;
-const int HORIZONTAL_SERVO_PIN = 11;
-const int VERTICAL_SERVO_PIN = 12;
-
-#else
-const int LASER_POWER_PIN = 5;
-
-// These pins are used by timer 2 and can be used without overhead by using Lightweight Servo library
-const int HORIZONTAL_SERVO_PIN = 10;
-const int VERTICAL_SERVO_PIN = 9;
-#endif
+const int LASER_POWER_PIN = SPEED_IN_PIN;
 
 struct ServoControlStruct {
     uint16_t minDegree;
@@ -80,8 +65,7 @@ void setup() {
     delay(2000); // To be able to connect Serial monitor after reset and before first printout
 #endif
     // Just to know which program is running on my Arduino
-    Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from  " __DATE__));
-    Serial.println(F("Using library version " VERSION_SERVO_EASING));
+    Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_SERVO_EASING));
 
     // initialize the digital pin as an output.
     pinMode(LASER_POWER_PIN, OUTPUT);

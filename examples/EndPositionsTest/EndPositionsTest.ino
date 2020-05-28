@@ -43,31 +43,18 @@
 
 #define VERSION_EXAMPLE "1.4"
 
-
-// Attach the sliding contact of the potentiometer here
-#if defined(ESP8266)
-const int SERVO_UNDER_TEST_PIN = 14; // D5
-const int POSITION_ANALOG_INPUT_PIN = 0;
-
-#elif defined(ESP32)
-const int SERVO_UNDER_TEST_PIN = 5;
-#define POSITION_ANALOG_INPUT_PIN A0 // 36/VP
-
-#elif defined(STM32F1xx) || defined(__STM32F1__)
-// BluePill in 2 flavors
-// STM32F1xx is for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
-// __STM32F1__is for "Generic STM32F103C series" from STM32F1 Boards (STM32duino.com) of manual installed hardware folder
-const int SERVO_UNDER_TEST_PIN = PB9; // Needs timer 4 for Servo library
-const int POSITION_ANALOG_INPUT_PIN = PA1;
-
-#elif defined(ARDUINO_ARCH_APOLLO3)
-const int SERVO_UNDER_TEST_PIN = 11;
-const int POSITION_ANALOG_INPUT_PIN = A3;
-
-#else
-const int SERVO_UNDER_TEST_PIN = 9;
-const int POSITION_ANALOG_INPUT_PIN = A1;
-#endif
+#include "PinDefinitionsAndMore.h"
+/*
+ * Pin mapping table for different platforms
+ *
+ * Platform     Servo1      Servo2      Servo3      Analog
+ * -------------------------------------------------------
+ * AVR          9           10          11          A0
+ * ESP8266      14 // D5    12 // D6    13 // D7    0
+ * ESP32        5           18          19          A0
+ * BluePill     PB7         PB8         PB9         PA0
+ * APOLLO3      11          12          13          A3
+ */
 
 Servo ServoUnderTest;
 

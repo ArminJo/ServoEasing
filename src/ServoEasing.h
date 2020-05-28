@@ -172,7 +172,9 @@
 // @formatter:on
 
 /*
- * - Changed all types to _fast types
+ * Version
+ * - Changed some types to _fast types
+ * - Standardize pins for all examples
  *
  * Version 1.6.1 - 5/2020
  * - Fix bug for **Arduino SAMD** boards.

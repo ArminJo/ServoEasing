@@ -175,6 +175,9 @@ If you see strange behavior, you can open the library file *ServoEasing.h* and c
 This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
 
 # Revision History
+- Changed some types to _fast types
+- Standardize pins for all examples
+
 ### Version 1.6.1
 - Fix bug for **Arduino SAMD** boards.
 

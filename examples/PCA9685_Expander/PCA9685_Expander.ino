@@ -41,8 +41,6 @@
  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 #include "ServoEasing.h"
 
-#define VERSION_EXAMPLE "1.1"
-
 #define INFO // to see serial output of loop
 
 /*
@@ -86,8 +84,7 @@ void setup() {
     delay(2000); // To be able to connect Serial monitor after reset and before first printout
 #endif
     // Just to know which program is running on my Arduino
-    Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
-    Serial.println(F("Using library version " VERSION_SERVO_EASING));
+    Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_SERVO_EASING));
 
     /*
      * Check if I2C communication is possible. If not, we will wait forever at endTransmission.

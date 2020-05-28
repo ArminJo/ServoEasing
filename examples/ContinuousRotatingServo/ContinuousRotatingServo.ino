@@ -26,35 +26,18 @@
 
 #include "ServoEasing.h"
 
-#define VERSION_EXAMPLE "1.4.1"
-
-#if defined(ESP8266)
-#define SERVO1_PIN 14 // D5
-
-#elif defined(ESP32)
-const int SERVO1_PIN = 5;
-
-#elif defined(STM32F1xx) || defined(__STM32F1__)
-// BluePill in 2 flavors
-// STM32F1xx is for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
-// __STM32F1__is for "Generic STM32F103C series" from STM32F1 Boards (STM32duino.com) of manual installed hardware folder
-const int SERVO1_PIN = PB9; // Needs timer 4 for Servo library
-
-#elif defined(ARDUINO_ARCH_APOLLO3)
-const int SERVO1_PIN = 11;
-
-#else
-const int SERVO1_PIN = 9;
-#endif
-
-// for ESP32 LED_BUILTIN is defined as: static const uint8_t LED_BUILTIN = 2;
-#if !defined(LED_BUILTIN) && !defined(ESP32)
-#define LED_BUILTIN PB1
-#endif
-// On the Zero and others we switch explicitly to SerialUSB
-#if defined(ARDUINO_ARCH_SAMD)
-#define Serial SerialUSB
-#endif
+#include "PinDefinitionsAndMore.h"
+/*
+ * Pin mapping table for different platforms
+ *
+ * Platform     Servo1      Servo2      Servo3      Analog
+ * -------------------------------------------------------
+ * AVR          9           10          11          A0
+ * ESP8266      14 // D5    12 // D6    13 // D7    0
+ * ESP32        5           18          19          A0
+ * BluePill     PB7         PB8         PB9         PA0
+ * APOLLO3      11          12          13          A3
+ */
 
 ServoEasing Servo1;
 
@@ -70,8 +53,7 @@ void setup() {
     delay(2000); // To be able to connect Serial monitor after reset and before first printout
 #endif
     // Just to know which program is running on my Arduino
-    Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
-    Serial.println(F("Using library version " VERSION_SERVO_EASING));
+    Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_SERVO_EASING));
 
     // Attach servo to pin
     Serial.print(F("Attach servo at pin "));

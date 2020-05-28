@@ -27,15 +27,13 @@
 
 #include "LightweightServo.h"
 
-#define VERSION_EXAMPLE "1.0"
-
 void setup() {
     Serial.begin(115200);
 #if defined(__AVR_ATmega32U4__)
     while (!Serial); //delay for Leonardo, but this loops forever for Maple Serial
 #endif
     // Just to know which program is running on my Arduino
-    Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
+    Serial.println(F("START " __FILE__ " from " __DATE__));
 #if defined (__AVR_ATmega328P__) || defined (__AVR_ATmega328__) || defined (__AVR_ATmega328PB__)
     Serial.println(F("Using library version " VERSION_LIGHTWEIGHT_SERVO));
 #endif

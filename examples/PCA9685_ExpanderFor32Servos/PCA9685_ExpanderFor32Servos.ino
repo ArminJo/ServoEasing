@@ -43,8 +43,6 @@
  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 #include "ServoEasing.h"
 
-#define VERSION_EXAMPLE "1.1"
-
 //#define DEBUG // to see all ServoEasing's object info
 #define INFO // to see serial output of loop
 
@@ -82,8 +80,7 @@ void setup() {
     while (!Serial); //delay for Leonardo, but this loops forever for Maple Serial
 #endif
     // Just to know which program is running on my Arduino
-    Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
-    Serial.println(F("Using library version " VERSION_SERVO_EASING));
+    Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_SERVO_EASING));
 
     Serial.println(F("Example for a maximum of " STR(NUMBER_OF_SERVOS) " servos"));
     Serial.println();

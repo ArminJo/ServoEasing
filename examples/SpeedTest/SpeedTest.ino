@@ -69,29 +69,18 @@
 #include <Servo.h>
 #endif
 
-#if defined(ESP32)
-const int SERVO_UNDER_TEST_PIN = 5;
-#define SPEED_OR_POSITION_ANALOG_INPUT_PIN A0 // 36/VP
-#define MODE_ANALOG_INPUT_PIN A3 // 39;
-
-#elif defined(STM32F1xx) || defined(__STM32F1__)
-// BluePill in 2 flavors
-// STM32F1xx is for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
-// __STM32F1__is for "Generic STM32F103C series" from STM32F1 Boards (STM32duino.com) of manual installed hardware folder
-const int SERVO_UNDER_TEST_PIN = PB9; // Needs timer 4 for Servo library
-const int SPEED_OR_POSITION_ANALOG_INPUT_PIN = PA0;
-const int MODE_ANALOG_INPUT_PIN = PA1;
-
-#elif defined(ARDUINO_ARCH_APOLLO3)
-const int SERVO_UNDER_TEST_PIN = 11;
-const int SPEED_OR_POSITION_ANALOG_INPUT_PIN = A3;
-const int MODE_ANALOG_INPUT_PIN = A2;
-
-#else
-const int SERVO_UNDER_TEST_PIN = 9;
-#define MODE_ANALOG_INPUT_PIN A0
-#define SPEED_OR_POSITION_ANALOG_INPUT_PIN A4
-#endif
+#include "PinDefinitionsAndMore.h"
+/*
+ * Pin mapping table for different platforms
+ *
+ * Platform     Servo1      Servo2      Servo3      Analog
+ * -------------------------------------------------------
+ * AVR          9           10          11          A0
+ * ESP8266      14 // D5    12 // D6    13 // D7    0
+ * ESP32        5           18          19          A0
+ * BluePill     PB7         PB8         PB9         PA0
+ * APOLLO3      11          12          13          A3
+ */
 
 #ifdef USE_LEIGHTWEIGHT_SERVO_LIB
 #define REFRESH_PERIOD_ANALOG_INPUT_PIN A3
