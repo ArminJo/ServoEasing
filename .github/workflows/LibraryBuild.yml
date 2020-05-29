@@ -67,106 +67,73 @@ jobs:
                 -DUSE_LEIGHTWEIGHT_SERVO_LIB
               ThreeServos:
                 -DPROVIDE_ONLY_LINEAR_MOVEMENT
-              PCA9685_Expander:
-                -DUSE_PCA9685_SERVO_EXPANDER
-              PCA9685_ExpanderFor32Servos:
-                -DUSE_PCA9685_SERVO_EXPANDER
-                -DMAX_EASING_SERVOS=32
-                -DTRACE
+              PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
+              PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
+              PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: arduino:avr:leonardo
             examples-build-properties:
-              PCA9685_Expander:
-                -DUSE_PCA9685_SERVO_EXPANDER
-              PCA9685_ExpanderFor32Servos:
-                -DUSE_PCA9685_SERVO_EXPANDER
-                -DMAX_EASING_SERVOS=32
-                -DTRACE
+              PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
+              PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
+              PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: arduino:avr:mega
             examples-build-properties:
-              PCA9685_Expander:
-                -DUSE_PCA9685_SERVO_EXPANDER
-              PCA9685_ExpanderFor32Servos:
-                -DUSE_PCA9685_SERVO_EXPANDER
-                -DMAX_EASING_SERVOS=32
-                -DTRACE
+              PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
+              PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
+              PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: arduino:sam:arduino_due_x
             examples-exclude: QuadrupedControl,RobotArmControl # QuadrupedControl RobotArmControl because of missing EEprom
             examples-build-properties:
-              PCA9685_Expander:
-                -DUSE_PCA9685_SERVO_EXPANDER
-              PCA9685_ExpanderFor32Servos:
-                -DUSE_PCA9685_SERVO_EXPANDER
-                -DMAX_EASING_SERVOS=32
-                -DTRACE
+              PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
+              PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
+              PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: arduino:samd:arduino_zero_native
             examples-exclude: QuadrupedControl,RobotArmControl
             examples-build-properties:
-              PCA9685_Expander:
-                -DUSE_PCA9685_SERVO_EXPANDER
-              PCA9685_ExpanderFor32Servos:
-                -DUSE_PCA9685_SERVO_EXPANDER
-                -DMAX_EASING_SERVOS=32
-                -DTRACE
+              PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
+              PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
+              PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
             platform-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
             examples-exclude: QuadrupedControl,RobotArmControl,SpeedTest # SpeedTest because of only one analog input
             examples-build-properties:
-              PCA9685_Expander:
-                -DUSE_PCA9685_SERVO_EXPANDER
-              PCA9685_ExpanderFor32Servos:
-                -DUSE_PCA9685_SERVO_EXPANDER
-                -DMAX_EASING_SERVOS=32
-                -DTRACE
+              PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
+              PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
+              PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: esp32:esp32:featheresp32:FlashFreq=80
             platform-url: https://dl.espressif.com/dl/package_esp32_index.json
             examples-exclude: QuadrupedControl,RobotArmControl # Comma separated list of (unique substrings of) example names to exclude in build
             examples-build-properties:
-              PCA9685_Expander:
-                -DUSE_PCA9685_SERVO_EXPANDER
-              PCA9685_ExpanderFor32Servos:
-                -DUSE_PCA9685_SERVO_EXPANDER
-                -DMAX_EASING_SERVOS=32
-                -DTRACE
+              PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
+              PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
+              PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: STM32:stm32:GenF1:pnum=BLUEPILL_F103C8 # STM version
             platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json
             examples-exclude: QuadrupedControl,RobotArmControl
             examples-build-properties:
-              PCA9685_Expander:
-                -DUSE_PCA9685_SERVO_EXPANDER
-              PCA9685_ExpanderFor32Servos:
-                -DUSE_PCA9685_SERVO_EXPANDER
-                -DMAX_EASING_SERVOS=32
-                -DTRACE
+              PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
+              PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
+              PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: stm32duino:STM32F1:genericSTM32F103C # Roger Clark version
             platform-url: http://dan.drown.org/stm32duino/package_STM32duino_index.json
             examples-exclude: QuadrupedControl,RobotArmControl
             examples-build-properties:
-              PCA9685_Expander:
-                -DUSE_PCA9685_SERVO_EXPANDER
-              PCA9685_ExpanderFor32Servos:
-                -DUSE_PCA9685_SERVO_EXPANDER
-                -DMAX_EASING_SERVOS=32
-                -DTRACE
-
+              PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
+              PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
+              PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: SparkFun:apollo3:amap3nano
             platform-url: https://raw.githubusercontent.com/sparkfun/Arduino_Boards/master/IDE_Board_Manager/package_sparkfun_index.json
              # 4/2020 For PCA9685_Expander, Wire cannot be found in cli, it works in the regular IDE. SpeedTest and EndPositionsTest give strange BFD assertions
-            examples-exclude: QuadrupedControl,RobotArmControl,PCA9685_Expander,PCA9685_ExpanderFor32Servos,SpeedTest,EndPositionsTest
-            examples-build-properties:
-              PCA9685_Expander:
-                -DUSE_PCA9685_SERVO_EXPANDER
-              PCA9685_ExpanderFor32Servos:
-                -DUSE_PCA9685_SERVO_EXPANDER
-                -DMAX_EASING_SERVOS=32
+            examples-exclude: QuadrupedControl,RobotArmControl,PCA9685_Expander,PCA9685_ExpanderAndServo,PCA9685_ExpanderFor32Servos,SpeedTest,EndPositionsTest
+
 
       # Do not cancel all jobs / architectures if one job fails
       fail-fast: false

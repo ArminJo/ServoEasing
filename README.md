@@ -1,7 +1,7 @@
 # [ServoEasing](https://github.com/ArminJo/ServoEasing) - move your servo more natural
 Available as Arduino library "ServoEasing"
 
-### [Version 1.6.1](https://github.com/ArminJo/ServoEasing/releases)
+### [Version 2.0.0](https://github.com/ArminJo/ServoEasing/releases)
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
@@ -26,11 +26,12 @@ For instructions how to enable these alternatives see [Modifying library propert
 - **Non blocking** movements are enabled by using **startEaseTo\* functions** by reusing the interrupts of the servo timer Timer1 or using a dedicated timer on other platforms. This function is not available for all platforms.
 - Trim value for each servo may be set.
 - Reverse operation of servo is possible eg. if it is mounted head down.
-- Allow to specify an arbitrary mapping between degreen and microseconds by `attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree)`
+- Allow to specify an arbitrary mapping between degrees and microseconds by `attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree)`
 
 ## Usage
-Just call **myServo.startEaseTo()** instead of **myServo.write()** and you are done. Or if you want to wait (blocking) until servo has arrived, use **myServo.easeTo()**. Speed of movement can be set by **myServo.setSpeed()**.<br/>
-Do not forget to **initially set the start position** for the Servo by simply calling **myServo.write()**, since the library has **no knowledge about your servos initial position** and therefore starts at **0 degree** at the first move, which may be undesirable.
+Just call **myServo.startEaseTo()** instead of **myServo.write()** and you are done. Or if you want to wait (blocking) until servo has arrived, use **myServo.easeTo()**.<br/>
+- Do not forget to **initially set the start position** for the Servo by simply calling **myServo.write()**, since the library has **no knowledge about your servos initial position** and therefore starts at **0 degree** at the first move, which may be undesirable.<br/>
+- And do not forget to **initially set the moving speed** (as degrees per second) with **myServo.setSpeed()** or as **second parameter** to startEaseTo() or easeTo(). Otherwise the Servo will start with the speed of 5 degrees per second, to indicate that speed was not set.<br/>
 
 ### Includes the following **easing functions**:
 - Linear
@@ -71,8 +72,14 @@ If you are using Sloeber as your IDE, you can easily define global symbols at *P
 
 ## Using PCA9685 16-Channel Servo Expander
 To enable the use of the expander, open the library file *ServoEasing.h* and comment out the line `#define USE_PCA9685_SERVO_EXPANDER` or define global symbol with `-DUSE_PCA9685_SERVO_EXPANDER` which is not yet possible in Arduino IDE:-(.<br/>
-Timer1 is then only needed for the startEaseTo* functions.<br/>
-You can use this library and e.g. the `Adafruit_PWMServoDriver` library concurrently to control your servos. Be aware that the PCA9685 expander is **reset** at the first `attach()` and **initialized** at every further `attach()`.<br/>
+In expander mode, timer1 is only required for the startEaseTo* functions.
+
+Be aware that the PCA9685 expander is **reset** at the first `attach()` and **initialized** at every further `attach()`.<br/>
+To control simultaneously servos with the Arduino Servo library i.e. servos which are directly connected to the Arduino board, comment out the line `#define USE_SERVO_LIB` in the library file *ServoEasing.h*.<br/>
+In this case you should attach the expander servos first in order to initialize the expander board correctly.
+And as long as no servo using the Arduino Servo library is attached,
+the expander servos will not move -which should not be a problem since you normally attach all servos in `setup()`-.<br/>
+
 On the **ESP32 the I2C library is only capable to run at 100 kHz**, because it interferes with the Ticker / Timer library used.
 Even with 100 kHz clock we have some dropouts / NAK's because of sending address again instead of first data.<br/>
 Since the raw transmission time of 32 Servo positions is 17.4 us @ 100 kHz, not more than 2 expander boards can be connected to one I2C bus on an ESP32 board, if all servos should move simultaneously.
@@ -86,7 +93,7 @@ If not using the Arduino IDE, take care that Arduino Servo library sources are n
 ## Reducing library size
 If you have only one or two servos, then you can save program space by using Lightweight Servo library.
 This saves 742 bytes FLASH and 42 bytes RAM.<br/>
-If you do not need the more complex easing functions like `Sine` etc., which in turn need sin(), cos(), sqrt() and pow(), you can shrink library size by approximately 1850 bytes by commenting out the line `#define KEEP_SERVO_EASING_LIBRARY_SMALL` in the library file *ServoEasing.h* or define global symbol with `-DKEEP_SERVO_EASING_LIBRARY_SMALL` which is not yet possible in Arduino IDE:-(.<br/>
+If you do not require the more complex easing functions like `Sine` etc., which in turn use the sin(), cos(), sqrt() and pow() functions, you can shrink library size by approximately 1850 bytes by commenting out the line `#define KEEP_SERVO_EASING_LIBRARY_SMALL` in the library file *ServoEasing.h* or define global symbol with `-DKEEP_SERVO_EASING_LIBRARY_SMALL` which is not yet possible in Arduino IDE:-(.<br/>
 
 # [Examples](tree/master/examples)
 All examples with up to 2 Servos can be used without modifications with the [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for AVR by by commenting out the line `#define USE_LEIGHTWEIGHT_SERVO_LIB` in the library file *ServoEasing.h* (see above).
@@ -139,6 +146,9 @@ Only for AVR, because it uses EEPROM.
 The OneServo example modified for using a PCA9685 expander board and the standard Arduino Wire library.<br/>
 You must comment out the line `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.h* to make the expander example work.
 
+## PCA9685_ExpanderAndServo example
+Combination of OneServo example and PCA9685_Expander example. Move one Servo attached to the Arduino board and one servo attached to the PCA9685 expander board simultaneously.
+
 ## PCA9685_ExpanderFor32Servos example
 Program to show the usage of 2 PCA9685 expander boards with 32 servos.
 On the ESP32, the I2C library interferes with the 29 millisecond timer and therefore can only run at 100000 Hz or lower.<br/>
@@ -152,14 +162,14 @@ You must comment out the line `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasi
 
 ## EndPositionsTest example
 This example helps you determine the right end values for your servo.<br/>
-These values are needed for the `attach()` function, if your servo does not comply to the standard values.
+These values are required for the `attach()` function, if your servo does not comply to the standard values.
 E.g. some of my SG90 servos have a 0 degree period of 620 us instead of the standard 544.<br/>
 This example does not use the ServoEasing functions.
 
 ## SpeedTest example
 This example gives you a feeling how fast your servo can move, what the end position values are and which refresh rate they accept.<br/>
 This example does not use the ServoEasing functions.
-Not for ESP8266 because it needs 2 analog inputs.
+Not for ESP8266 because it requires 2 analog inputs.
 
 # Internals
 The API accepts only degree (except for write() and writeMicrosecondsOrUnits()) but internally only microseconds (or units (= 4.88 us) if using PCA9685 expander) and not degree are used to speed up things. Other expander or servo libraries can therefore easily be used.<br/>
@@ -175,6 +185,8 @@ If you see strange behavior, you can open the library file *ServoEasing.h* and c
 This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
 
 # Revision History
+### Version 2.0.0
+- `PCA9685_Expander` and standard Servos can be controlled simultaneously by defining `USE_SERVO_LIB`.
 - Changed some types to _fast types
 - Standardize pins for all examples
 
@@ -192,7 +204,7 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 ### Version 1.5.1
 - Added support for **STM32** cores of Arduino Board manager. Seen in the Arduino IDE as "Generic STM32F1 series" from STM32 Boards.
 - Inserted missing `Wire.begin()` in setup of `PCA9685_Expander` example.
-- In `isMovingAndCallYield()` yield() only called/needed for an ESP8266.
+- In `isMovingAndCallYield()` yield() only called/required for an ESP8266.
 - New function `areInterruptsActive()`, especially for ESP32.
 
 ### Version 1.5.0

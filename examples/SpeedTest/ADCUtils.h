@@ -46,15 +46,28 @@
 #define ADC_PRESCALE ADC_PRESCALE128
 #endif
 
-// Reference shift values are different for ATtinyX5
+/*
+ * Reference shift values are complicated for ATtinyX5 since we have the extra register bit REFS2
+ * in ATTinyCore, this bit is handled programmatical and therefore the defines are different.
+ * To keep my library small, I use the changed defines.
+ * After including this file you can not call the ATTinyCore readAnalog functions reliable, if you specify references other than default!
+ */
 #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
 // defines are from Arduino.h, the can be used without bit reordering
-  #define DEFAULT 0
-  #define EXTERNAL 4
-  #define INTERNAL1V1 8
-  #define INTERNAL INTERNAL1V1
-  #define INTERNAL2V56 9
-  #define INTERNAL2V56_EXTCAP 13
+#ifdef ATTINY_CORE
+#undef DEFAULT
+#undef EXTERNAL
+#undef INTERNAL1V1
+#undef INTERNAL
+#undef INTERNAL2V56
+#undef INTERNAL2V56_EXTCAP
+#endif
+#define DEFAULT 0
+#define EXTERNAL 4
+#define INTERNAL1V1 8
+#define INTERNAL INTERNAL1V1
+#define INTERNAL2V56 9
+#define INTERNAL2V56_EXTCAP 13
 
 #define SHIFT_VALUE_FOR_REFERENCE REFS2
 #define MASK_FOR_ADC_REFERENCE (_BV(REFS0) | _BV(REFS1) | _BV(REFS2))
@@ -99,7 +112,8 @@ uint16_t readADCChannelWithReferenceOversample(uint8_t aChannelNumber, uint8_t a
 uint16_t readADCChannelWithReferenceMultiSamples(uint8_t aChannelNumber, uint8_t aReference, uint8_t aNumberOfSamples);
 uint16_t readADCChannelWithReferenceMax(uint8_t aChannelNumber, uint8_t aReference, uint16_t aNumberOfSamples);
 uint16_t readADCChannelWithReferenceMaxMicros(uint8_t aChannelNumber, uint8_t aReference, uint16_t aMicrosecondsToAquire);
-uint16_t readUntil4ConsecutiveValuesAreEqual(uint8_t aChannelNumber, uint8_t aDelay, uint8_t aAllowedDifference, uint8_t aMaxRetries);
+uint16_t readUntil4ConsecutiveValuesAreEqual(uint8_t aChannelNumber, uint8_t aDelay, uint8_t aAllowedDifference,
+        uint8_t aMaxRetries);
 
 uint8_t checkAndWaitForReferenceAndChannelToSwitch(uint8_t aChannelNumber, uint8_t aReference);
 

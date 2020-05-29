@@ -41,7 +41,7 @@ Ticker Timer20ms;
 #include <HardwareTimer.h> // 4 timers and 4. timer is used for tone()
 /*
  * Use timer 3 for ServoEasingInterrupt functions.
- * Timer 3 blocks PA6, PA7, PB0, PB1, so if you need one them as Servo output, you must choose another timer.
+ * Timer 3 blocks PA6, PA7, PB0, PB1, so if you required one of them as Servo output, you must choose another timer.
  */
 HardwareTimer Timer20ms(TIM3);
 
@@ -52,7 +52,7 @@ HardwareTimer Timer20ms(7);  // 8 timers and 8. timer is used for tone()
 #  else
 /*
  * Use timer 3 for ServoEasingInterrupt functions.
- * Timer 3 blocks PA6, PA7, PB0, PB1, so if you need one them as Servo output, you must choose another timer.
+ * Timer 3 blocks PA6, PA7, PB0, PB1, so if you required one of them as Servo output, you must choose another timer.
  */
 HardwareTimer Timer20ms(3);  // 4 timers and 4. timer is used for tone()
 #  endif
@@ -108,17 +108,20 @@ int sServoNextPositionArray[MAX_EASING_SERVOS];
 #  if ! defined _BV
 #  define _BV(bit) (1 << (bit))
 #  endif
-// Constructor with I2C address needed
+// Constructor with I2C address required
 ServoEasing::ServoEasing(uint8_t aPCA9685I2CAddress, TwoWire *aI2CClass) { // @suppress("Class members should be properly initialized")
     mPCA9685I2CAddress = aPCA9685I2CAddress;
     mI2CClass = aI2CClass;
 
     // On an ESP8266 it was NOT initialized to 0 :-(.
     mTrimMicrosecondsOrUnits = 0;
-    mSpeed = 0;
+    mSpeed = START_EASE_TO_SPEED;
     mServoMoves = false;
     mOperateServoReverse = false;
 
+#if defined(USE_SERVO_LIB)
+    mServoIsConnectedToExpander = true;
+#endif
 #ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
     mEasingType = EASE_LINEAR;
     mUserEaseInFunction = NULL;
@@ -132,7 +135,7 @@ ServoEasing::ServoEasing(uint8_t aPCA9685I2CAddress, TwoWire *aI2CClass) { // @s
 void ServoEasing::I2CInit() {
 // Initialize I2C
     mI2CClass->begin();
-    mI2CClass->setClock(I2C_CLOCK_FREQUENCY);// 1000000 does not work for me, maybe because of parasitic breadboard capacities
+    mI2CClass->setClock(I2C_CLOCK_FREQUENCY); // 1000000 does not work for me, maybe because of parasitic breadboard capacities
 }
 /*
  * Initialize I2C and software reset all PCA9685 expanders
@@ -149,10 +152,10 @@ void ServoEasing::PCA9685Reset() {
  */
 void ServoEasing::PCA9685Init() {
     // Set expander to 20 ms period
-    I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_SLEEP));// go to sleep
-    I2CWriteByte(PCA9685_PRESCALE_REGISTER, PCA9685_PRESCALER_FOR_20_MS);// set the prescaler
-    I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_AUTOINCREMENT));// reset sleep and enable auto increment
-    delay(2);// 500 us according to datasheet
+    I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_SLEEP)); // go to sleep
+    I2CWriteByte(PCA9685_PRESCALE_REGISTER, PCA9685_PRESCALER_FOR_20_MS); // set the prescaler
+    I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_AUTOINCREMENT)); // reset sleep and enable auto increment
+    delay(2); // 500 us according to datasheet
 }
 
 void ServoEasing::I2CWriteByte(uint8_t aAddress, uint8_t aData) {
@@ -197,7 +200,7 @@ void ServoEasing::setPWM(uint16_t aPWMOffValueAsUnits) {
 /*
  * Here you can specify an on/start value for the pulse in order not to start all pulses at the same time.
  * Is used by writeMicrosecondsOrUnits() with onValue as mServoPin * 235
- * Needs 550 us to send data => 8.8 ms for 16 Servos, 17.6 ms for 32 servos. => more than 2 expander boards
+ * Requires 550 us to send data => 8.8 ms for 16 Servos, 17.6 ms for 32 servos. => more than 2 expander boards
  * cannot be connected to one I2C bus, if all servos can move simultaneously.
  */
 void ServoEasing::setPWM(uint16_t aPWMOnValueAsUnits, uint16_t aPWMPulseDurationAsUnits) {
@@ -226,20 +229,24 @@ int ServoEasing::MicrosecondsToPCA9685Units(int aMicroseconds) {
     return ((4096L * aMicroseconds) / REFRESH_INTERVAL_MICROS);
 }
 
-#else // defined(USE_PCA9685_SERVO_EXPANDER)
+#endif // defined(USE_PCA9685_SERVO_EXPANDER)
+
 // Constructor without I2C address
 ServoEasing::ServoEasing() // @suppress("Class members should be properly initialized")
-#if ! defined(USE_LEIGHTWEIGHT_SERVO_LIB) && not defined(USE_PCA9685_SERVO_EXPANDER)
+#if ! defined(DO_NOT_USE_SERVO_LIB)
 :
         Servo()
 #endif
 {
     // On an ESP8266 it was NOT initialized to 0 :-(.
     mTrimMicrosecondsOrUnits = 0;
-    mSpeed = 0;
+    mSpeed = START_EASE_TO_SPEED;
     mServoMoves = false;
     mOperateServoReverse = false;
 
+#if defined(USE_SERVO_LIB)
+    mServoIsConnectedToExpander = false;
+#endif
 #ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
     mEasingType = EASE_LINEAR;
     mUserEaseInFunction = NULL;
@@ -249,7 +256,6 @@ ServoEasing::ServoEasing() // @suppress("Class members should be properly initia
     pinMode(TIMING_OUTPUT_PIN, OUTPUT);
 #endif
 }
-#endif // defined(USE_PCA9685_SERVO_EXPANDER)
 
 /*
  * If USE_LEIGHTWEIGHT_SERVO_LIB is enabled:
@@ -288,8 +294,18 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
 
     mServoPin = aPin;
 #if defined(USE_PCA9685_SERVO_EXPANDER)
+#  if defined(USE_SERVO_LIB)
+    if (mServoIsConnectedToExpander) {
+        mServo0DegreeMicrosecondsOrUnits = MicrosecondsToPCA9685Units(tMicrosecondsForServo0Degree);
+        mServo180DegreeMicrosecondsOrUnits = MicrosecondsToPCA9685Units(tMicrosecondsForServo180Degree);
+    } else {
+        mServo0DegreeMicrosecondsOrUnits = tMicrosecondsForServo0Degree;
+        mServo180DegreeMicrosecondsOrUnits = tMicrosecondsForServo180Degree;
+    }
+#  else
     mServo0DegreeMicrosecondsOrUnits = MicrosecondsToPCA9685Units(tMicrosecondsForServo0Degree);
     mServo180DegreeMicrosecondsOrUnits = MicrosecondsToPCA9685Units(tMicrosecondsForServo180Degree);
+#  endif
 #else
     mServo0DegreeMicrosecondsOrUnits = tMicrosecondsForServo0Degree;
     mServo180DegreeMicrosecondsOrUnits = tMicrosecondsForServo180Degree;
@@ -328,19 +344,31 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
 #endif
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
+#  if defined(USE_SERVO_LIB)
+    if (mServoIsConnectedToExpander) {
+        if (mServoIndex == 0) {
+            I2CInit();          // init only once
+            PCA9685Reset();     // reset only once
+        }
+        PCA9685Init(); // initialize at every attach is simpler but initializing once for every board would be sufficient.
+        return mServoIndex;
+    }
+#  else
     if (mServoIndex == 0) {
         I2CInit();          // init only once
-        PCA9685Reset();// reset only once
+        PCA9685Reset();     // reset only once
     }
     PCA9685Init(); // initialize at every attach is simpler but initializing once for every board would be sufficient.
-
     return mServoIndex;
+#  endif
 #elif defined(USE_LEIGHTWEIGHT_SERVO_LIB)
     if(aPin != 9 && aPin != 10) {
         return false;
     }
     return aPin;
-#else
+#endif // defined(USE_PCA9685_SERVO_EXPANDER)
+
+#if ! defined(DO_NOT_USE_SERVO_LIB)
     if (mServoIndex == INVALID_SERVO) {
         return INVALID_SERVO;
     }
@@ -350,7 +378,7 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
 #  else
     return Servo::attach(aPin, tMicrosecondsForServo0Degree, tMicrosecondsForServo180Degree);
 #  endif
-#endif
+#endif //! defined(DO_NOT_USE_SERVO_LIB)
 }
 
 void ServoEasing::detach() {
@@ -367,7 +395,15 @@ void ServoEasing::detach() {
         }
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
+#  if defined(USE_SERVO_LIB)
+        if (mServoIsConnectedToExpander) {
+            setPWM(0); // set signal fully off
+        } else {
+            Servo::detach();
+        }
+#  else
         setPWM(0); // set signal fully off
+#  endif
 #elif defined(USE_LEIGHTWEIGHT_SERVO_LIB)
         deinitLightweightServoPin9_10(mServoPin == 9); // disable output and change to input
 #else
@@ -500,18 +536,28 @@ void ServoEasing::writeMicrosecondsOrUnits(int aValue) {
 
 #if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
     writeMicrosecondsLightweightServo(aValue, (mServoPin == 9));
+
 #elif defined(USE_PCA9685_SERVO_EXPANDER)
 #  if defined(TRACE)
     Serial.print(F(" s="));
     Serial.print(mServoPin * (4096 - (DEFAULT_PCA9685_UNITS_FOR_180_DEGREE + 100)) / 15); // mServoPin * 233
 #  endif
+#  if defined(USE_SERVO_LIB)
+    if (mServoIsConnectedToExpander) {
+        setPWM(mServoPin * ((4096 - (DEFAULT_PCA9685_UNITS_FOR_180_DEGREE + 100)) / 15), aValue); // mServoPin * 233
+    } else {
+        Servo::writeMicroseconds(aValue); // requires 7 us
+    }
+#  else
     /*
      * Distribute the servo start time over the 20 ms period.
      * Unexpectedly this even saves 20 bytes Flash for an ATMega328P
      */
     setPWM(mServoPin * ((4096 - (DEFAULT_PCA9685_UNITS_FOR_180_DEGREE + 100)) / 15), aValue); // mServoPin * 233
+#  endif
+
 #else
-    Servo::writeMicroseconds(aValue); // needs 7 us
+    Servo::writeMicroseconds(aValue); // requires 7 us
 #endif
 
 #if defined(TRACE)
@@ -532,7 +578,15 @@ int ServoEasing::MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits) {
 // map with rounding
     int32_t tResult = aMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits;
 #if defined(USE_PCA9685_SERVO_EXPANDER)
-    tResult = (tResult * 180) + 190;
+#  if defined(USE_SERVO_LIB)
+    if (mServoIsConnectedToExpander) {
+        tResult = (tResult * 180) + 190;
+    } else {
+        tResult = (tResult * 180) + 928;
+    }
+#  else
+        tResult = (tResult * 180) + 190;
+#  endif
 #else
     tResult = (tResult * 180) + 928;
 #endif
@@ -601,7 +655,7 @@ bool ServoEasing::startEaseTo(int aDegree) {
 }
 
 /*
- * sets up all the values needed for a smooth move to new value
+ * Sets up all the values required for a smooth move to new value
  * returns false if servo was still moving
  */
 bool ServoEasing::startEaseTo(int aDegree, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt) {
@@ -847,7 +901,7 @@ bool ServoEasing::isMoving() {
 }
 
 /*
- * Call yield here (actually only for ESP8266), so the user do not need not care for it in long running loops.
+ * Call yield here (actually only for ESP8266), so the user do not need to care for it in long running loops.
  * yield() will only allow higher priority tasks to run.
  * This call is dangerous for ESP32, since the timer is detached AFTER mServoMoves is set to false in handleServoTimerInterrupt(),
  * and one core may check mServoMoves and started a new move with initializing the timer, and then the timer gets detached by handleServoTimerInterrupt()
@@ -855,7 +909,7 @@ bool ServoEasing::isMoving() {
  */
 bool ServoEasing::isMovingAndCallYield() {
 #if defined(ESP8266)
-    yield(); // Not needed for ESP32, since our code is running on CPU1 and using yield seems to disturb the I2C interface
+    yield(); // Not required for ESP32, since our code is running on CPU1 and using yield seems to disturb the I2C interface
 #endif
     return mServoMoves;
 }
@@ -892,7 +946,7 @@ void ServoEasing::print(Print * aSerial, bool doExtendedOutput) {
  * Prints values which may change from move to move.
  */
 void ServoEasing::printDynamic(Print * aSerial, bool doExtendedOutput) {
-// pin is static but it is needed for identifying the servo
+// pin is static but it is required for identifying the servo
     aSerial->print(mServoIndex);
     aSerial->print('/');
     aSerial->print(mServoPin);
@@ -970,16 +1024,21 @@ void ServoEasing::printStatic(Print * aSerial) {
 #if defined(USE_PCA9685_SERVO_EXPANDER)
     aSerial->print(F(" PCA9685I2CAddress=0x"));
     aSerial->print(mPCA9685I2CAddress, HEX);
-    aSerial->print(" &Wire=0x");
+    aSerial->print(F(" &Wire=0x"));
 
 //    aSerial->print((uintptr_t) mI2CClass, HEX); // defined since C++11
     aSerial->print((uint_fast16_t) mI2CClass, HEX);
+
+#  if defined(USE_SERVO_LIB)
+    aSerial->print(F(" at expander="));
+    aSerial->print(mServoIsConnectedToExpander);
+#  endif
 #endif
 
     aSerial->print(F(" MAX_EASING_SERVOS="));
     aSerial->print(MAX_EASING_SERVOS);
 
-    aSerial->print(" this=0x");
+    aSerial->print(F(" this=0x"));
     aSerial->println((uint_fast16_t) this, HEX);
 }
 
@@ -998,6 +1057,9 @@ int clipDegreeSpecial(uint_fast8_t aDegreeToClip) {
     return 0;
 }
 
+/*
+ * The recommended test if at least one servo is moving yet.
+ */
 bool areInterruptsActive() {
 #if defined(ESP8266)
     yield(); // required for ESP8266
@@ -1034,8 +1096,8 @@ __attribute__((weak)) void handleServoTimerInterrupt()
 void enableServoEasingInterrupt() {
 #if defined(__AVR__)
 #  if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
-#    if defined(USE_PCA9685_SERVO_EXPANDER)
-// set timer 1 to 20 ms
+#    if defined(USE_PCA9685_SERVO_EXPANDER) && ! defined(USE_SERVO_LIB)
+// set timer 1 to 20 ms, since the servo library does not do this for us
     TCCR5A = _BV(WGM11);// FastPWM Mode mode TOP (20 ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
     TCCR5B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);// set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
     ICR5 = 40000;// set period to 20 ms
@@ -1046,18 +1108,18 @@ void enableServoEasingInterrupt() {
     OCR5B = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL_MICROS) / 8) - 100;// update values 100 us before the new servo period starts
 #  else // defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
 
-#    if defined(USE_PCA9685_SERVO_EXPANDER)
-//    // set timer 1 to 20 ms
-    TCCR1A = _BV(WGM11);// FastPWM Mode mode TOP (20 ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
-    TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);// set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
-    ICR1 = 40000;// set period to 20 ms
+#    if defined(USE_PCA9685_SERVO_EXPANDER) && ! defined(USE_SERVO_LIB)
+//    // set timer 1 to 20 ms, since the servo library does not do this for us
+    TCCR1A = _BV(WGM11);     // FastPWM Mode mode TOP (20 ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
+    TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);     // set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
+    ICR1 = 40000;     // set period to 20 ms
 #    endif
 
     TIFR1 |= _BV(OCF1B);    // clear any pending interrupts;
     TIMSK1 |= _BV(OCIE1B);    // enable the output compare B interrupt
     /*
      * Misuse the Input Capture Noise Canceler Bit as a flag, that signals that interrupts are enabled again.
-     * It is needed if disableServoEasingInterrupt() is suppressed e.g. by an overwritten handleServoTimerInterrupt() function
+     * It is required if disableServoEasingInterrupt() is suppressed e.g. by an overwritten handleServoTimerInterrupt() function
      * because the servo interrupt is used to synchronize e.g. NeoPixel updates.
      */
     TCCR1B |= _BV(ICNC1);
@@ -1107,7 +1169,7 @@ void enableServoEasingInterrupt() {
     // Servo uses timer 4 and we use timer 5. therefore we cannot change clock source to 32 kHz.
     // Enable GCLK for TCC2 and TC5 (timer counter input clock)
     GCLK->CLKCTRL.reg = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID(GCM_TC4_TC5)); // GCLK1=32kHz,  GCLK0=48Mhz
-//    while (GCLK->STATUS.bit.SYNCBUSY) // no need to wait
+//    while (GCLK->STATUS.bit.SYNCBUSY) // not required to wait
 //        ;
 
     // Reset TCx
@@ -1133,7 +1195,7 @@ void enableServoEasingInterrupt() {
 
     // Enable the TC5 interrupt request
     TC5->COUNT16.INTENSET.bit.MC0 = 1;
-//    while (TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY) // No need to wait at end of function
+//    while (TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY) // Not required to wait at end of function
 //        ; // wait until TC5 is done syncing
 
 #elif defined(ARDUINO_ARCH_APOLLO3)

@@ -1,7 +1,8 @@
 /*
- * PCA9685_Expander.cpp
+ * PCA9685_ExpanderAndServo.cpp
  *
- *  Shows smooth linear movement from one servo position to another using PCA9685 expander board.
+ *  Shows smooth linear movement from one servo position to another using one regular connected servo
+ *  and one servo connected to PCA9685 expander board.
  *  The PCA9685 library was successfully tested with 3 expander boards.
  *
  *  *****************************************************************************************************************************
@@ -47,6 +48,7 @@
  * This example is the OneServo example with only one modification to figure out that there is almost no difference between using the PCA9685 expander or the default Arduino Servo interface.
  * The PCA9685 library was successfully tested with 3 expander boards :-)
  */
+const int SERVO1_PCA9685_PIN = 9;
 const int SERVO1_PIN = 9;
 
 // for ESP32 LED_BUILTIN is defined as static const uint8_t LED_BUILTIN = 2;
@@ -65,10 +67,12 @@ const int SERVO1_PIN = 9;
  * Servo implementation libraries (Arduino Servo, Lightweight Servo and I2C Expansion Board)
  */
 #if defined(ARDUINO_SAM_DUE)
-ServoEasing Servo1(PCA9685_DEFAULT_ADDRESS, &Wire1); // If you use more than one PCA9685 you should consider to modify MAX_EASING_SERVOS at line 88 in ServoEasing.h
+ServoEasing Servo1AtPCA9685(PCA9685_DEFAULT_ADDRESS, &Wire1); // If you use more than one PCA9685 you should modify MAX_EASING_SERVOS at line 88 in ServoEasing.h
 #else
-ServoEasing Servo1(PCA9685_DEFAULT_ADDRESS, &Wire); // If you use more than one PCA9685 you should consider to modify MAX_EASING_SERVOS at line 88 in ServoEasing.h
+ServoEasing Servo1AtPCA9685(PCA9685_DEFAULT_ADDRESS, &Wire); // If you use more than one PCA9685 you should modify MAX_EASING_SERVOS at line 88 in ServoEasing.h
 #endif
+
+ServoEasing Servo1;
 
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
@@ -101,13 +105,13 @@ void setup() {
     Serial.print(F(" I2C device attached at address: 0x"));
     Serial.println(PCA9685_DEFAULT_ADDRESS, HEX);
 
-
     Serial.println(F("Attach servo to port 9 of PCA9685 expander"));
     /*
-     * Check at least the last call to attach()
+     * Attach the expander servos first!
      */
-    if (Servo1.attach(SERVO1_PIN) == INVALID_SERVO) {
-        Serial.println(F("Error attaching servo - maybe MAX_EASING_SERVOS=" STR(MAX_EASING_SERVOS) " is to small to hold all servos"));
+    if (Servo1AtPCA9685.attach(SERVO1_PCA9685_PIN) == INVALID_SERVO) {
+        Serial.println(
+                F("Error attaching servo - maybe MAX_EASING_SERVOS=" STR(MAX_EASING_SERVOS) " is to small to hold all servos"));
         while (true) {
             digitalWrite(LED_BUILTIN, HIGH);
             delay(100);
@@ -116,12 +120,19 @@ void setup() {
         }
     }
 
+    // Attach servo to pin
+    Serial.print(F("Attach servo at pin "));
+    Serial.println(SERVO1_PIN);
+    if (Servo1.attach(SERVO1_PIN) == INVALID_SERVO) {
+        Serial.println(F("Error attaching servo"));
+    }
+
     /**************************************************
      * Set servos to start position.
      * This is the position where the movement starts.
      *************************************************/
     Servo1.write(0);
-
+    Servo1AtPCA9685.write(0);
 
     // Wait for servos to reach start position.
     delay(500);
@@ -140,13 +151,17 @@ void loop() {
     Serial.println(F("Move to 90 degree with 10 degree per second blocking"));
 #endif
     Servo1.setSpeed(10);  // This speed is taken if no further speed argument is given.
-    Servo1.easeTo(90);
+    Servo1AtPCA9685.setSpeed(10);  // This speed is taken if no further speed argument is given.
+    Servo1.startEaseTo(90);
+    Servo1AtPCA9685.startEaseTo(90);
+    updateAndWaitForAllServosToStop(); // blocking wait
 
     // Now move faster without any delay between the moves
 #ifdef INFO
     Serial.println(F("Move to 180 degree with 30 degree per second using interrupts"));
 #endif
     Servo1.startEaseTo(180, 30);
+    Servo1AtPCA9685.startEaseTo(180, 30);
     /*
      * Now you can run your program while the servo is moving.
      * Just let the LED blink for 3 seconds (90 degrees moving by 30 degrees per second).
@@ -158,9 +173,10 @@ void loop() {
     delay(1000);
 
 #ifdef INFO
-    Serial.println(F("Move to 45 degree in one second using interrupts"));
+    Serial.println(F("Move to 135/45 degree in one second using interrupts"));
 #endif
-    Servo1.startEaseToD(45, 1000);
+    Servo1.startEaseToD(135, 1000);
+    Servo1AtPCA9685.startEaseToD(45, 1000);
     // Blink until servo stops
     while (areInterruptsActive()) {
         blinkLED();
@@ -169,22 +185,28 @@ void loop() {
     delay(1000);
 
 #ifdef INFO
-    Serial.println(F("Move to 135 degree and back to 45 degree nonlinear in one second each using interrupts"));
+    Serial.println(F("Move to 45/135 degree and back to 135/45 degree nonlinear in one second each using interrupts"));
 #endif
     Servo1.setEasingType(EASE_CUBIC_IN_OUT);
-
+    Servo1AtPCA9685.setEasingType(EASE_CUBIC_IN_OUT);
+/*
+ * Move both servos in opposite directions
+ */
     for (int i = 0; i < 2; ++i) {
-        Servo1.startEaseToD(135, 1000);
+        Servo1.startEaseToD(45, 1000);
+        Servo1AtPCA9685.startEaseToD(135, 1000);
         // Must call yield here for the ESP boards, since we have no delay called
         while (areInterruptsActive()) {
             ; // no delays here to avoid break between forth and back movement
         }
-        Servo1.startEaseToD(45, 1000);
+        Servo1.startEaseToD(135, 1000);
+        Servo1AtPCA9685.startEaseToD(45, 1000);
         while (areInterruptsActive()) {
             ; // no delays here to avoid break between forth and back movement
         }
     }
     Servo1.setEasingType(EASE_LINEAR);
+    Servo1AtPCA9685.setEasingType(EASE_LINEAR);
 
     delay(1000);
 
@@ -195,7 +217,8 @@ void loop() {
     Serial.println(F("Move to 180 degree with 50 degree per second blocking"));
 #endif
     Servo1.startEaseTo(180, 50);
-    while (Servo1.getCurrentAngle() < 120) {
+    Servo1AtPCA9685.startEaseTo(180, 50);
+    while (Servo1AtPCA9685.getCurrentAngle() < 120) {
         delay(20); // just wait until angle is above 120 degree
     }
     digitalWrite(LED_BUILTIN, HIGH);
@@ -212,6 +235,7 @@ void loop() {
     Serial.println(F("Move from 180 to 0 degree with 360 degree per second using interrupts of Timer1"));
 #endif
     Servo1.startEaseTo(0, 360, true);
+    Servo1AtPCA9685.startEaseTo(0, 360, true);
     // Wait for 250 ms. The servo should have moved 90 degree.
     delay(250);
     digitalWrite(LED_BUILTIN, LOW);

@@ -24,9 +24,9 @@
 #ifndef SERVOEASING_H_
 #define SERVOEASING_H_
 
-#define VERSION_SERVO_EASING "1.6.1"
-#define VERSION_SERVO_EASING_MAJOR 1
-#define VERSION_SERVO_EASING_MINOR 6
+#define VERSION_SERVO_EASING "2.0.0"
+#define VERSION_SERVO_EASING_MAJOR 2
+#define VERSION_SERVO_EASING_MINOR 0
 
 // @formatter:off
 /*  *****************************************************************************************************************************
@@ -36,13 +36,17 @@
  *  If you did not yet store the example as your own sketch, then with Ctrl+K you are instantly in the right library folder.
  *  *****************************************************************************************************************************/
 
-
+#define START_EASE_TO_SPEED 5 // If not specified use 5 degree per second. It is chosen so low in order to signal that it was forgotten to specify.
 /*
  * For use with e.g. the Adafruit PCA9685 16-Channel Servo Driver board. It has a resolution of 4096 per 20 ms => 4.88 us per step/unit.
  * One PCA9685 has 16 outputs. You must modify MAX_EASING_SERVOS below, if you have more than one PCA9685 attached!
+ * Use of PCA9685 normally disables use of regular servo library. You can force using of regular servo library by defining USE_SERVO_LIB
  */
 //#define USE_PCA9685_SERVO_EXPANDER
-
+//#define USE_SERVO_LIB
+#if defined(USE_PCA9685_SERVO_EXPANDER) && ! defined(USE_SERVO_LIB)
+#define DO_NOT_USE_SERVO_LIB
+#endif
 
 /*
  * If you have only one or two servos and an ATMega328, then you can save program space by defining symbol `USE_LEIGHTWEIGHT_SERVO_LIB`.
@@ -50,12 +54,16 @@
  * Using Lightweight Servo library (or PCA9685 servo expander) makes the servo pulse generating immune
  * to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
  * If not using the Arduino IDE take care that Arduino Servo library sources are not compiled / included in the project.
+ * Use of Lightweight Servo library disables use of regular servo library.
  */
 //#define USE_LEIGHTWEIGHT_SERVO_LIB
+#if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#define DO_NOT_USE_SERVO_LIB
+#endif
 
 
 #if ( defined(ESP8266) || defined(ESP32) || defined(__STM32F1__)) && defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-#error "No Lightweight Servo Library available (and needed) for ESP boards"
+#error "No Lightweight Servo Library available (and required) for ESP boards"
 #endif
 
 #if defined(USE_PCA9685_SERVO_EXPANDER) && defined(USE_LEIGHTWEIGHT_SERVO_LIB)
@@ -75,50 +83,50 @@
  *
  * If you do not need these functions, you may define MAX_EASING_SERVOS as 1
  ****************************************************************************************/
-#if !defined(USE_PCA9685_SERVO_EXPANDER) && !defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#if ! defined(DO_NOT_USE_SERVO_LIB)
 #  if defined(ESP32)
 // This does not work in Arduino IDE for "Generating function prototypes..."
 //#    if ! __has_include("ESP32Servo.h")
 //#error This ServoEasing library requires the "ESP32Servo" library for running on an ESP32. Please install it via the Arduino library manager.
 //#    endif
-#  include <ESP32Servo.h>
+#   include <ESP32Servo.h>
 #  else
-#  include <Servo.h>
+#   include <Servo.h>
 #  endif // defined(ESP32)
+#endif // ! defined(DO_NOT_USE_SERVO_LIB)
 
+#if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#  include "LightweightServo.h"
 #  ifndef MAX_EASING_SERVOS
-#    ifdef MAX_SERVOS
-#    define MAX_EASING_SERVOS MAX_SERVOS // =12 use default value from Servo.h for UNO etc.
-#    else
-#    define MAX_EASING_SERVOS 12 // just take default value from Servo.h for UNO etc.
-#    endif
+#    define MAX_EASING_SERVOS 2 // default value for UNO etc.
 #  endif
+#endif // ! defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 
-#else  // defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-#  if defined(USE_PCA9685_SERVO_EXPANDER)
-#    ifndef MAX_EASING_SERVOS
+#ifndef MAX_EASING_SERVOS
+#  ifdef MAX_SERVOS
+#   define MAX_EASING_SERVOS MAX_SERVOS // =12 use default value from Servo.h for UNO etc.
+#  else
+#   define MAX_EASING_SERVOS 12 // just take default value from Servo.h for UNO etc.
+#  endif
+#endif
+
+#if defined(USE_PCA9685_SERVO_EXPANDER)
+#  ifndef MAX_EASING_SERVOS
 #    define MAX_EASING_SERVOS 16 // One PCA9685 has 16 outputs. You must MODIFY this, if you have more than one PCA9685 attached!
-#    endif // defined(USE_PCA9685_SERVO_EXPANDER)
+#  endif // defined(USE_PCA9685_SERVO_EXPANDER)
 
-     #include <Wire.h>
+   #include <Wire.h>
 // PCA9685 works with up to 1 MHz I2C frequency
-#    if defined(ESP32)
+#  if defined(ESP32)
 // The ESP32 I2C interferes with the Ticker / Timer library used.
 // Even with 100 kHz clock we have some dropouts / NAK's because of sending address again instead of first data.
 #    define I2C_CLOCK_FREQUENCY 100000 // 200000 does not work for my ESP32 module together with the timer :-(
-#    elif defined(ESP8266)
+#  elif defined(ESP8266)
 #    define I2C_CLOCK_FREQUENCY 400000 // 400000 is the maximum for 80 MHz clocked ESP8266 (I measured real 330000 Hz for this setting)
-#    else
+#  else
 #    define I2C_CLOCK_FREQUENCY 800000 // 1000000 does not work for my Arduino Nano, maybe because of parasitic breadboard capacities
-#    endif
-
-#  elif defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-#  include "LightweightServo.h"
-#    ifndef MAX_EASING_SERVOS
-#    define MAX_EASING_SERVOS 2 // default value for UNO etc.
-#    endif
-#  endif // defined(USE_PCA9685_SERVO_EXPANDER)
-#endif // defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#  endif
+#endif // defined(USE_PCA9685_SERVO_EXPANDER)
 
 #if ! defined(REFRESH_INTERVAL)
 #define REFRESH_INTERVAL 20000   // // minimum time to refresh servos in microseconds (from Servo.h)
@@ -172,7 +180,8 @@
 // @formatter:on
 
 /*
- * Version
+ * Version 2.0.0 - 5/2020
+ * - `PCA9685_Expander` and standard Servos can be controlled simultaneously by defining `USE_SERVO_LIB`.
  * - Changed some types to _fast types
  * - Standardize pins for all examples
  *
@@ -190,7 +199,7 @@
  * Version 1.5.1 - 3/2020
  * - Added support for STM32 cores of Arduino Board manager. Seen in the Arduino IDE as "Generic STM32F1 series" from STM32 Boards.
  * - Inserted missing `Wire.begin()` in setup of `PCA9685_Expander` example.
- * - In `isMovingAndCallYield()` yield() only called/needed for an ESP8266.
+ * - In `isMovingAndCallYield()` yield() only called/required for an ESP8266.
  * - New function `areInterruptsActive()`, especially for ESP32.
  *
  * Version 1.5.0 - 2/2020
@@ -365,7 +374,7 @@
 #define PCA9685_PRESCALER_FOR_20_MS ((25000000L /(4096L * 50))-1) // = 121 / 0x79 at 50 Hz
 
 class ServoEasing
-#if not defined(USE_LEIGHTWEIGHT_SERVO_LIB) && not defined(USE_PCA9685_SERVO_EXPANDER)
+#if ! defined(DO_NOT_USE_SERVO_LIB)
         : public Servo
 #endif
 {
@@ -373,9 +382,9 @@ public:
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 #if defined(ARDUINO_SAM_DUE)
-    ServoEasing(uint8_t aPCA9685I2CAddress = PCA9685_DEFAULT_ADDRESS, TwoWire *aI2CClass = &Wire1);
+    ServoEasing(uint8_t aPCA9685I2CAddress, TwoWire *aI2CClass = &Wire1);
 #else
-    ServoEasing(uint8_t aPCA9685I2CAddress = PCA9685_DEFAULT_ADDRESS, TwoWire *aI2CClass = &Wire);
+    ServoEasing(uint8_t aPCA9685I2CAddress, TwoWire *aI2CClass = &Wire);
 #endif
     void I2CInit();
     void PCA9685Reset();
@@ -385,9 +394,9 @@ public:
     void setPWM(uint16_t aPWMOnValueAsUnits, uint16_t aPWMOffValueAsUnits);
     // main mapping function for us to PCA9685 Units (20000/4096 = 4.88 us)
     int MicrosecondsToPCA9685Units(int aMicroseconds);
-#else
-    ServoEasing();
 #endif
+    ServoEasing();
+
     uint8_t attach(int aPin);
     // Here no units accepted, only microseconds!
     uint8_t attach(int aPin, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree);
@@ -448,7 +457,7 @@ public:
      * Internally only microseconds (or units (= 4.88 us) if using PCA9685 expander) and not degree are used to speed up things.
      * Other expander or libraries can therefore easily be added.
      */
-    volatile int mCurrentMicrosecondsOrUnits; // set by write() and writeMicrosecondsOrUnits(). Needed as start for next move and to avoid unnecessary writes.
+    volatile int mCurrentMicrosecondsOrUnits; // set by write() and writeMicrosecondsOrUnits(). Required as start for next move and to avoid unnecessary writes.
     int mStartMicrosecondsOrUnits;  // used with millisAtStartMove to compute currentMicrosecondsOrUnits
     int mEndMicrosecondsOrUnits;    // used once as last value just if movement was finished
     int mDeltaMicrosecondsOrUnits;   // end - start
@@ -467,10 +476,13 @@ public:
     volatile bool mServoMoves;
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
+#if defined(USE_SERVO_LIB)
+    bool mServoIsConnectedToExpander; // to distinguish between different servo drivers
+#endif
     uint8_t mPCA9685I2CAddress;
     TwoWire * mI2CClass;
 #endif
-    uint8_t mServoPin; // pin number or NO_SERVO_ATTACHED_PIN_NUMBER - at least needed for Lightweight Servo Lib
+    uint8_t mServoPin; // pin number or NO_SERVO_ATTACHED_PIN_NUMBER - at least required for Lightweight Servo Library
 
     uint8_t mServoIndex; // Index in sServoArray or INVALID_SERVO if error while attach() or if detached
 
@@ -490,13 +502,13 @@ public:
 };
 
 /*
- * It is needed for ESP32, where the timer interrupt routine does not block the loop. Maybe it runs on another CPU?
+ * It is required for ESP32, where the timer interrupt routine does not block the loop. Maybe it runs on another CPU?
  * The interrupt routine sets first the mServoMoves flag to false and then disables the timer,
  * but on a ESP32 polling the flag and then starting next movement and enabling timer happens BEFORE the timer is disabled.
  * And this crashes the kernel in esp_timer_delete, which will lead to a reboot.
  */
 extern volatile bool sInterruptsAreActive; // true if interrupts are still active, i.e. at least one Servo is moving with interrupts.
-bool areInterruptsActive();
+bool areInterruptsActive(); // The recommended test if at least one servo is moving yet.
 
 /*
  * Array of all servos to enable synchronized movings
