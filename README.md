@@ -175,10 +175,23 @@ Not for ESP8266 because it requires 2 analog inputs.
 The API accepts only degree (except for write() and writeMicrosecondsOrUnits()) but internally only microseconds (or units (= 4.88 us) if using PCA9685 expander) and not degree are used to speed up things. Other expander or servo libraries can therefore easily be used.<br/>
 On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking easing functions its unused **Channel B** is used to generate an interrupt 100 us before the end of the 20 ms Arduino Servo refresh period. This interrupt then updates all servo values for the next refresh period.
 
-# Supported Platforms
-AVR, ESP8266, ESP32, STM32
-Every platform with a Servo library will work in blocking mode. If timer support is available for a platform the library can be ported by adding code for the Timer20ms like is was done for ESP and STM.
+# Supported platforms
+AVR, SAM, SAMD, ESP8266, ESP32, STM32, Apollo3
+
+# Adding a new platform / board
+Every platform with a Servo library will work without any modifications in blocking mode.<br/>
 Non blocking behavior can always be achieved manually by calling `update()` in a loop - see last movement in [Simple example](examples/Simple/Simple.ino).
+
+If timer support is available for a platform the library can be ported by adding code for the Timer20ms like is was done for ESP and STM.<br/>
+To add a new platform, the following steps has to be performed:
+1. If the new platform has an **Arduino compatible Servo library**, fine, otherwise include the one required for this platform like it is done for ESP32 [here](src/ServoEasing.h#L92).
+2. You need a **20ms interrupt source** providing the functions enableServoEasingInterrupt() and (optional) disableServoEasingInterrupt(). Extend these functions with code for the new platform. Place includes and timer definitions at top of *ServoEasing.cpp*.
+3. If your interrupt source requires an ISR (Interrupt Service Routine) place it after disableServoEasingInterrupt() where all the other ISR are located.
+4. To test the new platform, you may want to enable **TRACE output** by commenting out the line `#define TRACE` in *ServoEasing.cpp*
+and enabling **interrupt timing feedback** by commenting out the line `#define MEASURE_SERVO_EASING_INTERRUPT_TIMING` in *ServoEasing.cpp*.
+5. If it works for you, please issue a Pull Request, to share your efforts with the community.
+
+Good luck!
 
 # Troubleshooting
 If you see strange behavior, you can open the library file *ServoEasing.h* and comment out the line `#define TRACE` or `#define DEBUG`.
@@ -261,16 +274,8 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 Initial Arduino library version
 
 # CI
-Since Travis CI is unreliable and slow (5 times slower 17:43 vs. 3:15 minutes), the library examples are now tested with GitHub Actions for the following boards:
+Since Travis CI is unreliable and slow (5 times slower 17:43 vs. 3:15 minutes), the library examples are now tested with GitHub Actions for [this  boards](.github/workflows/LibraryBuild.yml#L41).
 
-- arduino:avr:uno
-- arduino:avr:leonardo
-- arduino:avr:mega
-- arduino:sam:arduino_due_x
-- esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
-- esp32:esp32:featheresp32:FlashFreq=80
-- STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
-- SparkFun:apollo3:amap3nano
 
 ## Requests for modifications / extensions
 Please write me a PM including your motivation/problem if you need a modification or an extension e.g. a callback functionality after move has finished.
