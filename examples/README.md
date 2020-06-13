@@ -53,7 +53,7 @@ The OneServo example modified for using a PCA9685 expander board and the standar
 You must comment out the line `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.h* to make the expander example work.
 
 ## PCA9685_ExpanderAndServo example
-Combination of OneServo example and PCA9685_Expander example. Move one Servo attached to the Arduino board and one servo attached to the PCA9685 expander board simultaneously.
+Combination of OneServo example and PCA9685_Expander example. Move one servo attached to the Arduino board and one servo attached to the PCA9685 expander board **simultaneously**.
 
 ## PCA9685_ExpanderFor32Servos example
 Program to show the usage of 2 PCA9685 expander boards with 32 servos.
