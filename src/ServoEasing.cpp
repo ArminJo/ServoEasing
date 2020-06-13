@@ -72,6 +72,10 @@ HardwareTimer Timer20ms(3);  // 4 timers and 4. timer is used for tone()
 #define ID_TC_FOR_20_MS_TIMER   ID_TC8 // Timer 8 is TC2 channel 2
 #define IRQn_FOR_20_MS_TIMER    TC8_IRQn
 #define HANDLER_FOR_20_MS_TIMER TC8_Handler
+
+#elif defined(TEENSYDUINO)
+// common for all Teensy
+IntervalTimer Timer20ms;
 #endif
 
 // Enable this to see information on each call
@@ -1168,7 +1172,7 @@ void enableServoEasingInterrupt() {
 #elif defined(ARDUINO_ARCH_SAMD)
     // Servo uses timer 4 and we use timer 5. therefore we cannot change clock source to 32 kHz.
     // Enable GCLK for TCC2 and TC5 (timer counter input clock)
-    GCLK->CLKCTRL.reg = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID(GCM_TC4_TC5)); // GCLK1=32kHz,  GCLK0=48Mhz
+    GCLK->CLKCTRL.reg = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID(GCM_TC4_TC5)); // GCLK1=32kHz,  GCLK0=48MHz
 //    while (GCLK->STATUS.bit.SYNCBUSY) // not required to wait
 //        ;
 
@@ -1211,6 +1215,9 @@ void enableServoEasingInterrupt() {
     am_hal_ctimer_int_enable(AM_HAL_CTIMER_INT_TIMERA3);
     NVIC_EnableIRQ(CTIMER_IRQn);
 
+#elif defined(TEENSYDUINO)
+    // common for all Teensy
+    Timer20ms.begin(handleServoTimerInterrupt, REFRESH_INTERVAL_MICROS);
 #endif
     sInterruptsAreActive = true;
 }
@@ -1244,6 +1251,8 @@ void disableServoEasingInterrupt() {
 #elif defined(ARDUINO_ARCH_APOLLO3)
     am_hal_ctimer_int_disable(AM_HAL_CTIMER_INT_TIMERA3);
 
+#elif defined(TEENSYDUINO)
+    Timer20ms.end();
 #endif
     sInterruptsAreActive = false;
 }

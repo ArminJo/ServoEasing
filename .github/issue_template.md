@@ -16,6 +16,8 @@ assignees: ArminJo
 * [ ] ESP8266 board
 * [ ] ESP32 board
 * [ ] STM32 board
+* [ ] Apollo3 board
+* [ ] Teensy board
 * [ ] Other - please specify
 
 
@@ -24,7 +26,7 @@ assignees: ArminJo
 * [ ] Arduino Pro IDE
 * [ ] Sloeber IDE
 * [ ] PlatformIO IDE
-* [ ] Other
+* [ ] Other - please specify
 
 
 ### Example expressing the bug
@@ -33,6 +35,7 @@ assignees: ArminJo
 * [ ] TwoServos
 * [ ] AsymmetricEasing
 * [ ] PCA9685_Expander
+* [ ] PCA9685_ExpanderAndServo
 * [ ] PCA9685_ExpanderFor32Servos
 * [ ] ContinuousRotatingServo
 * [ ] Other

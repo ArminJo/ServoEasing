@@ -1,7 +1,7 @@
 # [ServoEasing](https://github.com/ArminJo/ServoEasing) - move your servo more natural
 Available as Arduino library "ServoEasing"
 
-### [Version 2.0.0](https://github.com/ArminJo/ServoEasing/releases)
+### [Version 2.1.0](https://github.com/ArminJo/ServoEasing/releases)
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
@@ -147,7 +147,7 @@ The OneServo example modified for using a PCA9685 expander board and the standar
 You must comment out the line `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.h* to make the expander example work.
 
 ## PCA9685_ExpanderAndServo example
-Combination of OneServo example and PCA9685_Expander example. Move one Servo attached to the Arduino board and one servo attached to the PCA9685 expander board simultaneously.
+Combination of OneServo example and PCA9685_Expander example. Move one servo attached to the Arduino board and one servo attached to the PCA9685 expander board **simultaneously**.
 
 ## PCA9685_ExpanderFor32Servos example
 Program to show the usage of 2 PCA9685 expander boards with 32 servos.
@@ -176,7 +176,7 @@ The API accepts only degree (except for write() and writeMicrosecondsOrUnits()) 
 On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking easing functions its unused **Channel B** is used to generate an interrupt 100 us before the end of the 20 ms Arduino Servo refresh period. This interrupt then updates all servo values for the next refresh period.
 
 # Supported platforms
-AVR, SAM, SAMD, ESP8266, ESP32, STM32, Apollo3
+AVR, SAM, SAMD, ESP8266, ESP32, STM32, Apollo3, Teensy
 
 # Adding a new platform / board
 Every platform with a Servo library will work without any modifications in blocking mode.<br/>
@@ -198,6 +198,9 @@ If you see strange behavior, you can open the library file *ServoEasing.h* and c
 This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
 
 # Revision History
+### Version 2.1.0
+- Added support of **Teensy** boards.
+
 ### Version 2.0.0
 - `PCA9685_Expander` and standard Servos can be controlled simultaneously by defining `USE_SERVO_LIB`.
 - Changed some types to _fast types

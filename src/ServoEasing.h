@@ -24,9 +24,9 @@
 #ifndef SERVOEASING_H_
 #define SERVOEASING_H_
 
-#define VERSION_SERVO_EASING "2.0.0"
+#define VERSION_SERVO_EASING "2.1.0"
 #define VERSION_SERVO_EASING_MAJOR 2
-#define VERSION_SERVO_EASING_MINOR 0
+#define VERSION_SERVO_EASING_MINOR 1
 
 // @formatter:off
 /*  *****************************************************************************************************************************
@@ -70,7 +70,7 @@
 #error "Please define only one of the symbols USE_PCA9685_SERVO_EXPANDER or USE_LEIGHTWEIGHT_SERVO_LIB"
 #endif
 
-#if ! ( defined(__AVR__) || defined(ESP8266) || defined(ESP32) || defined(STM32F1xx) || defined(__STM32F1__) || defined(__SAM3X8E__) || defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_APOLLO3))
+#if ! ( defined(__AVR__) || defined(ESP8266) || defined(ESP32) || defined(STM32F1xx) || defined(__STM32F1__) || defined(__SAM3X8E__) || defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_APOLLO3)|| defined(TEENSYDUINO))
 #warning "No periodic timer support existent (or known) for this platform. Only blocking functions and simple example will run!"
 #endif
 
@@ -180,6 +180,9 @@
 // @formatter:on
 
 /*
+ * Version 2.1.0 - 6/2020
+ * - Teensy support.
+ *
  * Version 2.0.0 - 5/2020
  * - `PCA9685_Expander` and standard Servos can be controlled simultaneously by defining `USE_SERVO_LIB`.
  * - Changed some types to _fast types
