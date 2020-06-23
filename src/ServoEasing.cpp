@@ -388,14 +388,9 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
 void ServoEasing::detach() {
     if (mServoIndex != INVALID_SERVO) {
         sServoArray[mServoIndex] = NULL;
-        if (mServoIndex == sServoArrayMaxIndex) {
-            // if servo with highest index in array was detached, compute new sServoArrayMaxIndex
-            do {
-                sServoArrayMaxIndex--;
-                if (sServoArrayMaxIndex == 0) {
-                    break;
-                }
-            } while (sServoArray[sServoArrayMaxIndex] == NULL);
+        // If servo with highest index in array was detached, we want to find new sServoArrayMaxIndex
+        while (sServoArray[sServoArrayMaxIndex] == NULL && sServoArrayMaxIndex > 0) {
+            sServoArrayMaxIndex--;
         }
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)

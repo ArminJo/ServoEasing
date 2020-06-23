@@ -24,7 +24,7 @@
 #ifndef SERVOEASING_H_
 #define SERVOEASING_H_
 
-#define VERSION_SERVO_EASING "2.1.0"
+#define VERSION_SERVO_EASING "2.1.1"
 #define VERSION_SERVO_EASING_MAJOR 2
 #define VERSION_SERVO_EASING_MINOR 1
 
@@ -180,6 +180,9 @@
 // @formatter:on
 
 /*
+ * Version 2.1.1 - 6/2020
+ * - Fixed bug in detach of first servo.
+ *
  * Version 2.1.0 - 6/2020
  * - Teensy support.
  *
