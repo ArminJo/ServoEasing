@@ -34,11 +34,15 @@
 #ifndef EASY_BUTTON_AT_INT01_H_
 #define EASY_BUTTON_AT_INT01_H_
 
-#define VERSION_EASY_BUTTON "3.0.0"
+#define VERSION_EASY_BUTTON "3.1.0"
 #define VERSION_EASY_BUTTON_MAJOR 3
-#define VERSION_EASY_BUTTON_MINOR 0
+#define VERSION_EASY_BUTTON_MINOR 1
 
 /*
+ *  Version 3.1.0 - 6/2020
+ *  - 2 sets of constructors, one for only one button used and one for the second button if two buttons used.
+ *  - Map pin numbers for Digispark pro boards, for use with with digispark library.
+ *
  * Version 3.0.0 - 5/2020
  * - Added button release handler and adapted examples.
  * - Revoke change for "only one true result per press for checkForLongPressBlocking()". It is superseded by button release handler.
@@ -101,7 +105,7 @@
 #endif
 
 /*
- * Comment this out to save 2 bytes RAM and ? bytes FLASH
+ * Comment this out to save 2 bytes RAM and 64 bytes FLASH
  */
 //#define NO_BUTTON_RELEASE_CALLBACK
 //
@@ -162,35 +166,68 @@
 #define INT0_IN_PORT  (PINB)
 #define INT0_OUT_PORT (PORTB)
 
-#  if ! defined(INT1_PIN)
+#  if defined(USE_BUTTON_1)
+#    if ! defined(INT1_PIN)
 #define INT1_PIN 3
-#  elif (INT1_PIN != 2) && (INT1_PIN > 5)
+#    elif (INT1_PIN != 2) && (INT1_PIN > 5)
 #error "INT1_PIN (for PCINT0 interrupt) can only be 0,1,3,4,5"
-#  endif
+#    endif
 #define INT1_DDR_PORT (DDRB)
 #define INT1_IN_PORT  (PINB)
 #define INT1_OUT_PORT (PORTB)
+#  endif // defined(USE_BUTTON_1)
 
 #elif defined(__AVR_ATtiny87__) || defined(__AVR_ATtiny167__)
-#  if defined(ARDUINO_AVR_DIGISPARKPRO)
-/// Strange enumeration of pins on Digispark board and core library
-#define INT0_PIN 3 // PB6 / INT0 is connected to USB+ on DigisparkPro boards and labeled with 3 (D3)
-#  else
-#define INT0_PIN 14 // PB6 / INT0 is connected to USB+ on DigisparkPro boards
-#  endif
+// from here we use only ATtinyCore / PAx / PBx numbers, since on Digispark board and core library there is used a strange enumeration of pins
+#define INT0_PIN 14 // PB6 / INT0 is connected to USB+ on DigisparkPro boards and labeled with 3 (D3)
 #define INT0_DDR_PORT (DDRB)
 #define INT0_IN_PORT  (PINB)
 #define INT0_OUT_PORT (PORTB)
 
 
-#  if ! defined(INT1_PIN)
-#define INT1_PIN 3
-#  elif (INT1_PIN != 3) && (INT1_PIN > 7)
-#error "INT1_PIN (for PCINT0 interrupt) can only be 0 to 2 or 4 to 7"
-#  endif
+#  if defined(USE_BUTTON_1)
+#    if ! defined(INT1_PIN)
+#define INT1_PIN 3 // PA3 labeled 9 on DigisparkPro boards
+#    endif // ! defined(INT1_PIN)
+
+// Check for pin range and map digispark to PA pin number
+#    if defined(ARDUINO_AVR_DIGISPARKPRO)
+#      if INT1_PIN == 5
+#undef INT1_PIN
+#define INT1_PIN 7 // PA7
+#      elif INT1_PIN == 6
+#undef INT1_PIN
+#define INT1_PIN 0 // PA0
+#      elif INT1_PIN == 7
+#undef INT1_PIN
+#define INT1_PIN 1 // PA1
+#      elif INT1_PIN == 8
+#undef INT1_PIN
+#define INT1_PIN 2 // PA2
+#      elif INT1_PIN == 9
+#undef INT1_PIN
+#define INT1_PIN 3 // PA3
+#      elif INT1_PIN == 10
+#undef INT1_PIN
+#define INT1_PIN 4 // PA4
+#      elif INT1_PIN == 11
+#undef INT1_PIN
+#define INT1_PIN 5 // PA5
+#      elif INT1_PIN == 12
+#undef INT1_PIN
+#define INT1_PIN 6 // PA6
+#      else
+#error "INT1_PIN (for PCINT0 interrupt) can only be 5 to 12"
+#      endif
+#    else // defined(ARDUINO_AVR_DIGISPARKPRO)
+#      if (INT1_PIN > 7)
+#error "INT1_PIN (for PCINT0 interrupt) can only be 0 to 7"
+#      endif
+#    endif // defined(ARDUINO_AVR_DIGISPARKPRO)
 #define INT1_DDR_PORT (DDRA)
 #define INT1_IN_PORT  (PINA)
 #define INT1_OUT_PORT (PORTA)
+#  endif // defined(USE_BUTTON_1)
 #else
 
 // other AVR MCUs
@@ -199,17 +236,21 @@
 #define INT0_IN_PORT  (PIND)
 #define INT0_OUT_PORT (PORTD)
 
-#  if ! defined(INT1_PIN)
+#  if defined(USE_BUTTON_1)
+#    if ! defined(INT1_PIN)
 #define INT1_PIN 3
-#  elif (INT1_PIN > 7)
+#    elif (INT1_PIN > 7)
 #error "INT1_PIN (for PCINT2 interrupt) can only be Arduino pins 0 to 7 (PD0 to PD7)"
-#  endif
+#    endif
 #define INT1_DDR_PORT (DDRD)
 #define INT1_IN_PORT  (PIND)
 #define INT1_OUT_PORT (PORTD)
-#endif
+#  endif // defined(USE_BUTTON_1)
+#endif // defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
 
+#if defined(USE_BUTTON_1)
 #define INT1_BIT INT1_PIN
+#endif
 
 #if defined(USE_BUTTON_1) && ((! defined(ISC10)) || ((defined(__AVR_ATtiny87__) || defined(__AVR_ATtiny167__)) && INT1_PIN != 3)) \
     && ! defined(INTENTIONALLY_USE_PCI0_FOR_BUTTON1) && !(defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__))
@@ -228,16 +269,26 @@
 #define INT0_BIT INT0_PIN
 #endif
 
+#define BUTTON_AT_INT0 ((bool)true)
+#define BUTTON_AT_INT1_OR_PCINT ((bool)false)
+
 class EasyButton {
 
 public:
 
     /*
-     * Constructor deterministic if only one button was enabled
-     * If two buttons are enabled it is taken as the 1. button at INT0
+     * These constructors are deterministic if only one button is enabled
+     * If two buttons are enabled they can be taken for the 1. button at INT0
      */
     EasyButton();
     EasyButton(void (*aButtonPressCallback)(bool aButtonToggleState));
+#if ! defined(NO_BUTTON_RELEASE_CALLBACK)
+    EasyButton(void (*aButtonPressCallback)(bool aButtonToggleState),
+            void (*aButtonReleaseCallback)(bool aButtonToggleState, uint16_t aButtonPressDurationMillis));
+#endif
+    /*
+     * These constructors use the first (bool) parameter to decide which button to take.
+     */
     EasyButton(bool aIsButtonAtINT0);
     EasyButton(bool aIsButtonAtINT0, void (*aButtonPressCallback)(bool aButtonToggleState));
 #if ! defined(NO_BUTTON_RELEASE_CALLBACK)
@@ -267,7 +318,7 @@ public:
 
     bool LastBounceWasChangeToInactive; // Internal state, reflects actual reading with spikes and bouncing. Negative logic: true / active means button pin is LOW
     volatile bool ButtonStateIsActive; // Negative logic: true / active means button pin is LOW. If last press duration < BUTTON_DEBOUNCING_MILLIS it holds wrong value (true instead of false) :-(
-    volatile bool ButtonToggleState;      // Toggle is on press, not on release - initial value is false
+    volatile bool ButtonToggleState;    // Toggle is on press, not on release - initial value is false
 
     /*
      * Flag to enable action only once. Only set to true by library. Can be checked and set to false my main program to enable only one action per button press
@@ -280,9 +331,19 @@ public:
      *  To cover this case you can call updateButtonState() from an outside loop which updates the button state in this case.
      */
     volatile uint16_t ButtonPressDurationMillis;
-    volatile unsigned long ButtonLastChangeMillis;        // For debouncing
 
-    volatile unsigned long ButtonReleaseMillis;           // for double press recognition
+    /*
+     * Milliseconds of last button change, going active or inactive.
+     * If bouncing occurs the time is not updated with the time of the bouncing.
+     * So ButtonPressDurationMillis is the complete time and not the time after the last bounce.
+     */
+    volatile unsigned long ButtonLastChangeMillis;
+
+    /*
+     * If last button change is going inactive, it contains the same value as ButtonLastChangeMillis
+     * It is required for double press recognition, which is done when button is active and ButtonLastChangeMillis has just changed.
+     */
+    volatile unsigned long ButtonReleaseMillis;
 
 #if defined(ANALYZE_MAX_BOUNCING_PERIOD)
     volatile unsigned int MaxBouncingPeriodMillis = 0; // Maximum bouncing period. Time between first level change and last bouncing level change during BUTTON_DEBOUNCING_MILLIS

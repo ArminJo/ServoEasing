@@ -1,7 +1,7 @@
 # [ServoEasing](https://github.com/ArminJo/ServoEasing) - move your servo more natural
 Available as Arduino library "ServoEasing"
 
-### [Version 2.1.0](https://github.com/ArminJo/ServoEasing/releases)
+### [Version 2.1.1](https://github.com/ArminJo/ServoEasing/releases)
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
@@ -61,6 +61,13 @@ Just call **myServo.startEaseTo()** instead of **myServo.write()** and you are d
 - [C functions on Github](https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c)
 - [Interactive cubic-bezier](http://cubic-bezier.com)
 
+# Resolution of servo positioning
+- The standard range of 544 to 2400 us per 180 degree results in an timing of around **10 us per degree**.
+- The **Arduino Servo library on AVR** uses an prescaler of 8 at 16 MHz clock resulting in a resolution of **0.5 us**.
+- The **PCA9685 expander** has a resolution of **4.88 us** per step (@ 20 ms interval) resulting in a resolution of **0.5 degree**.
+Digital Servos have a **deadband of approximately 5 us / 0.5 degree** which means, that you will see a **stuttering movement** if the moving speed is slow.
+If you control them with a PCA9685 expander it may get worse, since one step of 4.88 us can be within the deadband, so it takes 2 steps to move the servo from its current position.
+
 # Modifying library properties
 To access the Arduino library files from a sketch, you have to first use *Sketch/Show Sketch Folder (Ctrl+K)* in the Arduino IDE.<br/>
 Then navigate to the parallel `libraries` folder and select the library you want to access.<br/>
@@ -78,7 +85,8 @@ Be aware that the PCA9685 expander is **reset** at the first `attach()` and **in
 To control simultaneously servos with the Arduino Servo library i.e. servos which are directly connected to the Arduino board, comment out the line `#define USE_SERVO_LIB` in the library file *ServoEasing.h*.<br/>
 In this case you should attach the expander servos first in order to initialize the expander board correctly.
 And as long as no servo using the Arduino Servo library is attached,
-the expander servos will not move -which should not be a problem since you normally attach all servos in `setup()`-.<br/>
+the expander servos will not move, which should not be a problem since you normally attach all servos in `setup()`.<br/>
+Resolution of the is PCA9685 signal is approximately 0.5 degree.
 
 On the **ESP32 the I2C library is only capable to run at 100 kHz**, because it interferes with the Ticker / Timer library used.
 Even with 100 kHz clock we have some dropouts / NAK's because of sending address again instead of first data.<br/>
@@ -198,6 +206,9 @@ If you see strange behavior, you can open the library file *ServoEasing.h* and c
 This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
 
 # Revision History
+### Version 2.1.1
+- Fixed bug in detach of first servo.
+
 ### Version 2.1.0
 - Added support of **Teensy** boards.
 

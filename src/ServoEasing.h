@@ -364,6 +364,7 @@
 #define EASE_USER_OUT           0x2F
 #define EASE_USER_IN_OUT        0x4F
 #define EASE_USER_BOUNCING      0x6F
+
 #define EASE_FUNCTION_DEGREE_INDICATOR_OFFSET 256 // Offset to decide if the user function returns degree instead of 0.0 to 1.0. => returns 256 for 0 degree.
 
 // some PCA9685 specific constants

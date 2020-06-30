@@ -64,14 +64,14 @@ EasyButton * EasyButton::sPointerToButton1ForISR;
 #endif
 
 /*
- * Constructor deterministic if only one button was enabled
- * If two buttons are enabled it is taken as the 1. button at INT0
+ * These constructors are deterministic if only one button is enabled
+ * If two buttons are enabled they can be taken for the 1. button at INT0
  */
 EasyButton::EasyButton() {
-#if defined(USE_BUTTON_1) && not defined(USE_BUTTON_0)
-    init(false); // 2. button
+#if defined(USE_BUTTON_0)
+    init(true);  // 1. button
 #else
-    init(true); // 1. button
+    init(false); // 2. button
 #endif
 }
 /*
@@ -79,16 +79,33 @@ EasyButton::EasyButton() {
  */
 EasyButton::EasyButton(void (*aButtonPressCallback)(bool aButtonToggleState)) {
     ButtonPressCallback = aButtonPressCallback;
-#if defined(USE_BUTTON_1) && not defined(USE_BUTTON_0)
-    init(false); // 2. button
+#if defined(USE_BUTTON_0)
+    init(true);  // 1. button
 #else
-    init(true); // 1. button
+    init(false); // 2. button
 #endif
 }
 
+#if ! defined(NO_BUTTON_RELEASE_CALLBACK)
+EasyButton::EasyButton(void (*aButtonPressCallback)(bool aButtonToggleState),
+        void (*aButtonReleaseCallback)(bool aButtonToggleState, uint16_t aButtonPressDurationMillis)) {
+    ButtonPressCallback = aButtonPressCallback;
+    ButtonReleaseCallback = aButtonReleaseCallback;
+#  if defined(USE_BUTTON_0)
+    init(true); // 1. button
+#  else
+    init(false); // 2. button
+#  endif
+}
+#endif // NO_BUTTON_RELEASE_CALLBACK
+
+/*
+ * These constructors use the first (bool) parameter to decide which button to take.
+ */
 #if defined(USE_BUTTON_0) && defined(USE_BUTTON_1)
 EasyButton::EasyButton(bool aIsButtonAtINT0)
 #else
+// Constructor with unused attribute to avoid warnings
 EasyButton::EasyButton(bool aIsButtonAtINT0 __attribute__((unused)))
 #endif
         {
@@ -104,6 +121,7 @@ EasyButton::EasyButton(bool aIsButtonAtINT0 __attribute__((unused)))
 #if defined(USE_BUTTON_0) && defined(USE_BUTTON_1)
 EasyButton::EasyButton(bool aIsButtonAtINT0, void (*aButtonPressCallback)(bool aButtonToggleState))
 #else
+// Constructor with unused attribute to avoid warnings
 EasyButton::EasyButton(bool aIsButtonAtINT0 __attribute__((unused)), void (*aButtonPressCallback)(bool aButtonToggleState))
 #endif
         {
@@ -122,6 +140,7 @@ EasyButton::EasyButton(bool aIsButtonAtINT0 __attribute__((unused)), void (*aBut
 EasyButton::EasyButton(bool aIsButtonAtINT0, void (*aButtonPressCallback)(bool aButtonToggleState),
         void (*aButtonReleaseCallback)(bool aButtonToggleState, uint16_t aButtonPressDurationMillis))
 #  else
+// Constructor with unused attribute to avoid warnings
 EasyButton::EasyButton(bool aIsButtonAtINT0 __attribute__((unused)), void (*aButtonPressCallback)(bool aButtonToggleState),
         void (*aButtonReleaseCallback)(bool aButtonToggleState, uint16_t aButtonPressDurationMillis))
 #  endif

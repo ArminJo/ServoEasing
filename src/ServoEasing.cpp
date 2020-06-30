@@ -152,14 +152,15 @@ void ServoEasing::PCA9685Reset() {
 }
 
 /*
- * Set expander to 20 ms period and wait 2 milliseconds
+ * Set expander to 20 ms period for 4096-part cycle and wait 2 milliseconds
+ * This results in a resolution of 4.88 us per step.
  */
 void ServoEasing::PCA9685Init() {
     // Set expander to 20 ms period
     I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_SLEEP)); // go to sleep
     I2CWriteByte(PCA9685_PRESCALE_REGISTER, PCA9685_PRESCALER_FOR_20_MS); // set the prescaler
     I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_AUTOINCREMENT)); // reset sleep and enable auto increment
-    delay(2); // 500 us according to datasheet
+    delay(2); // > 500 us according to datasheet
 }
 
 void ServoEasing::I2CWriteByte(uint8_t aAddress, uint8_t aData) {
@@ -180,6 +181,7 @@ void ServoEasing::I2CWriteByte(uint8_t aAddress, uint8_t aData) {
 /*
  * aPWMValueAsUnits - The point in the 4096-part cycle, where the output goes OFF (LOW). On is fixed at 0.
  * Useful values are from 111 (111.411 = 544 us) to 491 (491.52 = 2400 us)
+ * This results in an resolution of approximately 0.5 degree.
  * 4096 means output is signal fully off
  */
 void ServoEasing::setPWM(uint16_t aPWMOffValueAsUnits) {
@@ -593,6 +595,9 @@ int ServoEasing::MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits) {
 
 }
 
+/*
+ * We have around 10 us per degree
+ */
 int ServoEasing::DegreeToMicrosecondsOrUnits(int aDegree) {
 // For microseconds and PCA9685 units:
     return map(aDegree, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
@@ -1171,10 +1176,16 @@ void enableServoEasingInterrupt() {
 //    while (GCLK->STATUS.bit.SYNCBUSY) // not required to wait
 //        ;
 
+    // The TC should be disabled before the TC is reset in order to avoid undefined behavior.
+    TC5->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE;
+    // 14.3.2.2 When write-synchronization is ongoing for a register, any subsequent write attempts to this register will be discarded, and an error will be reported.
+    // 14.3.1.4 It is also possible to perform the next read/write operation and wait,
+    // as this next operation will be started once the previous write/read operation is synchronized and/or complete. ???
+    while (TC5->COUNT16.STATUS.bit.SYNCBUSY == 1); // wait for sync
     // Reset TCx
     TC5->COUNT16.CTRLA.reg = TC_CTRLA_SWRST;
-    while (TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY)
-        ;
+    // When writing a ‘1’ to the CTRLA.SWRST bit it will immediately read as ‘1’.
+    // CTRL.SWRST will be cleared by hardware when the peripheral has been reset.
     while (TC5->COUNT16.CTRLA.bit.SWRST)
         ;
 
@@ -1183,7 +1194,7 @@ void enableServoEasingInterrupt() {
      */
     TC5->COUNT16.CTRLA.reg |= TC_CTRLA_MODE_COUNT16| TC_CTRLA_WAVEGEN_MFRQ | TC_CTRLA_PRESCALER_DIV64 | TC_CTRLA_ENABLE;
     TC5->COUNT16.CC[0].reg = (uint16_t) ((750000 / REFRESH_FREQUENCY) - 1); // (750 kHz / sampleRate - 1);
-//    while (TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY) // The next commands do an implicit wait :-)
+//    while (TC5->COUNT16.STATUS.bit.SYNCBUSY == 1) // The next commands do an implicit wait :-)
 //        ;
 
     // Configure interrupt request

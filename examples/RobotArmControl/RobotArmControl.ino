@@ -81,7 +81,7 @@
 #define VERSION_EXAMPLE "2.0"
 
 void changeEasingType(bool aButtonToggleState);
-EasyButton OnOffButtonAtPin3(true, &changeEasingType);
+EasyButton OnOffButtonAtPin3(&changeEasingType);
 
 void handleManualControl();
 
