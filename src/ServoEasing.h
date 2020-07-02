@@ -61,7 +61,6 @@
 #define DO_NOT_USE_SERVO_LIB
 #endif
 
-
 #if ( defined(ESP8266) || defined(ESP32) || defined(__STM32F1__)) && defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 #error "No Lightweight Servo Library available (and required) for ESP boards"
 #endif
@@ -74,15 +73,6 @@
 #warning "No periodic timer support existent (or known) for this platform. Only blocking functions and simple example will run!"
 #endif
 
-/*****************************************************************************************
- * Important definition of MAX_EASING_SERVOS !!!
- * If this value is smaller than the amount of servos declared,
- * attach() will return error and detach() will not work as expected.
- * As well as all *AllServos*() functions and isOneServoMoving()
- * won't work correctly! (they will only work for the first MAX_EASING_SERVOS -2 servos)
- *
- * If you do not need these functions, you may define MAX_EASING_SERVOS as 1
- ****************************************************************************************/
 #if ! defined(DO_NOT_USE_SERVO_LIB)
 #  if defined(ESP32)
 // This does not work in Arduino IDE for "Generating function prototypes..."
@@ -97,24 +87,15 @@
 
 #if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 #  include "LightweightServo.h"
-#  ifndef MAX_EASING_SERVOS
+#  if ! defined(MAX_EASING_SERVOS)
 #    define MAX_EASING_SERVOS 2 // default value for UNO etc.
 #  endif
 #endif // ! defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 
-#ifndef MAX_EASING_SERVOS
-#  ifdef MAX_SERVOS
-#   define MAX_EASING_SERVOS MAX_SERVOS // =12 use default value from Servo.h for UNO etc.
-#  else
-#   define MAX_EASING_SERVOS 12 // just take default value from Servo.h for UNO etc.
-#  endif
-#endif
-
 #if defined(USE_PCA9685_SERVO_EXPANDER)
-#  ifndef MAX_EASING_SERVOS
+#  if ! defined(MAX_EASING_SERVOS)
 #    define MAX_EASING_SERVOS 16 // One PCA9685 has 16 outputs. You must MODIFY this, if you have more than one PCA9685 attached!
 #  endif // defined(USE_PCA9685_SERVO_EXPANDER)
-
    #include <Wire.h>
 // PCA9685 works with up to 1 MHz I2C frequency
 #  if defined(ESP32)
@@ -127,6 +108,25 @@
 #    define I2C_CLOCK_FREQUENCY 800000 // 1000000 does not work for my Arduino Nano, maybe because of parasitic breadboard capacities
 #  endif
 #endif // defined(USE_PCA9685_SERVO_EXPANDER)
+
+
+/*****************************************************************************************
+ * Important definition of MAX_EASING_SERVOS !!!
+ * If this value is smaller than the amount of servos declared,
+ * attach() will return error and detach() will not work as expected.
+ * As well as all *AllServos*() functions and isOneServoMoving()
+ * won't work correctly! (they will only work for the first MAX_EASING_SERVOS -2 servos)
+ *
+ * If you do not need these functions, you may define MAX_EASING_SERVOS as 1
+ ****************************************************************************************/
+#if ! defined(MAX_EASING_SERVOS)
+#  if defined(MAX_SERVOS)
+#   define MAX_EASING_SERVOS MAX_SERVOS // =12 use default value from Servo.h for UNO etc.
+#  else
+#   define MAX_EASING_SERVOS 12 // just take default value from Servo.h for UNO etc.
+#  endif
+#endif // ! defined(MAX_EASING_SERVOS)
+
 
 #if ! defined(REFRESH_INTERVAL)
 #define REFRESH_INTERVAL 20000   // // minimum time to refresh servos in microseconds (from Servo.h)
@@ -425,7 +425,7 @@ public:
     float callEasingFunction(float aPercentageOfCompletion);    // used in update()
 #endif
 
-    void write(int aValue);                                     // Apply trim and reverse to the value and write it direct to the Servo library.
+    void write(int aValue);                         // Apply trim and reverse to the value and write it direct to the Servo library.
     void writeMicrosecondsOrUnits(int aValue);
 
     void setSpeed(uint_fast16_t aDegreesPerSecond);             // This speed is taken if no speed argument is given.
@@ -448,7 +448,7 @@ public:
     int getDeltaMicrosecondsOrUnits();
     int getMillisForCompleteMove();
     bool isMoving();
-    bool isMovingAndCallYield() __attribute__ ((deprecated ("Most times better use areInterruptsActive()")))  ;
+    bool isMovingAndCallYield() __attribute__ ((deprecated ("Most times better use areInterruptsActive()")));
 
     int MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits);
     int DegreeToMicrosecondsOrUnits(int aDegree);

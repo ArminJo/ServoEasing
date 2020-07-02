@@ -43,7 +43,7 @@ assignees: ArminJo
 ### Pin(s) used for servo, if not default
 
 ### Version
-* [ ] Yes I use the latest version
+* [ ] Yes I use the [latest release](https://github.com/ArminJo/ServoEasing/releases)
 * [ ] Other - please specify
 
 ### Current behavior

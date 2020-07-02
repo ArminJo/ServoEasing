@@ -24,7 +24,7 @@
 #ifndef SRC_ADCUTILS_H_
 #define SRC_ADCUTILS_H_
 
-#if defined(__AVR__)
+#if defined(__AVR__) && (! defined(__AVR_ATmega4809__))
 #include <Arduino.h>
 
 // PRESCALE4 => 13 * 4 = 52 microseconds per ADC conversion at 1 MHz Clock => 19,2 kHz
