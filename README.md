@@ -1,7 +1,7 @@
 # [ServoEasing](https://github.com/ArminJo/ServoEasing) - move your servo more natural
 Available as Arduino library "ServoEasing"
 
-### [Version 2.1.1](https://github.com/ArminJo/ServoEasing/releases)
+### [Version 2.2.0](https://github.com/ArminJo/ServoEasing/releases)
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
@@ -206,6 +206,10 @@ If you see strange behavior, you can open the library file *ServoEasing.h* and c
 This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
 
 # Revision History
+### Version 2.2.0
+- ATmega4809 (Uno WiFi Rev 2, Nano Every) support.
+- Corrected position of macro for MAX_EASING_SERVOS.
+
 ### Version 2.1.1
 - Fixed bug in detach of first servo.
 

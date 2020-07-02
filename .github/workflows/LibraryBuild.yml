@@ -42,6 +42,7 @@ jobs:
           - arduino:avr:uno
           - arduino:avr:leonardo
           - arduino:avr:mega
+          - arduino:megaavr:nona4809:mode=off
           - arduino:sam:arduino_due_x
           - arduino:samd:arduino_zero_native
           - esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
@@ -78,6 +79,13 @@ jobs:
               PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: arduino:avr:mega
+            examples-build-properties:
+              PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
+              PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
+              PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
+
+          - arduino-boards-fqbn: arduino:megaavr:nona4809:mode=off
+            examples-exclude: SpeedTest,EndPositionsTest,QuadrupedControl,RobotArmControl # No getVCCVoltageMillivolt(), no EasyButton
             examples-build-properties:
               PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
               PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB

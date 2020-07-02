@@ -24,9 +24,9 @@
 #ifndef SERVOEASING_H_
 #define SERVOEASING_H_
 
-#define VERSION_SERVO_EASING "2.1.1"
+#define VERSION_SERVO_EASING "2.2.0"
 #define VERSION_SERVO_EASING_MAJOR 2
-#define VERSION_SERVO_EASING_MINOR 1
+#define VERSION_SERVO_EASING_MINOR 2
 
 // @formatter:off
 /*  *****************************************************************************************************************************
@@ -180,6 +180,10 @@
 // @formatter:on
 
 /*
+ * Version 2.2.0 - 7/2020
+ * - ATmega4809 (Uno WiFi Rev 2, Nano Every) support.
+ * - Corrected position of macro for MAX_EASING_SERVOS.
+ *
  * Version 2.1.1 - 6/2020
  * - Fixed bug in detach of first servo.
  *
