@@ -27,13 +27,13 @@
 /*
  * Pin mapping table for different platforms
  *
- * Platform     Servo1      Servo2      Servo3      Analog
- * -------------------------------------------------------
- * AVR          9           10          11          A0
- * ESP8266      14 // D5    12 // D6    13 // D7    0
- * ESP32        5           18          19          A0
- * BluePill     PB7         PB8         PB9         PA0
- * APOLLO3      11          12          13          A3
+ * Platform         Servo1      Servo2      Servo3      Analog
+ * -----------------------------------------------------------
+ * (Mega)AVR + SAMD   9           10          11          A0
+ * ESP8266            14 // D5    12 // D6    13 // D7    0
+ * ESP32              5           18          19          A0
+ * BluePill           PB7         PB8         PB9         PA0
+ * APOLLO3            11          12          13          A3
  */
 
 #if defined(ESP8266)
@@ -51,8 +51,8 @@
 
 #elif defined(STM32F1xx) || defined(__STM32F1__)
 // BluePill in 2 flavors
-// STM32F1xx is for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
-// __STM32F1__is for "Generic STM32F103C series" from STM32F1 Boards (STM32duino.com) of manual installed hardware folder
+// STM32F1xx is for "Generic STM32F1 series / STM32:stm32" from STM32 Boards from STM32 cores of Arduino Board manager
+// __STM32F1__is for "Generic STM32F103C series / stm32duino:STM32F1" from STM32F1 Boards (STM32duino.com) of manual installed hardware folder
 #define SERVO1_PIN PB7
 #define SERVO2_PIN PB8
 #define SERVO3_PIN PB9 // Needs timer 4 for Servo library

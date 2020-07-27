@@ -363,8 +363,22 @@
 #define __digitalPinToPortReg(P) (&PORTB)
 #define __digitalPinToDDRReg(P)  (&DDRB)
 #define __digitalPinToPINReg(P)  (&PINB)
-#define __digitalPinToBit(P) \
-(((P) >= 0 && (P) <= 7) ? (P) : (((P) >= 8 && (P) <= 13) ? (P) - 8 : (P) - 14))
+#define __digitalPinToBit(P) (( (P) <= 7) ? (P) : (((P) >= 8 && (P) <= 13) ? (P) - 8 : (P) - 14))
+
+
+// --- ATtiny88 ---
+#elif defined(__AVR_ATtiny88__)
+#  if defined(ARDUINO_AVR_DIGISPARKPRO)
+#define __digitalPinToPortReg(P) ((P) <= 7 ? &PORTD : ((P) <= 14 ? &PORTB : ((P) <= 18 ? &PORTA : &PORTC)))
+#define __digitalPinToDDRReg(P)  ((P) <= 7 ? &DDRD : ((P) <= 14 ? &DDRB : ((P) <= 18 ? &DDRA : &DDRC)))
+#define __digitalPinToPINReg(P)  ((P) <= 7 ? &PIND : ((P) <= 14 ? &PINB : ((P) <= 18 ? &PINA : &PINC)))
+#define __digitalPinToBit(P) ( (P) <= 7 ? (P) : ((P) <= 13 ? ((P) - 8) : ((P) == 14 ? 7 : ((P) <= 16 ? ((P) - 14) : ((P) <= 18 ? ((P) - 17) : ((P) == 25 ? 7 : ((P) - 19)))))) )
+#  else
+#define __digitalPinToPortReg(P) ((P) <= 7 ? &PORTD : ((P) <= 15 ? &PORTB : ((P) <= 22 ? &PORTC : ((P) <= 26 ? &PORTA : &PORTC))))
+#define __digitalPinToDDRReg(P) ((P) <= 7 ? &DDRD : ((P) <= 15 ? &DDRB : ((P) <= 22 ? &DDRC : ((P) <= 26 ? &DDRA : &DDRC))))
+#define __digitalPinToPINReg(P) ((P) <= 7 ? &PIND : ((P) <= 15 ? &PINB : ((P) <= 22 ? &PINC : ((P) <= 26 ? &PINA : &PINC))))
+#define __digitalPinToBit(P) ((P) <= 15 ? ((P) & 0x7) : ((P) == 16 ? (7) : ((P) <= 22 ? ((P) - 17) : ((P) == 27 ? (6) : ((P) - 23)))))
+#  endif
 
 
 // --- ATtinyX4 + ATtinyX7 ---
@@ -405,7 +419,7 @@
 #ifndef digitalWriteFast
 #if (defined(__AVR__) || defined(ARDUINO_ARCH_AVR))
 #define digitalWriteFast(P, V) \
-if (__builtin_constant_p(P) && __builtin_constant_p(V)) { \
+if (__builtin_constant_p(P)) { \
   BIT_WRITE(*__digitalPinToPortReg(P), __digitalPinToBit(P), (V)); \
 } else { \
   digitalWrite((P), (V)); \
@@ -421,8 +435,8 @@ if (__builtin_constant_p(P) && __builtin_constant_p(V)) { \
 #define pinModeFast(P, V) \
 if (__builtin_constant_p(P) && __builtin_constant_p(V)) { \
   if (V == INPUT_PULLUP) {\
-    BIT_WRITE(*__digitalPinToDDRReg(P), __digitalPinToBit(P), (INPUT)); \
-    BIT_WRITE(*__digitalPinToPortReg(P), __digitalPinToBit(P), (HIGH)); \
+    BIT_CLEAR(*__digitalPinToDDRReg(P), __digitalPinToBit(P)); \
+    BIT_SET(*__digitalPinToPortReg(P), __digitalPinToBit(P)); \
   } else { \
     BIT_WRITE(*__digitalPinToDDRReg(P), __digitalPinToBit(P), (V)); \
   } \

@@ -63,6 +63,8 @@ EasyButton * EasyButton::sPointerToButton0ForISR;
 EasyButton * EasyButton::sPointerToButton1ForISR;
 #endif
 
+// @formatter:off // the eclipse formatter has problems with // comments in undefined code blocks
+
 /*
  * These constructors are deterministic if only one button is enabled
  * If two buttons are enabled they can be taken for the 1. button at INT0
@@ -271,15 +273,15 @@ void EasyButton::init(bool aIsButtonAtINT0) {
     /*
      * ATmega328 (Uno, Nano ) etc. Enable pin change interrupt for port PD0 to PD7 (Arduino pin 0 to 7)
      */
-    PCICR |= 1 << PCIE2;
-    PCMSK2 = digitalPinToBitMask(INT1_PIN);
+        PCICR |= 1 << PCIE2;
+        PCMSK2 = digitalPinToBitMask(INT1_PIN);
 #  else
 #    if defined(USE_ATTACH_INTERRUPT)
-            attachInterrupt(digitalPinToInterrupt(INT1_PIN), &handleINT1Interrupt, CHANGE);
+        attachInterrupt(digitalPinToInterrupt(INT1_PIN), &handleINT1Interrupt, CHANGE);
 #    else
-            EICRA |= (1 << ISC10);  // interrupt on any logical change
-            EIFR |= 1 << INTF1;     // clear interrupt bit
-            EIMSK |= 1 << INT1;     // enable interrupt on next change
+        EICRA |= (1 << ISC10);  // interrupt on any logical change
+        EIFR |= 1 << INTF1;     // clear interrupt bit
+        EIMSK |= 1 << INT1;     // enable interrupt on next change
 #    endif //USE_ATTACH_INTERRUPT
 #  endif // ! defined(ISC10)
     }
@@ -294,34 +296,36 @@ void EasyButton::init(bool aIsButtonAtINT0) {
 bool EasyButton::readButtonState() {
 #if defined(USE_BUTTON_0) && not defined(USE_BUTTON_1)
 #  if defined(BUTTON_IS_ACTIVE_HIGH)
-        return (INT0_IN_PORT & _BV(INT0_BIT));  //  = digitalReadFast(2);
+    return (INT0_IN_PORT & _BV(INT0_BIT));  //  = digitalReadFast(2);
 #  else
-        return !(INT0_IN_PORT & _BV(INT0_BIT));  //  = digitalReadFast(2);
+    return !(INT0_IN_PORT & _BV(INT0_BIT));  //  = digitalReadFast(2);
 #  endif
 
 #elif defined(USE_BUTTON_1) && not defined(USE_BUTTON_0)
 #  if defined(BUTTON_IS_ACTIVE_HIGH)
-        return (INT1_IN_PORT & _BV(INT1_BIT));  //  = digitalReadFast(3);
+    return (INT1_IN_PORT & _BV(INT1_BIT));  //  = digitalReadFast(3);
 #  else
-        return !(INT1_IN_PORT & _BV(INT1_BIT));  //  = digitalReadFast(3);
+    return !(INT1_IN_PORT & _BV(INT1_BIT));  //  = digitalReadFast(3);
 #  endif
 
 #elif defined(USE_BUTTON_0) && defined(USE_BUTTON_1)
 #  if defined(BUTTON_IS_ACTIVE_HIGH)
-        if (isButtonAtINT0) {
-            return (INT0_IN_PORT & _BV(INT0_BIT));  //  = digitalReadFast(2);
-        } else {
-            return (INT1_IN_PORT & _BV(INT1_BIT));  //  = digitalReadFast(3);
-        }
+    if (isButtonAtINT0) {
+        return (INT0_IN_PORT & _BV(INT0_BIT));  //  = digitalReadFast(2);
+    } else {
+        return (INT1_IN_PORT & _BV(INT1_BIT));  //  = digitalReadFast(3);
+    }
 #  else
-        if (isButtonAtINT0) {
-            return !(INT0_IN_PORT & _BV(INT0_BIT));  //  = digitalReadFast(2);
-        } else {
-            return !(INT1_IN_PORT & _BV(INT1_BIT));  //  = digitalReadFast(3);
-        }
+    if (isButtonAtINT0) {
+        return !(INT0_IN_PORT & _BV(INT0_BIT));  //  = digitalReadFast(2);
+    } else {
+        return !(INT1_IN_PORT & _BV(INT1_BIT));  //  = digitalReadFast(3);
+    }
 #  endif
 #endif
 }
+
+// @formatter:on // the eclipse formatter has problems with // comments in undefined code blocks
 
 /*
  * Returns stored state if in debouncing period otherwise current state of button

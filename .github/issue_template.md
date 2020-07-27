@@ -11,6 +11,7 @@ assignees: ArminJo
 * [ ] Arduino ATmega328* board (UNO, Nano)
 * [ ] Arduino ATmega2560 board (Mega)
 * [ ] Arduino ATmega32U4 board (Leonardo)
+* [ ] Arduino megaAVR board (NanoEvery)
 * [ ] Arduino SAM board (Due)
 * [ ] Arduino SAMD board (Zero, MKR*)
 * [ ] ESP8266 board

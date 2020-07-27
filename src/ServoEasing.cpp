@@ -37,7 +37,7 @@
 Ticker Timer20ms;
 
 // BluePill in 2 flavors
-#elif defined(STM32F1xx)   // for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
+#elif defined(STM32F1xx)   // for "Generic STM32F1 series / STM32:stm32" from STM32 Boards from STM32 cores of Arduino Board manager
 #include <HardwareTimer.h> // 4 timers and 4. timer is used for tone()
 /*
  * Use timer 3 for ServoEasingInterrupt functions.
@@ -45,7 +45,7 @@ Ticker Timer20ms;
  */
 HardwareTimer Timer20ms(TIM3);
 
-#elif defined(__STM32F1__) // for "Generic STM32F103C series" from STM32F1 Boards (STM32duino.com) of manual installed hardware folder
+#elif defined(__STM32F1__) // for "Generic STM32F103C series / stm32duino:STM32F1" from STM32F1 Boards (STM32duino.com) of manual installed hardware folder
 #include <HardwareTimer.h>
 #  if defined(STM32_HIGH_DENSITY)
 HardwareTimer Timer20ms(7);  // 8 timers and 8. timer is used for tone()
@@ -586,7 +586,7 @@ int ServoEasing::MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits) {
         tResult = (tResult * 180) + 928;
     }
 #  else
-        tResult = (tResult * 180) + 190;
+    tResult = (tResult * 180) + 190;
 #  endif
 #else
     tResult = (tResult * 180) + 928;
@@ -739,6 +739,23 @@ bool ServoEasing::startEaseToD(int aDegree, uint_fast16_t aMillisForMove, bool a
         }
     }
     return tReturnValue;
+}
+
+void ServoEasing::stop() {
+    mServoMoves = false;
+    if (!isOneServoMoving()) {
+        // disable interrupt only if all servos stopped. This enables independent movements of servos with one interrupt handler.
+        disableServoEasingInterrupt();
+    }
+}
+
+void ServoEasing::continueWithInterrupts() {
+    mServoMoves = true;
+    enableServoEasingInterrupt();
+}
+
+void ServoEasing::continueWithoutInterrupts() {
+    mServoMoves = true;
 }
 
 /*
@@ -1101,7 +1118,7 @@ void enableServoEasingInterrupt() {
 #if defined(__AVR__)
 #  if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
 #    if defined(USE_PCA9685_SERVO_EXPANDER) && ! defined(USE_SERVO_LIB)
-// set timer 1 to 20 ms, since the servo library does not do this for us
+// set timer 5 to 20 ms, since the servo library does not do this for us
     TCCR5A = _BV(WGM11);// FastPWM Mode mode TOP (20 ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
     TCCR5B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);// set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
     ICR5 = (F_CPU / 8) / REFRESH_FREQUENCY; // 40000 - set period to 50 Hz / 20 ms
@@ -1111,7 +1128,7 @@ void enableServoEasingInterrupt() {
     TIMSK5 |= _BV(OCIE5B);// enable the output compare B interrupt
     OCR5B = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL_MICROS) / 8) - 100;// update values 100 us before the new servo period starts
 
-#elif defined(__AVR_ATmega4809__) // Uno WiFi Rev 2, Nano Every
+#  elif defined(__AVR_ATmega4809__) // Uno WiFi Rev 2, Nano Every
     // TCB1 is used by Tone()
     // TCB2 is used by Servo, but we cannot hijack the ISR, so we must use a dedicated timer for the 20 ms interrupt
     // TCB3 is used by millis()
@@ -1123,6 +1140,9 @@ void enableServoEasingInterrupt() {
     TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV8_gc | TCA_SINGLE_ENABLE_bm; // set prescaler to 8
 
 #  else // defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
+    /*
+     * Standard AVR use timer 1
+     */
 #    if defined(USE_PCA9685_SERVO_EXPANDER) && ! defined(USE_SERVO_LIB)
 //    // set timer 1 to 20 ms, since the servo library does not do this for us
     TCCR1A = _BV(WGM11);     // FastPWM Mode mode TOP (20 ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
@@ -1148,6 +1168,7 @@ void enableServoEasingInterrupt() {
     if(sInterruptsAreActive) {
         Timer20ms.detach(); // otherwise the ESP32 kernel at least will crash and reboot
     }
+    // It seems that the callback is called by a task not an ISR, which allow us to have the callback without the IRAM attribute
     Timer20ms.attach_ms(REFRESH_INTERVAL_MILLIS, handleServoTimerInterrupt);
 
 // BluePill in 2 flavors
@@ -1201,7 +1222,7 @@ void enableServoEasingInterrupt() {
         ;
 
     /*
-     * Set Timer counter mode to 16 bits, set mode as match frequency, prescaler is DIV64 => 750 kHz clock, start counter
+     * Set timer counter mode to 16 bits, set mode as match frequency, prescaler is DIV64 => 750 kHz clock, start counter
      */
     TC5->COUNT16.CTRLA.reg |= TC_CTRLA_MODE_COUNT16| TC_CTRLA_WAVEGEN_MFRQ | TC_CTRLA_PRESCALER_DIV64 | TC_CTRLA_ENABLE;
     TC5->COUNT16.CC[0].reg = (uint16_t) (((F_CPU/64) / REFRESH_FREQUENCY) - 1); // (750 kHz / sampleRate - 1);
@@ -1220,7 +1241,7 @@ void enableServoEasingInterrupt() {
 //        ; // wait until TC5 is done syncing
 
 #elif defined(ARDUINO_ARCH_APOLLO3)
-    // use Timer 3 segment A
+    // use timer 3 segment A
     am_hal_ctimer_clear(3, AM_HAL_CTIMER_TIMERA); // reset timer
     // only AM_HAL_CTIMER_FN_REPEAT resets counter after match (CTC mode)
     am_hal_ctimer_config_single(3, AM_HAL_CTIMER_TIMERA,

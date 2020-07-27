@@ -32,7 +32,7 @@
  *
  * Platform     Servo1      Servo2      Servo3      Analog
  * -------------------------------------------------------
- * AVR          9           10          11          A0
+ * AVR + SAMD   9           10          11          A0
  * ESP8266      14 // D5    12 // D6    13 // D7    0
  * ESP32        5           18          19          A0
  * BluePill     PB7         PB8         PB9         PA0
@@ -146,6 +146,7 @@ void loop() {
     while (areInterruptsActive()) {
         ; // wait for servo to stop
     }
+
     delay(1000);
 
     /*
@@ -158,6 +159,17 @@ void loop() {
     // Wait for 250 ms. The servo should have moved 90 degree.
     delay(250);
     digitalWrite(LED_BUILTIN, LOW);
+
+    /*
+     * Demonstrate stop and continue in the middle of a movement
+     */
+    Servo1.stop();
+#ifdef INFO
+    Serial.println(F("Stop for 1 second at 90 degree"));
+#endif
+    delay(1000);
+    // continue movement using interrupts
+    Servo1.continueWithInterrupts();
 
     delay(1000);
 }

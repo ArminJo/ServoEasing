@@ -101,13 +101,13 @@ void setup() {
     Serial.print(F(" I2C device attached at address: 0x"));
     Serial.println(PCA9685_DEFAULT_ADDRESS, HEX);
 
-
     Serial.println(F("Attach servo to port 9 of PCA9685 expander"));
     /*
      * Check at least the last call to attach()
      */
     if (Servo1.attach(SERVO1_PIN) == INVALID_SERVO) {
-        Serial.println(F("Error attaching servo - maybe MAX_EASING_SERVOS=" STR(MAX_EASING_SERVOS) " is to small to hold all servos"));
+        Serial.println(
+                F("Error attaching servo - maybe MAX_EASING_SERVOS=" STR(MAX_EASING_SERVOS) " is to small to hold all servos"));
         while (true) {
             digitalWrite(LED_BUILTIN, HIGH);
             delay(100);
@@ -121,7 +121,6 @@ void setup() {
      * This is the position where the movement starts.
      *************************************************/
     Servo1.write(0);
-
 
     // Wait for servos to reach start position.
     delay(500);
@@ -215,6 +214,17 @@ void loop() {
     // Wait for 250 ms. The servo should have moved 90 degree.
     delay(250);
     digitalWrite(LED_BUILTIN, LOW);
+
+    /*
+     * Demonstrate stop and continue in the middle of a movement
+     */
+    Servo1.stop();
+#ifdef INFO
+    Serial.println(F("Stop for 1 second at 90 degree"));
+#endif
+    delay(1000);
+    // continue movement using interrupts
+    Servo1.continueWithInterrupts();
 
     delay(1000);
 }

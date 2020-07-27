@@ -49,7 +49,7 @@
  *
  * Platform     Servo1      Servo2      Servo3      Analog
  * -------------------------------------------------------
- * AVR          9           10          11          A0
+ * AVR + SAMD   9           10          11          A0
  * ESP8266      14 // D5    12 // D6    13 // D7    0
  * ESP32        5           18          19          A0
  * BluePill     PB7         PB8         PB9         PA0

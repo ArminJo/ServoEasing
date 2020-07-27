@@ -24,9 +24,9 @@
 #ifndef SERVOEASING_H_
 #define SERVOEASING_H_
 
-#define VERSION_SERVO_EASING "2.2.0"
+#define VERSION_SERVO_EASING "2.3.0"
 #define VERSION_SERVO_EASING_MAJOR 2
-#define VERSION_SERVO_EASING_MINOR 2
+#define VERSION_SERVO_EASING_MINOR 3
 
 // @formatter:off
 /*  *****************************************************************************************************************************
@@ -180,6 +180,9 @@
 // @formatter:on
 
 /*
+ * Version 2.3.0 - 7/2020
+ * - Added `stop()`, `continueWithInterrupts()` and `continueWithoutInterrupts()` functions.
+ *
  * Version 2.2.0 - 7/2020
  * - ATmega4809 (Uno WiFi Rev 2, Nano Every) support.
  * - Corrected position of macro for MAX_EASING_SERVOS.
@@ -444,6 +447,9 @@ public:
     bool startEaseTo(int aDegree, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt = true);
     bool setEaseToD(int aDegree, uint_fast16_t aDegreesPerSecond);  // shortcut for startEaseToD(..,..,false)
     bool startEaseToD(int aDegree, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt = true);
+    void stop();
+    void continueWithInterrupts();
+    void continueWithoutInterrupts();
     bool update();
 
     int getCurrentAngle();

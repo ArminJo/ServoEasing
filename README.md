@@ -1,7 +1,7 @@
 # [ServoEasing](https://github.com/ArminJo/ServoEasing) - move your servo more natural
 Available as Arduino library "ServoEasing"
 
-### [Version 2.2.0](https://github.com/ArminJo/ServoEasing/releases)
+### [Version 2.3.0](https://github.com/ArminJo/ServoEasing/releases)
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
@@ -73,6 +73,7 @@ To access the Arduino library files from a sketch, you have to first use *Sketch
 Then navigate to the parallel `libraries` folder and select the library you want to access.<br/>
 The library files itself are located in the `src` sub-directory.<br/>
 If you did not yet store the example as your own sketch, then with *Ctrl+K* you are instantly in the right library folder.
+
 ## Consider to use [Sloeber](http://eclipse.baeyens.it/stable.php?OS=Windows) as IDE
 If you are using Sloeber as your IDE, you can easily define global symbols at *Properties/Arduino/CompileOptions*.<br/>
 ![Sloeber settings](pictures/SloeberDefineSymbols.png)
@@ -181,17 +182,31 @@ Not for ESP8266 because it requires 2 analog inputs.
 
 # Internals
 The API accepts only degree (except for write() and writeMicrosecondsOrUnits()) but internally only microseconds (or units (= 4.88 us) if using PCA9685 expander) and not degree are used to speed up things. Other expander or servo libraries can therefore easily be used.<br/>
-On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking easing functions its unused **Channel B** is used to generate an interrupt 100 us before the end of the 20 ms Arduino Servo refresh period. This interrupt then updates all servo values for the next refresh period.
 
 # Supported platforms
-AVR, SAM, SAMD, ESP8266, ESP32, STM32, Apollo3, Teensy
+**Every Arduino platform with a Servo library** will work without any modifications in blocking mode.<br/>
+Non blocking behavior can always be achieved manually by calling `update()` in a loop - see last movement in [Simple example](examples/Simple/Simple.ino).<br/>
+Interrupt based movement (movement without calling `update()` manually in a loop) is supported for the following Arduino architectures:<br/>
+**avr, megaavr, sam, samd, esp8266, esp32, stm32, STM32F1 and apollo3.**
 
-# Adding a new platform / board
-Every platform with a Servo library will work without any modifications in blocking mode.<br/>
-Non blocking behavior can always be achieved manually by calling `update()` in a loop - see last movement in [Simple example](examples/Simple/Simple.ino).
+## Timer usage for interrupt based movement
+On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking easing functions its unused **Channel B** is used to generate an interrupt 100 us before the end of the 20 ms Arduino Servo refresh period. This interrupt then updates all servo values for the next refresh period.
+| Platform | Timer | Library providing the timer |
+|---|---|---|
+| avr | Timer1 | Servo.h |
+| ATmega | Timer5 | Servo.h |
+| megaavr | TCA0 |  |
+| sam | ID_TC8 (TC2 channel 2) |  |
+| samd | TC5 |  |
+| esp8266 + esp32 | Ticker | Ticker.h |
+| stm32 | TIM3 | HardwareTimer.h |
+| STM32F1 | 3 or 7 | HardwareTimer.h |
+| Teensy |  | IntervalTimer |
+| apollo3 | timer 3 segment A |  |
 
+## Adding a new platform / board
 If timer support is available for a platform the library can be ported by adding code for the Timer20ms like is was done for ESP and STM.<br/>
-To add a new platform, the following steps has to be performed:
+To add a new platform, the following steps have to be performed:
 1. If the new platform has an **Arduino compatible Servo library**, fine, otherwise include the one required for this platform like it is done for ESP32 [here](src/ServoEasing.h#L92).
 2. You need a **20ms interrupt source** providing the functions enableServoEasingInterrupt() and (optional) disableServoEasingInterrupt(). Extend these functions with code for the new platform. Place includes and timer definitions at top of *ServoEasing.cpp*.
 3. If your interrupt source requires an ISR (Interrupt Service Routine) place it after disableServoEasingInterrupt() where all the other ISR are located.
@@ -206,6 +221,9 @@ If you see strange behavior, you can open the library file *ServoEasing.h* and c
 This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
 
 # Revision History
+### Version 2.3.0
+- Added `stop()`, `continueWithInterrupts()` and `continueWithoutInterrupts()` functions.
+
 ### Version 2.2.0
 - ATmega4809 (Uno WiFi Rev 2, Nano Every) support.
 - Corrected position of macro for MAX_EASING_SERVOS.

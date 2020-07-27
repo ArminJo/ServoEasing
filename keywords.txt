@@ -11,6 +11,7 @@ ServoEasing	KEYWORD1
 # Methods and Functions (KEYWORD2)
 #######################################
 attach	KEYWORD2
+detach	KEYWORD2
 setEasingType	KEYWORD2
 getEasingType	KEYWORD2
 setReverseOperation	KEYWORD2
@@ -24,6 +25,9 @@ easeTo	KEYWORD2
 easeToD	KEYWORD2
 startEaseTo	KEYWORD2
 startEaseToD	KEYWORD2
+stop	KEYWORD2
+continueWithInterrupts	KEYWORD2
+continueWithoutInterrupts	KEYWORD2
 update	KEYWORD2
 getCurrentAngle	KEYWORD2
 getEndMicrosecondsOrUnits	KEYWORD2
@@ -63,6 +67,7 @@ synchronizeAllServosAndStartInterrupt	KEYWORD2
 setEasingTypeForAllServos	KEYWORD2
 updateAndWaitForAllServosToStop	KEYWORD2
 synchronizeAllServosStartAndWaitForAllServosToStop	KEYWORD2
+delayAndUpdateAndWaitForAllServosToStop	KEYWORD2
 enableServoEasingInterrupt	KEYWORD2
 disableServoEasingInterrupt	KEYWORD2
 
