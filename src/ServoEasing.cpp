@@ -812,9 +812,10 @@ bool ServoEasing::update() {
          * Use faster non float arithmetic
          * Linear movement: new position is: start position + total delta * (millis_done / millis_total aka "percentage of completion")
          * 40 us to compute
+         * Cast to int32 required for mMillisForCompleteMove for 32 bit platforms, otherwise we divide signed by unsigned. Thanks to drifkind.
          */
         tNewMicrosecondsOrUnits = mStartMicrosecondsOrUnits
-                + ((mDeltaMicrosecondsOrUnits * (int32_t) tMillisSinceStart) / mMillisForCompleteMove);
+                + ((mDeltaMicrosecondsOrUnits * (int32_t) tMillisSinceStart) / (int32_t) mMillisForCompleteMove);
     } else {
         /*
          * Non linear movement -> use floats
@@ -822,7 +823,7 @@ bool ServoEasing::update() {
          * The expected result of easing function is from 0.0 to 1.0
          * or from EASE_FUNCTION_DEGREE_OFFSET to EASE_FUNCTION_DEGREE_OFFSET + 180 for direct degree result
          */
-        float tPercentageOfCompletion = (float) tMillisSinceStart / mMillisForCompleteMove;
+        float tPercentageOfCompletion = (float) tMillisSinceStart / (float) mMillisForCompleteMove;
         float tEaseResult = 0.0;
 
         uint_fast8_t tCallStyle = mEasingType & CALL_STYLE_MASK; // Values are CALL_STYLE_DIRECT, CALL_STYLE_OUT, CALL_STYLE_IN_OUT, CALL_STYLE_BOUNCING_OUT_IN

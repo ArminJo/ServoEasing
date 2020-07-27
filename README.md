@@ -222,6 +222,7 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 
 # Revision History
 ### Version 2.3.0
+- Fixed EASE_LINEAR formula bug introduced with 2.0.0 for 32 bit CPU's. Thanks to [drifkind](https://github.com/drifkind).
 - Added `stop()`, `continueWithInterrupts()` and `continueWithoutInterrupts()` functions.
 
 ### Version 2.2.0

@@ -181,6 +181,7 @@
 
 /*
  * Version 2.3.0 - 7/2020
+ * - Fixed EASE_LINEAR formula bug introduced with 2.0.0 for 32 bit CPU's.
  * - Added `stop()`, `continueWithInterrupts()` and `continueWithoutInterrupts()` functions.
  *
  * Version 2.2.0 - 7/2020
