@@ -797,7 +797,7 @@ bool ServoEasing::update() {
          * 40 us to compute
          */
         tNewMicrosecondsOrUnits = mStartMicrosecondsOrUnits
-                + ((mDeltaMicrosecondsOrUnits * (int32_t) tMillisSinceStart) / mMillisForCompleteMove);
+                + ((mDeltaMicrosecondsOrUnits * (int32_t) tMillisSinceStart) / (int32_t) mMillisForCompleteMove);
     } else {
         /*
          * Non linear movement -> use floats
