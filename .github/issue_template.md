@@ -21,6 +21,7 @@ assignees: ArminJo
 * [ ] Teensy board
 * [ ] Other - please specify
 
+<!-- Please specify board name if not included in platform selection -->
 
 ### IDE
 * [ ] Arduino IDE
@@ -30,7 +31,7 @@ assignees: ArminJo
 * [ ] Other - please specify
 
 
-### Example expressing the bug
+### Example to reproduce the issue
 * [ ] Simple
 * [ ] OneServo
 * [ ] TwoServos

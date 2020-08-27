@@ -1257,6 +1257,9 @@ void enableServoEasingInterrupt() {
 #elif defined(TEENSYDUINO)
     // common for all Teensy
     Timer20ms.begin(handleServoTimerInterrupt, REFRESH_INTERVAL_MICROS);
+
+#else
+#warning Board / CPU is not covered by definitions using pre-processor symbols -> no timer available. Please extend ServoEasing.cpp.
 #endif
     sInterruptsAreActive = true;
 }

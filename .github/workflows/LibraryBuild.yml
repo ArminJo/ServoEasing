@@ -10,10 +10,10 @@ name: LibraryBuild
 on:
   push: # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows#pull-request-event-pull_request
     paths:
-    - '**.ino'
-    - '**.cpp'
-    - '**.h'
-    - '**LibraryBuild.yml'
+      - '**.ino'
+      - '**.cpp'
+      - '**.h'
+      - '**LibraryBuild.yml'
   pull_request:
 
 jobs:
@@ -52,87 +52,84 @@ jobs:
           - SparkFun:apollo3:amap3nano
 
         # Specify parameters for each board.
-        # With examples-exclude you may exclude specific examples for a board. Use a comma separated list.
+        # With sketches-exclude you may exclude specific examples for a board. Use a comma separated list.
         #############################################################################################################
         include:
           - arduino-boards-fqbn: arduino:avr:uno
-            examples-build-properties: # the flags were put in compiler.cpp.extra_flags
+            build-properties: # the flags were put in compiler.cpp.extra_flags
               SymmetricEasing:
                 -DKEEP_SERVO_EASING_LIBRARY_SMALL
                 -DDEBUG
               AsymmetricEasing:
                 -DTRACE
-              Simple:
-                -DPRINT_FOR_SERIAL_PLOTTER
-              TwoServos:
-                -DUSE_LEIGHTWEIGHT_SERVO_LIB
-              ThreeServos:
-                -DPROVIDE_ONLY_LINEAR_MOVEMENT
+              Simple: -DPRINT_FOR_SERIAL_PLOTTER
+              TwoServos: -DUSE_LEIGHTWEIGHT_SERVO_LIB
+              ThreeServos: -DPROVIDE_ONLY_LINEAR_MOVEMENT
               PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
               PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
               PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: arduino:avr:leonardo
-            examples-build-properties:
+            build-properties:
               PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
               PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
               PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: arduino:avr:mega
-            examples-build-properties:
+            build-properties:
               PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
               PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
               PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: arduino:megaavr:nona4809:mode=off
-            examples-exclude: SpeedTest,EndPositionsTest,QuadrupedControl,RobotArmControl # No getVCCVoltageMillivolt(), no EasyButton
-            examples-build-properties:
+            sketches-exclude: SpeedTest,EndPositionsTest,QuadrupedControl,RobotArmControl # No getVCCVoltageMillivolt(), no EasyButton
+            build-properties:
               PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
               PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
               PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: arduino:sam:arduino_due_x
-            examples-exclude: QuadrupedControl,RobotArmControl # QuadrupedControl RobotArmControl because of missing EEprom
-            examples-build-properties:
+            sketches-exclude: QuadrupedControl,RobotArmControl # QuadrupedControl RobotArmControl because of missing EEprom
+            build-properties:
               PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
               PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
               PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: arduino:samd:arduino_zero_native
-            examples-exclude: QuadrupedControl,RobotArmControl
-            examples-build-properties:
+            sketches-exclude: QuadrupedControl,RobotArmControl
+            build-properties:
               PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
               PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
               PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
             platform-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
-            examples-exclude: QuadrupedControl,RobotArmControl,SpeedTest # SpeedTest because of only one analog input
-            examples-build-properties:
+            sketches-exclude: QuadrupedControl,RobotArmControl,SpeedTest # SpeedTest because of only one analog input
+            build-properties:
               PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
               PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
               PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: esp32:esp32:featheresp32:FlashFreq=80
             platform-url: https://dl.espressif.com/dl/package_esp32_index.json
-            examples-exclude: QuadrupedControl,RobotArmControl # Comma separated list of (unique substrings of) example names to exclude in build
-            examples-build-properties:
+            sketches-exclude: QuadrupedControl,RobotArmControl # Comma separated list of (unique substrings of) example names to exclude in build
+            build-properties:
               PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
               PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
               PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: STM32:stm32:GenF1:pnum=BLUEPILL_F103C8 # STM version
             platform-url: https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json
-            examples-exclude: QuadrupedControl,RobotArmControl
-            examples-build-properties:
+            sketches-exclude: QuadrupedControl,RobotArmControl
+            build-properties:
               PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
               PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
               PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: stm32duino:STM32F1:genericSTM32F103C # Roger Clark version
             platform-url: http://dan.drown.org/stm32duino/package_STM32duino_index.json
-            examples-exclude: QuadrupedControl,RobotArmControl
-            examples-build-properties:
+            sketches-exclude: QuadrupedControl,RobotArmControl
+            build-properties:
               PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
               PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
               PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
@@ -140,7 +137,7 @@ jobs:
           - arduino-boards-fqbn: SparkFun:apollo3:amap3nano
             platform-url: https://raw.githubusercontent.com/sparkfun/Arduino_Boards/master/IDE_Board_Manager/package_sparkfun_index.json
              # 4/2020 For PCA9685_Expander, Wire cannot be found in cli, it works in the regular IDE. SpeedTest and EndPositionsTest give strange BFD assertions
-            examples-exclude: QuadrupedControl,RobotArmControl,PCA9685_Expander,PCA9685_ExpanderAndServo,PCA9685_ExpanderFor32Servos,SpeedTest,EndPositionsTest
+            sketches-exclude: QuadrupedControl,RobotArmControl,PCA9685_Expander,PCA9685_ExpanderAndServo,PCA9685_ExpanderFor32Servos,SpeedTest,EndPositionsTest
 
 
       # Do not cancel all jobs / architectures if one job fails
@@ -160,8 +157,8 @@ jobs:
           ENV_ARDUINO_BOARD_FQBN: ${{ matrix.arduino-boards-fqbn }}
           ENV_PLATFORM_URL: ${{ matrix.platform-url }}
           ENV_REQUIRED_LIBRARIES: ${{ env.REQUIRED_LIBRARIES }}
-          ENV_EXAMPLES_EXCLUDE: ${{ matrix.examples-exclude }}
-          ENV_EXAMPLES_BUILD_PROPERTIES: ${{ toJson(matrix.examples-build-properties) }}
+          ENV_EXAMPLES_EXCLUDE: ${{ matrix.sketches-exclude }}
+          ENV_EXAMPLES_BUILD_PROPERTIES: ${{ toJson(matrix.build-properties) }}
 #          ENV_DEBUG_INSTALL: true
         run: |
           wget --quiet https://raw.githubusercontent.com/ArminJo/arduino-test-compile/master/arduino-test-compile.sh
