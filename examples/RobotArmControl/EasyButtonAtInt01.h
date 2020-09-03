@@ -61,6 +61,7 @@
  * - Renamed to EasyButtonAtInt01.cpp.h
  */
 
+#if defined(__AVR__)
 #include <Arduino.h>
 
 /*
@@ -378,6 +379,7 @@ void __attribute__ ((weak)) handleINT0Interrupt();
 void __attribute__ ((weak)) handleINT1Interrupt();
 #endif
 
+#endif // defined(__AVR__)
 #endif /* EASY_BUTTON_AT_INT01_H_ */
 
 #pragma once

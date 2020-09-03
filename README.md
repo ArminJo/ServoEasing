@@ -1,7 +1,7 @@
 # [ServoEasing](https://github.com/ArminJo/ServoEasing) - move your servo more natural
 Available as Arduino library "ServoEasing"
 
-### [Version 2.3.0](https://github.com/ArminJo/ServoEasing/releases)
+### [Version 2.3.1](https://github.com/ArminJo/ServoEasing/releases)
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
@@ -221,6 +221,10 @@ If you see strange behavior, you can open the library file *ServoEasing.h* and c
 This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
 
 # Revision History
+### Version 2.3.1
+- Fixed wrong timer selection for `STM32F1xx` / `ARDUINO_ARCH_STM32`.
+- Documentation.
+
 ### Version 2.3.0
 - Fixed EASE_LINEAR formula bug introduced with 2.0.0 for 32 bit CPU's. Thanks to [drifkind](https://github.com/drifkind).
 - Added `stop()`, `continueWithInterrupts()` and `continueWithoutInterrupts()` functions.

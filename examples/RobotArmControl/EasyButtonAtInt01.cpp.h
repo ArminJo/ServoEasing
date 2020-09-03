@@ -34,6 +34,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/gpl.html>.
  */
 
+#if defined(__AVR__)
 #include <Arduino.h>
 #include "EasyButtonAtInt01.h"
 
@@ -675,3 +676,5 @@ ISR(INT1_vect)
 }
 #  endif
 #endif // not defined(USE_ATTACH_INTERRUPT)
+
+#endif // defined(__AVR__)

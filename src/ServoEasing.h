@@ -180,6 +180,10 @@
 // @formatter:on
 
 /*
+ * Version 2.3.1 - 9/2020
+ * - Fixed wrong timer selection for `STM32F1xx` / `ARDUINO_ARCH_STM32`.
+ * - Documentation.
+ *
  * Version 2.3.0 - 7/2020
  * - Fixed EASE_LINEAR formula bug introduced with 2.0.0 for 32 bit CPU's.
  * - Added `stop()`, `continueWithInterrupts()` and `continueWithoutInterrupts()` functions.
@@ -405,8 +409,8 @@ public:
     void PCA9685Reset();
     void PCA9685Init();
     void I2CWriteByte(uint8_t aAddress, uint8_t aData);
-    void setPWM(uint16_t aOffUnits);
-    void setPWM(uint16_t aPWMOnValueAsUnits, uint16_t aPWMOffValueAsUnits);
+    void setPWM(uint16_t aPWMOffValueAsUnits);
+    void setPWM(uint16_t aPWMOnStartValueAsUnits, uint16_t aPWMPulseDurationAsUnits);
     // main mapping function for us to PCA9685 Units (20000/4096 = 4.88 us)
     int MicrosecondsToPCA9685Units(int aMicroseconds);
 #endif

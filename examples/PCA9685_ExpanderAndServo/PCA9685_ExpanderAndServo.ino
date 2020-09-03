@@ -89,11 +89,27 @@ void setup() {
     /*
      * Check if I2C communication is possible. If not, we will wait forever at endTransmission.
      */
-    // Initialize wire before checkI2CConnection()
-    Wire.begin();  // Starts with 100 kHz. Clock will eventually be increased at first attach() except for ESP32.
     Serial.println(F("Try to communicate with PCA9685 Expander by TWI / I2C"));
     Serial.flush();
+    // Initialize wire before checkI2CConnection()
+    Wire.begin();  // Starts with 100 kHz. Clock will eventually be increased at first attach() except for ESP32.
+#if defined (ARDUINO_ARCH_AVR) // Other platforms do not have this new function
+    Wire.setWireTimeout(); // Sets default timeout of 25 ms.
+    do {
+        Wire.beginTransmission(PCA9685_DEFAULT_ADDRESS);
+        if (Wire.getWireTimeoutFlag()) {
+            Serial.println(F("Timeout accessing I2C bus. Wait for bus becoming available"));
+            Wire.clearWireTimeoutFlag();
+            delay(100);
+        } else {
+            break;
+        }
+    } while (true);
+
+#else
     Wire.beginTransmission(PCA9685_DEFAULT_ADDRESS);
+#endif
+
     uint8_t tWireReturnCode = Wire.endTransmission(true);
     if (tWireReturnCode == 0) {
         Serial.print(F("Found"));

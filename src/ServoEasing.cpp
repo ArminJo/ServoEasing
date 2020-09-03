@@ -38,14 +38,16 @@ Ticker Timer20ms;
 
 // BluePill in 2 flavors
 #elif defined(STM32F1xx)   // for "Generic STM32F1 series / STM32:stm32" from STM32 Boards from STM32 cores of Arduino Board manager
-#include <HardwareTimer.h> // 4 timers and 4. timer is used for tone()
+// https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json
+#include <HardwareTimer.h> // 4 timers and 3. timer is used for tone(), 2. for Servo
 /*
- * Use timer 3 for ServoEasingInterrupt functions.
- * Timer 3 blocks PA6, PA7, PB0, PB1, so if you required one of them as Servo output, you must choose another timer.
+ * Use timer 4 as IRMP timer.
+ * Timer 4 blocks PB6, PB7, PB8, PB9, so if you need one them as Servo output, you must choose another timer.
  */
-HardwareTimer Timer20ms(TIM3);
+HardwareTimer Timer20ms(TIM4);
 
-#elif defined(__STM32F1__) // for "Generic STM32F103C series / stm32duino:STM32F1" from STM32F1 Boards (STM32duino.com) of manual installed hardware folder
+#elif defined(__STM32F1__) // or ARDUINO_ARCH_STM32F1 for "Generic STM32F103C series / stm32duino:STM32F1" from STM32F1 Boards (STM32duino.com) of Arduino Board manager
+// http://dan.drown.org/stm32duino/package_STM32duino_index.json
 #include <HardwareTimer.h>
 #  if defined(STM32_HIGH_DENSITY)
 HardwareTimer Timer20ms(7);  // 8 timers and 8. timer is used for tone()
@@ -178,8 +180,8 @@ void ServoEasing::I2CWriteByte(uint8_t aAddress, uint8_t aData) {
 #endif
 }
 
-/*
- * aPWMValueAsUnits - The point in the 4096-part cycle, where the output goes OFF (LOW). On is fixed at 0.
+/**
+ * @param aPWMValueAsUnits - The point in the 4096-part cycle, where the output goes OFF (LOW). On is fixed at 0.
  * Useful values are from 111 (111.411 = 544 us) to 491 (491.52 = 2400 us)
  * This results in an resolution of approximately 0.5 degree.
  * 4096 means output is signal fully off
@@ -203,19 +205,19 @@ void ServoEasing::setPWM(uint16_t aPWMOffValueAsUnits) {
 #endif
 }
 
-/*
+/**
  * Here you can specify an on/start value for the pulse in order not to start all pulses at the same time.
  * Is used by writeMicrosecondsOrUnits() with onValue as mServoPin * 235
  * Requires 550 us to send data => 8.8 ms for 16 Servos, 17.6 ms for 32 servos. => more than 2 expander boards
- * cannot be connected to one I2C bus, if all servos can move simultaneously.
+ * cannot be connected to one I2C bus, if all servos must be able to move simultaneously.
  */
-void ServoEasing::setPWM(uint16_t aPWMOnValueAsUnits, uint16_t aPWMPulseDurationAsUnits) {
+void ServoEasing::setPWM(uint16_t aPWMOnStartValueAsUnits, uint16_t aPWMPulseDurationAsUnits) {
     mI2CClass->beginTransmission(mPCA9685I2CAddress);
     mI2CClass->write((PCA9685_FIRST_PWM_REGISTER) + 4 * mServoPin);
-    mI2CClass->write(aPWMOnValueAsUnits);
-    mI2CClass->write(aPWMOnValueAsUnits >> 8);
-    mI2CClass->write(aPWMOnValueAsUnits + aPWMPulseDurationAsUnits);
-    mI2CClass->write((aPWMOnValueAsUnits + aPWMPulseDurationAsUnits) >> 8);
+    mI2CClass->write(aPWMOnStartValueAsUnits);
+    mI2CClass->write(aPWMOnStartValueAsUnits >> 8);
+    mI2CClass->write(aPWMOnStartValueAsUnits + aPWMPulseDurationAsUnits);
+    mI2CClass->write((aPWMOnStartValueAsUnits + aPWMPulseDurationAsUnits) >> 8);
 #if defined(DEBUG) && not defined(ESP32)
     // The ESP32 I2C interferes with the Ticker / Timer library used.
     // Even with 100 kHz clock we have some dropouts / NAK's because of sending address again instead of first data.
@@ -228,6 +230,7 @@ void ServoEasing::setPWM(uint16_t aPWMOnValueAsUnits, uint16_t aPWMPulseDuration
     mI2CClass->endTransmission();
 #endif
 }
+
 int ServoEasing::MicrosecondsToPCA9685Units(int aMicroseconds) {
     /*
      * 4096 units per 20 milliseconds => aMicroseconds / 4.8828
@@ -280,13 +283,14 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServo0Degree, int aMic
     return attach(aPin, aMicrosecondsForServo0Degree, aMicrosecondsForServo180Degree, 0, 180);
 }
 
-/*
+/**
+ * Attaches servo to pin and sets the servo timing parameters
  * @param aMicrosecondsForServoLowDegree no units accepted, only microseconds!
  * @param aServoLowDegree can be negative. For this case an appropriate trim value is added, since this is the only way to handle negative values.
- * If USE_LEIGHTWEIGHT_SERVO_LIB is enabled:
- *      Return 0/false if not pin 9 or 10 else return aPin
- *      Pin number != 9 results in using pin 10.
- * Else return servoIndex / internal channel number
+ * @return If USE_LEIGHTWEIGHT_SERVO_LIB is enabled:
+ *             Return 0/false if not pin 9 or 10 else return aPin
+ *             Pin number != 9 results in using pin 10.
+ *         Else return servoIndex / internal channel number
  */
 uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree,
         int aServoHighDegree) {
@@ -415,8 +419,8 @@ void ServoEasing::detach() {
     mServoIndex = INVALID_SERVO;
 }
 
-/*
- * Reverse means, that values for 180 and 0 degrees are swapped by: aValue = mServo180DegreeMicrosecondsOrUnits - (aValue - mServo0DegreeMicrosecondsOrUnits)
+/**
+ * @note Reverse means, that values for 180 and 0 degrees are swapped by: aValue = mServo180DegreeMicrosecondsOrUnits - (aValue - mServo0DegreeMicrosecondsOrUnits)
  * Be careful, if you specify different end values, it may not behave, as you expect.
  * For this case better use the attach function with 5 parameter.
  * This flag is only used at writeMicrosecondsOrUnits()
@@ -433,8 +437,8 @@ void ServoEasing::setSpeed(uint_fast16_t aDegreesPerSecond) {
     mSpeed = aDegreesPerSecond;
 }
 
-/*
- * Trim value is always added to the degree/units/microseconds value requested
+/**
+ * @param aTrimDegrees This trim value is always added to the degree/units/microseconds value requested
  */
 void ServoEasing::setTrim(int aTrimDegrees, bool aDoWrite) {
     if (aTrimDegrees >= 0) {
@@ -444,9 +448,9 @@ void ServoEasing::setTrim(int aTrimDegrees, bool aDoWrite) {
     }
 }
 
-/*
- * Trim value is always added to the degree/units/microseconds value requested
- * It is only used/added at writeMicrosecondsOrUnits()
+/**
+ * @param aTrimMicrosecondsOrUnits This trim value is always added to the degree/units/microseconds value requested
+ * @note It is only used/added at writeMicrosecondsOrUnits()
  */
 void ServoEasing::setTrimMicrosecondsOrUnits(int aTrimMicrosecondsOrUnits, bool aDoWrite) {
     mTrimMicrosecondsOrUnits = aTrimMicrosecondsOrUnits;
@@ -491,7 +495,7 @@ void ServoEasing::write(int aValue) {
     writeMicrosecondsOrUnits(aValue);
 }
 
-/*
+/**
  * Before sending the value to the underlying Servo library, trim and reverse is applied
  */
 void ServoEasing::writeMicrosecondsOrUnits(int aValue) {
@@ -595,7 +599,7 @@ int ServoEasing::MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits) {
 
 }
 
-/*
+/**
  * We have around 10 us per degree
  */
 int ServoEasing::DegreeToMicrosecondsOrUnits(int aDegree) {
@@ -603,7 +607,7 @@ int ServoEasing::DegreeToMicrosecondsOrUnits(int aDegree) {
     return map(aDegree, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
 }
 
-/*
+/**
  * Mainly for testing, since trim and reverse are applied at each write.
  */
 int ServoEasing::DegreeToMicrosecondsOrUnitsWithTrimAndReverse(int aDegree) {
@@ -620,9 +624,9 @@ void ServoEasing::easeTo(int aDegree) {
     easeTo(aDegree, mSpeed);
 }
 
-/*
+/**
  * Blocking move without interrupt
- * aDegreesPerSecond can range from 1 to the physically maximum value of 450
+ * @param aDegreesPerSecond Can range from 1 to the physically maximum value of 450
  */
 void ServoEasing::easeTo(int aDegree, uint_fast16_t aDegreesPerSecond) {
     startEaseTo(aDegree, aDegreesPerSecond, false);
@@ -643,22 +647,22 @@ bool ServoEasing::setEaseTo(int aDegree) {
     return startEaseTo(aDegree, mSpeed, false);
 }
 
-/*
- * Sets easing parameter, but do not start interrupt
- * returns false if servo was still moving
+/**
+ * Sets easing parameter, but does not start interrupt
+ * @return false if servo was still moving
  */
 bool ServoEasing::setEaseTo(int aDegree, uint_fast16_t aDegreesPerSecond) {
     return startEaseTo(aDegree, aDegreesPerSecond, false);
 }
 
-/*
+/**
  * Starts interrupt for update()
  */
 bool ServoEasing::startEaseTo(int aDegree) {
     return startEaseTo(aDegree, mSpeed, true);
 }
 
-/*
+/**
  * Sets up all the values required for a smooth move to new value
  * returns false if servo was still moving
  */
@@ -685,15 +689,17 @@ bool ServoEasing::startEaseTo(int aDegree, uint_fast16_t aDegreesPerSecond, bool
     return startEaseToD(aDegree, tMillisForCompleteMove, aStartUpdateByInterrupt);
 }
 
-/*
- * Sets easing parameter, but do not start
+/**
+ * Lower level function with time instead of speed parameter
+ * Sets easing parameter, but does not start
  */
 bool ServoEasing::setEaseToD(int aDegree, uint_fast16_t aMillisForMove) {
     return startEaseToD(aDegree, aMillisForMove, false);
 }
 
-/*
- * returns false if servo was still moving
+/**
+ * Lower level function with time instead of speed parameter
+ * @return false if servo was still moving
  */
 bool ServoEasing::startEaseToD(int aDegree, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt) {
     /*
@@ -1280,10 +1286,12 @@ void disableServoEasingInterrupt() {
     Timer20ms.detach();
 
 #elif defined(STM32F1xx)   // for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
+    // https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json
     Timer20ms.setMode(LL_TIM_CHANNEL_CH1, TIMER_DISABLED);
     Timer20ms.detachInterrupt();
 
-#elif defined(__STM32F1__) // for "Generic STM32F103C series" from STM32F1 Boards (STM32duino.com) of manual installed hardware folder
+#elif defined(__STM32F1__) // for "Generic STM32F103C series" from STM32F1 Boards (STM32duino.com) of Arduino Board manager
+    // http://dan.drown.org/stm32duino/package_STM32duino_index.json
     Timer20ms.setMode(TIMER_CH1, TIMER_DISABLED);
     Timer20ms.detachInterrupt(TIMER_CH1);
 

@@ -87,6 +87,9 @@ void setup() {
 
     // Initialize wire before checkI2CConnection()
     Wire.begin();  // Starts with 100 kHz. Clock will be increased at first attach() except for ESP32.
+#if defined (ARDUINO_ARCH_AVR) // Other platforms do not have this new function
+    Wire.setWireTimeout(); // Sets default timeout of 25 ms.
+#endif
     checkI2CConnection(FIRST_PCA9685_EXPANDER_ADDRESS);
     getAndAttach16ServosToPCA9685Expander(FIRST_PCA9685_EXPANDER_ADDRESS);
 
@@ -162,8 +165,21 @@ bool checkI2CConnection(uint8_t aI2CAddress) {
     Serial.print(F("Try to communicate with I2C device at address=0x"));
     Serial.println(aI2CAddress, HEX);
     Serial.flush();
-
+#if defined (ARDUINO_ARCH_AVR) // Other platforms do not have this new function
+    do {
+        Wire.beginTransmission(aI2CAddress);
+        if (Wire.getWireTimeoutFlag()) {
+            Serial.println(F("Timeout accessing I2C bus. Wait for bus becoming available"));
+            Wire.clearWireTimeoutFlag();
+            delay(100);
+        } else {
+            break;
+        }
+    } while (true);
+#else
     Wire.beginTransmission(aI2CAddress);
+#endif
+
     uint8_t tWireReturnCode = Wire.endTransmission(true);
     if (tWireReturnCode == 0) {
         Serial.print(F("Found"));

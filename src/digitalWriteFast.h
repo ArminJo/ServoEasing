@@ -40,7 +40,7 @@
 
 
 // workarounds for ARM microcontrollers
-#if (!defined(__AVR__) || \
+#if (!defined(__AVR__) && !defined(ESP8266) || \
      defined(ARDUINO_ARCH_SAM) || \
      defined(ARDUINO_ARCH_SAMD))
 

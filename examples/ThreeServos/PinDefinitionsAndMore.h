@@ -52,7 +52,7 @@
 #elif defined(STM32F1xx) || defined(__STM32F1__)
 // BluePill in 2 flavors
 // STM32F1xx is for "Generic STM32F1 series / STM32:stm32" from STM32 Boards from STM32 cores of Arduino Board manager
-// __STM32F1__is for "Generic STM32F103C series / stm32duino:STM32F1" from STM32F1 Boards (STM32duino.com) of manual installed hardware folder
+// __STM32F1__is for "Generic STM32F103C series / stm32duino:STM32F1" from STM32F1 Boards (STM32duino.com) of Arduino Board manager
 #define SERVO1_PIN PB7
 #define SERVO2_PIN PB8
 #define SERVO3_PIN PB9 // Needs timer 4 for Servo library
