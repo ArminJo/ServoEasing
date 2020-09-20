@@ -24,7 +24,7 @@
 #ifndef SERVOEASING_H_
 #define SERVOEASING_H_
 
-#define VERSION_SERVO_EASING "2.3.0"
+#define VERSION_SERVO_EASING "2.3.2"
 #define VERSION_SERVO_EASING_MAJOR 2
 #define VERSION_SERVO_EASING_MINOR 3
 
@@ -127,7 +127,6 @@
 #  endif
 #endif // ! defined(MAX_EASING_SERVOS)
 
-
 #if ! defined(REFRESH_INTERVAL)
 #define REFRESH_INTERVAL 20000   // // minimum time to refresh servos in microseconds (from Servo.h)
 #endif
@@ -147,16 +146,17 @@
  */
 //#define KEEP_SERVO_EASING_LIBRARY_SMALL
 
-
 /*
  * If you need only the linear movement you may define `PROVIDE_ONLY_LINEAR_MOVEMENT`. This saves additional 1540 Bytes FLASH.
  */
 //#define PROVIDE_ONLY_LINEAR_MOVEMENT
 
-
 // Enable this if you want to measure timing by toggling pin12 on an arduino
-//#define MEASURE_TIMING
-
+//#define MEASURE_SERVO_EASING_INTERRUPT_TIMING
+#if defined(MEASURE_SERVO_EASING_INTERRUPT_TIMING)
+#include "digitalWriteFast.h"
+#define TIMING_OUTPUT_PIN 12
+#endif
 
 // Enable this to generate output for Arduino Serial Plotter (Ctrl-Shift-L)
 //#define PRINT_FOR_SERIAL_PLOTTER
@@ -180,6 +180,10 @@
 // @formatter:on
 
 /*
+ * Version 2.3.2 - 9/2020
+ * - Removed blocking wait for ATmega32U4 Serial in examples.
+ * - Improved output for Arduino Serial Plotter.
+ *
  * Version 2.3.1 - 9/2020
  * - Fixed wrong timer selection for `STM32F1xx` / `ARDUINO_ARCH_STM32`.
  * - Documentation.
@@ -385,8 +389,9 @@
 #define PCA9685_DEFAULT_ADDRESS     0x40
 #define PCA9685_MAX_CHANNELS        16 // 16 PWM channels on each PCA9685 expansion module
 #define PCA9685_MODE1_REGISTER      0x0
-#define PCA9685_AUTOINCREMENT       5
-#define PCA9685_SLEEP               4
+#define PCA9685_MODE_1_RESTART        7
+#define PCA9685_MODE_1_AUTOINCREMENT  5
+#define PCA9685_MODE_1_SLEEP          4
 #define PCA9685_FIRST_PWM_REGISTER  0x06
 #define PCA9685_PRESCALE_REGISTER   0xFE
 

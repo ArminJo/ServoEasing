@@ -1,7 +1,7 @@
 # [ServoEasing](https://github.com/ArminJo/ServoEasing) - move your servo more natural
 Available as Arduino library "ServoEasing"
 
-### [Version 2.3.1](https://github.com/ArminJo/ServoEasing/releases)
+### [Version 2.3.2](https://github.com/ArminJo/ServoEasing/releases)
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
@@ -211,7 +211,7 @@ To add a new platform, the following steps have to be performed:
 2. You need a **20ms interrupt source** providing the functions enableServoEasingInterrupt() and (optional) disableServoEasingInterrupt(). Extend these functions with code for the new platform. Place includes and timer definitions at top of *ServoEasing.cpp*.
 3. If your interrupt source requires an ISR (Interrupt Service Routine) place it after disableServoEasingInterrupt() where all the other ISR are located.
 4. To test the new platform, you may want to enable **TRACE output** by commenting out the line `#define TRACE` in *ServoEasing.cpp*
-and enabling **interrupt timing feedback** by commenting out the line `#define MEASURE_SERVO_EASING_INTERRUPT_TIMING` in *ServoEasing.cpp*.
+and enabling **interrupt timing feedback** by commenting out the line `#define MEASURE_SERVO_EASING_INTERRUPT_TIMING` in *ServoEasing.h*.
 5. If it works for you, please issue a Pull Request, to share your efforts with the community.
 
 Good luck!
@@ -221,6 +221,10 @@ If you see strange behavior, you can open the library file *ServoEasing.h* and c
 This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
 
 # Revision History
+### Version 2.3.2
+- Removed blocking wait for ATmega32U4 Serial in examples.
+- Improved output for Arduino Serial Plotter.
+
 ### Version 2.3.1
 - Fixed wrong timer selection for `STM32F1xx` / `ARDUINO_ARCH_STM32`.
 - Documentation.
@@ -319,6 +323,6 @@ Since Travis CI is unreliable and slow (5 times slower 17:43 vs. 3:15 minutes), 
 
 
 ## Requests for modifications / extensions
-Please write me a PM including your motivation/problem if you need a modification or an extension e.g. a callback functionality after move has finished.
+Please write me a PM including your motivation/problem if you need a modification or an extension.
 
 #### If you find this library useful, please give it a star.

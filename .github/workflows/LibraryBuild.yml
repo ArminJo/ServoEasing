@@ -154,6 +154,7 @@ jobs:
       - name: Compile all examples using the bash script arduino-test-compile.sh
         env:
           # Passing parameters to the script by setting the appropriate ENV_* variables.
+          # ENV_CLI_VERSION: 0.12.1 # the last with the non library bug
           ENV_ARDUINO_BOARD_FQBN: ${{ matrix.arduino-boards-fqbn }}
           ENV_PLATFORM_URL: ${{ matrix.platform-url }}
           ENV_REQUIRED_LIBRARIES: ${{ env.REQUIRED_LIBRARIES }}

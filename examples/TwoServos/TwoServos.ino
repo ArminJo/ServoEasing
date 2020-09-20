@@ -27,7 +27,9 @@
 
 #include "ServoEasing.h"
 
-#define INFO // to see serial output of loop
+#ifndef PRINT_FOR_SERIAL_PLOTTER
+#define INFO // to see serial text output for loop
+#endif
 
 #include "PinDefinitionsAndMore.h"
 /*
@@ -50,27 +52,28 @@ void blinkLED();
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
-#if defined(__AVR_ATmega32U4__)
-    while (!Serial); //delay for Leonardo, but this loops forever for Maple Serial
-#endif
-#if defined(SERIAL_USB) || defined(SERIAL_PORT_USBVIRTUAL)
+#if defined(__AVR_ATmega32U4__) || defined(SERIAL_USB) || defined(SERIAL_PORT_USBVIRTUAL)
     delay(2000); // To be able to connect Serial monitor after reset and before first printout
 #endif
+#ifndef PRINT_FOR_SERIAL_PLOTTER
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_SERVO_EASING));
 
     // Attach servos to pins
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO1_PIN);
+#endif
     if (Servo1.attach(SERVO1_PIN) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
 
+#ifndef PRINT_FOR_SERIAL_PLOTTER
     /*
      * Check at least the last call to attach()
      */
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO2_PIN);
+#endif
     if (Servo2.attach(SERVO2_PIN) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
         while (true) {
@@ -78,8 +81,12 @@ void setup() {
         }
     }
 
+#ifdef PRINT_FOR_SERIAL_PLOTTER
+    // Print legend for Plotter
+    Serial.println("Servo1, Servo2");
+#endif
     /*
-     * Operate the servo from -90 to +90 degree
+     * Operate Servo1 from -90 to +90 degree
      * Instead of specifying a trim you can use above:
      *   if (Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, -90, 90) == INVALID_SERVO) {
      */
@@ -167,10 +174,10 @@ void loop() {
      * Move both servos independently
      */
 #ifdef INFO
-    Serial.println(F("Move independently to -90/0 degree with 80/60 degree per second using interrupts"));
+    Serial.println(F("Move independently to -90/0 degree with 60/80 degree per second using interrupts"));
 #endif
-    Servo1.setEaseTo(-90, 80);
-    Servo2.startEaseTo(0, 60); // This start interrupt for all servos
+    Servo1.setEaseTo(-90, 60);
+    Servo2.startEaseTo(0, 80); // This start interrupt for all servos
     // blink until both servos stop
     while (areInterruptsActive()) {
         blinkLED();

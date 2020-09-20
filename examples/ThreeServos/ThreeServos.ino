@@ -51,10 +51,7 @@ void blinkLED();
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
-#if defined(__AVR_ATmega32U4__)
-    while (!Serial); //delay for Leonardo, but this loops forever for Maple Serial
-#endif
-#if defined(SERIAL_USB) || defined(SERIAL_PORT_USBVIRTUAL)
+#if defined(__AVR_ATmega32U4__) || defined(SERIAL_USB) || defined(SERIAL_PORT_USBVIRTUAL)
     delay(2000); // To be able to connect Serial monitor after reset and before first printout
 #endif
     // Just to know which program is running on my Arduino
@@ -93,9 +90,11 @@ void setup() {
         }
     }
 
+#ifndef PRINT_FOR_SERIAL_PLOTTER
     Servo1.print(&Serial);
     Servo2.print(&Serial);
     Servo3.print(&Serial);
+#endif
 
     /**************************************************
      * Set servos to start position.
@@ -104,8 +103,12 @@ void setup() {
     Servo1.write(0);
     Servo2.write(0);
     Servo3.write(0);
+
+#ifdef PRINT_FOR_SERIAL_PLOTTER
     // Legend for Arduino plotter
-    Serial.println("Servo 1, Servo 2, Servo 3");
+    Serial.println();
+    Serial.println("Servo1, Servo2, Servo3");
+#endif
 
     // Wait for servos to reach start position.
     delay(500);
@@ -126,7 +129,7 @@ void loop() {
 #ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.println(F("Move to 90/90/180 degree with 20 degree per second with updates by own do-while loop"));
 #endif
-    setSpeedForAllServos(20);
+    setSpeedForAllServos(20); // this speed is changed for the first 2 servos below by synchronizing to the longest duration
     Servo1.setEaseTo(90);
     Servo2.setEaseTo(90);
     Servo3.setEaseTo(180);

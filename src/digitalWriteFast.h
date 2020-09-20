@@ -1,7 +1,7 @@
 /*
-  Optimized digital functions for AVR microcontrollers
-  by Watterott electronic (www.watterott.com)
-  based on http://code.google.com/p/digitalwritefast
+ Optimized digital functions for AVR microcontrollers
+ by Watterott electronic (www.watterott.com)
+ based on http://code.google.com/p/digitalwritefast
  */
 
 #ifndef __digitalWriteFast_h_
@@ -37,7 +37,6 @@
 #ifndef BIN
 # define BIN (2)
 #endif
-
 
 // workarounds for ARM microcontrollers
 #if (!defined(__AVR__) && !defined(ESP8266) || \
@@ -97,14 +96,12 @@
 
 #endif
 
-
 // digital functions
 //#ifndef digitalPinToPortReg
 #define SPI_SW_SS_PIN   (10) //SS on Uno (for software SPI)
 #define SPI_SW_MOSI_PIN (11) //MOSI on Uno (for software SPI)
 #define SPI_SW_MISO_PIN (12) //MISO on Uno (for software SPI)
 #define SPI_SW_SCK_PIN  (13) //SCK on Uno (for software SPI)
-
 
 // --- Arduino Due and SAM3X8E based boards ---
 #if (defined(ARDUINO_SAM_DUE) || \
@@ -333,7 +330,6 @@
 (((P) >= 0 && (P) <= 7) ? (P) : (((P) >= 8 && (P) <= 13) ? (P) - 8 : (P) - 14))
 #endif
 
-
 #elif defined(__AVR_ATmega4809__) // Uno WiFi Rev 2, Nano Every
 
 #define UART_RX_PIN     (0) //PB0
@@ -415,7 +411,6 @@
 #endif
 //#endif  //#ifndef digitalPinToPortReg
 
-
 #ifndef digitalWriteFast
 #if (defined(__AVR__) || defined(ARDUINO_ARCH_AVR))
 #define digitalWriteFast(P, V) \
@@ -428,7 +423,6 @@ if (__builtin_constant_p(P)) { \
 #define digitalWriteFast digitalWrite
 #endif
 #endif
-
 
 #ifndef pinModeFast
 #if (defined(__AVR__) || defined(ARDUINO_ARCH_AVR))
@@ -448,7 +442,6 @@ if (__builtin_constant_p(P) && __builtin_constant_p(V)) { \
 #endif
 #endif
 
-
 #ifndef digitalReadFast
 #if (defined(__AVR__) || defined(ARDUINO_ARCH_AVR))
 #define digitalReadFast(P) ( (int) __digitalReadFast((P)) )
@@ -460,7 +453,6 @@ if (__builtin_constant_p(P) && __builtin_constant_p(V)) { \
 #define digitalReadFast digitalRead
 #endif
 #endif
-
 
 #ifndef digitalToggleFast
 #if (defined(__AVR__) || defined(ARDUINO_ARCH_AVR))

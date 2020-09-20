@@ -49,10 +49,7 @@ ServoEasing Servo3;
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
-#if defined(__AVR_ATmega32U4__)
-    while (!Serial); //delay for Leonardo, but this loops forever for Maple Serial
-#endif
-#if defined(SERIAL_USB) || defined(SERIAL_PORT_USBVIRTUAL)
+#if defined(__AVR_ATmega32U4__) || defined(SERIAL_USB) || defined(SERIAL_PORT_USBVIRTUAL)
     delay(2000); // To be able to connect Serial monitor after reset and before first printout
 #endif
     // Just to know which program is running on my Arduino
@@ -109,6 +106,12 @@ void setup() {
     // Wait for servos to reach start position.
     delay(2000);
 
+#ifdef PRINT_FOR_SERIAL_PLOTTER
+    // Legend for Arduino Serial plotter
+    Serial.println();
+    Serial.println("Linear, Quadratic, Cubic");
+#endif
+
 #ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.println(F("Move from 90 to 45 degree in 1 second"));
 #endif
@@ -120,8 +123,6 @@ void setup() {
     Servo1.setEasingType(EASE_LINEAR);
     Servo2.setEasingType(EASE_QUADRATIC_IN_OUT);
     Servo3.setEasingType(EASE_CUBIC_IN_OUT);
-    // Legend for Arduino plotter
-    Serial.println("Linear, Quadratic, Cubic");
 
 //    Servo1.setEasingType(EASE_QUADRATIC_IN_OUT);
 //    Servo2.setEasingType(EASE_CUBIC_IN_OUT);
