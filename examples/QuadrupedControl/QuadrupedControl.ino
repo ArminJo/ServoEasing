@@ -37,8 +37,9 @@
 #include "QuadrupedControl.h"
 
 #if defined(QUADRUPED_HAS_IR_CONTROL)
-#include "IRCommandDispatcher.h"
-#include "IRCommandMapping.h" // for IR_REMOTE_NAME
+#define USE_IRL_REMOTE_LIBRARY // must be specified before including IRCommandDispatcher.cpp.h to define which IR library to use
+#include "IRCommandMapping.h" // must be included before IRCommandDispatcher.cpp.h to define IR_ADDRESS and IRMapping and string "unknown".
+#include "IRCommandDispatcher.cpp.h"
 #endif
 
 #include "QuadrupedServoControl.h"
@@ -107,9 +108,9 @@ void setup() {
 //    resetServosTo90Degree();
 
 #if defined(QUADRUPED_PLAYS_RTTTL)
-    playRtttlBlockingPGM(PIN_SPEAKER, Short);
+    playRtttlBlockingPGM(PIN_BUZZER, Short);
 #else
-    tone(PIN_SPEAKER, 2000, 300);
+    tone(PIN_BUZZER, 2000, 300);
 #endif
 
     delay(1000);
@@ -121,7 +122,7 @@ void setup() {
     convertBodyHeightAngleToHeight();
 
 #if defined(QUADRUPED_HAS_IR_CONTROL)
-    setupIRDispatcher();
+    IRDispatcher.init();
     Serial.print(F("Listening to IR remote of type "));
     Serial.println(IR_REMOTE_NAME);
 #endif
@@ -149,10 +150,10 @@ void loop() {
      * Check for IR commands and execute them.
      * Returns only AFTER finishing of requested movement
      */
-    loopIRDispatcher();
+    IRDispatcher.loop();
 #if defined(QUADRUPED_HAS_NEOPIXEL)
-    if (sJustCalledExclusiveIRCommand) {
-        sJustCalledExclusiveIRCommand = false;
+    if (IRDispatcher.justCalledRegularIRCommand) {
+        IRDispatcher.justCalledRegularIRCommand = false;
         sStartOrChangeNeoPatterns = true;
     }
 #endif
@@ -160,24 +161,23 @@ void loop() {
     /*
      * Do auto move if timeout after boot was reached and no IR command was received
      */
-    if (!sAtLeastOneValidIRCodeReceived && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
+    if (IRDispatcher.lastIRCodeMillis == 0 && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
 #if defined(QUADRUPED_HAS_NEOPIXEL)
         wipeOutPatternsBlocking();
 #endif
 #if !defined(USE_USER_DEFINED_MOVEMENTS)
         doQuadrupedAutoMove();
 #endif
-        sAtLeastOneValidIRCodeReceived = true; // do auto move only once
     }
 
     /*
      * Get attention that no command was received since 2 minutes and quadruped may be switched off
      */
-    if (millis() - sLastTimeOfIRCodeReceived > MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE) {
+    if (millis() - IRDispatcher.lastIRCodeMillis > MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE) {
+        IRDispatcher.lastIRCodeMillis += MILLIS_OF_INACTIVITY_BETWEEN_REMINDER_MOVE;
         doAttention();
         printVCCVoltageMillivolt(&Serial);
         // next attention in 1 minute
-        sLastTimeOfIRCodeReceived += MILLIS_OF_INACTIVITY_BETWEEN_REMINDER_MOVE;
     }
 #else
     delayAndCheck(5000);
@@ -187,13 +187,13 @@ void loop() {
 
     if (checkForLowVoltage()) {
         shutdownServos();
-        tone(PIN_SPEAKER, 2000, 200);
+        tone(PIN_BUZZER, 2000, 200);
         delay(400);
-        tone(PIN_SPEAKER, 1400, 300);
+        tone(PIN_BUZZER, 1400, 300);
         delay(600);
-        tone(PIN_SPEAKER, 1000, 400);
+        tone(PIN_BUZZER, 1000, 400);
         delay(800);
-        tone(PIN_SPEAKER, 700, 500);
+        tone(PIN_BUZZER, 700, 500);
 #if defined(QUADRUPED_HAS_NEOPIXEL)
         wipeOutPatternsBlocking();
 #endif
@@ -229,7 +229,7 @@ void handleUSSensor() {
     if (millis() - sLastMeasurementMillis > MILLIS_BETWEEN_MEASUREMENTS) {
         sLastMeasurementMillis = millis();
         uint16_t tDistance = getUSDistanceAsCentiMeter();
-        if (sLastDistance != tDistance) {
+        if (tDistance != 0 && sLastDistance != tDistance) {
             sLastDistance = tDistance;
 #ifdef INFO
 //            Serial.print(F("Distance="));
@@ -261,17 +261,17 @@ void handleUSSensor() {
 }
 
 void doUSRight() {
-    if (!sCurrentCommandIsRepeat && USServo.getCurrentAngle() > 15) {
+    if (!IRDispatcher.currentCommandIsRepeat && USServo.getCurrentAngle() > 15) {
         USServo.write(USServo.getCurrentAngle() - 15);
     }
 }
 void doUSLeft() {
-    if (!sCurrentCommandIsRepeat && USServo.getCurrentAngle() < 165) {
+    if (!IRDispatcher.currentCommandIsRepeat && USServo.getCurrentAngle() < 165) {
         USServo.write(USServo.getCurrentAngle() + 15);
     }
 }
 void doUSScan() {
-    if (!sCurrentCommandIsRepeat) {
+    if (!IRDispatcher.currentCommandIsRepeat) {
         USServo.write(90);
     }
 }
@@ -289,8 +289,8 @@ bool delayAndCheck(uint16_t aDelayMillis) {
     if (!checkForLowVoltage()) {
         do {
 #if defined(QUADRUPED_HAS_IR_CONTROL)
-            if (checkIRInputForNonExclusiveCommand()) {
-                Serial.println(F("Invalid or exclusive command received -> set stop"));
+            if (IRDispatcher.checkIRInputForAlwaysExecutableCommand()) {
+                Serial.println(F("Invalid or recursive regular command received -> set stop"));
                 sActionType = ACTION_TYPE_STOP;
                 return true;
             }

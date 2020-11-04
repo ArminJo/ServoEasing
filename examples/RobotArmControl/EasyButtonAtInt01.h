@@ -83,7 +83,7 @@
 //#define BUTTON_IS_ACTIVE_HIGH
 /*
  * Define USE_ATTACH_INTERRUPT to force use of the arduino function attachInterrupt().
- * Needed if you get the error " multiple definition of `__vector_1'" (or `__vector_2'), because another library uses the attachInterrupt() function.
+ * Required if you get the error " multiple definition of `__vector_1'" (or `__vector_2'), because another library uses the attachInterrupt() function.
  * For one button it needs additional 160 bytes FLASH, for 2 buttons it needs additional 88 bytes.
  */
 //#define USE_ATTACH_INTERRUPT
@@ -124,9 +124,9 @@
  * Activate LED_BUILTIN as long as button is pressed
  */
 //#define LED_FEEDBACK_TEST
-#if defined (LED_FEEDBACK_TEST)
+#if defined(LED_FEEDBACK_TEST)
 #  if ! defined(BUTTON_TEST_FEEDBACK_LED_PIN)
-#    if defined (LED_BUILTIN)
+#    if defined(LED_BUILTIN)
 #    define BUTTON_TEST_FEEDBACK_LED_PIN LED_BUILTIN  // if not specified, use built in led - pin 13 on Uno board
 #    else
 #    error "LED_FEEDBACK_TEST defined but no BUTTON_TEST_FEEDBACK_LED_PIN or LED_BUILTIN defined"
@@ -146,7 +146,7 @@
 
 //#define TRACE
 #ifdef TRACE
-#warning "If using TRACE, the timing of the interrupt service routine changes, e.g. you will see more spikes, than expected!"
+#warning If using TRACE, the timing of the interrupt service routine changes, e.g. you will see more spikes, than expected!
 #endif
 
 /*
@@ -171,7 +171,7 @@
 #    if ! defined(INT1_PIN)
 #define INT1_PIN 3
 #    elif (INT1_PIN != 2) && (INT1_PIN > 5)
-#error "INT1_PIN (for PCINT0 interrupt) can only be 0,1,3,4,5"
+#error INT1_PIN (for PCINT0 interrupt) can only be 0,1,3,4,5
 #    endif
 #define INT1_DDR_PORT (DDRB)
 #define INT1_IN_PORT  (PINB)
@@ -218,11 +218,11 @@
 #undef INT1_PIN
 #define INT1_PIN 6 // PA6
 #      else
-#error "INT1_PIN (for PCINT0 interrupt) can only be 5 to 12"
+#error INT1_PIN (for PCINT0 interrupt) can only be 5 to 12
 #      endif
 #    else // defined(ARDUINO_AVR_DIGISPARKPRO)
 #      if (INT1_PIN > 7)
-#error "INT1_PIN (for PCINT0 interrupt) can only be 0 to 7"
+#error INT1_PIN (for PCINT0 interrupt) can only be 0 to 7
 #      endif
 #    endif // defined(ARDUINO_AVR_DIGISPARKPRO)
 #define INT1_DDR_PORT (DDRA)
@@ -241,7 +241,7 @@
 #    if ! defined(INT1_PIN)
 #define INT1_PIN 3
 #    elif (INT1_PIN > 7)
-#error "INT1_PIN (for PCINT2 interrupt) can only be Arduino pins 0 to 7 (PD0 to PD7)"
+#error INT1_PIN (for PCINT2 interrupt) can only be Arduino pins 0 to 7 (PD0 to PD7)
 #    endif
 #define INT1_DDR_PORT (DDRD)
 #define INT1_IN_PORT  (PIND)
@@ -255,7 +255,7 @@
 
 #if defined(USE_BUTTON_1) && ((! defined(ISC10)) || ((defined(__AVR_ATtiny87__) || defined(__AVR_ATtiny167__)) && INT1_PIN != 3)) \
     && ! defined(INTENTIONALLY_USE_PCI0_FOR_BUTTON1) && !(defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__))
-#warning "Using PCINT0 interrupt for button 1"
+#warning Using PCINT0 interrupt for button 1
 #endif
 
 #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
@@ -357,10 +357,10 @@ public:
 #endif
 
 #if defined(USE_BUTTON_0)
-    static EasyButton * sPointerToButton0ForISR;
+    static EasyButton *sPointerToButton0ForISR;
 #endif
 #if defined(USE_BUTTON_1)
-    static EasyButton * sPointerToButton1ForISR;
+    static EasyButton *sPointerToButton1ForISR;
 #endif
 };
 // end of class definition

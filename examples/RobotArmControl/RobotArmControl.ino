@@ -33,7 +33,9 @@
 #define INFO // enable some prints
 
 #if defined(ROBOT_ARM_IR_CONTROL)
-#include "IRCommandDispatcher.h"
+#define USE_IRL_REMOTE_LIBRARY // must be specified before including IRCommandDispatcher.cpp.h to define which IR library to use
+#include "IRCommandMapping.h" // must be included before IRCommandDispatcher.cpp.h to define IR_ADDRESS and IRMapping and string "unknown".
+#include "IRCommandDispatcher.cpp.h"
 #include "RobotArmRTCControl.h"
 #endif
 
@@ -108,7 +110,7 @@ void setup() {
     setupRobotArmServos();
 
 #if defined(ROBOT_ARM_IR_CONTROL)
-    setupIRDispatcher();
+    IRDispatcher.init();
 #endif
 
 #if defined(ROBOT_ARM_RTC_CONTROL)
@@ -155,17 +157,17 @@ void loop() {
     /*
      * Check for IR commands and execute them
      */
-    loopIRDispatcher();
+    IRDispatcher.loop();
 
     /*
      * Do auto move if timeout after boot was reached and no IR command was received
      */
-    if (sActionType != ACTION_TYPE_DRAW_TIME && !sAtLeastOneValidIRCodeReceived && !sManualActionHappened && !sVCCTooLow
+    if (sActionType != ACTION_TYPE_DRAW_TIME && IRDispatcher.lastIRCodeMillis != 0 && !sManualActionHappened && !sVCCTooLow
             && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
         doRobotArmAutoMove();
     }
 
-    if (sActionType != ACTION_TYPE_DRAW_TIME && !sAtLeastOneValidIRCodeReceived) {
+    if (sActionType != ACTION_TYPE_DRAW_TIME && IRDispatcher.lastIRCodeMillis == 0) {
         handleManualControl();
     }
 #else
@@ -186,8 +188,8 @@ bool delayAndCheckForRobotArm(uint16_t aDelayMillis) {
     if (checkVCC()) {
         do {
 #if defined(ROBOT_ARM_IR_CONTROL)
-            if (checkIRInputForNonExclusiveCommand()) {
-                Serial.println(F("Invalid command received -> set stop and exit from delayAndCheck"));
+            if (IRDispatcher.checkIRInputForAlwaysExecutableCommand()) {
+                Serial.println(F("Invalid or recursive regular command received -> set stop and exit from delayAndCheck"));
                 sActionType = ACTION_TYPE_STOP;
                 return true;
             }
@@ -263,7 +265,7 @@ void changeEasingType(__attribute__((unused)) bool aButtonToggleState) {
 
 void doSetToAutoModeForRobotArm() {
 #if defined(ROBOT_ARM_IR_CONTROL)
-    sAtLeastOneValidIRCodeReceived = true;
+    IRDispatcher.lastIRCodeMillis = 1;
 #endif
     sManualActionHappened = false;
 }

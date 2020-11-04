@@ -37,7 +37,7 @@ void setup() {
 #if defined (__AVR_ATmega328P__) || defined (__AVR_ATmega328__) || defined (__AVR_ATmega328PB__)
     Serial.println(F("Using library version " VERSION_LIGHTWEIGHT_SERVO));
 #endif
-    // no initialization needed for LightweightServo :-)
+    // no initialization required for LightweightServo :-)
 }
 
 void loop() {

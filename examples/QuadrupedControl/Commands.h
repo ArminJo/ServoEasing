@@ -12,11 +12,12 @@
 
 #include "QuadrupedControl.h"  //must be first
 #if defined(QUADRUPED_HAS_IR_CONTROL)
-#include "IRCommandDispatcher.h"
+#include "IRCommandDispatcher.h" // RETURN_IF_STOP is defined here
 #else
-#if !defined(RETURN_IF_STOP)
-#define RETURN_IF_STOP
-#endif
+#  if defined(RETURN_IF_STOP)
+#undef RETURN_IF_STOP
+#  endif
+#define RETURN_IF_STOP // define as empty
 #endif
 
 #define ACTION_TYPE_STOP    0

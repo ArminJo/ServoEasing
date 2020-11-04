@@ -61,7 +61,7 @@ const int SERVO1_PIN = 9;
 #endif
 
 /*
- * Constructor to specify the expander address (needed at least if you use more than one expander board)
+ * Constructor to specify the expander address (required at least if you use more than one expander board)
  * and to specify the I2C implementation library.
  * This can be done for each servo separately, but you can not (yet) mix the 3 different
  * Servo implementation libraries (Arduino Servo, Lightweight Servo and I2C Expansion Board)

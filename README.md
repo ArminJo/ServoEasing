@@ -52,7 +52,7 @@ Just call **myServo.startEaseTo()** instead of **myServo.write()** and you are d
 - Bouncing (mirrored Out) e.g. Bouncing of the Sine function results in the upper (positive) half of the sine.
 
 ### Comparison between Quadratic, Cubic and Sine easings.
-**Arduino Serial Plotter** result of a modified SymmetricEasing example with `#define PRINT_FOR_SERIAL_PLOTTER` in the library file *ServoEasing.h* enabled.
+**Arduino Serial Plotter** result of the SymmetricEasing example.
 ![Arduino plot](pictures/ComparisonQuadraticCubicSine.png)
 
 ## Useful resources
@@ -62,47 +62,55 @@ Just call **myServo.startEaseTo()** instead of **myServo.write()** and you are d
 - [Interactive cubic-bezier](http://cubic-bezier.com)
 
 # Resolution of servo positioning
-- The standard range of 544 to 2400 us per 180 degree results in an timing of around **10 us per degree**.
-- The **Arduino Servo library on AVR** uses an prescaler of 8 at 16 MHz clock resulting in a resolution of **0.5 us**.
-- The **PCA9685 expander** has a resolution of **4.88 us** per step (@ 20 ms interval) resulting in a resolution of **0.5 degree**.
-Digital Servos have a **deadband of approximately 5 us / 0.5 degree** which means, that you will see a **stuttering movement** if the moving speed is slow.
-If you control them with a PCA9685 expander it may get worse, since one step of 4.88 us can be within the deadband, so it takes 2 steps to move the servo from its current position.
+- The standard range of 544 to 2400 탎 per 180 degree results in an timing of around **10 탎 per degree**.
+- The **Arduino Servo library on AVR** uses an prescaler of 8 at 16 MHz clock resulting in a resolution of **0.5 탎**.
+- The **PCA9685 expander** has a resolution of **4.88 탎** per step (@ 20 ms interval) resulting in a resolution of **0.5 degree**.
+Digital Servos have a **deadband of approximately 5 탎 / 0.5 degree** which means, that you will see a **stuttering movement** if the moving speed is slow.
+If you control them with a PCA9685 expander it may get worse, since one step of 4.88 탎 can be within the deadband, so it takes 2 steps to move the servo from its current position.
+
+# Compile options / macros
+To customize the software to different car extensions, there are some compile options / macros available.<br/>
+Modify it by commenting them out or in, or change the values if applicable. Or define the macro with the -D compiler option for gobal compile (the latter is not possible with the Arduino IDE, so consider to use [Sloeber](https://eclipse.baeyens.it).<br/>
+| Option | Default | File | Description |
+|-|-|-|-|
+| `USE_PCA9685_SERVO_EXPANDER` | disabled | ServoEasing.h | Enables the use of the PCA9685 I2C expander chip/board. |
+| `USE_SERVO_LIB` | disabled | ServoEasing.h | Use of PCA9685 normally disables use of regular servo library. You can force using of regular servo library by defining `USE_SERVO_LIB`. See below. |
+| `PROVIDE_ONLY_LINEAR_MOVEMENT` | disabled | ServoEasing.h | Saves up to 1540 bytes FLASH. |
+| `DISABLE_COMPLEX_FUNCTIONS` | disabled | ServoEasing.h | Disables the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes FLASH. |
+| `PRINT_FOR_SERIAL_PLOTTER` | disabled | ServoEasing.h | Generate serial output for Arduino Plotter. |
+| `USE_LEIGHTWEIGHT_SERVO_LIB` | disabled | ServoEasing.h | Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple. See below. Saves up to 742 bytes FLASH and 42 bytes RAM. |
 
 # Modifying library properties
-To access the Arduino library files from a sketch, you have to first use *Sketch/Show Sketch Folder (Ctrl+K)* in the Arduino IDE.<br/>
-Then navigate to the parallel `libraries` folder and select the library you want to access.<br/>
-The library files itself are located in the `src` sub-directory.<br/>
-If you did not yet store the example as your own sketch, then with *Ctrl+K* you are instantly in the right library folder.
+### Modifying library properties with Arduino IDE
+First use *Sketch/Show Sketch Folder (Ctrl+K)*.<br/>
+If you did not yet stored the example as your own sketch, then you are instantly in the right library folder.<br/>
+Otherwise you have to navigate to the parallel `libraries` folder and select the library you want to access.<br/>
+In both cases the library files itself are located in the `src` directory.<br/>
 
-## Consider to use [Sloeber](http://eclipse.baeyens.it/stable.php?OS=Windows) as IDE
-If you are using Sloeber as your IDE, you can easily define global symbols at *Properties/Arduino/CompileOptions*.<br/>
-![Sloeber settings](pictures/SloeberDefineSymbols.png)
+### Modifying library properties with Sloeber IDE
+If you are using Sloeber as your IDE, you can easily define global symbols with *Properties/Arduino/CompileOptions*.<br/>
+![Sloeber settings](https://github.com/ArminJo/ServoEasing/blob/master/pictures/SloeberDefineSymbols.png)
 
 ## Using PCA9685 16-Channel Servo Expander
-To enable the use of the expander, open the library file *ServoEasing.h* and comment out the line `#define USE_PCA9685_SERVO_EXPANDER` or define global symbol with `-DUSE_PCA9685_SERVO_EXPANDER` which is not yet possible in Arduino IDE:-(.<br/>
+To enable the use of the expander, open the library file *ServoEasing.h* and comment out the line `#define USE_PCA9685_SERVO_EXPANDER`.<br/>
 In expander mode, timer1 is only required for the startEaseTo* functions.
 
 Be aware that the PCA9685 expander is **reset** at the first `attach()` and **initialized** at every further `attach()`.<br/>
 To control simultaneously servos with the Arduino Servo library i.e. servos which are directly connected to the Arduino board, comment out the line `#define USE_SERVO_LIB` in the library file *ServoEasing.h*.<br/>
 In this case you should attach the expander servos first in order to initialize the expander board correctly.
-And as long as no servo using the Arduino Servo library is attached,
-the expander servos will not move, which should not be a problem since you normally attach all servos in `setup()`.<br/>
-Resolution of the is PCA9685 signal is approximately 0.5 degree.
+And as long as no servo using the Arduino Servo library is attached, the expander servos will not move, 
+which should not be a problem since you normally attach all servos in `setup()`.<br/>
+**Resolution** of the is PCA9685 signal is approximately **0.5 degree**.
 
 On the **ESP32 the I2C library is only capable to run at 100 kHz**, because it interferes with the Ticker / Timer library used.
 Even with 100 kHz clock we have some dropouts / NAK's because of sending address again instead of first data.<br/>
-Since the raw transmission time of 32 Servo positions is 17.4 us @ 100 kHz, not more than 2 expander boards can be connected to one I2C bus on an ESP32 board, if all servos should move simultaneously.
+Since the raw transmission time of 32 Servo positions is 17.4 탎 @ 100 kHz, not more than 2 expander boards can be connected to one I2C bus on an ESP32 board, if all servos should move simultaneously.
 
 ## Using the included [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for AVR
 Using the **Lightweight Servo Library** reduces sketch size and makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
 Up to 2 servos are supported by this library and they must be attached to pin 9 and/or 10 of the Arduino board.<br/>
 To enable it, open the library file *ServoEasing.h* and comment out the line `#define USE_LEIGHTWEIGHT_SERVO_LIB` or define global symbol with `-DUSE_LEIGHTWEIGHT_SERVO_LIB` which is not yet possible in Arduino IDE:-(.<br/>
 If not using the Arduino IDE, take care that Arduino Servo library sources are not compiled / included in the project.
-
-## Reducing library size
-If you have only one or two servos, then you can save program space by using Lightweight Servo library.
-This saves 742 bytes FLASH and 42 bytes RAM.<br/>
-If you do not require the more complex easing functions like `Sine` etc., which in turn use the sin(), cos(), sqrt() and pow() functions, you can shrink library size by approximately 1850 bytes by commenting out the line `#define KEEP_SERVO_EASING_LIBRARY_SMALL` in the library file *ServoEasing.h* or define global symbol with `-DKEEP_SERVO_EASING_LIBRARY_SMALL` which is not yet possible in Arduino IDE:-(.<br/>
 
 # [Examples](tree/master/examples)
 All examples with up to 2 Servos can be used without modifications with the [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for AVR by by commenting out the line `#define USE_LEIGHTWEIGHT_SERVO_LIB` in the library file *ServoEasing.h* (see above).
@@ -172,7 +180,7 @@ You must comment out the line `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasi
 ## EndPositionsTest example
 This example helps you determine the right end values for your servo.<br/>
 These values are required for the `attach()` function, if your servo does not comply to the standard values.
-E.g. some of my SG90 servos have a 0 degree period of 620 us instead of the standard 544.<br/>
+E.g. some of my SG90 servos have a 0 degree period of 620 탎 instead of the standard 544.<br/>
 This example does not use the ServoEasing functions.
 
 ## SpeedTest example
@@ -181,16 +189,16 @@ This example does not use the ServoEasing functions.
 Not for ESP8266 because it requires 2 analog inputs.
 
 # Internals
-The API accepts only degree (except for write() and writeMicrosecondsOrUnits()) but internally only microseconds (or units (= 4.88 us) if using PCA9685 expander) and not degree are used to speed up things. Other expander or servo libraries can therefore easily be used.<br/>
+The API accepts only degree (except for write() and writeMicrosecondsOrUnits()) but internally only microseconds (or units (= 4.88 탎) if using PCA9685 expander) and not degree are used to speed up things. Other expander or servo libraries can therefore easily be used.<br/>
 
-# Supported platforms
-**Every Arduino platform with a Servo library** will work without any modifications in blocking mode.<br/>
+# Supported Arduino architectures
+**Every Arduino architecture with a Servo library** will work without any modifications in blocking mode.<br/>
 Non blocking behavior can always be achieved manually by calling `update()` in a loop - see last movement in [Simple example](examples/Simple/Simple.ino).<br/>
 Interrupt based movement (movement without calling `update()` manually in a loop) is supported for the following Arduino architectures:<br/>
 **avr, megaavr, sam, samd, esp8266, esp32, stm32, STM32F1 and apollo3.**
 
 ## Timer usage for interrupt based movement
-On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking easing functions its unused **Channel B** is used to generate an interrupt 100 us before the end of the 20 ms Arduino Servo refresh period. This interrupt then updates all servo values for the next refresh period.
+On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking easing functions its unused **Channel B** is used to generate an interrupt 100 탎 before the end of the 20 ms Arduino Servo refresh period. This interrupt then updates all servo values for the next refresh period.
 | Platform | Timer | Library providing the timer |
 |---|---|---|
 | avr | Timer1 | Servo.h |

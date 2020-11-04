@@ -67,8 +67,8 @@ You must comment out the line `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasi
 
 ## EndPositionsTest example
 This example helps you determine the right end values for your servo.<br/>
-These values are needed for the `attach()` function, if your servo does not comply to the standard values.
-E.g. some of my SG90 servos have a 0 degree period of 620 us instead of the standard 544.<br/>
+These values are required for the `attach()` function, if your servo does not comply to the standard values.
+E.g. some of my SG90 servos have a 0 degree period of 620 µs instead of the standard 544.<br/>
 This example does not use the ServoEasing functions.
 
 ## SpeedTest example

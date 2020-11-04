@@ -24,7 +24,7 @@
 #ifndef LIGHTWEIGHT_SERVO_H_
 #define LIGHTWEIGHT_SERVO_H_
 
-#if defined (__AVR_ATmega328P__) || defined (__AVR_ATmega328__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__)
 
 #define VERSION_LIGHTWEIGHT_SERVO "1.0.0"
 #define VERSION_LIGHTWEIGHT_SERVO_MAJOR 1

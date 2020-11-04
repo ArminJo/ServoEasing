@@ -171,7 +171,7 @@ void loop() {
 #endif
     Servo1.setEaseTo(90, 80);
     Servo2.startEaseToD(90, Servo1.mMillisForCompleteMove);
-    // No timing synchronization needed :-)
+    // No timing synchronization required :-)
     // blink until servo stops
     while (areInterruptsActive()) {
         blinkLED();

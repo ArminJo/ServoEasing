@@ -209,7 +209,7 @@ void transformAndSetAllServos(int aFrontLeftPivot, int aBackLeftPivot, int aBack
 }
 
 /*
- * A subset of the functionality of transformAndSetAllServos() -> less arguments needed :-)
+ * A subset of the functionality of transformAndSetAllServos() -> less arguments required :-)
  */
 void transformAndSetPivotServos(int aFrontLeftPivot, int aBackLeftPivot, int aBackRightPivot, int aFrontRightPivot,
         uint8_t aDirection, bool doMirror, bool aDoMove) {

@@ -157,7 +157,7 @@ void loop() {
     int tVoltageMillivolts = 3333; // Dummy value
 #endif
 
-    // needed to switch ADC reference
+    // required to switch ADC reference
     analogRead(MODE_ANALOG_INPUT_PIN);
     delay(5);
     int tMode = analogRead(MODE_ANALOG_INPUT_PIN);

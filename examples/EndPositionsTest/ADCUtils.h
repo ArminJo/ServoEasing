@@ -88,7 +88,7 @@
 #define ADC_GND_CHANNEL_MUX         14
 #define ADC_VCC_4TH_CHANNEL_MUX     13
 
-#elif defined (__AVR_ATmega328P__)
+#elif defined(__AVR_ATmega328P__)
 #define ADC_TEMPERATURE_CHANNEL_MUX  8
 #define ADC_1_1_VOLT_CHANNEL_MUX    14
 #define ADC_GND_CHANNEL_MUX         15

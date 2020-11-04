@@ -48,7 +48,7 @@
 
 //#define USE_ONLY_ONE_EXPANDER // Reuse this example for one expander at PCA9685_DEFAULT_ADDRESS
 #if !defined(USE_ONLY_ONE_EXPANDER) && (MAX_EASING_SERVOS < 32)
-#warning "You use at least 2 expanders but MAX_EASING_SERVOS is less than 32, so you have no space for 32 servos (which might be ok, since you must not use 16 servos on one expander)"
+#warning You use at least 2 expanders but MAX_EASING_SERVOS is less than 32, so you have no space for 32 servos (which might be ok, since you must not use 16 servos on one expander)
 #endif
 
 // for ESP32 LED_BUILTIN is defined as static const uint8_t LED_BUILTIN = 2;
@@ -199,7 +199,7 @@ bool checkI2CConnection(uint8_t aI2CAddress) {
  * The attach() function inserts them in the sServoArray[] array.
  */
 void getAndAttach16ServosToPCA9685Expander(uint8_t aPCA9685I2CAddress) {
-    ServoEasing * tServoEasingObjectPtr;
+    ServoEasing *tServoEasingObjectPtr;
 
     Serial.print(F("Get ServoEasing objects and attach servos to PCA9685 expander at address=0x"));
     Serial.println(aPCA9685I2CAddress, HEX);

@@ -58,7 +58,7 @@ jobs:
           - arduino-boards-fqbn: arduino:avr:uno
             build-properties: # the flags were put in compiler.cpp.extra_flags
               SymmetricEasing:
-                -DKEEP_SERVO_EASING_LIBRARY_SMALL
+                -DDISABLE_COMPLEX_FUNCTIONS
                 -DDEBUG
               AsymmetricEasing:
                 -DTRACE
@@ -150,19 +150,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      # Use the arduino-test-compile script, because it is faster
-      - name: Compile all examples using the bash script arduino-test-compile.sh
-        env:
-          # Passing parameters to the script by setting the appropriate ENV_* variables.
-          # ENV_CLI_VERSION: 0.12.1 # the last with the non library bug
-          ENV_ARDUINO_BOARD_FQBN: ${{ matrix.arduino-boards-fqbn }}
-          ENV_PLATFORM_URL: ${{ matrix.platform-url }}
-          ENV_REQUIRED_LIBRARIES: ${{ env.REQUIRED_LIBRARIES }}
-          ENV_EXAMPLES_EXCLUDE: ${{ matrix.sketches-exclude }}
-          ENV_EXAMPLES_BUILD_PROPERTIES: ${{ toJson(matrix.build-properties) }}
-#          ENV_DEBUG_INSTALL: true
-        run: |
-          wget --quiet https://raw.githubusercontent.com/ArminJo/arduino-test-compile/master/arduino-test-compile.sh
-            ls -l arduino-test-compile.sh
-            chmod +x arduino-test-compile.sh
-            ./arduino-test-compile.sh
+      - name: Compile all examples using the arduino-test-compile action
+        uses: ArminJo/arduino-test-compile@master
+        with:
+          arduino-board-fqbn: ${{ matrix.arduino-boards-fqbn }}
+          arduino-platform: ${{ matrix.arduino-platform }}
+          platform-url: ${{ matrix.platform-url }}
+          required-libraries: ${{ env.REQUIRED_LIBRARIES }}
+          sketches-exclude: ${{ matrix.sketches-exclude }}
+          build-properties: ${{ toJson(matrix.build-properties) }}

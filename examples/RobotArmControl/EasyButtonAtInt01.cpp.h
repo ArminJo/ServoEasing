@@ -53,15 +53,15 @@
 
 // For external measurement of code timing
 //#define MEASURE_EASY_BUTTON_INTERRUPT_TIMING
-#if defined(MEASURE_EASY_BUTTON_INTERRUPT_TIMING) || defined (LED_FEEDBACK_TEST)
+#if defined(MEASURE_EASY_BUTTON_INTERRUPT_TIMING) || defined(LED_FEEDBACK_TEST)
 #include "digitalWriteFast.h"
 #endif
 
 #if defined(USE_BUTTON_0)
-EasyButton * EasyButton::sPointerToButton0ForISR;
+EasyButton *EasyButton::sPointerToButton0ForISR;
 #endif
 #if defined(USE_BUTTON_1)
-EasyButton * EasyButton::sPointerToButton1ForISR;
+EasyButton *EasyButton::sPointerToButton1ForISR;
 #endif
 
 // @formatter:off // the eclipse formatter has problems with // comments in undefined code blocks

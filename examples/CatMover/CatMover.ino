@@ -121,7 +121,7 @@ void setup() {
     ServoVertical.easeTo(ServoVerticalControl.minDegree, 50);
 }
 
-uint8_t getRandomValue(ServoControlStruct * aServoControlStruct, ServoEasing * aServoEasing) {
+uint8_t getRandomValue(ServoControlStruct *aServoControlStruct, ServoEasing *aServoEasing) {
     /*
      * get new different value
      */

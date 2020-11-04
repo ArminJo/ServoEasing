@@ -28,7 +28,7 @@
 
 #include <Arduino.h>
 
-#if defined (__AVR_ATmega328P__) || defined (__AVR_ATmega328__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__)
 #include "LightweightServo.h"
 
 /*

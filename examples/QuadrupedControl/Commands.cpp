@@ -44,9 +44,9 @@ void __attribute__((weak)) doTest() {
 }
 
 void __attribute__((weak)) doBeep() {
-    tone(PIN_SPEAKER, 2000, 200);
+    tone(PIN_BUZZER, 2000, 200);
     delayAndCheck(400);
-    tone(PIN_SPEAKER, 2000, 200);
+    tone(PIN_BUZZER, 2000, 200);
 }
 
 /*
@@ -235,7 +235,7 @@ void __attribute__((weak)) doTrot() {
 }
 
 /*
- * Set servo positions and speeds needed to moveCreep forward one step
+ * Set servo positions and speeds required to moveCreep forward one step
  * Start with move to Y position with right legs together
  */
 void __attribute__((weak)) doCreepForward() {
@@ -352,7 +352,6 @@ void __attribute__((weak)) doQuadrupedAutoMove() {
  *************************/
 void __attribute__((weak)) doStop() {
 #if defined(QUADRUPED_HAS_IR_CONTROL)
-    sRequestToStopReceived = true;
     sActionType = ACTION_TYPE_STOP;
 #endif
 }
@@ -430,7 +429,7 @@ void __attribute__((weak)) doIncreaseHeight() {
         sBodyHeightAngle -= 2;
         convertBodyHeightAngleToHeight();
 #if defined(QUADRUPED_HAS_IR_CONTROL)
-        if (!sExecutingExclusiveCommand) {
+        if (!IRDispatcher.executingRegularCommand) {
             setLiftServosToBodyHeight();
         }
 #else
@@ -444,7 +443,7 @@ void __attribute__((weak)) doDecreaseHeight() {
         sBodyHeightAngle += 2;
         convertBodyHeightAngleToHeight();
 #if defined(QUADRUPED_HAS_IR_CONTROL)
-        if (!sExecutingExclusiveCommand) {
+        if (!IRDispatcher.executingRegularCommand) {
             setLiftServosToBodyHeight();
         }
 #else
@@ -492,7 +491,7 @@ void signalLeg(uint8_t aPivotServoIndex) {
 
 #if defined(QUADRUPED_HAS_IR_CONTROL) && !defined(USE_USER_DEFINED_MOVEMENTS)
 /*
- * include needed only for doCalibration
+ * include required only for doCalibration
  */
 #include "IRCommandMapping.h" // for COMMAND_*
 
@@ -514,9 +513,11 @@ void doCalibration() {
 #endif
 
     while (!tGotExitCommand) {
-        unsigned long tIRCode = getIRCommand(true);
+        // wait until next command received
+        IRDispatcher.getIRCommand(true);
+        unsigned long tIRCode = IRDispatcher.IRReceivedData.command;
 #ifdef INFO
-        printIRCommandString(tIRCode);
+        IRDispatcher.printIRCommandString();
 #endif
         switch (tIRCode) {
         case COMMAND_RIGHT:
@@ -552,7 +553,7 @@ void doCalibration() {
                 signalLeg(tPivotServoIndex);
             }
             // remove a repeat command
-            getIRCommand(false);
+            IRDispatcher.getIRCommand(false);
             break;
         case COMMAND_CALIBRATE:
             // repeated command here

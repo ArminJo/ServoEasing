@@ -106,9 +106,8 @@ void __attribute__((weak)) doCloseClaw() {
 
 void __attribute__((weak)) doSwitchToManual() {
 #if defined(ROBOT_ARM_IR_CONTROL)
-    sRequestToStopReceived = true;
     // this enables manual mode
-    sAtLeastOneValidIRCodeReceived = false;
+    IRDispatcher.lastIRCodeMillis = 0;
 #endif
 }
 
@@ -125,7 +124,7 @@ void __attribute__((weak)) doInverseKinematicOff() {
 
 void __attribute__((weak)) doToggleInverseKinematic() {
 #if defined(ROBOT_ARM_IR_CONTROL)
-    if (!sCurrentCommandIsRepeat) {
+    if (!IRDispatcher.IRReceivedData.isRepeat) {
         sInverseKinematicModeActive = !sInverseKinematicModeActive;
     }
 #endif
@@ -185,13 +184,6 @@ void __attribute__((weak)) doRobotArmAutoMove() {
 /*************************
  * Instant Commands
  *************************/
-void __attribute__((weak)) doStop() {
-#if defined(ROBOT_ARM_IR_CONTROL)
-    sRequestToStopReceived = true;
-    sActionType = ACTION_TYPE_STOP;
-#endif
-}
-
 /*
  * Decrease moving speed by 25%
  */
@@ -220,7 +212,7 @@ void __attribute__((weak)) doDecreaseSpeed() {
 
 void __attribute__((weak)) doSwitchEasingType() {
 #if defined(ROBOT_ARM_IR_CONTROL)
-    if (!sInverseKinematicModeActive && !sCurrentCommandIsRepeat) {
+    if (!sInverseKinematicModeActive && !IRDispatcher.IRReceivedData.isRepeat) {
         Serial.print(F("Set easing type to "));
         if (sEasingType == EASE_LINEAR) {
             setEasingType(EASE_QUADRATIC_IN_OUT);

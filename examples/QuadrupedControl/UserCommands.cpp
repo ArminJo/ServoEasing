@@ -29,7 +29,9 @@
 //#define USE_USER_DEFINED_MOVEMENTS
 #if defined(USE_USER_DEFINED_MOVEMENTS)
 #include "QuadrupedControl.h"
+#if defined(QUADRUPED_HAS_IR_CONTROL)
 #include "IRCommandDispatcher.h"
+#endif
 #include "QuadrupedServoControl.h"
 #include "QuadrupedMovements.h"
 
@@ -118,7 +120,7 @@
 void doTest() {
     sActionType = ACTION_TYPE_TEST;
 
-    tone(PIN_SPEAKER, 2000, 400);
+    tone(PIN_BUZZER, 2000, 400);
     delayAndCheck(400);
     centerServos();
 
