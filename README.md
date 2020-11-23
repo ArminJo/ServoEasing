@@ -18,15 +18,18 @@ This is a library for smooth servo movements. It uses the standard Arduino Servo
 As an alternative to the Arduino Servo library, ServoEasing can be used with a [PCA9685 servo expander](https://learn.adafruit.com/16-channel-pwm-servo-driver?view=all) using the Arduino Wire library or a compatible one (and their restrictions).<br/>
 For **ESP32** you need to install the Arduino ESP32Servo library.<br/><br/>
 For **AVR**, if you need only one or two servos, you may want to use the included [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) instead of the Arduino Servo library because it uses only the internal Timer1 with no software overhead and has no problems with interrupt blocking libraries like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
-For instructions how to enable these alternatives see [Modifying library properties](#modifying-library-properties)
+For instructions how to enable these alternatives see [Compile options / macros](#compile-options--macros)
 
 ### Features
 - **Linear** and 9 other ease movements are provided.
 - All servos can move **synchronized** or **independently**.
 - **Non blocking** movements are enabled by using **startEaseTo\* functions** by reusing the interrupts of the servo timer Timer1 or using a dedicated timer on other platforms. This function is not available for all platforms.
-- Trim value for each servo may be set.
-- Reverse operation of servo is possible eg. if it is mounted head down.
-- Allow to specify an arbitrary mapping between degrees and microseconds by `attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree)`
+- **Trim** value for each servo may be set.
+- **Reverse operation** of servo is possible eg. if it is mounted head down.
+- Allow to specify an arbitrary mapping between degrees and microseconds by `attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree)`.
+- **Servo speed** can be specified in **degree per second** or **milliseconds** for the complete move.
+
+## [API](https://github.com/ArminJo/ServoEasing/blob/master/src/ServoEasing.h#L428)
 
 ## Usage
 Just call **myServo.startEaseTo()** instead of **myServo.write()** and you are done. Or if you want to wait (blocking) until servo has arrived, use **myServo.easeTo()**.<br/>
@@ -68,7 +71,7 @@ Just call **myServo.startEaseTo()** instead of **myServo.write()** and you are d
 Digital Servos have a **deadband of approximately 5 µs / 0.5 degree** which means, that you will see a **stuttering movement** if the moving speed is slow.
 If you control them with a PCA9685 expander it may get worse, since one step of 4.88 µs can be within the deadband, so it takes 2 steps to move the servo from its current position.
 
-# Compile options / macros
+# Compile options / macros for this library
 To customize the software to different car extensions, there are some compile options / macros available.<br/>
 Modify it by commenting them out or in, or change the values if applicable. Or define the macro with the -D compiler option for gobal compile (the latter is not possible with the Arduino IDE, so consider to use [Sloeber](https://eclipse.baeyens.it).<br/>
 | Option | Default | File | Description |
@@ -80,14 +83,14 @@ Modify it by commenting them out or in, or change the values if applicable. Or d
 | `PRINT_FOR_SERIAL_PLOTTER` | disabled | ServoEasing.h | Generate serial output for Arduino Plotter. |
 | `USE_LEIGHTWEIGHT_SERVO_LIB` | disabled | ServoEasing.h | Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple. See below. Saves up to 742 bytes FLASH and 42 bytes RAM. |
 
-# Modifying library properties
-### Modifying library properties with Arduino IDE
+# Modifying compile options
+### Modifying compile options with Arduino IDE
 First use *Sketch/Show Sketch Folder (Ctrl+K)*.<br/>
 If you did not yet stored the example as your own sketch, then you are instantly in the right library folder.<br/>
 Otherwise you have to navigate to the parallel `libraries` folder and select the library you want to access.<br/>
 In both cases the library files itself are located in the `src` directory.<br/>
 
-### Modifying library properties with Sloeber IDE
+### Modifying compile options with Sloeber IDE
 If you are using Sloeber as your IDE, you can easily define global symbols with *Properties/Arduino/CompileOptions*.<br/>
 ![Sloeber settings](https://github.com/ArminJo/ServoEasing/blob/master/pictures/SloeberDefineSymbols.png)
 

@@ -112,7 +112,7 @@ jobs:
 
           - arduino-boards-fqbn: esp32:esp32:featheresp32:FlashFreq=80
             platform-url: https://dl.espressif.com/dl/package_esp32_index.json
-            sketches-exclude: QuadrupedControl,RobotArmControl # Comma separated list of (unique substrings of) example names to exclude in build
+            sketches-exclude: QuadrupedControl,RobotArmControl # Comma separated list of example names to exclude in build
             build-properties:
               PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
               PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB

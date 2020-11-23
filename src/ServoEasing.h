@@ -329,12 +329,12 @@
  * Values for provided EaseTypes
  * The call style is coded in the upper 3 bits
  */
-#define CALL_STYLE_DIRECT           0x00 // == IN
-#define CALL_STYLE_OUT              0x20
-#define CALL_STYLE_IN_OUT           0x40
+#define CALL_STYLE_DIRECT       0x00 // == IN
+#define CALL_STYLE_OUT          0x20
+#define CALL_STYLE_IN_OUT       0x40
 #define CALL_STYLE_BOUNCING_OUT_IN  0x60 // Bouncing has double movement, so double time (half speed) is taken for this modes
 
-#define CALL_STYLE_MASK             0xE0 // for future extensions
+#define CALL_STYLE_MASK         0xE0 // for future extensions
 #define EASE_TYPE_MASK          0x0F
 
 #define EASE_LINEAR             0x00 // No bouncing available
@@ -389,15 +389,15 @@
 
 // some PCA9685 specific constants
 #define PCA9685_GENERAL_CALL_ADDRESS 0x00
-#define PCA9685_SOFTWARE_RESET      6
-#define PCA9685_DEFAULT_ADDRESS     0x40
-#define PCA9685_MAX_CHANNELS        16 // 16 PWM channels on each PCA9685 expansion module
-#define PCA9685_MODE1_REGISTER      0x0
-#define PCA9685_MODE_1_RESTART        7
-#define PCA9685_MODE_1_AUTOINCREMENT  5
-#define PCA9685_MODE_1_SLEEP          4
-#define PCA9685_FIRST_PWM_REGISTER  0x06
-#define PCA9685_PRESCALE_REGISTER   0xFE
+#define PCA9685_SOFTWARE_RESET          6
+#define PCA9685_DEFAULT_ADDRESS      0x40
+#define PCA9685_MAX_CHANNELS           16 // 16 PWM channels on each PCA9685 expansion module
+#define PCA9685_MODE1_REGISTER        0x0
+#define PCA9685_MODE_1_RESTART          7
+#define PCA9685_MODE_1_AUTOINCREMENT    5
+#define PCA9685_MODE_1_SLEEP            4
+#define PCA9685_FIRST_PWM_REGISTER   0x06
+#define PCA9685_PRESCALE_REGISTER    0xFE
 
 #define PCA9685_PRESCALER_FOR_20_MS ((25000000L /(4096L * 50))-1) // = 121 / 0x79 at 50 Hz
 

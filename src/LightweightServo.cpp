@@ -32,10 +32,6 @@
 #include "LightweightServo.h"
 
 /*
- * Commenting out this saves 70 bytes flash memory. You must then use the init function initLightweightServoPin9And10() manually.
- */
-//#define DISABLE_SERVO_TIMER_AUTO_INITIALIZE
-/*
  * Variables to enable adjustment for different servo types
  * 544 and 2400 are values compatible with standard arduino values
  * 4 bytes RAM compared to 48 bytes for standard Arduino library
@@ -103,12 +99,12 @@ void deinitLightweightServoPin9_10(bool aUsePin9) {
  * If aUsePin9 is false, then Pin10 is used
  * 236 / 186(without auto init) bytes code size
  */
-int writeLightweightServo(int aValue, bool aUsePin9, bool aUpdateFast) {
-    if (aValue <= 180) {
-        aValue = DegreeToMicrosecondsLightweightServo(aValue);
+int writeLightweightServo(int aDegree, bool aUsePin9, bool aUpdateFast) {
+    if (aDegree <= 180) {
+        aDegree = DegreeToMicrosecondsLightweightServo(aDegree);
     }
-    writeMicrosecondsLightweightServo(aValue, aUsePin9, aUpdateFast);
-    return aValue;
+    writeMicrosecondsLightweightServo(aDegree, aUsePin9, aUpdateFast);
+    return aDegree;
 }
 
 void writeMicrosecondsLightweightServo(int aMicroseconds, bool aUsePin9, bool aUpdateFast) {
@@ -153,8 +149,8 @@ void setLightweightServoPulseMicrosFor0And180Degree(int aMicrosecondsForServo0De
 /*
  * Pin 9 / Channel A. If value is below 180 then assume degree, otherwise assume microseconds
  */
-void write9(int aValue, bool aUpdateFast) {
-    writeLightweightServo(aValue, true, aUpdateFast);
+void write9(int aDegree, bool aUpdateFast) {
+    writeLightweightServo(aDegree, true, aUpdateFast);
 }
 
 void writeMicroseconds9(int aMicroseconds, bool aUpdateFast) {
@@ -171,8 +167,8 @@ void writeMicroseconds9Direct(int aMicroseconds) {
 /*
  * Pin 10 / Channel B
  */
-void write10(int aValue, bool aUpdateFast) {
-    writeLightweightServo(aValue, false, aUpdateFast);
+void write10(int aDegree, bool aUpdateFast) {
+    writeLightweightServo(aDegree, false, aUpdateFast);
 }
 
 void writeMicroseconds10(int aMicroseconds, bool aUpdateFast) {
@@ -189,12 +185,12 @@ void writeMicroseconds10Direct(int aMicroseconds) {
 /*
  * Conversion functions
  */
-int DegreeToMicrosecondsLightweightServo(int aValueDegree) {
-    return (map(aValueDegree, 0, 180, sMicrosecondsForServo0Degree, sMicrosecondsForServo180Degree));
+int DegreeToMicrosecondsLightweightServo(int aDegree) {
+    return (map(aDegree, 0, 180, sMicrosecondsForServo0Degree, sMicrosecondsForServo180Degree));
 }
 
-int MicrosecondsToDegreeLightweightServo(int aValueMicros) {
-    return map(aValueMicros, sMicrosecondsForServo0Degree, sMicrosecondsForServo180Degree, 0, 180);
+int MicrosecondsToDegreeLightweightServo(int aMicroseconds) {
+    return map(aMicroseconds, sMicrosecondsForServo0Degree, sMicrosecondsForServo180Degree, 0, 180);
 }
 
 #endif

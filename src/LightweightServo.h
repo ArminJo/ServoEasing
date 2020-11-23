@@ -32,6 +32,11 @@
 
 #include <stdint.h>
 
+/*
+ * Commenting out this saves 70 bytes flash memory. You must then use the init function initLightweightServoPin9And10() manually.
+ */
+//#define DISABLE_SERVO_TIMER_AUTO_INITIALIZE
+
 #define ISR1_COUNT_FOR_20_MILLIS 40000 // you can modify this if you have servos which accept a higher rate
 
 /*
@@ -45,20 +50,20 @@ void deinitLightweightServoPin9_10(bool aUsePin9);
 void setLightweightServoPulseMicrosFor0And180Degree(int aMicrosecondsForServo0Degree, int a180DegreeValue);
 void setLightweightServoRefreshRate(unsigned int aRefreshPeriodMicroseconds);
 
-int writeLightweightServo(int aValue, bool aUsePin9, bool aUpdateFast = false);
+int writeLightweightServo(int aDegree, bool aUsePin9, bool aUpdateFast = false);
 void writeMicrosecondsLightweightServo(int aMicroseconds, bool aUsePin9, bool aUpdateFast = false);
 
-void write9(int aValue, bool aUpdateFast = false); // setLightweightServoPulsePin9 Channel A
+void write9(int aDegree, bool aUpdateFast = false); // setLightweightServoPulsePin9 Channel A
 void writeMicroseconds9(int aMicroseconds, bool aUpdateFast = false);
 void writeMicroseconds9Direct(int aMicroseconds);
 
-void write10(int aValue, bool aUpdateFast = false); // setLightweightServoPulsePin10 Channel B
+void write10(int aDegree, bool aUpdateFast = false); // setLightweightServoPulsePin10 Channel B
 void writeMicroseconds10(int aMicroseconds, bool aUpdateFast = false);
 void writeMicroseconds10Direct(int aMicroseconds);
 
 // convenience functions
-int DegreeToMicrosecondsLightweightServo(int aValueDegree);
-int MicrosecondsToDegreeLightweightServo(int aValueMicros);
+int DegreeToMicrosecondsLightweightServo(int aDegree);
+int MicrosecondsToDegreeLightweightServo(int aMicroseconds);
 
 #endif // AVR_ATmega328
 #endif // LIGHTWEIGHT_SERVO_H_
