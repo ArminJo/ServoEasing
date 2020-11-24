@@ -38,40 +38,62 @@ void setup() {
     Serial.println(F("Using library version " VERSION_LIGHTWEIGHT_SERVO));
 #endif
     // no initialization required for LightweightServo :-)
+    // or use manual initialization (and compiler macro "DISABLE_SERVO_TIMER_AUTO_INITIALIZE") to save additional 60 bytes program space
+    // initLightweightServoPin9();
+    delay(3000);
 }
 
 void loop() {
 #if defined (__AVR_ATmega328P__) || defined (__AVR_ATmega328__) || defined (__AVR_ATmega328PB__)
     /*
-     * Let the servo at pin 9 swipe from 0 to 180 and back to 90 degree
+     * Let the servo at pin 9 + 10 swipe from 180 to 0 and back to 90 degree
      */
-    write9(0);
-    delay(1500);
+    Serial.println(F("Move to 180 degree"));
     write9(180);
-    delay(1000);
-    write9(90);
-    delay(1000);
-
-    /*
-     * Now move servo at pin 10
-     */
-    write10(0);
-    delay(1500);
     write10(180);
-    delay(1000);
+    delay(2000);
+
+    Serial.println(F("Move to 90 degree"));
+    write9(90);
     write10(90);
-    delay(1000);
+    delay(2000);
+
+    Serial.println(F("Move to 0 degree"));
+    write9(0);
+    write10(0);
+    delay(2000);
+
+    Serial.println(F("Move to 900 degree"));
+    write9(90);
+    write10(90);
+    delay(2000);
+
+    Serial.println(F("Move back to 180 degree"));
+    write9(180);
+    write10(180);
+    delay(2000);
+    Serial.println();
 
     /*
-     * Move both servos to 45 degree using microseconds as parameter
+     * Move both servos to 135 and 45 degree using microseconds as parameter
      */
-    Serial.print(F("45 degree = "));
-    Serial.print(MicrosecondsToDegreeLightweightServo(45));
+    Serial.print(F("Move to 135 degree = "));
+    Serial.print(DegreeToMicrosecondsLightweightServo(135));
     Serial.println(F(" micro seconds"));
-    writeMicroseconds9(1008);
-    writeMicroseconds10(1008);
+    writeMicroseconds9(DegreeToMicrosecondsLightweightServo(135));
+    writeMicroseconds10(DegreeToMicrosecondsLightweightServo(135));
+    Serial.println();
+    delay(2000);
+
+    Serial.print(F("Move to 45 degree = "));
+    Serial.print(DegreeToMicrosecondsLightweightServo(45));
+    Serial.println(F(" micro seconds"));
+    writeMicroseconds9(DegreeToMicrosecondsLightweightServo(45));
+    writeMicroseconds10(DegreeToMicrosecondsLightweightServo(45));
+
+    delay(5000);
+
 #else
     Serial.println(F("LightweightServoExample works only for ATmega328*"));
 #endif
-    delay(5000);
 }

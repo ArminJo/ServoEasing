@@ -53,43 +53,66 @@ void initLightweightServoPin9And10() {
     DDRB |= _BV(DDB1) | _BV(DDB2);                // set pins OC1A = PortB1 -> PIN 9 and OC1B = PortB2 -> PIN 10 to output direction
     TCCR1A = _BV(COM1A1) | _BV(COM1B1) | _BV(WGM11); // FastPWM Mode mode TOP (20 ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
     TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);    // set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
-    ICR1 = ISR1_COUNT_FOR_20_MILLIS;  // set period to 20 ms
+    ICR1 = ISR1_COUNT_FOR_20_MILLIS;                 // set period to 20 ms
     // do not set counter here, since with counter = 0 (default) no output signal is generated.
 }
 
 /*
  * Use 16 bit timer1 for generating 2 servo signals entirely by hardware without any interrupts.
  * Use FastPWM mode and generate pulse at start of the 20 ms period
- * The 2 servo signals are tied to pin 9 and 10 of an 328.
+ * The 2 servo signals are tied to pin 9 and 10 of an ATMega328.
  * Attention - the selected pin is set to OUTPUT here!
  * 54 bytes code size
  */
 void initLightweightServoPin9_10(bool aUsePin9, bool aUsePin10) {
 
     uint8_t tNewTCCR1A = TCCR1A & (_BV(COM1A1) | _BV(COM1B1)); // keep existing COM1A1 and COM1B1 settings
-    tNewTCCR1A |= _BV(WGM11); // FastPWM Mode mode TOP (20 ms) determined by ICR1
+    tNewTCCR1A |= _BV(WGM11);                       // FastPWM Mode mode TOP (20 ms) determined by ICR1
 
     if (aUsePin9) {
-        DDRB |= _BV(DDB1);   // set OC1A = PortB1 -> PIN 9 to output direction
-        tNewTCCR1A |= _BV(COM1A1); // non-inverting Compare Output mode OC1A
-    }
+        DDRB |= _BV(DDB1);                          // set OC1A = PortB1 -> PIN 9 to output direction
+        tNewTCCR1A |= _BV(COM1A1);                  // non-inverting Compare Output mode OC1A
+        OCR1A = 0xFFFF;                                 // Set counter > ICR1 here, to avoid output signal generation.
+   }
     if (aUsePin10) {
-        DDRB |= _BV(DDB2);   // set OC1B = PortB2 -> PIN 10 to output direction
-        tNewTCCR1A |= _BV(COM1B1); // non-inverting Compare Output mode OC1B
+        DDRB |= _BV(DDB2);                          // set OC1B = PortB2 -> PIN 10 to output direction
+        tNewTCCR1A |= _BV(COM1B1);                  // non-inverting Compare Output mode OC1B
+        OCR1B = 0xFFFF;                                 // Set counter > ICR1 here, to avoid output signal generation.
     }
     TCCR1A = tNewTCCR1A;
-    TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);    // set prescaler to 8, FastPWM Mode mode bits WGM13 + WGM12
-    ICR1 = ISR1_COUNT_FOR_20_MILLIS;  // set period to 20 ms
-    // Do not set counter here, since with counter = 0 (default) no output signal is generated now.
+    TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);   // set prescaler to 8, FastPWM Mode mode bits WGM13 + WGM12
+    ICR1 = ISR1_COUNT_FOR_20_MILLIS;                // set period to 20 ms
 }
 
-void deinitLightweightServoPin9_10(bool aUsePin9) {
+/*
+ * Disables Pin 10!
+ */
+void initLightweightServoPin9() {
+    DDRB |= _BV(DDB1);                              // set OC1A = PortB1 -> PIN 9 to output direction
+    TCCR1A = _BV(WGM11) | _BV(COM1A1);  //  FastPWM Mode mode TOP (20 ms) determined by ICR1, non-inverting Compare Output mode OC1A
+    TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);   // set prescaler to 8, FastPWM Mode mode bits WGM13 + WGM12
+    ICR1 = ISR1_COUNT_FOR_20_MILLIS;                // set period to 20 ms
+    OCR1A = 0xFFFF;                                 // Set counter > ICR1 here, to avoid output signal generation.
+}
+/*
+ * Disables Pin 9!
+ */
+void initLightweightServoPin10() {
+    DDRB |= _BV(DDB2);                              // set OC1B = PortB2 -> PIN 10 to output direction
+    TCCR1A = _BV(WGM11) | _BV(COM1B1);  //  FastPWM Mode mode TOP (20 ms) determined by ICR1, non-inverting Compare Output mode OC1B
+    TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);   // set prescaler to 8, FastPWM Mode mode bits WGM13 + WGM12
+    ICR1 = ISR1_COUNT_FOR_20_MILLIS;                // set period to 20 ms
+    OCR1B = 0xFFFF;                                 // Set counter > ICR1 here, to avoid output signal generation.
+}
+
+void deinitLightweightServoPin9_10(bool aUsePin9, bool aUsePin10) {
     if (aUsePin9) {
-        DDRB &= ~(_BV(DDB1));   // set OC1A = PortB1 -> PIN 9 to input direction
-        TCCR1A &= ~(_BV(COM1A1)); // disable non-inverting Compare Output mode OC1A
-    } else {
-        DDRB &= ~(_BV(DDB2));   // set OC1B = PortB2 -> PIN 10 to input direction
-        TCCR1A &= ~(_BV(COM1B1)); // disable non-inverting Compare Output mode OC1B
+        DDRB &= ~(_BV(DDB1));           // set OC1A = PortB1 -> PIN 9 to input direction
+        TCCR1A &= ~(_BV(COM1A1));       // disable non-inverting Compare Output mode OC1A
+    }
+    if (aUsePin10) {
+        DDRB &= ~(_BV(DDB2));           // set OC1B = PortB2 -> PIN 10 to input direction
+        TCCR1A &= ~(_BV(COM1B1));       // disable non-inverting Compare Output mode OC1B
     }
 }
 

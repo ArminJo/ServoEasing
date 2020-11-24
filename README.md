@@ -1,7 +1,7 @@
 # [ServoEasing](https://github.com/ArminJo/ServoEasing) - move your servo more natural
 Available as Arduino library "ServoEasing"
 
-### [Version 2.3.2](https://github.com/ArminJo/ServoEasing/releases)
+### [Version 2.3.3](https://github.com/ArminJo/ServoEasing/releases) - work in progress
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
@@ -29,7 +29,7 @@ For instructions how to enable these alternatives see [Compile options / macros]
 - Allow to specify an arbitrary mapping between degrees and microseconds by `attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree)`.
 - **Servo speed** can be specified in **degree per second** or **milliseconds** for the complete move.
 
-## [API](https://github.com/ArminJo/ServoEasing/blob/master/src/ServoEasing.h#L428)
+## [API](https://github.com/ArminJo/ServoEasing/blob/master/src/ServoEasing.h#L328)
 
 ## Usage
 Just call **myServo.startEaseTo()** instead of **myServo.write()** and you are done. Or if you want to wait (blocking) until servo has arrived, use **myServo.easeTo()**.<br/>
@@ -218,7 +218,7 @@ On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking ea
 ## Adding a new platform / board
 If timer support is available for a platform the library can be ported by adding code for the Timer20ms like is was done for ESP and STM.<br/>
 To add a new platform, the following steps have to be performed:
-1. If the new platform has an **Arduino compatible Servo library**, fine, otherwise include the one required for this platform like it is done for ESP32 [here](src/ServoEasing.h#L92).
+1. If the new platform has an **Arduino compatible Servo library**, fine, otherwise include the one required for this platform like it is done for ESP32 [here](src/ServoEasing.h#L83).
 2. You need a **20ms interrupt source** providing the functions enableServoEasingInterrupt() and (optional) disableServoEasingInterrupt(). Extend these functions with code for the new platform. Place includes and timer definitions at top of *ServoEasing.cpp*.
 3. If your interrupt source requires an ISR (Interrupt Service Routine) place it after disableServoEasingInterrupt() where all the other ISR are located.
 4. To test the new platform, you may want to enable **TRACE output** by commenting out the line `#define TRACE` in *ServoEasing.cpp*
@@ -232,6 +232,10 @@ If you see strange behavior, you can open the library file *ServoEasing.h* and c
 This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
 
 # Revision History
+### Version 2.3.3 - work in progress
+- DegreeToMicrosecondsOrUnits() does not convert values >= 400 in order to support Microseconds instead of degrees as function arguments.
+- Improved LightweightServo API.
+
 ### Version 2.3.2
 - Removed blocking wait for ATmega32U4 Serial in examples.
 - Improved output for Arduino Serial Plotter.

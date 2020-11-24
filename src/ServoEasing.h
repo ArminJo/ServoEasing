@@ -24,9 +24,10 @@
 #ifndef SERVOEASING_H_
 #define SERVOEASING_H_
 
-#define VERSION_SERVO_EASING "2.3.2"
+#define VERSION_SERVO_EASING "2.3.3"
 #define VERSION_SERVO_EASING_MAJOR 2
 #define VERSION_SERVO_EASING_MINOR 3
+// The change log is at the bottom of the file
 
 // @formatter:off
 /*  *****************************************************************************************************************************
@@ -182,105 +183,6 @@
 #endif
 
 // @formatter:on
-
-/*
- * Version 2.3.2 - 9/2020
- * - Removed blocking wait for ATmega32U4 Serial in examples.
- * - Improved output for Arduino Serial Plotter.
- *
- * Version 2.3.1 - 9/2020
- * - Fixed wrong timer selection for `STM32F1xx` / `ARDUINO_ARCH_STM32`.
- * - Documentation.
- *
- * Version 2.3.0 - 7/2020
- * - Fixed EASE_LINEAR formula bug introduced with 2.0.0 for 32 bit CPU's.
- * - Added `stop()`, `continueWithInterrupts()` and `continueWithoutInterrupts()` functions.
- *
- * Version 2.2.0 - 7/2020
- * - ATmega4809 (Uno WiFi Rev 2, Nano Every) support.
- * - Corrected position of macro for MAX_EASING_SERVOS.
- *
- * Version 2.1.1 - 6/2020
- * - Fixed bug in detach of first servo.
- *
- * Version 2.1.0 - 6/2020
- * - Teensy support.
- *
- * Version 2.0.0 - 5/2020
- * - `PCA9685_Expander` and standard Servos can be controlled simultaneously by defining `USE_SERVO_LIB`.
- * - Changed some types to _fast types
- * - Standardize pins for all examples
- *
- * Version 1.6.1 - 5/2020
- * - Fix bug for **Arduino SAMD** boards.
- *
- * Version 1.6.0 - 4/2020
- * - Added support of Apollo3 boards.
- * - Print library version in examples.
- *
- * Version 1.5.2 - 3/2020
- * - More examples using `areInterruptsActive()`.
- * - Added support of Arduino SAMD boards.
- *
- * Version 1.5.1 - 3/2020
- * - Added support for STM32 cores of Arduino Board manager. Seen in the Arduino IDE as "Generic STM32F1 series" from STM32 Boards.
- * - Inserted missing `Wire.begin()` in setup of `PCA9685_Expander` example.
- * - In `isMovingAndCallYield()` yield() only called/required for an ESP8266.
- * - New function `areInterruptsActive()`, especially for ESP32.
- *
- * Version 1.5.0 - 2/2020
- * - Use type `Print *` instead of `Stream *`.
- * - New LightweightServoExample.
- * - Added function `delayAndUpdateAndWaitForAllServosToStop()`.
- * - Added Arduino Due support by using timer 8.
- * - New PCA9685_ExpanderFor32Servos example.
- *
- * Version 1.4.3 - 12/2019
- * - Improved detach() handling.
- * - Initialize mSpeed explicitly to 0 in constructor. On an ESP8266 it was NOT initialized to 0 :-(.
- *
- * Version 1.4.2 - 11/2019
- * - Improved INVALID_SERVO handling.
- * - Speed 0 (not initialized) handling.
- * - Fixed bug in ThreeServos example.
- *
- * Version 1.4.1 - 11/2019
- * - Improved documentation and definitions for continuous rotating servo. Thanks to Eebel!
- * - Improved support and documentation for generating Arduino Serial Plotter output.
- * - Support of STM32F1 / BluePill boards.
- *
- * Version 1.4.0 - 11/2019
- * - setTrim has additional parameter 'doWrite' which is default 'false' in contrast to older versions, where a write was always performed.
- * - New attach( aPin,  aMicrosecondsForServoLowDegree,  aMicrosecondsForServoHighDegree,  aServoLowDegree,  aServoHighDegree) function for arbitrary mapping of servo degree to servo pulse width.
- * - Order of Servos in 'sServoArray[]' now depends from order of calling attach() and not from order of declaration.
- * - New example for continuous rotating servo.
- * - Support for multiple PCA9685 expander.
- *
- * Version 1.3.1 - 6/2019
- * - Added detach() function.
- *
- * Version 1.3.0 - 6/2019
- * - Added ESP32 support by using ESP32Servo.h and Ticker.h instead of Servo.h timer interrupts.
- * - Changed degree parameter and values from uint8_t to integer to support operating a servo from -90 to + 90 degree with 90 degree trim.
- * - RobotArmControl + QuadrupedControl examples refactored.
- * - Extended SpeedTest example. Now also able to change the width of the refresh period.
- * - Changed "while" to "for" loops to avoid a gcc 7.3.0 atmel6.3.1 bug.
- *
- * Version 1.2 - 5/2019
- * - Added ESP8266 support by using Ticker instead of timer interrupts for ESP.
- * - AsymetricEasing example overhauled.
- *
- * Version 1.1 - 4/2019
- * - corrected sine, circular, back and elastic IN functions.
- * - easeTo() and write() store their degree parameter now also in sServoNextPositionArray.
- * - added setSpeed(), getSpeed(), setSpeedForAllServos().
- * - added easeTo(uint8_t aDegree) and setEaseTo(uint8_t aDegree).
- * - added setEaseToForAllServos(), setEaseToForAllServosSynchronizeAndStartInterrupt(), synchronizeAndEaseToArrayPositions().
- * - added getEndMicrosecondsOrUnits(), getDeltaMicrosecondsOrUnits().
- * - added setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues),setDegreeForAllServos(uint8_t aNumberOfValues, ...).
- * - added compile switch PROVIDE_ONLY_LINEAR_MOVEMENT to save additional 1500 bytes FLASH if enabled.
- * - added convenience function clipDegreeSpecial().
- */
 
 #define DEFAULT_MICROSECONDS_FOR_0_DEGREE 544
 #define DEFAULT_MICROSECONDS_FOR_180_DEGREE 2400
@@ -611,6 +513,109 @@ extern float (*sEaseFunctionArray[])(float aPercentageOfCompletion);
 
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
+
+/*
+ * Version 2.3.3 - 11/2020
+ * - DegreeToMicrosecondsOrUnits() does not convert values >= 400 in order to support Microseconds instead of degrees as function arguments.
+ * - Improved LightweightServo API.
+ *
+ * Version 2.3.2 - 9/2020
+ * - Removed blocking wait for ATmega32U4 Serial in examples.
+ * - Improved output for Arduino Serial Plotter.
+ *
+ * Version 2.3.1 - 9/2020
+ * - Fixed wrong timer selection for `STM32F1xx` / `ARDUINO_ARCH_STM32`.
+ * - Documentation.
+ *
+ * Version 2.3.0 - 7/2020
+ * - Fixed EASE_LINEAR formula bug introduced with 2.0.0 for 32 bit CPU's.
+ * - Added `stop()`, `continueWithInterrupts()` and `continueWithoutInterrupts()` functions.
+ *
+ * Version 2.2.0 - 7/2020
+ * - ATmega4809 (Uno WiFi Rev 2, Nano Every) support.
+ * - Corrected position of macro for MAX_EASING_SERVOS.
+ *
+ * Version 2.1.1 - 6/2020
+ * - Fixed bug in detach of first servo.
+ *
+ * Version 2.1.0 - 6/2020
+ * - Teensy support.
+ *
+ * Version 2.0.0 - 5/2020
+ * - `PCA9685_Expander` and standard Servos can be controlled simultaneously by defining `USE_SERVO_LIB`.
+ * - Changed some types to _fast types
+ * - Standardize pins for all examples
+ *
+ * Version 1.6.1 - 5/2020
+ * - Fix bug for **Arduino SAMD** boards.
+ *
+ * Version 1.6.0 - 4/2020
+ * - Added support of Apollo3 boards.
+ * - Print library version in examples.
+ *
+ * Version 1.5.2 - 3/2020
+ * - More examples using `areInterruptsActive()`.
+ * - Added support of Arduino SAMD boards.
+ *
+ * Version 1.5.1 - 3/2020
+ * - Added support for STM32 cores of Arduino Board manager. Seen in the Arduino IDE as "Generic STM32F1 series" from STM32 Boards.
+ * - Inserted missing `Wire.begin()` in setup of `PCA9685_Expander` example.
+ * - In `isMovingAndCallYield()` yield() only called/required for an ESP8266.
+ * - New function `areInterruptsActive()`, especially for ESP32.
+ *
+ * Version 1.5.0 - 2/2020
+ * - Use type `Print *` instead of `Stream *`.
+ * - New LightweightServoExample.
+ * - Added function `delayAndUpdateAndWaitForAllServosToStop()`.
+ * - Added Arduino Due support by using timer 8.
+ * - New PCA9685_ExpanderFor32Servos example.
+ *
+ * Version 1.4.3 - 12/2019
+ * - Improved detach() handling.
+ * - Initialize mSpeed explicitly to 0 in constructor. On an ESP8266 it was NOT initialized to 0 :-(.
+ *
+ * Version 1.4.2 - 11/2019
+ * - Improved INVALID_SERVO handling.
+ * - Speed 0 (not initialized) handling.
+ * - Fixed bug in ThreeServos example.
+ *
+ * Version 1.4.1 - 11/2019
+ * - Improved documentation and definitions for continuous rotating servo. Thanks to Eebel!
+ * - Improved support and documentation for generating Arduino Serial Plotter output.
+ * - Support of STM32F1 / BluePill boards.
+ *
+ * Version 1.4.0 - 11/2019
+ * - setTrim has additional parameter 'doWrite' which is default 'false' in contrast to older versions, where a write was always performed.
+ * - New attach( aPin,  aMicrosecondsForServoLowDegree,  aMicrosecondsForServoHighDegree,  aServoLowDegree,  aServoHighDegree) function for arbitrary mapping of servo degree to servo pulse width.
+ * - Order of Servos in 'sServoArray[]' now depends from order of calling attach() and not from order of declaration.
+ * - New example for continuous rotating servo.
+ * - Support for multiple PCA9685 expander.
+ *
+ * Version 1.3.1 - 6/2019
+ * - Added detach() function.
+ *
+ * Version 1.3.0 - 6/2019
+ * - Added ESP32 support by using ESP32Servo.h and Ticker.h instead of Servo.h timer interrupts.
+ * - Changed degree parameter and values from uint8_t to integer to support operating a servo from -90 to + 90 degree with 90 degree trim.
+ * - RobotArmControl + QuadrupedControl examples refactored.
+ * - Extended SpeedTest example. Now also able to change the width of the refresh period.
+ * - Changed "while" to "for" loops to avoid a gcc 7.3.0 atmel6.3.1 bug.
+ *
+ * Version 1.2 - 5/2019
+ * - Added ESP8266 support by using Ticker instead of timer interrupts for ESP.
+ * - AsymetricEasing example overhauled.
+ *
+ * Version 1.1 - 4/2019
+ * - corrected sine, circular, back and elastic IN functions.
+ * - easeTo() and write() store their degree parameter now also in sServoNextPositionArray.
+ * - added setSpeed(), getSpeed(), setSpeedForAllServos().
+ * - added easeTo(uint8_t aDegree) and setEaseTo(uint8_t aDegree).
+ * - added setEaseToForAllServos(), setEaseToForAllServosSynchronizeAndStartInterrupt(), synchronizeAndEaseToArrayPositions().
+ * - added getEndMicrosecondsOrUnits(), getDeltaMicrosecondsOrUnits().
+ * - added setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues),setDegreeForAllServos(uint8_t aNumberOfValues, ...).
+ * - added compile switch PROVIDE_ONLY_LINEAR_MOVEMENT to save additional 1500 bytes FLASH if enabled.
+ * - added convenience function clipDegreeSpecial().
+ */
 
 #endif /* SERVOEASING_H_ */
 

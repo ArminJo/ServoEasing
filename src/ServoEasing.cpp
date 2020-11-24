@@ -400,7 +400,7 @@ void ServoEasing::detach() {
         setPWM(0); // set signal fully off
 #  endif
 #elif defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-        deinitLightweightServoPin9_10(mServoPin == 9); // disable output and change to input
+        deinitLightweightServoPin9_10(mServoPin == 9, mServoPin == 10); // disable output and change to input
 #else
         Servo::detach();
 #endif
@@ -595,7 +595,11 @@ int ServoEasing::MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits) {
  */
 int ServoEasing::DegreeToMicrosecondsOrUnits(int aDegree) {
 // For microseconds and PCA9685 units:
-    return map(aDegree, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
+    if (aDegree < 400) {
+        return map(aDegree, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
+    } else {
+        return aDegree;
+    }
 }
 
 /**

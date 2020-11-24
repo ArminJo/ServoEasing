@@ -1,7 +1,7 @@
 /*
  * LightweightServo.h
  *
- *  Copyright (C) 2019  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2020  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -26,9 +26,9 @@
 
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__)
 
-#define VERSION_LIGHTWEIGHT_SERVO "1.0.0"
+#define VERSION_LIGHTWEIGHT_SERVO "1.1.0"
 #define VERSION_LIGHTWEIGHT_SERVO_MAJOR 1
-#define VERSION_LIGHTWEIGHT_SERVO_MINOR 0
+#define VERSION_LIGHTWEIGHT_SERVO_MINOR 1
 
 #include <stdint.h>
 
@@ -36,7 +36,6 @@
  * Commenting out this saves 70 bytes flash memory. You must then use the init function initLightweightServoPin9And10() manually.
  */
 //#define DISABLE_SERVO_TIMER_AUTO_INITIALIZE
-
 #define ISR1_COUNT_FOR_20_MILLIS 40000 // you can modify this if you have servos which accept a higher rate
 
 /*
@@ -44,8 +43,10 @@
  * Uses timer1 and Pin 9 + 10 as output
  */
 void initLightweightServoPin9And10();
-void initLightweightServoPin9_10(bool aUsePin9 = true, bool aUsePin10 = true);
-void deinitLightweightServoPin9_10(bool aUsePin9);
+void initLightweightServoPin9();    // Disables Pin 10!
+void initLightweightServoPin10();   // Disables Pin 9!
+void initLightweightServoPin9_10(bool aUsePin9, bool aUsePin10);
+void deinitLightweightServoPin9_10(bool aUsePin9, bool aUsePin10);
 
 void setLightweightServoPulseMicrosFor0And180Degree(int aMicrosecondsForServo0Degree, int a180DegreeValue);
 void setLightweightServoRefreshRate(unsigned int aRefreshPeriodMicroseconds);
@@ -66,6 +67,12 @@ int DegreeToMicrosecondsLightweightServo(int aDegree);
 int MicrosecondsToDegreeLightweightServo(int aMicroseconds);
 
 #endif // AVR_ATmega328
+
+/*
+ * Version 1.1.0 - 11/2020
+ * - Improved API.
+ */
+
 #endif // LIGHTWEIGHT_SERVO_H_
 
 #pragma once
