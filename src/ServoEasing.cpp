@@ -1170,7 +1170,7 @@ void enableServoEasingInterrupt() {
     TCA0.SINGLE.INTCTRL = TCA_SINGLE_OVF_bm; // Overflow interrupt
     TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV8_gc | TCA_SINGLE_ENABLE_bm; // set prescaler to 8
 
-#  else // defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
+#  elif defined(TCCR1B) && defined(TIFR1) // defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
     /*
      * Standard AVR use timer 1
      */
@@ -1193,6 +1193,9 @@ void enableServoEasingInterrupt() {
 // update values 100 µs before the new servo period starts
     OCR1B = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL_MICROS) / 8) - 100;
 #    endif
+
+#  else
+#error "This AVR CPU is not supported by ServoEasing"
 #  endif
 
 #elif defined(ESP8266) || defined(ESP32)
@@ -1302,8 +1305,11 @@ void disableServoEasingInterrupt() {
 #elif defined(__AVR_ATmega4809__) // Uno WiFi Rev 2, Nano Every
     TCA0.SINGLE.INTCTRL &= ~(TCA_SINGLE_OVF_bm); // disable the overflow interrupt
 
-#  else
+#  elif defined(TIMSK1)// defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
     TIMSK1 &= ~(_BV(OCIE1B)); // disable the output compare B interrupt
+
+#  else
+#error "This AVR CPU is not supported by ServoEasing"
 #  endif
 
 #elif defined(ESP8266) || defined(ESP32)

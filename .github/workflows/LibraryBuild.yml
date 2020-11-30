@@ -136,8 +136,8 @@ jobs:
 
           - arduino-boards-fqbn: SparkFun:apollo3:amap3nano
             platform-url: https://raw.githubusercontent.com/sparkfun/Arduino_Boards/master/IDE_Board_Manager/package_sparkfun_index.json
-             # 4/2020 For PCA9685_Expander, Wire cannot be found in cli, it works in the regular IDE. SpeedTest and EndPositionsTest give strange BFD assertions
-            sketches-exclude: QuadrupedControl,RobotArmControl,PCA9685_Expander,PCA9685_ExpanderAndServo,PCA9685_ExpanderFor32Servos,SpeedTest,EndPositionsTest
+             # 4/2020 For PCA9685_Expander, Wire cannot be found in cli, it works in the regular IDE.
+            sketches-exclude: QuadrupedControl,RobotArmControl,PCA9685_Expander,PCA9685_ExpanderAndServo,PCA9685_ExpanderFor32Servos
 
 
       # Do not cancel all jobs / architectures if one job fails

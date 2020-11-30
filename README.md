@@ -1,7 +1,7 @@
 # [ServoEasing](https://github.com/ArminJo/ServoEasing) - move your servo more natural
 Available as Arduino library "ServoEasing"
 
-### [Version 2.3.3](https://github.com/ArminJo/ServoEasing/releases) - work in progress
+### [Version 2.3.4](https://github.com/ArminJo/ServoEasing/releases) - work in progress
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
@@ -18,7 +18,7 @@ This is a library for smooth servo movements. It uses the standard Arduino Servo
 As an alternative to the Arduino Servo library, ServoEasing can be used with a [PCA9685 servo expander](https://learn.adafruit.com/16-channel-pwm-servo-driver?view=all) using the Arduino Wire library or a compatible one (and their restrictions).<br/>
 For **ESP32** you need to install the Arduino ESP32Servo library.<br/><br/>
 For **AVR**, if you need only one or two servos, you may want to use the included [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) instead of the Arduino Servo library because it uses only the internal Timer1 with no software overhead and has no problems with interrupt blocking libraries like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
-For instructions how to enable these alternatives see [Compile options / macros](#compile-options--macros)
+For instructions how to enable these alternatives see [Compile options / macros](https://github.com/ArminJo/ServoEasing#compile-options--macros-for-this-library)
 
 ### Features
 - **Linear** and 9 other ease movements are provided.
@@ -28,7 +28,7 @@ For instructions how to enable these alternatives see [Compile options / macros]
 - **Reverse operation** of servo is possible eg. if it is mounted head down.
 - Allow to specify an arbitrary mapping between degrees and microseconds by `attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree)`.
 - **Servo speed** can be specified in **degree per second** or **milliseconds** for the complete move.
-- All degree values >= 400 are taken as microsecond values for the servo pulse.
+- Degree values >= 400 can optionally be taken as microsecond values for the servo pulse.
 
 ## [API](https://github.com/ArminJo/ServoEasing/blob/master/src/ServoEasing.h#L328)
 
@@ -74,7 +74,7 @@ If you control them with a PCA9685 expander it may get worse, since one step of 
 
 # Compile options / macros for this library
 To customize the software to different car extensions, there are some compile options / macros available.<br/>
-Modify it by commenting them out or in, or change the values if applicable. Or define the macro with the -D compiler option for gobal compile (the latter is not possible with the Arduino IDE, so consider to use [Sloeber](https://eclipse.baeyens.it).<br/>
+Modify it by commenting them out or in, or change the values if applicable. Or define the macro with the -D compiler option for global compile (the latter is not possible with the Arduino IDE, so consider using [Sloeber](https://eclipse.baeyens.it).<br/>
 | Option | Default | File | Description |
 |-|-|-|-|
 | `USE_PCA9685_SERVO_EXPANDER` | disabled | ServoEasing.h | Enables the use of the PCA9685 I2C expander chip/board. |
@@ -88,13 +88,13 @@ Modify it by commenting them out or in, or change the values if applicable. Or d
 
 # Modifying compile options
 ### Modifying compile options with Arduino IDE
-First use *Sketch/Show Sketch Folder (Ctrl+K)*.<br/>
+First use *Sketch > Show Sketch Folder (Ctrl+K)*.<br/>
 If you did not yet stored the example as your own sketch, then you are instantly in the right library folder.<br/>
 Otherwise you have to navigate to the parallel `libraries` folder and select the library you want to access.<br/>
 In both cases the library files itself are located in the `src` directory.<br/>
 
 ### Modifying compile options with Sloeber IDE
-If you are using Sloeber as your IDE, you can easily define global symbols with *Properties/Arduino/CompileOptions*.<br/>
+If you are using Sloeber as your IDE, you can easily define global symbols with *Properties > Arduino > CompileOptions*.<br/>
 ![Sloeber settings](https://github.com/ArminJo/ServoEasing/blob/master/pictures/SloeberDefineSymbols.png)
 
 ## Using PCA9685 16-Channel Servo Expander
@@ -237,7 +237,9 @@ If you see strange behavior, you can open the library file *ServoEasing.h* and c
 This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
 
 # Revision History
-### Version 2.3.3 - work in progress
+### Version 2.3.4 - work in progress
+
+### Version 2.3.3
 - Added compile option `ENABLE_MICROS_AS_DEGREE_PARAMETER` to allow usage of microseconds instead of degree as function arguments for all functions using degrees as argument.
 - Improved LightweightServo API.
 
