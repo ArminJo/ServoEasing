@@ -163,6 +163,12 @@
 #define TIMING_OUTPUT_PIN 12
 #endif
 
+/*
+ * If you require passing microsecond values as parameter instead of degree values. This requires additional 128 Bytes FLASH.
+ */
+//#define ENABLE_MICROS_AS_DEGREE_PARAMETER
+#define THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS  400  // treat values less than 400 as angles in degrees, others are handled as microseconds
+
 // Enable this to generate output for Arduino Serial Plotter (Ctrl-Shift-L)
 //#define PRINT_FOR_SERIAL_PLOTTER
 
@@ -516,7 +522,7 @@ extern float (*sEaseFunctionArray[])(float aPercentageOfCompletion);
 
 /*
  * Version 2.3.3 - 11/2020
- * - DegreeToMicrosecondsOrUnits() does not convert values >= 400 in order to support Microseconds instead of degrees as function arguments.
+ * - Added compile option `ENABLE_MICROS_AS_DEGREE_PARAMETER` to allow usage of microseconds instead of degree as function arguments for all functions using degrees as argument.
  * - Improved LightweightServo API.
  *
  * Version 2.3.2 - 9/2020

@@ -478,8 +478,10 @@ void ServoEasing::write(int aValue) {
 #endif
         return;
     }
-    if (aValue < 400) { // treat values less than 400 as angles in degrees (valid values in microseconds are handled as microseconds)
-        sServoNextPositionArray[mServoIndex] = aValue;
+    sServoNextPositionArray[mServoIndex] = aValue;
+
+    if (aValue < THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
+        // treat values less than 400 as angles in degrees, others are handled as microseconds
         aValue = DegreeToMicrosecondsOrUnits(aValue);
     }
     writeMicrosecondsOrUnits(aValue);
@@ -592,14 +594,20 @@ int ServoEasing::MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits) {
 
 /**
  * We have around 10 µs per degree
+ * We do not convert values >= 400.
+ * This allows it to use Microseconds instead of degrees as function arguments for all functions using degree as argument.
  */
 int ServoEasing::DegreeToMicrosecondsOrUnits(int aDegree) {
 // For microseconds and PCA9685 units:
+#if defined ENABLE_MICROS_AS_DEGREE_PARAMETER
     if (aDegree < 400) {
-        return map(aDegree, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
+#endif
+    return map(aDegree, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
+#if defined ENABLE_MICROS_AS_DEGREE_PARAMETER
     } else {
         return aDegree;
     }
+#endif
 }
 
 /**
@@ -681,7 +689,17 @@ bool ServoEasing::startEaseTo(int aDegree, uint_fast16_t aDegreesPerSecond, bool
 #endif
         aDegreesPerSecond = 1;
     }
+
+#if defined ENABLE_MICROS_AS_DEGREE_PARAMETER
+    uint_fast16_t tMillisForCompleteMove;
+    int tDegree = aDegree;
+    if (aDegree >= THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
+        tDegree = MicrosecondsOrUnitsToDegree(tDegree);
+    }
+    tMillisForCompleteMove = abs(tDegree - tCurrentAngle) * 1000L / aDegreesPerSecond;
+#else
     uint_fast16_t tMillisForCompleteMove = abs(aDegree - tCurrentAngle) * 1000L / aDegreesPerSecond;
+#endif
 
 #ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
     if ((mEasingType & CALL_STYLE_MASK) == CALL_STYLE_BOUNCING_OUT_IN) {

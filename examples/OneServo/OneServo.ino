@@ -152,6 +152,12 @@ void loop() {
 #ifdef INFO
     Serial.println(F("Move from 180 to 0 degree with 360 degree per second using interrupts"));
 #endif
+    /*
+     * If you comment out the line
+     * #define ENABLE_MICROS_AS_DEGREE_PARAMETER
+     * in ServoEasing.h, you can specify the target angle directly as microseconds here
+     */
+//    Servo1.startEaseTo(DEFAULT_MICROSECONDS_FOR_0_DEGREE, 360, true);
     Servo1.startEaseTo(0, 360, true);
     // Wait for 250 ms. The servo should have moved 90 degree.
     delay(250);
@@ -162,7 +168,7 @@ void loop() {
      */
     Servo1.stop();
 #ifdef INFO
-    Serial.println(F("Stop for 1 second at 90 degree"));
+    Serial.println(F("Interrupt movement with stop() for 1 second at 90 degree"));
 #endif
     delay(1000);
     // continue movement using interrupts

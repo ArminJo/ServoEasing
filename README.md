@@ -28,6 +28,7 @@ For instructions how to enable these alternatives see [Compile options / macros]
 - **Reverse operation** of servo is possible eg. if it is mounted head down.
 - Allow to specify an arbitrary mapping between degrees and microseconds by `attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree)`.
 - **Servo speed** can be specified in **degree per second** or **milliseconds** for the complete move.
+- All degree values >= 400 are taken as microsecond values for the servo pulse.
 
 ## [API](https://github.com/ArminJo/ServoEasing/blob/master/src/ServoEasing.h#L328)
 
@@ -80,8 +81,10 @@ Modify it by commenting them out or in, or change the values if applicable. Or d
 | `USE_SERVO_LIB` | disabled | ServoEasing.h | Use of PCA9685 normally disables use of regular servo library. You can force using of regular servo library by defining `USE_SERVO_LIB`. See below. |
 | `PROVIDE_ONLY_LINEAR_MOVEMENT` | disabled | ServoEasing.h | Saves up to 1540 bytes FLASH. |
 | `DISABLE_COMPLEX_FUNCTIONS` | disabled | ServoEasing.h | Disables the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes FLASH. |
+| `ENABLE_MICROS_AS_DEGREE_PARAMETER` | disabled | ServoEasing.h | Enables passing also microsecond values as (target angle) parameter (see OneServo example). This requires additional 128 Bytes FLASH. |
 | `PRINT_FOR_SERIAL_PLOTTER` | disabled | ServoEasing.h | Generate serial output for Arduino Plotter. |
 | `USE_LEIGHTWEIGHT_SERVO_LIB` | disabled | ServoEasing.h | Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple. See below. Saves up to 742 bytes FLASH and 42 bytes RAM. |
+
 
 # Modifying compile options
 ### Modifying compile options with Arduino IDE
@@ -154,8 +157,8 @@ Control 8 servos to move a Quadruped robot.<br/>
 The full example with IR remote control, NeoPixel and US distance sensor support is available [here](https://github.com/ArminJo/QuadrupedControl).
 Only for AVR, because it uses EEPROM.
 
-### YouTube Video
-[![mePed V2 in actions](https://i.ytimg.com/vi/MsIjTRRUyGU/hqdefault.jpg)](https://youtu.be/MsIjTRRUyGU )
+### YouTube Videos
+[![mePed V2 in actions](https://i.ytimg.com/vi/MsIjTRRUyGU/hqdefault.jpg)](https://youtu.be/MsIjTRRUyGU)
 [![Another implementation](https://i.ytimg.com/vi/CSodffeebyg/hqdefault.jpg)](https://youtu.be/CSodffeebyg)
 
 ## RobotArmControl example
@@ -177,6 +180,8 @@ You must comment out the line `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasi
 ### YouTube Video
 [![Servos 16-19 and 28-31 in action](https://i.ytimg.com/vi/XMVh3IT5BgU/hqdefault.jpg)](https://youtu.be/XMVh3IT5BgU)
 
+### mePed V2 with PCA9685 expander
+![mePed V2 with PCA9685 expander](pictures/mePedWithPCA9685.jpg)
 
 # Servo utilities
 
@@ -233,7 +238,7 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 
 # Revision History
 ### Version 2.3.3 - work in progress
-- DegreeToMicrosecondsOrUnits() does not convert values >= 400 in order to support Microseconds instead of degrees as function arguments.
+- Added compile option `ENABLE_MICROS_AS_DEGREE_PARAMETER` to allow usage of microseconds instead of degree as function arguments for all functions using degrees as argument.
 - Improved LightweightServo API.
 
 ### Version 2.3.2

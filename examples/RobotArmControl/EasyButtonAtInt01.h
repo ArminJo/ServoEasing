@@ -37,29 +37,7 @@
 #define VERSION_EASY_BUTTON "3.1.0"
 #define VERSION_EASY_BUTTON_MAJOR 3
 #define VERSION_EASY_BUTTON_MINOR 1
-
-/*
- *  Version 3.1.0 - 6/2020
- *  - 2 sets of constructors, one for only one button used and one for the second button if two buttons used.
- *  - Map pin numbers for Digispark pro boards, for use with with digispark library.
- *
- * Version 3.0.0 - 5/2020
- * - Added button release handler and adapted examples.
- * - Revoke change for "only one true result per press for checkForLongPressBlocking()". It is superseded by button release handler.
- * - Support buttons which are active high by defining BUTTON_IS_ACTIVE_HIGH.
- * - Improved detection of maximum bouncing period used in DebounceTest.
- *
- * Version 2.1.0 - 5/2020
- * - Avoid 1 ms delay for checkForLongPressBlocking() if button is not pressed.
- * - Only one true result per press for checkForLongPressBlocking().
- *
- * Version 2.0.0 - 1/2020
- * - Ported to ATtinyX5 and ATiny167.
- * - Support also PinChangeInterrupt for button 1 on Pin PA0 to PA7 for ATtiniy87/167.
- * - Long press detection support.
- * - Double press detection support.
- * - Renamed to EasyButtonAtInt01.cpp.h
- */
+// The change log is at the bottom of the file
 
 #if defined(__AVR__)
 #include <Arduino.h>
@@ -318,7 +296,7 @@ public:
     void handleINT01Interrupts(); // internal use only
 
     bool LastBounceWasChangeToInactive; // Internal state, reflects actual reading with spikes and bouncing. Negative logic: true / active means button pin is LOW
-    volatile bool ButtonStateIsActive;  // Negative logic: true / active means button pin is LOW. If last press duration < BUTTON_DEBOUNCING_MILLIS it holds wrong value (true instead of false) :-(
+    volatile bool ButtonStateIsActive; // Negative logic: true / active means button pin is LOW. If last press duration < BUTTON_DEBOUNCING_MILLIS it holds wrong value (true instead of false) :-(
     volatile bool ButtonToggleState;    // Toggle is on press, not on release - initial value is false
 
     /*
@@ -380,6 +358,30 @@ void __attribute__ ((weak)) handleINT1Interrupt();
 #endif
 
 #endif // defined(__AVR__)
+
+/*
+ *  Version 3.1.0 - 6/2020
+ *  - 2 sets of constructors, one for only one button used and one for the second button if two buttons used.
+ *  - Map pin numbers for Digispark pro boards, for use with with digispark library.
+ *
+ * Version 3.0.0 - 5/2020
+ * - Added button release handler and adapted examples.
+ * - Revoke change for "only one true result per press for checkForLongPressBlocking()". It is superseded by button release handler.
+ * - Support buttons which are active high by defining BUTTON_IS_ACTIVE_HIGH.
+ * - Improved detection of maximum bouncing period used in DebounceTest.
+ *
+ * Version 2.1.0 - 5/2020
+ * - Avoid 1 ms delay for checkForLongPressBlocking() if button is not pressed.
+ * - Only one true result per press for checkForLongPressBlocking().
+ *
+ * Version 2.0.0 - 1/2020
+ * - Ported to ATtinyX5 and ATiny167.
+ * - Support also PinChangeInterrupt for button 1 on Pin PA0 to PA7 for ATtiniy87/167.
+ * - Long press detection support.
+ * - Double press detection support.
+ * - Renamed to EasyButtonAtInt01.cpp.h
+ */
+
 #endif /* EASY_BUTTON_AT_INT01_H_ */
 
 #pragma once

@@ -171,6 +171,7 @@ uint16_t readADCChannelWithReferenceMultiSamples(uint8_t aChannelNumber, uint8_t
 
 /*
  * use ADC_PRESCALE16 which gives 13 us conversion time and good linearity
+ * @return the maximum of aNumberOfSamples measurements.
  */
 uint16_t readADCChannelWithReferenceMax(uint8_t aChannelNumber, uint8_t aReference, uint16_t aNumberOfSamples) {
     uint16_t tADCValue = 0;
