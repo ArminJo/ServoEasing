@@ -22,12 +22,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/gpl.html>.
  */
 
-#if defined(ARDUINO_ARCH_APOLLO3)
-void DummyToAvoidApolloBFDAssertionsForADCUtils(int aDummy){
-    (void) aDummy;
-}
-#endif
-
 #include "ADCUtils.h"
 #if defined(__AVR__) && defined(ADATE)
 

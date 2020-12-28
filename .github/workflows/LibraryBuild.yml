@@ -49,7 +49,7 @@ jobs:
           - esp32:esp32:featheresp32:FlashFreq=80
           - STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
           - stm32duino:STM32F1:genericSTM32F103C
-          - SparkFun:apollo3:amap3nano
+          - SparkFun:apollo3:sfe_artemis_nano
 
         # Specify parameters for each board.
         # With sketches-exclude you may exclude specific examples for a board. Use a comma separated list.
@@ -134,8 +134,8 @@ jobs:
               PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
               PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
-          - arduino-boards-fqbn: SparkFun:apollo3:amap3nano
-            platform-url: https://raw.githubusercontent.com/sparkfun/Arduino_Boards/master/IDE_Board_Manager/package_sparkfun_index.json
+          - arduino-boards-fqbn: SparkFun:apollo3:sfe_artemis_nano
+            platform-url: https://raw.githubusercontent.com/sparkfun/Arduino_Apollo3/master/package_sparkfun_apollo3_index.json
              # 4/2020 For PCA9685_Expander, Wire cannot be found in cli, it works in the regular IDE.
             sketches-exclude: QuadrupedControl,RobotArmControl,PCA9685_Expander,PCA9685_ExpanderAndServo,PCA9685_ExpanderFor32Servos
 

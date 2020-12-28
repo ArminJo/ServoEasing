@@ -75,6 +75,9 @@ HardwareTimer Timer20ms(3);  // 4 timers and 4. timer is used for tone()
 #define IRQn_FOR_20_MS_TIMER    TC8_IRQn
 #define HANDLER_FOR_20_MS_TIMER TC8_Handler
 
+#elif defined(ARDUINO_ARCH_MBED) // Arduino Nano 33 BLE + Sparkfun Apollo3
+mbed::Ticker Timer20ms;
+
 #elif defined(TEENSYDUINO)
 // common for all Teensy
 IntervalTimer Timer20ms;
@@ -1131,7 +1134,9 @@ __attribute__((weak)) void handleServoTimerInterrupt()
 {
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 // Otherwise it will hang forever in I2C transfer
+#  if !defined(ARDUINO_ARCH_MBED)
     interrupts();
+#  endif
 #endif
     if (updateAllServos()) {
         // disable interrupt only if all servos stopped. This enables independent movements of servos with this interrupt handler.
@@ -1274,18 +1279,21 @@ void enableServoEasingInterrupt() {
 //    while (TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY) // Not required to wait at end of function
 //        ; // wait until TC5 is done syncing
 
-#elif defined(ARDUINO_ARCH_APOLLO3)
-    // use timer 3 segment A
-    am_hal_ctimer_clear(3, AM_HAL_CTIMER_TIMERA); // reset timer
-    // only AM_HAL_CTIMER_FN_REPEAT resets counter after match (CTC mode)
-    am_hal_ctimer_config_single(3, AM_HAL_CTIMER_TIMERA,
-            (AM_HAL_CTIMER_INT_ENABLE | AM_HAL_CTIMER_HFRC_12KHZ | AM_HAL_CTIMER_FN_REPEAT));
-    am_hal_ctimer_compare_set(3, AM_HAL_CTIMER_TIMERA, 0, 12000 / REFRESH_FREQUENCY);
-    am_hal_ctimer_start(3, AM_HAL_CTIMER_TIMERA);
+//#elif defined(ARDUINO_ARCH_APOLLO3)
+//    // use timer 3 segment A
+//    am_hal_ctimer_clear(3, AM_HAL_CTIMER_TIMERA); // reset timer
+//    // only AM_HAL_CTIMER_FN_REPEAT resets counter after match (CTC mode)
+//    am_hal_ctimer_config_single(3, AM_HAL_CTIMER_TIMERA,
+//            (AM_HAL_CTIMER_INT_ENABLE | AM_HAL_CTIMER_HFRC_12KHZ | AM_HAL_CTIMER_FN_REPEAT));
+//    am_hal_ctimer_compare_set(3, AM_HAL_CTIMER_TIMERA, 0, 12000 / REFRESH_FREQUENCY);
+//    am_hal_ctimer_start(3, AM_HAL_CTIMER_TIMERA);
+//
+//    am_hal_ctimer_int_register(AM_HAL_CTIMER_INT_TIMERA3, handleServoTimerInterrupt);
+//    am_hal_ctimer_int_enable(AM_HAL_CTIMER_INT_TIMERA3);
+//    NVIC_EnableIRQ(CTIMER_IRQn);
 
-    am_hal_ctimer_int_register(AM_HAL_CTIMER_INT_TIMERA3, handleServoTimerInterrupt);
-    am_hal_ctimer_int_enable(AM_HAL_CTIMER_INT_TIMERA3);
-    NVIC_EnableIRQ(CTIMER_IRQn);
+#elif defined(ARDUINO_ARCH_MBED)
+    Timer20ms.attach(handleServoTimerInterrupt, std::chrono::microseconds(REFRESH_INTERVAL_MICROS));
 
 #elif defined(TEENSYDUINO)
     // common for all Teensy
@@ -1332,8 +1340,11 @@ void disableServoEasingInterrupt() {
     TC5->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE;
     while (TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY); //wait until TC5 is done syncing
 
-#elif defined(ARDUINO_ARCH_APOLLO3)
-    am_hal_ctimer_int_disable(AM_HAL_CTIMER_INT_TIMERA3);
+#elif defined(ARDUINO_ARCH_MBED) // Arduino Nano 33 BLE + Sparkfun Apollo3
+    Timer20ms.detach();
+
+//#elif defined(ARDUINO_ARCH_APOLLO3)
+//    am_hal_ctimer_int_disable(AM_HAL_CTIMER_INT_TIMERA3);
 
 #elif defined(TEENSYDUINO)
     Timer20ms.end();
@@ -1395,15 +1406,15 @@ void TC5_Handler(void) {
 #  endif
 }
 
-#elif defined(ARDUINO_ARCH_APOLLO3)
-extern "C" void am_ctimer_isr(void) {
-    // Check and clear any active CTIMER interrupts.
-    uint32_t ui32Status = am_hal_ctimer_int_status_get(true);
-    am_hal_ctimer_int_clear(ui32Status);
-
-    // Run handlers for the various possible timer events.
-    am_hal_ctimer_int_service(ui32Status);
-}
+//#elif defined(ARDUINO_ARCH_APOLLO3)
+//extern "C" void am_ctimer_isr(void) {
+//    // Check and clear any active CTIMER interrupts.
+//    uint32_t ui32Status = am_hal_ctimer_int_status_get(true);
+//    am_hal_ctimer_int_clear(ui32Status);
+//
+//    // Run handlers for the various possible timer events.
+//    am_hal_ctimer_int_service(ui32Status);
+//}
 #endif // defined(__AVR__)
 
 /************************************
