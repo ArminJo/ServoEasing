@@ -83,8 +83,10 @@ mbed::Ticker Timer20ms;
 IntervalTimer Timer20ms;
 #endif
 
-// Enable this to see information on each call
-// There should be no library which uses Serial, so enable it only for debugging purposes
+/*
+ * Enable this to see information on each call.
+ * Since there should be no library which uses Serial, enable it only for development purposes.
+ */
 //#define TRACE
 //#define DEBUG
 // Propagate debug level
@@ -166,7 +168,7 @@ void ServoEasing::I2CWriteByte(uint8_t aAddress, uint8_t aData) {
     uint8_t tWireReturnCode = mI2CClass->endTransmission();
     if (tWireReturnCode != 0) {
         // I have seen this at my ESP32 module :-( - but it is no buffer overflow.
-        Serial.print((char) (tWireReturnCode + '0'));// Error enum i2c_err_t: I2C_ERROR_ACK = 2, I2C_ERROR_TIMEOUT = 3
+        Serial.print((char) (tWireReturnCode + '0')); // Error enum i2c_err_t: I2C_ERROR_ACK = 2, I2C_ERROR_TIMEOUT = 3
     }
 #else
     mI2CClass->endTransmission();
@@ -191,7 +193,7 @@ void ServoEasing::setPWM(uint16_t aPWMOffValueAsUnits) {
     uint8_t tWireReturnCode = mI2CClass->endTransmission();
     if (tWireReturnCode != 0) {
         // If you end up here, maybe the second module is not attached?
-        Serial.print((char) (tWireReturnCode + '0'));// Error enum i2c_err_t: I2C_ERROR_ACK = 2, I2C_ERROR_TIMEOUT = 3
+        Serial.print((char) (tWireReturnCode + '0'));    // Error enum i2c_err_t: I2C_ERROR_ACK = 2, I2C_ERROR_TIMEOUT = 3
     }
 #else
     mI2CClass->endTransmission();
@@ -214,10 +216,10 @@ void ServoEasing::setPWM(uint16_t aPWMOnStartValueAsUnits, uint16_t aPWMPulseDur
 #if defined(DEBUG) && not defined(ESP32)
     // The ESP32 I2C interferes with the Ticker / Timer library used.
     // Even with 100 kHz clock we have some dropouts / NAK's because of sending address again instead of first data.
-    uint8_t tWireReturnCode = mI2CClass->endTransmission();// blocking call
+    uint8_t tWireReturnCode = mI2CClass->endTransmission();    // blocking call
     if (tWireReturnCode != 0) {
         // If you end up here, maybe the second module is not attached?
-        Serial.print((char) (tWireReturnCode + '0'));// Error enum i2c_err_t: I2C_ERROR_ACK = 2, I2C_ERROR_TIMEOUT = 3
+        Serial.print((char) (tWireReturnCode + '0'));    // Error enum i2c_err_t: I2C_ERROR_ACK = 2, I2C_ERROR_TIMEOUT = 3
     }
 #else
     mI2CClass->endTransmission();
@@ -229,6 +231,14 @@ int ServoEasing::MicrosecondsToPCA9685Units(int aMicroseconds) {
      * 4096 units per 20 milliseconds => aMicroseconds / 4.8828
      */
     return ((4096L * aMicroseconds) / REFRESH_INTERVAL_MICROS);
+}
+
+int ServoEasing::PCA9685UnitsToMicroseconds(int aPCA9685Units) {
+    /*
+     * 4096 units per 20 milliseconds => aPCA9685Units * 4.8828
+     * (aPCA9685Units * 625) / 128 use int32_t to avoid overflow
+     */
+    return ((int32_t) aPCA9685Units * (REFRESH_INTERVAL_MICROS / 32)) / (4096 / 32);
 }
 
 #endif // defined(USE_PCA9685_SERVO_EXPANDER)
@@ -540,6 +550,7 @@ void ServoEasing::writeMicrosecondsOrUnits(int aValue) {
 
 #elif defined(USE_PCA9685_SERVO_EXPANDER)
 #  if defined(TRACE)
+    // For each pin show PWM on value used below
     Serial.print(F(" s="));
     Serial.print(mServoPin * (4096 - (DEFAULT_PCA9685_UNITS_FOR_180_DEGREE + 100)) / 15); // mServoPin * 233
 #  endif
@@ -566,6 +577,16 @@ void ServoEasing::writeMicrosecondsOrUnits(int aValue) {
 #endif
 }
 
+int ServoEasing::MicrosecondsToDegree(int aMicroseconds) {
+#if defined(USE_PCA9685_SERVO_EXPANDER)
+    int32_t tResult = aMicroseconds - PCA9685UnitsToMicroseconds(mServo0DegreeMicrosecondsOrUnits);
+    tResult = (tResult * 180) + 928;
+    return (tResult / PCA9685UnitsToMicroseconds((mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits)));
+#else
+    return MicrosecondsOrUnitsToDegree(aMicroseconds);
+#endif
+}
+
 int ServoEasing::MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits) {
     /*
      * Formula for microseconds:
@@ -581,14 +602,18 @@ int ServoEasing::MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits) {
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 #  if defined(USE_SERVO_LIB)
     if (mServoIsConnectedToExpander) {
+        // here we have PCA9685 units
         tResult = (tResult * 180) + 190;
     } else {
+        // here we have microseconds
         tResult = (tResult * 180) + 928;
     }
 #  else
+    // here we have PCA9685 units
     tResult = (tResult * 180) + 190;
 #  endif
 #else
+    // here we have microseconds
     tResult = (tResult * 180) + 928;
 #endif
     return (tResult / (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits));
@@ -603,12 +628,17 @@ int ServoEasing::MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits) {
 int ServoEasing::DegreeToMicrosecondsOrUnits(int aDegree) {
 // For microseconds and PCA9685 units:
 #if defined ENABLE_MICROS_AS_DEGREE_PARAMETER
-    if (aDegree < 400) {
+    if (aDegree < THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
 #endif
-    return map(aDegree, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
+        return map(aDegree, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
 #if defined ENABLE_MICROS_AS_DEGREE_PARAMETER
     } else {
+        // degree already contains Microseconds
+#if defined(USE_PCA9685_SERVO_EXPANDER)
+        return MicrosecondsToPCA9685Units(aDegree);
+#else
         return aDegree;
+#endif
     }
 #endif
 }
@@ -693,15 +723,21 @@ bool ServoEasing::startEaseTo(int aDegree, uint_fast16_t aDegreesPerSecond, bool
         aDegreesPerSecond = 1;
     }
 
-#if defined ENABLE_MICROS_AS_DEGREE_PARAMETER
     uint_fast16_t tMillisForCompleteMove;
+#if defined ENABLE_MICROS_AS_DEGREE_PARAMETER
     int tDegree = aDegree;
     if (aDegree >= THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
+        // here tDegree contains microseconds and not units
+#if defined(USE_PCA9685_SERVO_EXPANDER)
+        // force convert microseconds
+        tDegree = MicrosecondsToDegree(tDegree);
+#else
         tDegree = MicrosecondsOrUnitsToDegree(tDegree);
+#endif
     }
     tMillisForCompleteMove = abs(tDegree - tCurrentAngle) * 1000L / aDegreesPerSecond;
 #else
-    uint_fast16_t tMillisForCompleteMove = abs(aDegree - tCurrentAngle) * 1000L / aDegreesPerSecond;
+    tMillisForCompleteMove = abs(aDegree - tCurrentAngle) * 1000L / aDegreesPerSecond;
 #endif
 
 #ifndef PROVIDE_ONLY_LINEAR_MOVEMENT

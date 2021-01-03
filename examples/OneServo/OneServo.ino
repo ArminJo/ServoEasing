@@ -81,13 +81,21 @@ void loop() {
     Serial.println(F("Move to 90 degree with 10 degree per second blocking"));
 #endif
     Servo1.setSpeed(10);  // This speed is taken if no further speed argument is given.
+#ifdef ENABLE_MICROS_AS_DEGREE_PARAMETER
+    Servo1.easeTo(DEFAULT_MICROSECONDS_FOR_90_DEGREE);
+#else
     Servo1.easeTo(90);
+#endif
 
     // Now move faster without any delay between the moves
 #ifdef INFO
     Serial.println(F("Move to 180 degree with 30 degree per second using interrupts"));
 #endif
+#ifdef ENABLE_MICROS_AS_DEGREE_PARAMETER
+    Servo1.startEaseTo(DEFAULT_MICROSECONDS_FOR_180_DEGREE, 30);
+#else
     Servo1.startEaseTo(180, 30);
+#endif
     /*
      * Now you can run your program while the servo is moving.
      * Just let the LED blink for 3 seconds (90 degrees moving by 30 degrees per second).
@@ -101,7 +109,11 @@ void loop() {
 #ifdef INFO
     Serial.println(F("Move to 45 degree in one second using interrupts"));
 #endif
+#ifdef ENABLE_MICROS_AS_DEGREE_PARAMETER
+    Servo1.startEaseToD((544 + ((2400 - 544) / 4)), 1000);
+#else
     Servo1.startEaseToD(45, 1000);
+#endif
     // Blink until servo stops
     while (areInterruptsActive()) {
         blinkLED();
@@ -115,12 +127,20 @@ void loop() {
     Servo1.setEasingType(EASE_CUBIC_IN_OUT);
 
     for (int i = 0; i < 2; ++i) {
+#ifdef ENABLE_MICROS_AS_DEGREE_PARAMETER
+        Servo1.startEaseToD((544 + (((2400 - 544) / 4) * 3)), 1000);
+#else
         Servo1.startEaseToD(135, 1000);
+#endif
         // areInterruptsActive() calls yield for the ESP8266 boards
         while (areInterruptsActive()) {
             ; // no delays here to avoid break between forth and back movement
         }
+#ifdef ENABLE_MICROS_AS_DEGREE_PARAMETER
+        Servo1.startEaseToD((544 + ((2400 - 544) / 4)), 1000);
+#else
         Servo1.startEaseToD(45, 1000);
+#endif
         while (areInterruptsActive()) {
             ; // no delays here to avoid break between forth and back movement
         }
@@ -135,7 +155,11 @@ void loop() {
 #ifdef INFO
     Serial.println(F("Move to 180 degree with 50 degree per second blocking"));
 #endif
+#ifdef ENABLE_MICROS_AS_DEGREE_PARAMETER
+    Servo1.startEaseTo(DEFAULT_MICROSECONDS_FOR_180_DEGREE, 50);
+#else
     Servo1.startEaseTo(180, 50);
+#endif
     while (Servo1.getCurrentAngle() < 120) {
         delay(20); // just wait until angle is above 120 degree
     }
@@ -158,7 +182,11 @@ void loop() {
      * in ServoEasing.h, you can specify the target angle directly as microseconds here
      */
 //    Servo1.startEaseTo(DEFAULT_MICROSECONDS_FOR_0_DEGREE, 360, true);
+#ifdef ENABLE_MICROS_AS_DEGREE_PARAMETER
+    Servo1.startEaseTo(DEFAULT_MICROSECONDS_FOR_0_DEGREE, 360, true);
+#else
     Servo1.startEaseTo(0, 360, true);
+#endif
     // Wait for 250 ms. The servo should have moved 90 degree.
     delay(250);
     digitalWrite(LED_BUILTIN, LOW);

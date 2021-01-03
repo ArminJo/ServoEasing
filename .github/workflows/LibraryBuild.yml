@@ -45,6 +45,7 @@ jobs:
           - arduino:megaavr:nona4809:mode=off
           - arduino:sam:arduino_due_x
           - arduino:samd:arduino_zero_native
+          - arduino:mbed:nano33ble
           - esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
           - esp32:esp32:featheresp32:FlashFreq=80
           - STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
@@ -101,6 +102,9 @@ jobs:
               PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
               PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
               PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
+
+          - arduino-boards-fqbn: arduino:mbed:nano33ble
+            sketches-exclude: QuadrupedControl,RobotArmControl,PCA9685_ExpanderFor32Servos,PCA9685_Expander,PCA9685_ExpanderAndServo  # No Wire
 
           - arduino-boards-fqbn: esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
             platform-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json

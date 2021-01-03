@@ -261,17 +261,17 @@ void handleUSSensor() {
 }
 
 void doUSRight() {
-    if (!IRDispatcher.currentCommandIsRepeat && USServo.getCurrentAngle() > 15) {
+    if (!IRDispatcher.IRReceivedData.isRepeat && USServo.getCurrentAngle() > 15) {
         USServo.write(USServo.getCurrentAngle() - 15);
     }
 }
 void doUSLeft() {
-    if (!IRDispatcher.currentCommandIsRepeat && USServo.getCurrentAngle() < 165) {
+    if (!IRDispatcher.IRReceivedData.isRepeat && USServo.getCurrentAngle() < 165) {
         USServo.write(USServo.getCurrentAngle() + 15);
     }
 }
 void doUSScan() {
-    if (!IRDispatcher.currentCommandIsRepeat) {
+    if (!IRDispatcher.IRReceivedData.isRepeat) {
         USServo.write(90);
     }
 }

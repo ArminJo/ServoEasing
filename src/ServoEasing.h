@@ -42,6 +42,7 @@
  * For use with e.g. the Adafruit PCA9685 16-Channel Servo Driver board. It has a resolution of 4096 per 20 ms => 4.88 탎 per step/unit.
  * One PCA9685 has 16 outputs. You must modify MAX_EASING_SERVOS below, if you have more than one PCA9685 attached!
  * Use of PCA9685 normally disables use of regular servo library. You can force using of regular servo library by defining USE_SERVO_LIB
+ * All internal values *MicrosecondsOrUnits now contains no more microseconds but PCA9685 units!!!
  */
 //#define USE_PCA9685_SERVO_EXPANDER
 //#define USE_SERVO_LIB
@@ -177,20 +178,10 @@
 #include <stdarg.h>
 #endif
 
-/*
- * Enable this to see information on each call.
- * Since there should be no library which uses Serial, enable it only for development purposes.
- */
-//#define TRACE
-//#define DEBUG
-// Propagate debug level
-#ifdef TRACE
-#define DEBUG
-#endif
-
 // @formatter:on
 
 #define DEFAULT_MICROSECONDS_FOR_0_DEGREE 544
+#define DEFAULT_MICROSECONDS_FOR_90_DEGREE (544 + ((2400 - 544) / 2))
 #define DEFAULT_MICROSECONDS_FOR_180_DEGREE 2400
 // Approximately 10 microseconds per degree
 
@@ -328,8 +319,9 @@ public:
     void I2CWriteByte(uint8_t aAddress, uint8_t aData);
     void setPWM(uint16_t aPWMOffValueAsUnits);
     void setPWM(uint16_t aPWMOnStartValueAsUnits, uint16_t aPWMPulseDurationAsUnits);
-    // main mapping function for 탎 to PCA9685 Units (20000/4096 = 4.88 탎)
+    // main mapping functions for 탎 to PCA9685 Units (20000/4096 = 4.88 탎) and back
     int MicrosecondsToPCA9685Units(int aMicroseconds);
+    int PCA9685UnitsToMicroseconds(int aPCA9685Units);
 #endif
     ServoEasing();
 
@@ -383,6 +375,7 @@ public:
     bool isMovingAndCallYield() __attribute__ ((deprecated ("Most times better use areInterruptsActive()")));
 
     int MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits);
+    int MicrosecondsToDegree(int aMicroseconds);
     int DegreeToMicrosecondsOrUnits(int aDegree);
     int DegreeToMicrosecondsOrUnitsWithTrimAndReverse(int aDegree);
 
