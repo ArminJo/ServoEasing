@@ -25,7 +25,7 @@
 #include <Arduino.h>
 
 /*
- * To generate the Arduino plotter output, you must comment out the line #define PRINT_FOR_SERIAL_PLOTTER in ServoEasing.h
+ * To generate the Arduino plotter output, you must activate the line #define PRINT_FOR_SERIAL_PLOTTER in ServoEasing.h
  */
 #include "ServoEasing.h"
 
@@ -42,6 +42,7 @@
  * APOLLO3      11          12          13          A3
  */
 
+// The order of the servos here determines their position in internal sServoArray[]
 ServoEasing Servo1;
 ServoEasing Servo2;
 ServoEasing Servo3;
@@ -51,8 +52,8 @@ void blinkLED();
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
-#if defined(__AVR_ATmega32U4__) || defined(SERIAL_USB) || defined(SERIAL_PORT_USBVIRTUAL)
-    delay(2000); // To be able to connect Serial monitor after reset and before first printout
+#if defined(__AVR_ATmega32U4__) || defined(SERIAL_USB) || defined(SERIAL_PORT_USBVIRTUAL)  || defined(ARDUINO_attiny3217)
+    delay(2000); // To be able to connect Serial monitor after reset or power up and before first printout
 #endif
     // Just to know which program is running on my Arduino
 #ifndef PRINT_FOR_SERIAL_PLOTTER
@@ -93,14 +94,14 @@ void setup() {
 #ifndef PRINT_FOR_SERIAL_PLOTTER
     Servo1.print(&Serial);
     Servo2.print(&Serial);
-    Servo3.print(&Serial);
+    sServoArray[2]->print(&Serial);; // "sServoArray[2]->" can be used instead of "Servo3."
 #endif
 
     /**************************************************
      * Set servos to start position.
      * This is the position where the movement starts.
      *************************************************/
-    Servo1.write(0);
+    sServoArray[0]->write(0); // "sServoArray[0]->" can be used instead of "Servo1."
     Servo2.write(0);
     Servo3.write(0);
 
@@ -130,7 +131,7 @@ void loop() {
     Serial.println(F("Move to 90/90/180 degree with 20 degree per second with updates by own do-while loop"));
 #endif
     setSpeedForAllServos(20); // this speed is changed for the first 2 servos below by synchronizing to the longest duration
-    Servo1.setEaseTo(90);
+    sServoArray[0]->setEaseTo(90); // "sServoArray[0]->" can be used instead of "Servo1."
     Servo2.setEaseTo(90);
     Servo3.setEaseTo(180);
     synchronizeAllServosAndStartInterrupt(false); // do not start interrupt

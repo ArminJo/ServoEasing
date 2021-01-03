@@ -34,9 +34,9 @@
 #ifndef EASY_BUTTON_AT_INT01_H_
 #define EASY_BUTTON_AT_INT01_H_
 
-#define VERSION_EASY_BUTTON "3.1.0"
+#define VERSION_EASY_BUTTON "3.2.0"
 #define VERSION_EASY_BUTTON_MAJOR 3
-#define VERSION_EASY_BUTTON_MINOR 1
+#define VERSION_EASY_BUTTON_MINOR 2
 // The change log is at the bottom of the file
 
 #if defined(__AVR__)
@@ -84,7 +84,7 @@
 #endif
 
 /*
- * Comment this out to save 2 bytes RAM and 64 bytes FLASH
+ * Activate this to save 2 bytes RAM and 64 bytes FLASH
  */
 //#define NO_BUTTON_RELEASE_CALLBACK
 //

@@ -37,7 +37,9 @@
 #include "QuadrupedControl.h"
 
 #if defined(QUADRUPED_HAS_IR_CONTROL)
-#define USE_IRL_REMOTE_LIBRARY // must be specified before including IRCommandDispatcher.cpp.h to define which IR library to use
+// saves around 800 bytes program space
+#define USE_TINY_IR_RECEIVER // must be specified before including IRCommandDispatcher.cpp.h to define which IR library to use
+
 #include "IRCommandMapping.h" // must be included before IRCommandDispatcher.cpp.h to define IR_ADDRESS and IRMapping and string "unknown".
 #include "IRCommandDispatcher.cpp.h"
 #endif
@@ -60,7 +62,7 @@
 ServoEasing USServo;    // Servo for US sensor
 #endif
 
-//#define INFO // comment this out to see serial info output
+//#define INFO // activate this to see serial info output
 
 #if defined(QUADRUPED_HAS_NEOPIXEL)
 color32_t sBarBackgroundColorArray[PIXELS_ON_ONE_BAR] = { COLOR32_RED_QUARTER, COLOR32_RED_QUARTER, COLOR32_RED_QUARTER,
@@ -76,8 +78,8 @@ COLOR32_YELLOW, COLOR32_YELLOW, COLOR32_GREEN_QUARTER, COLOR32_GREEN_QUARTER, CO
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
-#if defined(__AVR_ATmega32U4__) || defined(SERIAL_USB) || defined(SERIAL_PORT_USBVIRTUAL)
-    delay(2000); // To be able to connect Serial monitor after reset and before first printout
+#if defined(__AVR_ATmega32U4__) || defined(SERIAL_USB) || defined(SERIAL_PORT_USBVIRTUAL)  || defined(ARDUINO_attiny3217)
+    delay(2000); // To be able to connect Serial monitor after reset or power up and before first printout
 #endif
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
@@ -161,7 +163,7 @@ void loop() {
     /*
      * Do auto move if timeout after boot was reached and no IR command was received
      */
-    if (IRDispatcher.lastIRCodeMillis == 0 && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
+    if (IRDispatcher.IRReceivedData.MillisOfLastCode == 0 && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
 #if defined(QUADRUPED_HAS_NEOPIXEL)
         wipeOutPatternsBlocking();
 #endif
@@ -173,8 +175,8 @@ void loop() {
     /*
      * Get attention that no command was received since 2 minutes and quadruped may be switched off
      */
-    if (millis() - IRDispatcher.lastIRCodeMillis > MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE) {
-        IRDispatcher.lastIRCodeMillis += MILLIS_OF_INACTIVITY_BETWEEN_REMINDER_MOVE;
+    if (millis() - IRDispatcher.IRReceivedData.MillisOfLastCode > MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE) {
+        IRDispatcher.IRReceivedData.MillisOfLastCode += MILLIS_OF_INACTIVITY_BETWEEN_REMINDER_MOVE;
         doAttention();
         printVCCVoltageMillivolt(&Serial);
         // next attention in 1 minute

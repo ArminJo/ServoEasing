@@ -2,9 +2,9 @@
  * UserCommands.cpp
  *
  * Put your code here to implement your own functions.
- * If you want to use the default function, just comment the function out in this file.
+ * If you want to use the default function, just comment / deactivate the function in this file.
  *
- *  Copyright (C) 2019  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2021  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of QuadrupedControl https://github.com/ArminJo/QuadrupedControl.

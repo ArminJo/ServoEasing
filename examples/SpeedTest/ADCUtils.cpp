@@ -35,7 +35,7 @@ union Myword {
     } byte;
     uint16_t UWord;
     int16_t Word;
-    uint8_t * BytePointer;
+    uint8_t *BytePointer;
 };
 
 /*
@@ -45,18 +45,18 @@ uint16_t readADCChannel(uint8_t aChannelNumber) {
     Myword tUValue;
     ADMUX = aChannelNumber | (DEFAULT << SHIFT_VALUE_FOR_REFERENCE);
 
-//  ADCSRB = 0; // free running mode  - is default
-// ADSC-StartConversion ADIF-Reset Interrupt Flag - NOT free running mode
+    // ADCSRB = 0; // Only active if ADATE is set to 1.
+    // ADSC-StartConversion ADIF-Reset Interrupt Flag - NOT free running mode
     ADCSRA = (_BV(ADEN) | _BV(ADSC) | _BV(ADIF) | ADC_PRESCALE);
 
-// wait for single conversion to finish
+    // wait for single conversion to finish
     loop_until_bit_is_clear(ADCSRA, ADSC);
 
-// Get value
+    // Get value
     tUValue.byte.LowByte = ADCL;
     tUValue.byte.HighByte = ADCH;
     return tUValue.UWord;
-//    return ADCL | (ADCH <<8); // needs 4 bytes more
+    //    return ADCL | (ADCH <<8); // needs 4 bytes more
 }
 
 /*
@@ -66,14 +66,14 @@ uint16_t readADCChannelWithReference(uint8_t aChannelNumber, uint8_t aReference)
     Myword tUValue;
     ADMUX = aChannelNumber | (aReference << SHIFT_VALUE_FOR_REFERENCE);
 
-// ADCSRB = 0; // free running mode if ADATE is 1 - is default
+    // ADCSRB = 0; // Only active if ADATE is set to 1.
     // ADSC-StartConversion ADIF-Reset Interrupt Flag - NOT free running mode
     ADCSRA = (_BV(ADEN) | _BV(ADSC) | _BV(ADIF) | ADC_PRESCALE);
 
-// wait for single conversion to finish
+    // wait for single conversion to finish
     loop_until_bit_is_clear(ADCSRA, ADSC);
 
-// Get value
+    // Get value
     tUValue.byte.LowByte = ADCL;
     tUValue.byte.HighByte = ADCH;
     return tUValue.UWord;
@@ -81,31 +81,36 @@ uint16_t readADCChannelWithReference(uint8_t aChannelNumber, uint8_t aReference)
 
 /*
  * @return original ADMUX register content for optional later restoring values
+ * All experimental values are acquired by using the ADCSwitchingTest example from this library
  */
 uint8_t checkAndWaitForReferenceAndChannelToSwitch(uint8_t aChannelNumber, uint8_t aReference) {
     uint8_t tOldADMUX = ADMUX;
     /*
      * Must wait >= 7 us if reference has to be switched from 1.1 volt/INTERNAL to VCC/DEFAULT (seen on oscilloscope)
-     * Must wait >= 6000 us for Nano board  >= 6200 for Uno board if reference has to be switched from VCC/DEFAULT to 1.1 volt/INTERNAL
-     * Must wait >= 1100 us if channel has to be switched to 1.1 volt internal channel from channel with read 5 volt input
+     * This is done after the 2 ADC clock cycles required for Sample & Hold :-)
+     *
+     * Must wait >= 7600 us for Nano board  >= 6200 for Uno board if reference has to be switched from VCC/DEFAULT to 1.1 volt/INTERNAL
+     * Must wait >= 200 us if channel has to be switched to 1.1 volt internal channel if S&H was at 5 Volt
      */
     uint8_t tNewReference = (aReference << SHIFT_VALUE_FOR_REFERENCE);
     ADMUX = aChannelNumber | tNewReference;
-    if ((tOldADMUX & MASK_FOR_ADC_REFERENCE) != tNewReference) {
-        if (aReference == INTERNAL) {
-            /*
-             * Switch reference from DEFAULT to INTERNAL
-             */
-            delayMicroseconds(6500); // experimental value is >= 5000 us for Nano board and 6200 for UNO board
-        } else {
-            // Switch reference from INTERNAL to DEFAULT
-            delayMicroseconds(10);
-        }
-    } else if (aChannelNumber == ADC_1_1_VOLT_CHANNEL_MUX && (tOldADMUX & 0x0F) != aChannelNumber) {
+    if ((tOldADMUX & MASK_FOR_ADC_REFERENCE) != tNewReference && aReference == INTERNAL) {
         /*
-         * Switch to (high impedance) 1.1 volt channel
+         * Switch reference from DEFAULT to INTERNAL
          */
-        delayMicroseconds(1200); // experimental value is >= 1100 us for Nano board
+        delayMicroseconds(8000); // experimental value is >= 7600 us for Nano board and 6200 for UNO board
+    } else if ((tOldADMUX & 0x0F) != aChannelNumber) {
+        if (aChannelNumber == ADC_1_1_VOLT_CHANNEL_MUX) {
+            /*
+             * Internal 1.1 Volt channel requires  <= 200 us for Nano board
+             */
+            delayMicroseconds(200);
+        } else {
+            /*
+             * 100 kOhm requires < 100 us, 1 MOhm requires 120 us S&H switching time
+             */
+            delayMicroseconds(120); // experimental value is <= 1100 us for Nano board
+        }
     }
     return tOldADMUX;
 }
@@ -121,8 +126,8 @@ uint16_t readADCChannelWithReferenceOversample(uint8_t aChannelNumber, uint8_t a
     uint16_t tSumValue = 0;
     ADMUX = aChannelNumber | (aReference << SHIFT_VALUE_FOR_REFERENCE);
 
-// ADCSRB = 0; // free running mode if ADATE is 1 - is default
-// ADSC-StartConversion ADATE-AutoTriggerEnable ADIF-Reset Interrupt Flag
+    ADCSRB = 0; // Free running mode. Only active if ADATE is set to 1.
+    // ADSC-StartConversion ADATE-AutoTriggerEnable ADIF-Reset Interrupt Flag
     ADCSRA = (_BV(ADEN) | _BV(ADSC) | _BV(ADATE) | _BV(ADIF) | ADC_PRESCALE);
 
     for (uint8_t i = 0; i < _BV(aOversampleExponent); i++) {
@@ -142,14 +147,14 @@ uint16_t readADCChannelWithReferenceOversample(uint8_t aChannelNumber, uint8_t a
 }
 
 /*
- * Conversion time is defined as 26 microseconds for 16 MHz Arduino by ADC_PRESCALE32 in ADCUtils.h.
+ * Use ADC_PRESCALE32 which gives 26 us conversion time and good linearity for 16 MHz Arduino
  */
 uint16_t readADCChannelWithReferenceOversampleFast(uint8_t aChannelNumber, uint8_t aReference, uint8_t aOversampleExponent) {
     uint16_t tSumValue = 0;
     ADMUX = aChannelNumber | (aReference << SHIFT_VALUE_FOR_REFERENCE);
 
-// ADCSRB = 0; // free running mode if ADATE is 1 - is default
-// ADSC-StartConversion ADATE-AutoTriggerEnable ADIF-Reset Interrupt Flag
+    ADCSRB = 0; // Free running mode. Only active if ADATE is set to 1.
+    // ADSC-StartConversion ADATE-AutoTriggerEnable ADIF-Reset Interrupt Flag
     ADCSRA = (_BV(ADEN) | _BV(ADSC) | _BV(ADATE) | _BV(ADIF) | ADC_PRESCALE32);
 
     for (uint8_t i = 0; i < _BV(aOversampleExponent); i++) {
@@ -176,8 +181,8 @@ uint16_t readADCChannelWithReferenceMultiSamples(uint8_t aChannelNumber, uint8_t
     uint16_t tSumValue = 0;
     ADMUX = aChannelNumber | (aReference << SHIFT_VALUE_FOR_REFERENCE);
 
-// ADCSRB = 0; // free running mode if ADATE is 1 - is default
-// ADSC-StartConversion ADATE-AutoTriggerEnable ADIF-Reset Interrupt Flag
+    ADCSRB = 0; // Free running mode. Only active if ADATE is set to 1.
+    // ADSC-StartConversion ADATE-AutoTriggerEnable ADIF-Reset Interrupt Flag
     ADCSRA = (_BV(ADEN) | _BV(ADSC) | _BV(ADATE) | _BV(ADIF) | ADC_PRESCALE);
 
     for (uint8_t i = 0; i < aNumberOfSamples; i++) {
@@ -205,8 +210,8 @@ uint16_t readADCChannelWithReferenceMax(uint8_t aChannelNumber, uint8_t aReferen
     uint16_t tMaximum = 0;
     ADMUX = aChannelNumber | (aReference << SHIFT_VALUE_FOR_REFERENCE);
 
-// ADCSRB = 0; // free running mode if ADATE is 1 - is default
-// ADSC-StartConversion ADATE-AutoTriggerEnable ADIF-Reset Interrupt Flag
+    ADCSRB = 0; // Free running mode. Only active if ADATE is set to 1.
+    // ADSC-StartConversion ADATE-AutoTriggerEnable ADIF-Reset Interrupt Flag
     ADCSRA = (_BV(ADEN) | _BV(ADSC) | _BV(ADATE) | _BV(ADIF) | ADC_PRESCALE32);
 
     for (uint16_t i = 0; i < aNumberOfSamples; i++) {
@@ -247,7 +252,7 @@ uint16_t readUntil4ConsecutiveValuesAreEqual(uint8_t aChannelNumber, uint8_t aDe
 
     tValues[0] = readADCChannel(aChannelNumber);
     for (int i = 1; i < 4; ++i) {
-        delay(aDelay); // only 3 delays!
+        delay(aDelay); // Only 3 delays!
         tValues[i] = readADCChannel(aChannelNumber);
     }
 
@@ -289,30 +294,28 @@ uint16_t readUntil4ConsecutiveValuesAreEqual(uint8_t aChannelNumber, uint8_t aDe
 }
 
 /*
- * Versions without handling of switched reference and channel.
- * Use only if reference (DEFAULT, INTERNAL) is known to be at the right value (DEFAULT for VCC and INTERNAL for temperature)
- * and register ADMUX may be overwritten.
- * Use it for example if you only call getVCCVoltageSimple() or getTemperatureSimple() in your program.
- * Calling both will lead to wrong values since of reference and channel switching.
+ * !!! Function without handling of switched reference and channel.!!!
+ * Use it ONLY if you only call getVCCVoltageSimple() or getVCCVoltageMillivoltSimple() in your program.
  */
 float getVCCVoltageSimple(void) {
-// use AVCC with external capacitor at AREF pin as reference
+    // use AVCC with (optional) external capacitor at AREF pin as reference
     float tVCC = readADCChannelWithReferenceMultiSamples(ADC_1_1_VOLT_CHANNEL_MUX, DEFAULT, 4);
     return ((1023 * 1.1 * 4) / tVCC);
 }
 
 /*
- * Will at most times be sufficient since switching reference to default is quite fast.
+ * !!! Function without handling of switched reference and channel.!!!
+ * Use it ONLY if you only call getVCCVoltageSimple() or getVCCVoltageMillivoltSimple() in your program.
  */
 uint16_t getVCCVoltageMillivoltSimple(void) {
-// use AVCC with external capacitor at AREF pin as reference
+    // use AVCC with external capacitor at AREF pin as reference
     uint16_t tVCC = readADCChannelWithReferenceMultiSamples(ADC_1_1_VOLT_CHANNEL_MUX, DEFAULT, 4);
     return ((1023L * 1100 * 4) / tVCC);
 }
 
 /*
- * Do not check for changing reference or channel.
- * Will give wrong result if used at any time after analogRead();
+ * !!! Function without handling of switched reference and channel.!!!
+ * Use it ONLY if you only use INTERNAL reference (call getTemperatureSimple()) in your program.
  */
 float getTemperatureSimple(void) {
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
@@ -330,7 +333,7 @@ float getVCCVoltage(void) {
 
 /*
  * Read value of 1.1 volt internal channel using VCC as reference.
- * Waits for reference and channel switching.
+ * Handles reference and channel switching by introducing the appropriate delays.
  */
 uint16_t getVCCVoltageMillivolt(void) {
     uint8_t tOldADMUX = checkAndWaitForReferenceAndChannelToSwitch(ADC_1_1_VOLT_CHANNEL_MUX, DEFAULT);
@@ -342,24 +345,28 @@ uint16_t getVCCVoltageMillivolt(void) {
     return ((1023L * 1100) / tVCC);
 }
 
-void printVCCVoltageMillivolt(Print* aSerial) {
+void printVCCVoltageMillivolt(Print *aSerial) {
     aSerial->print(F("VCC="));
     aSerial->print(getVCCVoltageMillivolt());
     aSerial->println(" mV");
 }
 
 /*
- * Version which restore the ADC Channel and handle reference switching.
+ * Handles reference and channel switching by introducing the appropriate delays.
  */
 float getTemperature(void) {
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
     return 0.0;
 #else
-// use internal 1.1 volt as reference
+    // use internal 1.1 volt as reference
     uint8_t tOldADMUX = checkAndWaitForReferenceAndChannelToSwitch(ADC_TEMPERATURE_CHANNEL_MUX, INTERNAL);
     float tTemp = (readADCChannelWithReferenceOversample(ADC_TEMPERATURE_CHANNEL_MUX, INTERNAL, 2) - 317);
     ADMUX = tOldADMUX;
     return (tTemp / 1.22);
 #endif
 }
+#elif defined(ARDUINO_ARCH_APOLLO3)
+    void ADCUtilsDummyToAvoidBFDAssertions(){
+        ;
+    }
 #endif // defined(__AVR__)

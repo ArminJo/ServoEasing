@@ -25,7 +25,7 @@
 #include <Arduino.h>
 
 /*
- * To generate the Arduino plotter output, you must comment out the line #define PRINT_FOR_SERIAL_PLOTTER in ServoEasing.h
+ * To generate the Arduino plotter output, you must activate the line #define PRINT_FOR_SERIAL_PLOTTER in ServoEasing.h
  */
 #include "ServoEasing.h"
 
@@ -49,8 +49,8 @@ ServoEasing Servo3;
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
-#if defined(__AVR_ATmega32U4__) || defined(SERIAL_USB) || defined(SERIAL_PORT_USBVIRTUAL)
-    delay(2000); // To be able to connect Serial monitor after reset and before first printout
+#if defined(__AVR_ATmega32U4__) || defined(SERIAL_USB) || defined(SERIAL_PORT_USBVIRTUAL)  || defined(ARDUINO_attiny3217)
+    delay(2000); // To be able to connect Serial monitor after reset or power up and before first printout
 #endif
     // Just to know which program is running on my Arduino
 #ifndef PRINT_FOR_SERIAL_PLOTTER

@@ -1180,6 +1180,7 @@ __attribute__((weak)) void handleServoTimerInterrupt()
     }
 }
 
+//@formatter:off
 /*
  * Timer1 is used for the Arduino Servo library.
  * To have non blocking easing functions its unused channel B is used to generate an interrupt 100 탎 before the end of the 20 ms Arduino Servo refresh period.
@@ -1205,11 +1206,12 @@ void enableServoEasingInterrupt() {
     // TCB2 is used by Servo, but we cannot hijack the ISR, so we must use a dedicated timer for the 20 ms interrupt
     // TCB3 is used by millis()
     // Must use TCA0, since TCBx have only prescaler %2. Use single mode, because it seems to be easier :-)
-    TCA0.SINGLE.CTRLB = TCA_SINGLE_WGMODE_NORMAL_gc; // Frequency mode, top = PER
+    TCA0.SINGLE.CTRLB = TCA_SINGLE_WGMODE_NORMAL_gc;                        // Frequency mode, top = PER
     TCA0.SINGLE.PER = (((F_CPU / 1000000) * REFRESH_INTERVAL_MICROS) / 8); // (F_CPU / 1000000) = clockCyclesPerMicrosecond()
 //    TCA0.SINGLE.PER = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL_MICROS) / 8); // clockCyclesPerMicrosecond() is no macro here!
-    TCA0.SINGLE.INTCTRL = TCA_SINGLE_OVF_bm; // Overflow interrupt
-    TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV8_gc | TCA_SINGLE_ENABLE_bm; // set prescaler to 8
+    TCA0.SINGLE.INTFLAGS = TCA_SINGLE_OVF_bm;                               // reset interrupt flags
+    TCA0.SINGLE.INTCTRL = TCA_SINGLE_OVF_bm;                                // Overflow interrupt
+    TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV8_gc | TCA_SINGLE_ENABLE_bm;   // set prescaler to 8
 
 #  elif defined(TCCR1B) && defined(TIFR1) // defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
     /*
@@ -1241,23 +1243,23 @@ void enableServoEasingInterrupt() {
 
 #elif defined(ESP8266) || defined(ESP32)
     if(sInterruptsAreActive) {
-        Timer20ms.detach(); // otherwise the ESP32 kernel at least will crash and reboot
+        Timer20ms.detach();     // otherwise the ESP32 kernel at least will crash and reboot
     }
     // It seems that the callback is called by a task not an ISR, which allow us to have the callback without the IRAM attribute
     Timer20ms.attach_ms(REFRESH_INTERVAL_MILLIS, handleServoTimerInterrupt);
 
 // BluePill in 2 flavors
 #elif defined(STM32F1xx)   // for "STM32:stm32" from STM32 Boards from STM32 cores of Arduino Board manager
-    Timer20ms.setMode(LL_TIM_CHANNEL_CH1, TIMER_OUTPUT_COMPARE, NC); // used for generating only interrupts, no pin specified
-    Timer20ms.setOverflow(REFRESH_INTERVAL_MICROS, MICROSEC_FORMAT);// microsecond period
-    Timer20ms.attachInterrupt(handleServoTimerInterrupt);// this sets update interrupt enable
-    Timer20ms.resume();// Start or resume HardwareTimer: all channels are resumed, interrupts are enabled if necessary
+    Timer20ms.setMode(LL_TIM_CHANNEL_CH1, TIMER_OUTPUT_COMPARE, NC);    // used for generating only interrupts, no pin specified
+    Timer20ms.setOverflow(REFRESH_INTERVAL_MICROS, MICROSEC_FORMAT);    // microsecond period
+    Timer20ms.attachInterrupt(handleServoTimerInterrupt);               // this sets update interrupt enable
+    Timer20ms.resume();     // Start or resume HardwareTimer: all channels are resumed, interrupts are enabled if necessary
 
-#elif defined(__STM32F1__) // for "stm32duino:STM32F1 Generic STM32F103C series" from STM32F1 Boards (Roger Clark STM32duino.com)
+#elif defined(__STM32F1__)  // for "stm32duino:STM32F1 Generic STM32F103C series" from STM32F1 Boards (Roger Clark STM32duino.com)
     Timer20ms.setMode(TIMER_CH1, TIMER_OUTPUT_COMPARE);
-    Timer20ms.setPeriod(REFRESH_INTERVAL_MICROS); // 20000 microsecond period
+    Timer20ms.setPeriod(REFRESH_INTERVAL_MICROS);   // 20000 microsecond period
     Timer20ms.attachInterrupt(TIMER_CH1, handleServoTimerInterrupt);
-    Timer20ms.refresh();// Set the timer's count to 0 and update the prescaler and overflow values.
+    Timer20ms.refresh();    // Set the timer's count to 0 and update the prescaler and overflow values.
 
 #elif defined(__SAM3X8E__)  // Arduino DUE
     pmc_set_writeprotect(false);
@@ -1300,8 +1302,8 @@ void enableServoEasingInterrupt() {
      * Set timer counter mode to 16 bits, set mode as match frequency, prescaler is DIV64 => 750 kHz clock, start counter
      */
     TC5->COUNT16.CTRLA.reg |= TC_CTRLA_MODE_COUNT16| TC_CTRLA_WAVEGEN_MFRQ | TC_CTRLA_PRESCALER_DIV64 | TC_CTRLA_ENABLE;
-    TC5->COUNT16.CC[0].reg = (uint16_t) (((F_CPU/64) / REFRESH_FREQUENCY) - 1); // (750 kHz / sampleRate - 1);
-//    while (TC5->COUNT16.STATUS.bit.SYNCBUSY == 1) // The next commands do an implicit wait :-)
+    TC5->COUNT16.CC[0].reg = (uint16_t) (((F_CPU/64) / REFRESH_FREQUENCY) - 1);     // (750 kHz / sampleRate - 1);
+//    while (TC5->COUNT16.STATUS.bit.SYNCBUSY == 1)                                 // The next commands do an implicit wait :-)
 //        ;
 
     // Configure interrupt request
@@ -1388,6 +1390,7 @@ void disableServoEasingInterrupt() {
     sInterruptsAreActive = false;
 }
 
+//@formatter:on
 /*
  * 60 탎 for single servo + 160 탎 per servo if using I2C e.g.for PCA9685 expander at 400000 Hz or + 100 at 800000 Hz
  * 20 탎 for last interrupt
@@ -1401,6 +1404,8 @@ ISR(TIMER5_COMPB_vect) {
 
 #elif defined(__AVR_ATmega4809__) // Uno WiFi Rev 2, Nano Every
 ISR(TCA0_OVF_vect) {
+    // Not tested, but with the experience, I made with the ATtiny3217, I guess it is required
+    TCA0.SINGLE.INTFLAGS = TCA_SINGLE_OVF_bm; // reset interrupt flags
     handleServoTimerInterrupt();
 }
 

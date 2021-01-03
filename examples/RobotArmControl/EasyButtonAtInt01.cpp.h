@@ -270,12 +270,18 @@ void EasyButton::init(bool aIsButtonAtINT0) {
         GIMSK |= 1 << PCIE; // PCINT enable, we have only one
         PCMSK = digitalPinToBitMask(INT1_PIN);
 #    endif
-#  elif (INT1_PIN != 3)
-    /*
-     * ATmega328 (Uno, Nano ) etc. Enable pin change interrupt for port PD0 to PD7 (Arduino pin 0 to 7)
-     */
+#  elif INT1_PIN == 4 || INT1_PIN == 5 || INT1_PIN == 6 || INT1_PIN == 7
+    //ATmega328 (Uno, Nano ) etc. Enable pin change interrupt for port PD0 to PD7 (Arduino pin 0 to 7)
         PCICR |= 1 << PCIE2;
         PCMSK2 = digitalPinToBitMask(INT1_PIN);
+#    elif INT1_PIN == 8 || INT1_PIN == 9 || INT1_PIN == 10 || INT1_PIN == 11 || INT1_PIN == 12 || INT1_PIN == 13
+    //ATmega328 (Uno, Nano ) etc. Enable pin change interrupt 0 to 5 for port PB0 to PB5 (Arduino pin 8 to 13)
+        PCICR |= _BV(PCIE0);
+        PCMSK0 = digitalPinToBitMask(INT1_PIN);
+#    elif INT1_PIN == A0 || INT1_PIN == A1 || INT1_PIN == A2 || INT1_PIN == A3 || INT1_PIN == A4 || INT1_PIN == A5
+    //ATmega328 (Uno, Nano ) etc. Enable pin change interrupt 8 to 13 for port PC0 to PC5 (Arduino pin A0 to A5)
+        PCICR |= _BV(PCIE1);
+        PCMSK1 = digitalPinToBitMask(INT1_PIN);
 #  else
 #    if defined(USE_ATTACH_INTERRUPT)
         attachInterrupt(digitalPinToInterrupt(INT1_PIN), &handleINT1Interrupt, CHANGE);
@@ -659,9 +665,15 @@ ISR(INT0_vect) {
 #    if (! defined(ISC10)) || ((defined(__AVR_ATtiny87__) || defined(__AVR_ATtiny167__)) && INT1_PIN != 3)
 // on ATtinyX5 we do not have a INT1_vect but we can use the PCINT0_vect
 ISR(PCINT0_vect)
-#    elif (INT1_PIN != 3)
+#    elif INT1_PIN == 4 || INT1_PIN == 5 || INT1_PIN == 6 || INT1_PIN == 7
 // PCINT for ATmega328 Arduino pins 0 to 7
 ISR(PCINT2_vect)
+#    elif INT1_PIN == 8 || INT1_PIN == 9 || INT1_PIN == 10 || INT1_PIN == 11 || INT1_PIN == 12 || INT1_PIN == 13
+// PCINT for ATmega328 Arduino pins 8 (PB0) to 13 (PB5) - (PCINT 0 to 5)
+ISR(PCINT0_vect)
+#    elif INT1_PIN == A0 || INT1_PIN == A1 || INT1_PIN == A2 || INT1_PIN == A3 || INT1_PIN == A4 || INT1_PIN == A5
+// PCINT for ATmega328 Arduino pins A1 (PC0) to A5 (PC5) - (PCINT 8 to 13)
+ISR(PCINT1_vect)
 #    else
 ISR(INT1_vect)
 #    endif

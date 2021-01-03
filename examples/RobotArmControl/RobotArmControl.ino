@@ -33,7 +33,7 @@
 #define INFO // enable some prints
 
 #if defined(ROBOT_ARM_IR_CONTROL)
-#define USE_IRL_REMOTE_LIBRARY // must be specified before including IRCommandDispatcher.cpp.h to define which IR library to use
+#define USE_TINY_IR_RECEIVER // must be specified before including IRCommandDispatcher.cpp.h to define which IR library to use
 #include "IRCommandMapping.h" // must be included before IRCommandDispatcher.cpp.h to define IR_ADDRESS and IRMapping and string "unknown".
 #include "IRCommandDispatcher.cpp.h"
 #include "RobotArmRTCControl.h"
@@ -67,7 +67,7 @@
  */
 
 /*
- * comment this out and put your own code here
+ * Activate this and put your own code here
  */
 //void doAutoMove() {
 //    return;
@@ -96,8 +96,8 @@ bool sVCCTooLow = false;
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
-#if defined(__AVR_ATmega32U4__) || defined(SERIAL_USB) || defined(SERIAL_PORT_USBVIRTUAL)
-    delay(2000); // To be able to connect Serial monitor after reset and before first printout
+#if defined(__AVR_ATmega32U4__) || defined(SERIAL_USB) || defined(SERIAL_PORT_USBVIRTUAL)  || defined(ARDUINO_attiny3217)
+    delay(2000); // To be able to connect Serial monitor after reset or power up and before first printout
 #endif
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
@@ -162,12 +162,12 @@ void loop() {
     /*
      * Do auto move if timeout after boot was reached and no IR command was received
      */
-    if (sActionType != ACTION_TYPE_DRAW_TIME && IRDispatcher.lastIRCodeMillis != 0 && !sManualActionHappened && !sVCCTooLow
+    if (sActionType != ACTION_TYPE_DRAW_TIME && IRDispatcher.IRReceivedData.MillisOfLastCode != 0 && !sManualActionHappened && !sVCCTooLow
             && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
         doRobotArmAutoMove();
     }
 
-    if (sActionType != ACTION_TYPE_DRAW_TIME && IRDispatcher.lastIRCodeMillis == 0) {
+    if (sActionType != ACTION_TYPE_DRAW_TIME && IRDispatcher.IRReceivedData.MillisOfLastCode == 0) {
         handleManualControl();
     }
 #else
@@ -265,7 +265,7 @@ void changeEasingType(__attribute__((unused)) bool aButtonToggleState) {
 
 void doSetToAutoModeForRobotArm() {
 #if defined(ROBOT_ARM_IR_CONTROL)
-    IRDispatcher.lastIRCodeMillis = 1;
+    IRDispatcher.IRReceivedData.MillisOfLastCode = 1;
 #endif
     sManualActionHappened = false;
 }

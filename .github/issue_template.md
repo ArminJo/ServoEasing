@@ -7,7 +7,7 @@ assignees: ArminJo
 
 ## Bug Report
 
-### Arduino Platform
+### Board
 * [ ] Arduino ATmega328* board (UNO, Nano)
 * [ ] Arduino ATmega2560 board (Mega)
 * [ ] Arduino ATmega32U4 board (Leonardo)
@@ -21,10 +21,11 @@ assignees: ArminJo
 * [ ] Teensy board
 * [ ] Other - please specify
 
-<!-- Please specify board name if not included in platform selection -->
+<!-- Please specify board name if not included in board selection -->
 
 ### IDE
 * [ ] Arduino IDE
+* [ ] Arduino Web Editor
 * [ ] Arduino Pro IDE
 * [ ] Sloeber IDE
 * [ ] PlatformIO IDE
@@ -45,7 +46,7 @@ assignees: ArminJo
 ### Pin(s) used for servo, if not default
 
 ### Version
-* [ ] Yes I use the [latest release](https://github.com/ArminJo/ServoEasing/releases)
+* [ ] Yes I use the [latest repo version](https://github.com/ArminJo/ServoEasing/archive/master.zip) and verified this!
 * [ ] Other - please specify
 
 ### Current behavior

@@ -32,9 +32,10 @@
 #include "QuadrupedMovements.h"
 #include "QuadrupedServoControl.h"
 
-//#define INFO // comment this out to see serial info output
+//#define INFO // activate this to see serial info output
 
-uint8_t sActionType, sLastActionType;
+uint8_t sActionType;
+uint8_t sLastActionType;
 
 /******************************************
  * The Commands to execute
@@ -488,7 +489,6 @@ void signalLeg(uint8_t aPivotServoIndex) {
     sServoArray[aPivotServoIndex + LIFT_SERVO_OFFSET]->easeTo(90, 60);
 }
 
-
 #if defined(QUADRUPED_HAS_IR_CONTROL) && !defined(USE_USER_DEFINED_MOVEMENTS)
 /*
  * include required only for doCalibration
@@ -514,7 +514,10 @@ void doCalibration() {
 
     while (!tGotExitCommand) {
         // wait until next command received
-        IRDispatcher.getIRCommand(true);
+        while (!IRDispatcher.IRReceivedData.isAvailable) {
+        }
+        IRDispatcher.IRReceivedData.isAvailable = false;
+
         unsigned long tIRCode = IRDispatcher.IRReceivedData.command;
 #ifdef INFO
         IRDispatcher.printIRCommandString();
@@ -552,8 +555,6 @@ void doCalibration() {
             } else {
                 signalLeg(tPivotServoIndex);
             }
-            // remove a repeat command
-            IRDispatcher.getIRCommand(false);
             break;
         case COMMAND_CALIBRATE:
             // repeated command here

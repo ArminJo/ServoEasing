@@ -14,7 +14,7 @@
 //#define ROBOT_ARM_RTC_CONTROL
 
 #if defined(ROBOT_ARM_IR_CONTROL)
-#define IR_RECEIVER_PIN  A0
+#define IR_INPUT_PIN  A0
 #endif
 
 #define VCC_STOP_THRESHOLD_MILLIVOLT 3500   // We have voltage drop at the connectors, so the battery voltage is assumed to be higher, than the Arduino VCC.

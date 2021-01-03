@@ -35,7 +35,7 @@
 #include "QuadrupedServoControl.h"
 #include "QuadrupedControl.h"
 
-//#define INFO // comment this out to see serial info output
+//#define INFO // activate this to see serial info output
 
 ServoEasing frontLeftPivotServo;    // 0 - Front Left Pivot Servo
 ServoEasing frontLeftLiftServo;     // 1 - Front Left Lift Servo

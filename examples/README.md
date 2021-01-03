@@ -50,7 +50,7 @@ Program for controlling a [robot arm with 4 servos](https://www.instructables.co
 
 ## PCA9685_Expander example
 The OneServo example modified for using a PCA9685 expander board and the standard Arduino Wire library.<br/>
-You must remove the comment of the line `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.h* to make the expander example work.
+You must activate the line `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.h* to make the expander example work.
 
 ## PCA9685_ExpanderAndServo example
 Combination of OneServo example and PCA9685_Expander example. Move one servo attached to the Arduino board and one servo attached to the PCA9685 expander board **simultaneously**.
@@ -58,7 +58,7 @@ Combination of OneServo example and PCA9685_Expander example. Move one servo att
 ## PCA9685_ExpanderFor32Servos example
 Program to show the usage of 2 PCA9685 expander boards with 32 servos.
 On the ESP32, the I2C library interferes with the 29 millisecond timer and therefore can only run at 100000 Hz or lower.<br/>
-You must remove the comment of the line `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.h* to make the expander example work.
+You must activate the line `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.h* to make the expander example work.
 
 ### YouTube Video
 [![Servos 16-19 and 28-31 in action](https://i.ytimg.com/vi/XMVh3IT5BgU/hqdefault.jpg)](https://youtu.be/XMVh3IT5BgU)

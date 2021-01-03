@@ -107,7 +107,7 @@ void __attribute__((weak)) doCloseClaw() {
 void __attribute__((weak)) doSwitchToManual() {
 #if defined(ROBOT_ARM_IR_CONTROL)
     // this enables manual mode
-    IRDispatcher.lastIRCodeMillis = 0;
+    IRDispatcher.IRReceivedData.MillisOfLastCode = 0;
 #endif
 }
 

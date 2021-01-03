@@ -32,7 +32,7 @@
 #include "QuadrupedMovements.h"
 #include "QuadrupedServoControl.h"
 
-//#define INFO // comment this out to see serial info output
+//#define INFO // activate this to see serial info output
 
 uint8_t sMovingDirection = MOVE_DIRECTION_FORWARD;
 

@@ -154,6 +154,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Arduino Lint
+        uses: arduino/arduino-lint-action@v1
+        with:
+          library-manager: update
+
       - name: Compile all examples using the arduino-test-compile action
         uses: ArminJo/arduino-test-compile@master
         with:
