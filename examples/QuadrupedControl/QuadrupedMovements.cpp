@@ -156,8 +156,8 @@ void basicQuarterTurn(uint8_t aMoveLegIndex, bool aTurnLeft) {
         tMoveAngle = -TURN_MOVE_ANGLE;
         tTurnAngle = TURN_BODY_ANGLE;
     }
-    sServoNextPositionArray[tServoIndex] = 90 + tMoveAngle;
-    sServoNextPositionArray[tServoIndex + LIFT_SERVO_OFFSET] = LIFT_HIGHEST_ANGLE;
+    ServoEasing::ServoEasingNextPositionArray[tServoIndex] = 90 + tMoveAngle;
+    ServoEasing::ServoEasingNextPositionArray[tServoIndex + LIFT_SERVO_OFFSET] = LIFT_HIGHEST_ANGLE;
     tServoIndex += SERVOS_PER_LEG;
 
     /*
@@ -165,9 +165,9 @@ void basicQuarterTurn(uint8_t aMoveLegIndex, bool aTurnLeft) {
      */
     for (uint8_t i = 0; i < NUMBER_OF_LEGS - 1; ++i) {
         tServoIndex %= NUMBER_OF_SERVOS;
-        sServoNextPositionArray[tServoIndex] = sServoNextPositionArray[tServoIndex] + tTurnAngle;
+        ServoEasing::ServoEasingNextPositionArray[tServoIndex] = ServoEasing::ServoEasingNextPositionArray[tServoIndex] + tTurnAngle;
 // reset lift values for all other legs
-        sServoNextPositionArray[tServoIndex + LIFT_SERVO_OFFSET] = sBodyHeightAngle;
+        ServoEasing::ServoEasingNextPositionArray[tServoIndex + LIFT_SERVO_OFFSET] = sBodyHeightAngle;
         tServoIndex += SERVOS_PER_LEG;
     }
 //    printArrayPositions(&Serial);
@@ -234,7 +234,7 @@ void basicHalfCreep(uint8_t aDirection, bool doMirror) {
 // check if body height has changed
     checkIfBodyHeightHasChanged();
 // reset lift value
-    sServoNextPositionArray[transformOneServoIndex(FRONT_RIGHT_PIVOT) + LIFT_SERVO_OFFSET] = sBodyHeightAngle;
+    ServoEasing::ServoEasingNextPositionArray[transformOneServoIndex(FRONT_RIGHT_PIVOT) + LIFT_SERVO_OFFSET] = sBodyHeightAngle;
 
 // 2. Move body forward by CREEP_BODY_MOVE_ANGLE
 #ifdef INFO
@@ -258,7 +258,7 @@ void basicHalfCreep(uint8_t aDirection, bool doMirror) {
     checkIfBodyHeightHasChanged();
 
 // reset lift value
-    sServoNextPositionArray[transformOneServoIndex(BACK_LEFT_PIVOT) + LIFT_SERVO_OFFSET] = sBodyHeightAngle;
+    ServoEasing::ServoEasingNextPositionArray[transformOneServoIndex(BACK_LEFT_PIVOT) + LIFT_SERVO_OFFSET] = sBodyHeightAngle;
 }
 
 /*
@@ -312,34 +312,34 @@ void basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
     uint8_t tIndexDelta;
 // Front left
     if (aMoveMirrored) {
-        sServoNextPositionArray[tIndex] = 180 - Y_POSITION_OPEN_ANGLE;
+        ServoEasing::ServoEasingNextPositionArray[tIndex] = 180 - Y_POSITION_OPEN_ANGLE;
         tIndexDelta = -SERVOS_PER_LEG;
     } else {
-        sServoNextPositionArray[tIndex] = Y_POSITION_OPEN_ANGLE;
+        ServoEasing::ServoEasingNextPositionArray[tIndex] = Y_POSITION_OPEN_ANGLE;
         tIndexDelta = SERVOS_PER_LEG;
     }
 // Back left
     tIndex = (tIndex + tIndexDelta) % NUMBER_OF_SERVOS;
     if (aMoveMirrored) {
-        sServoNextPositionArray[tIndex] = Y_POSITION_OPEN_ANGLE;
+        ServoEasing::ServoEasingNextPositionArray[tIndex] = Y_POSITION_OPEN_ANGLE;
     } else {
-        sServoNextPositionArray[tIndex] = 180 - Y_POSITION_OPEN_ANGLE;
+        ServoEasing::ServoEasingNextPositionArray[tIndex] = 180 - Y_POSITION_OPEN_ANGLE;
     }
 
 // Back right
     tIndex = (tIndex + tIndexDelta) % NUMBER_OF_SERVOS;
     if (aMoveMirrored) {
-        sServoNextPositionArray[tIndex] = 180 - CREEP_BODY_MOVE_ANGLE;
+        ServoEasing::ServoEasingNextPositionArray[tIndex] = 180 - CREEP_BODY_MOVE_ANGLE;
     } else {
-        sServoNextPositionArray[tIndex] = CREEP_BODY_MOVE_ANGLE;
+        ServoEasing::ServoEasingNextPositionArray[tIndex] = CREEP_BODY_MOVE_ANGLE;
     }
 
 // Front right
     tIndex = (tIndex + tIndexDelta) % NUMBER_OF_SERVOS;
     if (aMoveMirrored) {
-        sServoNextPositionArray[tIndex] = Y_POSITION_CLOSE_ANGLE;
+        ServoEasing::ServoEasingNextPositionArray[tIndex] = Y_POSITION_CLOSE_ANGLE;
     } else {
-        sServoNextPositionArray[tIndex] = 180 - Y_POSITION_CLOSE_ANGLE;
+        ServoEasing::ServoEasingNextPositionArray[tIndex] = 180 - Y_POSITION_CLOSE_ANGLE;
     }
 //    printArrayPositions(&Serial);
     synchronizeMoveAllServosAndCheckInputAndWait();

@@ -103,13 +103,13 @@ void printAndSetTrimAngles() {
         Serial.print(F("]="));
         Serial.println(sServoTrimAngles[i]);
 #endif
-        sServoArray[i]->setTrim(sServoTrimAngles[i], true);
+        ServoEasing::ServoEasingArray[i]->setTrim(sServoTrimAngles[i], true);
     }
 }
 
 void resetServosTo90Degree() {
     for (uint8_t i = 0; i < NUMBER_OF_SERVOS; ++i) {
-        sServoArray[i]->write(90);
+        ServoEasing::ServoEasingArray[i]->write(90);
     }
 }
 
@@ -131,15 +131,15 @@ void eepromWriteServoTrim() {
 
 void setEasingTypeToLinear() {
     for (uint8_t tServoIndex = 0; tServoIndex < NUMBER_OF_SERVOS; ++tServoIndex) {
-        sServoArray[tServoIndex]->setEasingType(EASE_LINEAR);
+        ServoEasing::ServoEasingArray[tServoIndex]->setEasingType(EASE_LINEAR);
     }
 }
 
 void setEasingTypeForMoving() {
     for (int tServoIndex = 0; tServoIndex < NUMBER_OF_SERVOS; ++tServoIndex) {
-        sServoArray[tServoIndex]->setEasingType(EASE_LINEAR);
+        ServoEasing::ServoEasingArray[tServoIndex]->setEasingType(EASE_LINEAR);
         tServoIndex++;
-        sServoArray[tServoIndex]->setEasingType(EASE_QUADRATIC_BOUNCING);
+        ServoEasing::ServoEasingArray[tServoIndex]->setEasingType(EASE_QUADRATIC_BOUNCING);
     }
 }
 
@@ -179,29 +179,29 @@ void transformAndSetAllServos(int aFrontLeftPivot, int aBackLeftPivot, int aBack
     if (doInvert) {
         aFrontLeftPivot = 180 - aFrontLeftPivot;
     }
-    sServoNextPositionArray[tEffectivePivotServoIndex] = aFrontLeftPivot;
-    sServoNextPositionArray[tEffectivePivotServoIndex + LIFT_SERVO_OFFSET] = aFrontLeftLift;
+    ServoEasing::ServoEasingNextPositionArray[tEffectivePivotServoIndex] = aFrontLeftPivot;
+    ServoEasing::ServoEasingNextPositionArray[tEffectivePivotServoIndex + LIFT_SERVO_OFFSET] = aFrontLeftLift;
 
     tEffectivePivotServoIndex = ((BACK_LEFT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
         aBackLeftPivot = 180 - aBackLeftPivot;
     }
-    sServoNextPositionArray[tEffectivePivotServoIndex] = aBackLeftPivot;
-    sServoNextPositionArray[tEffectivePivotServoIndex + LIFT_SERVO_OFFSET] = aBackLeftLift;
+    ServoEasing::ServoEasingNextPositionArray[tEffectivePivotServoIndex] = aBackLeftPivot;
+    ServoEasing::ServoEasingNextPositionArray[tEffectivePivotServoIndex + LIFT_SERVO_OFFSET] = aBackLeftLift;
 
     tEffectivePivotServoIndex = ((BACK_RIGHT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
         aBackRightPivot = 180 - aBackRightPivot;
     }
-    sServoNextPositionArray[tEffectivePivotServoIndex] = aBackRightPivot;
-    sServoNextPositionArray[tEffectivePivotServoIndex + LIFT_SERVO_OFFSET] = aBackRightLift;
+    ServoEasing::ServoEasingNextPositionArray[tEffectivePivotServoIndex] = aBackRightPivot;
+    ServoEasing::ServoEasingNextPositionArray[tEffectivePivotServoIndex + LIFT_SERVO_OFFSET] = aBackRightLift;
 
     tEffectivePivotServoIndex = ((FRONT_RIGHT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
         aFrontRightPivot = 180 - aFrontRightPivot;
     }
-    sServoNextPositionArray[tEffectivePivotServoIndex] = aFrontRightPivot;
-    sServoNextPositionArray[tEffectivePivotServoIndex + LIFT_SERVO_OFFSET] = aFrontRightLift;
+    ServoEasing::ServoEasingNextPositionArray[tEffectivePivotServoIndex] = aFrontRightPivot;
+    ServoEasing::ServoEasingNextPositionArray[tEffectivePivotServoIndex + LIFT_SERVO_OFFSET] = aFrontRightLift;
 
     if (aDoMove) {
         synchronizeMoveAllServosAndCheckInputAndWait();
@@ -228,25 +228,25 @@ void transformAndSetPivotServos(int aFrontLeftPivot, int aBackLeftPivot, int aBa
     if (doInvert) {
         aFrontLeftPivot = 180 - aFrontLeftPivot;
     }
-    sServoNextPositionArray[tEffectivePivotServoIndex] = aFrontLeftPivot;
+    ServoEasing::ServoEasingNextPositionArray[tEffectivePivotServoIndex] = aFrontLeftPivot;
 
     tEffectivePivotServoIndex = ((BACK_LEFT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
         aBackLeftPivot = 180 - aBackLeftPivot;
     }
-    sServoNextPositionArray[tEffectivePivotServoIndex] = aBackLeftPivot;
+    ServoEasing::ServoEasingNextPositionArray[tEffectivePivotServoIndex] = aBackLeftPivot;
 
     tEffectivePivotServoIndex = ((BACK_RIGHT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
         aBackRightPivot = 180 - aBackRightPivot;
     }
-    sServoNextPositionArray[tEffectivePivotServoIndex] = aBackRightPivot;
+    ServoEasing::ServoEasingNextPositionArray[tEffectivePivotServoIndex] = aBackRightPivot;
 
     tEffectivePivotServoIndex = ((FRONT_RIGHT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
         aFrontRightPivot = 180 - aFrontRightPivot;
     }
-    sServoNextPositionArray[tEffectivePivotServoIndex] = aFrontRightPivot;
+    ServoEasing::ServoEasingNextPositionArray[tEffectivePivotServoIndex] = aFrontRightPivot;
 
     if (aDoMove) {
         synchronizeMoveAllServosAndCheckInputAndWait();
@@ -282,17 +282,17 @@ void testTransform() {
 }
 
 void setPivotServos(int aFrontLeftPivot, int aBackLeftPivot, int aBackRightPivot, int aFrontRightPivot) {
-    sServoNextPositionArray[FRONT_LEFT_PIVOT] = aFrontLeftPivot;
-    sServoNextPositionArray[BACK_LEFT_PIVOT] = aBackLeftPivot;
-    sServoNextPositionArray[BACK_RIGHT_PIVOT] = aBackRightPivot;
-    sServoNextPositionArray[FRONT_RIGHT_PIVOT] = aFrontRightPivot;
+    ServoEasing::ServoEasingNextPositionArray[FRONT_LEFT_PIVOT] = aFrontLeftPivot;
+    ServoEasing::ServoEasingNextPositionArray[BACK_LEFT_PIVOT] = aBackLeftPivot;
+    ServoEasing::ServoEasingNextPositionArray[BACK_RIGHT_PIVOT] = aBackRightPivot;
+    ServoEasing::ServoEasingNextPositionArray[FRONT_RIGHT_PIVOT] = aFrontRightPivot;
     synchronizeMoveAllServosAndCheckInputAndWait();
 }
 
 /*
  * Accepts height from 0 to 100
  */
-void setLiftServoHeight(ServoEasing & aLiftServo, uint8_t aHeightPercent) {
+void setLiftServoHeight(ServoEasing &aLiftServo, uint8_t aHeightPercent) {
     if (aHeightPercent > 100) {
         aHeightPercent = 100;
     }
@@ -304,18 +304,18 @@ void setLiftServoHeight(ServoEasing & aLiftServo, uint8_t aHeightPercent) {
  * Set all servos to the same angle
  */
 void setLiftServos(int aBodyHeightAngle) {
-    sServoNextPositionArray[FRONT_LEFT_LIFT] = aBodyHeightAngle;
-    sServoNextPositionArray[BACK_LEFT_LIFT] = aBodyHeightAngle;
-    sServoNextPositionArray[BACK_RIGHT_LIFT] = aBodyHeightAngle;
-    sServoNextPositionArray[FRONT_RIGHT_LIFT] = aBodyHeightAngle;
+    ServoEasing::ServoEasingNextPositionArray[FRONT_LEFT_LIFT] = aBodyHeightAngle;
+    ServoEasing::ServoEasingNextPositionArray[BACK_LEFT_LIFT] = aBodyHeightAngle;
+    ServoEasing::ServoEasingNextPositionArray[BACK_RIGHT_LIFT] = aBodyHeightAngle;
+    ServoEasing::ServoEasingNextPositionArray[FRONT_RIGHT_LIFT] = aBodyHeightAngle;
     synchronizeMoveAllServosAndCheckInputAndWait();
 }
 
 void setLiftServos(int aFrontLeftLift, int aBackLeftLift, int aBackRightLift, int aFrontRightLift) {
-    sServoNextPositionArray[FRONT_LEFT_LIFT] = aFrontLeftLift;
-    sServoNextPositionArray[BACK_LEFT_LIFT] = aBackLeftLift;
-    sServoNextPositionArray[BACK_RIGHT_LIFT] = aBackRightLift;
-    sServoNextPositionArray[FRONT_RIGHT_LIFT] = aFrontRightLift;
+    ServoEasing::ServoEasingNextPositionArray[FRONT_LEFT_LIFT] = aFrontLeftLift;
+    ServoEasing::ServoEasingNextPositionArray[BACK_LEFT_LIFT] = aBackLeftLift;
+    ServoEasing::ServoEasingNextPositionArray[BACK_RIGHT_LIFT] = aBackRightLift;
+    ServoEasing::ServoEasingNextPositionArray[FRONT_RIGHT_LIFT] = aFrontRightLift;
     synchronizeMoveAllServosAndCheckInputAndWait();
 }
 
@@ -325,7 +325,7 @@ void setLiftServos(int aFrontLeftLift, int aBackLeftLift, int aBackRightLift, in
 void setLiftServosToBodyHeight() {
     // Set values direct, since we expect only a change of 2 degree
     for (uint8_t i = LIFT_SERVO_OFFSET; i < NUMBER_OF_SERVOS; i += SERVOS_PER_LEG) {
-        sServoArray[i]->write(sBodyHeightAngle);
+        ServoEasing::ServoEasingArray[i]->write(sBodyHeightAngle);
     }
 }
 
@@ -350,15 +350,15 @@ uint8_t convertLegPercentHeightToAngle(uint8_t aLegHeightPercent) {
 
 void setAllServos(int aFrontLeftPivot, int aBackLeftPivot, int aBackRightPivot, int aFrontRightPivot, int aFrontLeftLift,
         int aBackLeftLift, int aBackRightLift, int aFrontRightLift) {
-    sServoNextPositionArray[FRONT_LEFT_PIVOT] = aFrontLeftPivot;
-    sServoNextPositionArray[BACK_LEFT_PIVOT] = aBackLeftPivot;
-    sServoNextPositionArray[BACK_RIGHT_PIVOT] = aBackRightPivot;
-    sServoNextPositionArray[FRONT_RIGHT_PIVOT] = aFrontRightPivot;
+    ServoEasing::ServoEasingNextPositionArray[FRONT_LEFT_PIVOT] = aFrontLeftPivot;
+    ServoEasing::ServoEasingNextPositionArray[BACK_LEFT_PIVOT] = aBackLeftPivot;
+    ServoEasing::ServoEasingNextPositionArray[BACK_RIGHT_PIVOT] = aBackRightPivot;
+    ServoEasing::ServoEasingNextPositionArray[FRONT_RIGHT_PIVOT] = aFrontRightPivot;
 
-    sServoNextPositionArray[FRONT_LEFT_LIFT] = aFrontLeftLift;
-    sServoNextPositionArray[BACK_LEFT_LIFT] = aBackLeftLift;
-    sServoNextPositionArray[BACK_RIGHT_LIFT] = aBackRightLift;
-    sServoNextPositionArray[FRONT_RIGHT_LIFT] = aFrontRightLift;
+    ServoEasing::ServoEasingNextPositionArray[FRONT_LEFT_LIFT] = aFrontLeftLift;
+    ServoEasing::ServoEasingNextPositionArray[BACK_LEFT_LIFT] = aBackLeftLift;
+    ServoEasing::ServoEasingNextPositionArray[BACK_RIGHT_LIFT] = aBackRightLift;
+    ServoEasing::ServoEasingNextPositionArray[FRONT_RIGHT_LIFT] = aFrontRightLift;
     synchronizeMoveAllServosAndCheckInputAndWait();
 }
 
@@ -367,12 +367,12 @@ void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree) {
 }
 
 void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree, uint16_t aDegreesPerSecond) {
-    sServoArray[aServoIndex]->startEaseTo(aDegree, aDegreesPerSecond, false);
+    ServoEasing::ServoEasingArray[aServoIndex]->startEaseTo(aDegree, aDegreesPerSecond, false);
     do {
         if (delayAndCheck(REFRESH_INTERVAL / 1000)) { // 20 ms - REFRESH_INTERVAL is in Microseconds
             return;
         }
-    } while (!sServoArray[aServoIndex]->update());
+    } while (!ServoEasing::ServoEasingArray[aServoIndex]->update());
 }
 
 void updateAndCheckInputAndWaitForAllServosToStop() {

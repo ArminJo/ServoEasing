@@ -96,7 +96,7 @@ void shutdownServos() {
 void setEasingType(uint8_t aEasingType) {
     sEasingType = aEasingType;
     for (uint8_t tServoIndex = 0; tServoIndex < NUMBER_OF_SERVOS - 1; ++tServoIndex) {
-        sServoArray[tServoIndex]->setEasingType(aEasingType);
+        ServoEasing::ServoEasingArray[tServoIndex]->setEasingType(aEasingType);
     }
 }
 
@@ -419,12 +419,12 @@ void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree) {
 }
 
 void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree, uint16_t aDegreesPerSecond) {
-    sServoArray[aServoIndex]->startEaseTo(aDegree, aDegreesPerSecond, false);
+    ServoEasing::ServoEasingArray[aServoIndex]->startEaseTo(aDegree, aDegreesPerSecond, false);
     do {
         if (!delayAndCheckForRobotArm(REFRESH_INTERVAL / 1000)) { // 20 ms - REFRESH_INTERVAL is in Microseconds
             return;
         }
-    } while (!sServoArray[aServoIndex]->update());
+    } while (!ServoEasing::ServoEasingArray[aServoIndex]->update());
 }
 
 void updateAndCheckInputAndWaitForAllServosToStop() {

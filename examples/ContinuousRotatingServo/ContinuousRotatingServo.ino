@@ -113,7 +113,7 @@ void loop() {
         blinkLED();
     }
     Servo1.startEaseTo(0, 20);
-    while (areInterruptsActive()) {
+    while (ServoEasing::areInterruptsActive()) {
         blinkLED();
     }
     delay(1000);

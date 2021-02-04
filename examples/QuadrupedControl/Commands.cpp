@@ -116,7 +116,7 @@ void __attribute__((weak)) doWave() {
     delayAndCheck(1000);
     RETURN_IF_STOP;
 
-    sServoArray[FRONT_RIGHT_PIVOT]->setEasingType(EASE_QUADRATIC_IN_OUT);
+    ServoEasing::ServoEasingArray[FRONT_RIGHT_PIVOT]->setEasingType(EASE_QUADRATIC_IN_OUT);
 
     // wave with the front right leg
     for (uint8_t i = 0; i < 3; ++i) {
@@ -126,7 +126,7 @@ void __attribute__((weak)) doWave() {
         moveOneServoAndCheckInputAndWait(FRONT_RIGHT_PIVOT, 45, sServoSpeed * 2);
         RETURN_IF_STOP;
     }
-    sServoArray[FRONT_RIGHT_PIVOT]->setEasingType(EASE_LINEAR);
+    ServoEasing::ServoEasingArray[FRONT_RIGHT_PIVOT]->setEasingType(EASE_LINEAR);
 
     delayAndCheck(1000);
     RETURN_IF_STOP;
@@ -155,8 +155,8 @@ void __attribute__((weak)) doBow() {
     RETURN_IF_STOP;
 
     // Lift front legs
-    sServoArray[FRONT_LEFT_LIFT]->setEaseTo(LIFT_LOWEST_ANGLE, sServoSpeed);
-    sServoArray[FRONT_RIGHT_LIFT]->startEaseToD(LIFT_LOWEST_ANGLE, sServoArray[FRONT_LEFT_LIFT]->mMillisForCompleteMove);
+    ServoEasing::ServoEasingArray[FRONT_LEFT_LIFT]->setEaseTo(LIFT_LOWEST_ANGLE, sServoSpeed);
+    ServoEasing::ServoEasingArray[FRONT_RIGHT_LIFT]->startEaseToD(LIFT_LOWEST_ANGLE, ServoEasing::ServoEasingArray[FRONT_LEFT_LIFT]->mMillisForCompleteMove);
     updateAndCheckInputAndWaitForAllServosToStop();
     RETURN_IF_STOP;
 
@@ -484,9 +484,9 @@ void __attribute__((weak)) wipeOutPatterns() {
  * Signals which leg is to be calibrated
  */
 void signalLeg(uint8_t aPivotServoIndex) {
-    sServoArray[aPivotServoIndex + LIFT_SERVO_OFFSET]->easeTo(LIFT_HIGHEST_ANGLE, 60);
-    sServoArray[aPivotServoIndex]->easeTo(90, 60);
-    sServoArray[aPivotServoIndex + LIFT_SERVO_OFFSET]->easeTo(90, 60);
+    ServoEasing::ServoEasingArray[aPivotServoIndex + LIFT_SERVO_OFFSET]->easeTo(LIFT_HIGHEST_ANGLE, 60);
+    ServoEasing::ServoEasingArray[aPivotServoIndex]->easeTo(90, 60);
+    ServoEasing::ServoEasingArray[aPivotServoIndex + LIFT_SERVO_OFFSET]->easeTo(90, 60);
 }
 
 #if defined(QUADRUPED_HAS_IR_CONTROL) && !defined(USE_USER_DEFINED_MOVEMENTS)
@@ -497,12 +497,12 @@ void signalLeg(uint8_t aPivotServoIndex) {
 
 /*
  * Changes the servo calibration values in EEPROM.
- * Starts with front left i.e. sServoArray[0,1] and switches to the next leg with the COMMAND_ENTER
+ * Starts with front left i.e. ServoEasing::ServoEasingArray[0,1] and switches to the next leg with the COMMAND_ENTER
  */
 void doCalibration() {
 // disable it for user defined movements, since just testing the remote may lead to accidental wrong calibration
 
-    uint8_t tPivotServoIndex = 0; // start with front left i.e. sServoArray[0]
+    uint8_t tPivotServoIndex = 0; // start with front left i.e. ServoEasing::ServoEasingArray[0]
     bool tGotExitCommand = false;
     resetServosTo90Degree();
     delay(500);
@@ -525,29 +525,29 @@ void doCalibration() {
         switch (tIRCode) {
         case COMMAND_RIGHT:
             sServoTrimAngles[tPivotServoIndex]++;
-            sServoArray[tPivotServoIndex]->setTrim(sServoTrimAngles[tPivotServoIndex], true);
+            ServoEasing::ServoEasingArray[tPivotServoIndex]->setTrim(sServoTrimAngles[tPivotServoIndex], true);
             break;
         case COMMAND_LEFT:
             sServoTrimAngles[tPivotServoIndex]--;
-            sServoArray[tPivotServoIndex]->setTrim(sServoTrimAngles[tPivotServoIndex], true);
+            ServoEasing::ServoEasingArray[tPivotServoIndex]->setTrim(sServoTrimAngles[tPivotServoIndex], true);
             break;
         case COMMAND_FORWARD:
             sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET]++;
-            sServoArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->setTrim(sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET],
+            ServoEasing::ServoEasingArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->setTrim(sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET],
                     true);
             break;
         case COMMAND_BACKWARD:
             sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET]--;
-            sServoArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->setTrim(sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET],
+            ServoEasing::ServoEasingArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->setTrim(sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET],
                     true);
             break;
         case COMMAND_ENTER:
             // show 135 and 45 degree positions
-            sServoArray[tPivotServoIndex]->easeTo(135, 100);
+            ServoEasing::ServoEasingArray[tPivotServoIndex]->easeTo(135, 100);
             delay(2000);
-            sServoArray[tPivotServoIndex]->easeTo(45, 100);
+            ServoEasing::ServoEasingArray[tPivotServoIndex]->easeTo(45, 100);
             delay(2000);
-            sServoArray[tPivotServoIndex]->easeTo(90, 100);
+            ServoEasing::ServoEasingArray[tPivotServoIndex]->easeTo(90, 100);
             tPivotServoIndex += SERVOS_PER_LEG;
             eepromWriteServoTrim();
             if (tPivotServoIndex >= NUMBER_OF_SERVOS) {
@@ -574,8 +574,8 @@ void doCalibration() {
         Serial.print(F("]="));
         Serial.println(sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET]);
 #endif
-        sServoArray[tPivotServoIndex]->print(&Serial);
-        sServoArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->print(&Serial);
+        ServoEasing::ServoEasingArray[tPivotServoIndex]->print(&Serial);
+        ServoEasing::ServoEasingArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->print(&Serial);
         delay(200);
     }
 }

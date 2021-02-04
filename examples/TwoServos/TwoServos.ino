@@ -60,6 +60,7 @@ void setup() {
     Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_SERVO_EASING));
 
     // Attach servos to pins
+    // The order of the attaches determine the position of the Servos in internal ServoEasing::ServoEasingNextPositionArray[]
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO1_PIN);
 #endif
@@ -141,7 +142,7 @@ void loop() {
      * Now you can run your program while the servos are moving.
      * Just let the LED blink until servos stop.
      */
-    while (areInterruptsActive()) {
+    while (ServoEasing::areInterruptsActive()) {
         blinkLED();
     }
 
@@ -156,14 +157,14 @@ void loop() {
     Servo1.setEasingType(EASE_CUBIC_IN_OUT);
     /*
      * Another method to specify moves
-     * Use the sServoNextPositionArray and then call the appropriate function
+     * Use the ServoEasingNextPositionArray and then call the appropriate function
      */
-    sServoNextPositionArray[0] = 0;
-    sServoNextPositionArray[1] = 90;
+    ServoEasing::ServoEasingNextPositionArray[0] = 0;
+    ServoEasing::ServoEasingNextPositionArray[1] = 90;
     setEaseToForAllServosSynchronizeAndStartInterrupt(90);
 
     // Must call yield here for the ESP boards, since we have no delay called
-    while (areInterruptsActive()) {
+    while (ServoEasing::areInterruptsActive()) {
         ;
     }
     Servo1.setEasingType(EASE_LINEAR);
@@ -179,7 +180,7 @@ void loop() {
     Servo1.setEaseTo(-90, 60);
     Servo2.startEaseTo(0, 80); // This start interrupt for all servos
     // blink until both servos stop
-    while (areInterruptsActive()) {
+    while (ServoEasing::areInterruptsActive()) {
         blinkLED();
     }
 

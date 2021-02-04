@@ -42,7 +42,6 @@
  * APOLLO3      11          12          13          A3
  */
 
-// The order of the servos here determines their position in internal sServoArray[]
 ServoEasing Servo1;
 ServoEasing Servo2;
 ServoEasing Servo3;
@@ -61,6 +60,7 @@ void setup() {
 #endif
 
     // Attach servos to pins
+    // The order of the attaches determine the position of the Servos in internal ServoEasing::ServoEasingArray[]
 #ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO1_PIN);
@@ -94,14 +94,14 @@ void setup() {
 #ifndef PRINT_FOR_SERIAL_PLOTTER
     Servo1.print(&Serial);
     Servo2.print(&Serial);
-    sServoArray[2]->print(&Serial);; // "sServoArray[2]->" can be used instead of "Servo3."
+    ServoEasing::ServoEasingArray[2]->print(&Serial);; // "ServoEasing::ServoEasingArray[2]->" can be used instead of "Servo3."
 #endif
 
     /**************************************************
      * Set servos to start position.
      * This is the position where the movement starts.
      *************************************************/
-    sServoArray[0]->write(0); // "sServoArray[0]->" can be used instead of "Servo1."
+    ServoEasing::ServoEasingArray[0]->write(0); // "ServoEasing::ServoEasingArray[0]->" can be used instead of "Servo1."
     Servo2.write(0);
     Servo3.write(0);
 
@@ -131,7 +131,7 @@ void loop() {
     Serial.println(F("Move to 90/90/180 degree with 20 degree per second with updates by own do-while loop"));
 #endif
     setSpeedForAllServos(20); // this speed is changed for the first 2 servos below by synchronizing to the longest duration
-    sServoArray[0]->setEaseTo(90); // "sServoArray[0]->" can be used instead of "Servo1."
+    ServoEasing::ServoEasingArray[0]->setEaseTo(90); // "ServoEasing::ServoEasingArray[0]->" can be used instead of "Servo1."
     Servo2.setEaseTo(90);
     Servo3.setEaseTo(180);
     synchronizeAllServosAndStartInterrupt(false); // do not start interrupt
@@ -149,16 +149,16 @@ void loop() {
 #ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.println(F("Move to 180/180/0 degree with 30 degree per second using interrupts"));
 #endif
-    sServoNextPositionArray[0] = 180;
-    sServoNextPositionArray[1] = 180;
-    sServoNextPositionArray[2] = 0;
+    ServoEasing::ServoEasingNextPositionArray[0] = 180;
+    ServoEasing::ServoEasingNextPositionArray[1] = 180;
+    ServoEasing::ServoEasingNextPositionArray[2] = 0;
     setEaseToForAllServosSynchronizeAndStartInterrupt(30);
     /*
      * Now you can run your program while the servos are moving.
      * Just let the LED blink until servos stop.
      * Since all servos stops at the same time I have to check only one
      */
-    while (areInterruptsActive()) {
+    while (ServoEasing::areInterruptsActive()) {
         blinkLED();
     }
 
@@ -174,7 +174,7 @@ void loop() {
     Servo2.startEaseToD(90, Servo1.mMillisForCompleteMove);
     // No timing synchronization required :-)
     // blink until servo stops
-    while (areInterruptsActive()) {
+    while (ServoEasing::areInterruptsActive()) {
         blinkLED();
     }
 
@@ -198,7 +198,7 @@ void loop() {
     Servo2.setEaseTo(0, 40);
     Servo3.startEaseTo(0, 20); // Start interrupt for all servos. No synchronization here since the servos should move independently.
     // Blink until servos stops
-    while (areInterruptsActive()) {
+    while (ServoEasing::areInterruptsActive()) {
         blinkLED();
     }
 

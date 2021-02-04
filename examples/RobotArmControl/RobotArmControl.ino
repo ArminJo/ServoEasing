@@ -380,9 +380,9 @@ void handleManualControl() {
             Serial.print(tTargetAngle);
             Serial.print(" | ");
 #endif
-            sEndPosition.LeftRightDegree = sServoNextPositionArray[SERVO_BASE_PIVOT];
-            sEndPosition.BackFrontDegree = sServoNextPositionArray[SERVO_HORIZONTAL];
-            sEndPosition.DownUpDegree = sServoNextPositionArray[SERVO_LIFT];
+            sEndPosition.LeftRightDegree = ServoEasing::ServoEasingNextPositionArray[SERVO_BASE_PIVOT];
+            sEndPosition.BackFrontDegree = ServoEasing::ServoEasingNextPositionArray[SERVO_HORIZONTAL];
+            sEndPosition.DownUpDegree = ServoEasing::ServoEasingNextPositionArray[SERVO_LIFT];
             unsolve(&sEndPosition);
             printPositionShortWithUnits(&sEndPosition);
         }

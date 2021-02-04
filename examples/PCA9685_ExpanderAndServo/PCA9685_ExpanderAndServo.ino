@@ -191,7 +191,7 @@ void loop() {
     Servo1.startEaseToD(135, 1000);
     Servo1AtPCA9685.startEaseToD(45, 1000);
     // Blink until servo stops
-    while (areInterruptsActive()) {
+    while (ServoEasing::areInterruptsActive()) {
         blinkLED();
     }
 
@@ -209,12 +209,12 @@ void loop() {
         Servo1.startEaseToD(45, 1000);
         Servo1AtPCA9685.startEaseToD(135, 1000);
         // Must call yield here for the ESP boards, since we have no delay called
-        while (areInterruptsActive()) {
+        while (ServoEasing::areInterruptsActive()) {
             ; // no delays here to avoid break between forth and back movement
         }
         Servo1.startEaseToD(135, 1000);
         Servo1AtPCA9685.startEaseToD(45, 1000);
-        while (areInterruptsActive()) {
+        while (ServoEasing::areInterruptsActive()) {
             ; // no delays here to avoid break between forth and back movement
         }
     }
@@ -235,7 +235,7 @@ void loop() {
         delay(20); // just wait until angle is above 120 degree
     }
     digitalWrite(LED_BUILTIN, HIGH);
-    while (areInterruptsActive()) {
+    while (ServoEasing::areInterruptsActive()) {
         ; // wait for servo to stop
     }
 

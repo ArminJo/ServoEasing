@@ -107,8 +107,8 @@ void setup() {
      *************************************************/
     writeAllServos(0);
 #ifdef DEBUG
-    for (uint8_t i = 0; i <= sServoArrayMaxIndex; ++i) {
-        sServoArray[i]->print(&Serial);
+    for (uint8_t i = 0; i <= ServoEasing::sServoArrayMaxIndex; ++i) {
+        ServoEasing::ServoEasingArray[i]->print(&Serial);
     }
 #endif
 
@@ -123,16 +123,16 @@ void setup() {
 void loop() {
 #ifdef INFO
     Serial.print(F("Move all to 180 degree with 20 degree per second with "));
-    Serial.print((180 * (1000L / 20)) / (sServoArrayMaxIndex + 1));
+    Serial.print((180 * (1000L / 20)) / (ServoEasing::sServoArrayMaxIndex + 1));
     Serial.println(F(" ms delay"));
 #endif
     setSpeedForAllServos(20);  // This speed is taken if no further speed argument is given.
-    for (uint8_t i = 0; i <= sServoArrayMaxIndex; ++i) {
-        sServoArray[i]->startEaseTo(180);
+    for (uint8_t i = 0; i <= ServoEasing::sServoArrayMaxIndex; ++i) {
+        ServoEasing::ServoEasingArray[i]->startEaseTo(180);
         /*
          * Choose delay so that the last servo starts when the first is about to end
          */
-        delay((180 * (1000L / 20)) / (sServoArrayMaxIndex + 1));
+        delay((180 * (1000L / 20)) / (ServoEasing::sServoArrayMaxIndex + 1));
     }
     delay(1000);
 
@@ -140,8 +140,8 @@ void loop() {
 #ifdef INFO
     Serial.println(F("Move all back to 0 degree with 20 degree per second"));
 #endif
-    for (uint8_t i = 0; i <= sServoArrayMaxIndex; ++i) {
-        sServoArray[i]->startEaseTo(0);
+    for (uint8_t i = 0; i <= ServoEasing::sServoArrayMaxIndex; ++i) {
+        ServoEasing::ServoEasingArray[i]->startEaseTo(0);
 #ifdef DEBUG
         Serial.print(F("Start i="));
         Serial.println(i);
@@ -149,7 +149,7 @@ void loop() {
         /*
          * Choose delay so that the last servo starts when the first is about to end
          */
-        delay((180 * (1000L / 20)) / (sServoArrayMaxIndex + 1));
+        delay((180 * (1000L / 20)) / (ServoEasing::sServoArrayMaxIndex + 1));
     }
 
     delay(1000);
@@ -196,7 +196,7 @@ bool checkI2CConnection(uint8_t aI2CAddress) {
 
 /*
  * Get the 16 ServoEasing objects for the PCA9685 expander
- * The attach() function inserts them in the sServoArray[] array.
+ * The attach() function inserts them in the ServoEasing::ServoEasingArray[] array.
  */
 void getAndAttach16ServosToPCA9685Expander(uint8_t aPCA9685I2CAddress) {
     ServoEasing *tServoEasingObjectPtr;

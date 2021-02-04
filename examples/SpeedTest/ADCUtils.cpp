@@ -296,6 +296,7 @@ uint16_t readUntil4ConsecutiveValuesAreEqual(uint8_t aChannelNumber, uint8_t aDe
 /*
  * !!! Function without handling of switched reference and channel.!!!
  * Use it ONLY if you only call getVCCVoltageSimple() or getVCCVoltageMillivoltSimple() in your program.
+ * !!! Resolution is only 20 millivolt !!!
  */
 float getVCCVoltageSimple(void) {
     // use AVCC with (optional) external capacitor at AREF pin as reference
@@ -306,6 +307,7 @@ float getVCCVoltageSimple(void) {
 /*
  * !!! Function without handling of switched reference and channel.!!!
  * Use it ONLY if you only call getVCCVoltageSimple() or getVCCVoltageMillivoltSimple() in your program.
+ * !!! Resolution is only 20 millivolt !!!
  */
 uint16_t getVCCVoltageMillivoltSimple(void) {
     // use AVCC with external capacitor at AREF pin as reference
@@ -334,6 +336,7 @@ float getVCCVoltage(void) {
 /*
  * Read value of 1.1 volt internal channel using VCC as reference.
  * Handles reference and channel switching by introducing the appropriate delays.
+ * !!! Resolution is only 20 millivolt !!!
  */
 uint16_t getVCCVoltageMillivolt(void) {
     uint8_t tOldADMUX = checkAndWaitForReferenceAndChannelToSwitch(ADC_1_1_VOLT_CHANNEL_MUX, DEFAULT);

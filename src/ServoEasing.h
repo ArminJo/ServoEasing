@@ -24,7 +24,7 @@
 #ifndef SERVOEASING_H_
 #define SERVOEASING_H_
 
-#define VERSION_SERVO_EASING "2.3.3"
+#define VERSION_SERVO_EASING "2.3.4"
 #define VERSION_SERVO_EASING_MAJOR 2
 #define VERSION_SERVO_EASING_MINOR 3
 // The change log is at the bottom of the file
@@ -386,6 +386,11 @@ public:
     void printStatic(Print *aSerial);
 
     /*
+     * Static functions
+     */
+    static bool areInterruptsActive(); // The recommended test if at least one servo is moving yet.
+
+    /*
      * Internally only microseconds (or units (= 4.88 µs) if using PCA9685 expander) and not degree are used to speed up things.
      * Other expander or libraries can therefore easily be added.
      */
@@ -431,26 +436,31 @@ public:
 
     int mServo0DegreeMicrosecondsOrUnits;
     int mServo180DegreeMicrosecondsOrUnits;
+
+    /*
+     * It is required for ESP32, where the timer interrupt routine does not block the loop. Maybe it runs on another CPU?
+     * The interrupt routine sets first the mServoMoves flag to false and then disables the timer,
+     * but on a ESP32 polling the flag and then starting next movement and enabling timer happens BEFORE the timer is disabled.
+     * And this crashes the kernel in esp_timer_delete, which will lead to a reboot.
+     */
+    static volatile bool sInterruptsAreActive; // true if interrupts are still active, i.e. at least one Servo is moving with interrupts.
+    /*
+     * Array of all servos to enable synchronized movings
+     * Servos are inserted in the order, in which they are attached
+     * I use an fixed array and not a list, since accessing an array is much easier and faster.
+     * Using an dynamic array may be possible, but in this case we must first malloc(), then memcpy() and then free(), which leads to heap fragmentation.
+     */
+    static uint_fast8_t sServoArrayMaxIndex; // maximum index of an attached servo in sServoArray[]
+    static ServoEasing *ServoEasingArray[MAX_EASING_SERVOS];
+    static int ServoEasingNextPositionArray[MAX_EASING_SERVOS]; // use int since we want to support negative values
+    /*
+     * Macros for backward compatibility
+     */
+#define areInterruptsActive() ServoEasing::areInterruptsActive()
+#define sServoArray ServoEasing::ServoEasingArray
+#define sServoNextPositionArray ServoEasing::ServoEasingNextPositionArray
+
 };
-
-/*
- * It is required for ESP32, where the timer interrupt routine does not block the loop. Maybe it runs on another CPU?
- * The interrupt routine sets first the mServoMoves flag to false and then disables the timer,
- * but on a ESP32 polling the flag and then starting next movement and enabling timer happens BEFORE the timer is disabled.
- * And this crashes the kernel in esp_timer_delete, which will lead to a reboot.
- */
-extern volatile bool sInterruptsAreActive; // true if interrupts are still active, i.e. at least one Servo is moving with interrupts.
-bool areInterruptsActive(); // The recommended test if at least one servo is moving yet.
-
-/*
- * Array of all servos to enable synchronized movings
- * Servos are inserted in the order, in which they are attached
- * I use an fixed array and not a list, since accessing an array is much easier and faster.
- * Using an dynamic array may be possible, but in this case we must first malloc(), then memcpy() and then free(), which leads to heap fragmentation.
- */
-extern uint_fast8_t sServoArrayMaxIndex; // maximum index of an attached servo in sServoArray[]
-extern ServoEasing *sServoArray[MAX_EASING_SERVOS];
-extern int sServoNextPositionArray[MAX_EASING_SERVOS]; // use int since we want to support negative values
 
 /*
  * Functions working on all servos in the list
@@ -514,6 +524,10 @@ extern float (*sEaseFunctionArray[])(float aPercentageOfCompletion);
 #define STR(x) STR_HELPER(x)
 
 /*
+ * Version 2.3.4 - 02/2021
+ * - ENABLE_MICROS_AS_DEGREE_PARAMETER also available for PCA9685 expander.
+ * - Moved `sServoArrayMaxIndex`, `sServoNextPositionArray` and `sServoArray` to `ServoEasing::sServoArrayMaxIndex`, `ServoEasing::ServoEasingNextPositionArray` and `ServoEasing::ServoEasingArray`.
+ *
  * Version 2.3.3 - 11/2020
  * - Added compile option `ENABLE_MICROS_AS_DEGREE_PARAMETER` to allow usage of microseconds instead of degree as function arguments for all functions using degrees as argument.
  * - Improved LightweightServo API.

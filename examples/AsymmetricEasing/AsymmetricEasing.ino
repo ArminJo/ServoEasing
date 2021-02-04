@@ -183,7 +183,7 @@ void loop() {
      * Since all servos stops at the same time I have to check only one
      * Must call yield here for the ESP boards, since we do not call delay in the loop
      */
-    while (areInterruptsActive()) {
+    while (ServoEasing::areInterruptsActive()) {
         ; // no delays here to avoid break between forth and back movement
     }
 }

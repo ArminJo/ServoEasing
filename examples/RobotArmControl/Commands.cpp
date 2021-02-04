@@ -142,9 +142,9 @@ void __attribute__((weak)) doRobotArmAutoMove() {
     }
 
     // init start position for first move
-    sEndPosition.LeftRightDegree = sServoNextPositionArray[SERVO_BASE_PIVOT];
-    sEndPosition.BackFrontDegree = sServoNextPositionArray[SERVO_HORIZONTAL];
-    sEndPosition.DownUpDegree = sServoNextPositionArray[SERVO_LIFT];
+    sEndPosition.LeftRightDegree = ServoEasing::ServoEasingNextPositionArray[SERVO_BASE_PIVOT];
+    sEndPosition.BackFrontDegree = ServoEasing::ServoEasingNextPositionArray[SERVO_HORIZONTAL];
+    sEndPosition.DownUpDegree = ServoEasing::ServoEasingNextPositionArray[SERVO_LIFT];
     unsolve(&sEndPosition);
 
     // goto neutral position

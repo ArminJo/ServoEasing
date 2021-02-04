@@ -94,16 +94,16 @@ IntervalTimer Timer20ms;
 #define DEBUG
 #endif
 
-volatile bool sInterruptsAreActive = false; // true if interrupts are still active, i.e. at least one Servo is moving with interrupts.
+volatile bool ServoEasing::sInterruptsAreActive = false; // true if interrupts are still active, i.e. at least one Servo is moving with interrupts.
 
 /*
  * list to hold all ServoEasing Objects in order to move them together
  * Cannot use "static servo_t servos[MAX_SERVOS];" from Servo library since it is static :-(
  */
-uint_fast8_t sServoArrayMaxIndex = 0; // maximum index of an attached servo in sServoArray[]
-ServoEasing *sServoArray[MAX_EASING_SERVOS];
+uint_fast8_t ServoEasing::sServoArrayMaxIndex = 0; // maximum index of an attached servo in ServoEasing::ServoEasingArray[]
+ServoEasing *ServoEasing::ServoEasingArray[MAX_EASING_SERVOS];
 // used to move all servos
-int sServoNextPositionArray[MAX_EASING_SERVOS];
+int ServoEasing::ServoEasingNextPositionArray[MAX_EASING_SERVOS];
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 #  if ! defined _BV
@@ -329,8 +329,8 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
      */
     mServoIndex = INVALID_SERVO; // flag indicating an invalid servo index
     for (uint_fast8_t tServoIndex = 0; tServoIndex < MAX_EASING_SERVOS; ++tServoIndex) {
-        if (sServoArray[tServoIndex] == NULL) {
-            sServoArray[tServoIndex] = this;
+        if (ServoEasingArray[tServoIndex] == NULL) {
+            ServoEasingArray[tServoIndex] = this;
             mServoIndex = tServoIndex;
             if (tServoIndex > sServoArrayMaxIndex) {
                 sServoArrayMaxIndex = tServoIndex;
@@ -396,9 +396,9 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
 
 void ServoEasing::detach() {
     if (mServoIndex != INVALID_SERVO) {
-        sServoArray[mServoIndex] = NULL;
+        ServoEasingArray[mServoIndex] = NULL;
         // If servo with highest index in array was detached, we want to find new sServoArrayMaxIndex
-        while (sServoArray[sServoArrayMaxIndex] == NULL && sServoArrayMaxIndex > 0) {
+        while (ServoEasingArray[sServoArrayMaxIndex] == NULL && sServoArrayMaxIndex > 0) {
             sServoArrayMaxIndex--;
         }
 
@@ -491,7 +491,7 @@ void ServoEasing::write(int aValue) {
 #endif
         return;
     }
-    sServoNextPositionArray[mServoIndex] = aValue;
+    ServoEasingNextPositionArray[mServoIndex] = aValue;
 
     if (aValue < THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
         // treat values less than 400 as angles in degrees, others are handled as microseconds
@@ -630,7 +630,7 @@ int ServoEasing::DegreeToMicrosecondsOrUnits(int aDegree) {
 #if defined ENABLE_MICROS_AS_DEGREE_PARAMETER
     if (aDegree < THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
 #endif
-        return map(aDegree, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
+    return map(aDegree, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
 #if defined ENABLE_MICROS_AS_DEGREE_PARAMETER
     } else {
         // degree already contains Microseconds
@@ -771,8 +771,8 @@ bool ServoEasing::startEaseToD(int aDegree, uint_fast16_t aMillisForMove, bool a
 #endif
         return true;
     }
-// write the position also to sServoNextPositionArray
-    sServoNextPositionArray[mServoIndex] = aDegree;
+// write the position also to ServoEasingNextPositionArray
+    ServoEasingNextPositionArray[mServoIndex] = aDegree;
     mEndMicrosecondsOrUnits = DegreeToMicrosecondsOrUnits(aDegree);
     int tCurrentMicrosecondsOrUnits = mCurrentMicrosecondsOrUnits;
     mDeltaMicrosecondsOrUnits = mEndMicrosecondsOrUnits - tCurrentMicrosecondsOrUnits;
@@ -1151,7 +1151,7 @@ int clipDegreeSpecial(uint_fast8_t aDegreeToClip) {
 /*
  * The recommended test if at least one servo is moving yet.
  */
-bool areInterruptsActive() {
+bool ServoEasing::areInterruptsActive() {
 #if defined(ESP8266)
     yield(); // required for ESP8266
 #endif
@@ -1242,7 +1242,7 @@ void enableServoEasingInterrupt() {
 #  endif
 
 #elif defined(ESP8266) || defined(ESP32)
-    if(sInterruptsAreActive) {
+    if(ServoEasing::sInterruptsAreActive) {
         Timer20ms.detach();     // otherwise the ESP32 kernel at least will crash and reboot
     }
     // It seems that the callback is called by a task not an ISR, which allow us to have the callback without the IRAM attribute
@@ -1340,7 +1340,7 @@ void enableServoEasingInterrupt() {
 #else
 #warning Board / CPU is not covered by definitions using pre-processor symbols -> no timer available. Please extend ServoEasing.cpp.
 #endif
-    sInterruptsAreActive = true;
+    ServoEasing::sInterruptsAreActive = true;
 }
 
 void disableServoEasingInterrupt() {
@@ -1387,7 +1387,7 @@ void disableServoEasingInterrupt() {
 #elif defined(TEENSYDUINO)
     Timer20ms.end();
 #endif
-    sInterruptsAreActive = false;
+    ServoEasing::sInterruptsAreActive = false;
 }
 
 //@formatter:on
@@ -1464,9 +1464,9 @@ void TC5_Handler(void) {
 
 #ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
 void setEasingTypeForAllServos(uint_fast8_t aEasingType) {
-    for (uint_fast8_t tServoIndex = 0; tServoIndex <= sServoArrayMaxIndex; ++tServoIndex) {
-        if (sServoArray[tServoIndex] != NULL) {
-            sServoArray[tServoIndex]->mEasingType = aEasingType;
+    for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+            ServoEasing::ServoEasingArray[tServoIndex]->mEasingType = aEasingType;
         }
     }
 }
@@ -1498,57 +1498,57 @@ void printArrayPositions(Print *aSerial) {
 // AJ 22.05.2019 This does not work with GCC 7.3.0 atmel6.3.1 and -Os
 // It drops the tServoIndex < MAX_EASING_SERVOS condition, since  MAX_EASING_SERVOS is equal to the size of sServoArray
 // This has only an effect if the whole sServoArray is filled up, i.e we have declared MAX_EASING_SERVOS ServoEasing objects.
-//    while (sServoArray[tServoIndex] != NULL && tServoIndex < MAX_EASING_SERVOS) {
-//        aSerial->print(sServoNextPositionArray[tServoIndex]);
+//    while (ServoEasing::ServoEasingArray[tServoIndex] != NULL && tServoIndex < MAX_EASING_SERVOS) {
+//        aSerial->print(ServoEasingNextPositionArray[tServoIndex]);
 //        aSerial->print(F(" | "));
 //        tServoIndex++;
 //    }
 
 // switching conditions cures the bug
-//    while (tServoIndex < MAX_EASING_SERVOS && sServoArray[tServoIndex] != NULL) {
+//    while (tServoIndex < MAX_EASING_SERVOS && ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
 
 // this also does not work
-//    for (uint_fast8_t tServoIndex = 0; sServoArray[tServoIndex] != NULL && tServoIndex < MAX_EASING_SERVOS  ; ++tServoIndex) {
-//        aSerial->print(sServoNextPositionArray[tServoIndex]);
+//    for (uint_fast8_t tServoIndex = 0; ServoEasing::ServoEasingArray[tServoIndex] != NULL && tServoIndex < MAX_EASING_SERVOS  ; ++tServoIndex) {
+//        aSerial->print(ServoEasingNextPositionArray[tServoIndex]);
 //        aSerial->print(F(" | "));
 //    }
-    for (uint_fast8_t tServoIndex = 0; tServoIndex <= sServoArrayMaxIndex; ++tServoIndex) {
-        aSerial->print(sServoNextPositionArray[tServoIndex]);
+    for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
+        aSerial->print(ServoEasing::ServoEasingNextPositionArray[tServoIndex]);
         aSerial->print(F(" | "));
     }
     aSerial->println();
 }
 
 void writeAllServos(int aValue) {
-    for (uint_fast8_t tServoIndex = 0; tServoIndex <= sServoArrayMaxIndex; ++tServoIndex) {
-        if (sServoArray[tServoIndex] != NULL) {
-            sServoArray[tServoIndex]->write(aValue);
+    for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+            ServoEasing::ServoEasingArray[tServoIndex]->write(aValue);
         }
     }
 }
 
 void setSpeedForAllServos(uint_fast16_t aDegreesPerSecond) {
-    for (uint_fast8_t tServoIndex = 0; tServoIndex <= sServoArrayMaxIndex; ++tServoIndex) {
-        if (sServoArray[tServoIndex] != NULL) {
-            sServoArray[tServoIndex]->mSpeed = aDegreesPerSecond;
+    for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+            ServoEasing::ServoEasingArray[tServoIndex]->mSpeed = aDegreesPerSecond;
         }
     }
 }
 
 #if defined(va_arg)
 /*
- * Sets the sServoNextPositionArray[] of the first aNumberOfServos to the specified values
+ * Sets the ServoEasingNextPositionArray[] of the first aNumberOfServos to the specified values
  */
 void setDegreeForAllServos(uint_fast8_t aNumberOfServos, va_list *aDegreeValues) {
     for (uint_fast8_t tServoIndex = 0; tServoIndex < aNumberOfServos; ++tServoIndex) {
-        sServoNextPositionArray[tServoIndex] = va_arg(*aDegreeValues, int);
+        ServoEasing::ServoEasingNextPositionArray[tServoIndex] = va_arg(*aDegreeValues, int);
     }
 }
 #endif
 
 #if defined(va_start)
 /*
- * Sets the sServoNextPositionArray[] of the first aNumberOfServos to the specified values
+ * Sets the ServoEasingNextPositionArray[] of the first aNumberOfServos to the specified values
  */
 void setDegreeForAllServos(uint_fast8_t aNumberOfServos, ...) {
     va_list aDegreeValues;
@@ -1559,15 +1559,16 @@ void setDegreeForAllServos(uint_fast8_t aNumberOfServos, ...) {
 #endif
 
 /*
- * Sets target position using content of sServoNextPositionArray
+ * Sets target position using content of ServoEasingNextPositionArray
  * returns false if one servo was still moving
  */
 bool setEaseToForAllServos() {
     bool tOneServoIsMoving = false;
-    for (uint_fast8_t tServoIndex = 0; tServoIndex <= sServoArrayMaxIndex; ++tServoIndex) {
-        if (sServoArray[tServoIndex] != NULL) {
-            tOneServoIsMoving = sServoArray[tServoIndex]->setEaseTo(sServoNextPositionArray[tServoIndex],
-                    sServoArray[tServoIndex]->mSpeed) || tOneServoIsMoving;
+    for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+            tOneServoIsMoving = ServoEasing::ServoEasingArray[tServoIndex]->setEaseTo(
+                    ServoEasing::ServoEasingNextPositionArray[tServoIndex], ServoEasing::ServoEasingArray[tServoIndex]->mSpeed)
+                    || tOneServoIsMoving;
         }
     }
     return tOneServoIsMoving;
@@ -1575,10 +1576,10 @@ bool setEaseToForAllServos() {
 
 bool setEaseToForAllServos(uint_fast16_t aDegreesPerSecond) {
     bool tOneServoIsMoving = false;
-    for (uint_fast8_t tServoIndex = 0; tServoIndex <= sServoArrayMaxIndex; ++tServoIndex) {
-        if (sServoArray[tServoIndex] != NULL) {
-            tOneServoIsMoving = sServoArray[tServoIndex]->setEaseTo(sServoNextPositionArray[tServoIndex], aDegreesPerSecond)
-                    || tOneServoIsMoving;
+    for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+            tOneServoIsMoving = ServoEasing::ServoEasingArray[tServoIndex]->setEaseTo(
+                    ServoEasing::ServoEasingNextPositionArray[tServoIndex], aDegreesPerSecond) || tOneServoIsMoving;
         }
     }
     return tOneServoIsMoving;
@@ -1586,18 +1587,18 @@ bool setEaseToForAllServos(uint_fast16_t aDegreesPerSecond) {
 
 bool setEaseToDForAllServos(uint_fast16_t aMillisForMove) {
     bool tOneServoIsMoving = false;
-    for (uint_fast8_t tServoIndex = 0; tServoIndex <= sServoArrayMaxIndex; ++tServoIndex) {
-        if (sServoArray[tServoIndex] != NULL) {
-            tOneServoIsMoving = sServoArray[tServoIndex]->setEaseToD(sServoNextPositionArray[tServoIndex], aMillisForMove)
-                    || tOneServoIsMoving;
+    for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+            tOneServoIsMoving = ServoEasing::ServoEasingArray[tServoIndex]->setEaseToD(
+                    ServoEasing::ServoEasingNextPositionArray[tServoIndex], aMillisForMove) || tOneServoIsMoving;
         }
     }
     return tOneServoIsMoving;
 }
 
 bool isOneServoMoving() {
-    for (uint_fast8_t tServoIndex = 0; tServoIndex <= sServoArrayMaxIndex; ++tServoIndex) {
-        if (sServoArray[tServoIndex] != NULL && sServoArray[tServoIndex]->mServoMoves) {
+    for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL && ServoEasing::ServoEasingArray[tServoIndex]->mServoMoves) {
             return true;
         }
     }
@@ -1606,9 +1607,9 @@ bool isOneServoMoving() {
 
 void stopAllServos() {
     void disableServoEasingInterrupt();
-    for (uint_fast8_t tServoIndex = 0; tServoIndex <= sServoArrayMaxIndex; ++tServoIndex) {
-        if (sServoArray[tServoIndex] != NULL) {
-            sServoArray[tServoIndex]->mServoMoves = false;
+    for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+            ServoEasing::ServoEasingArray[tServoIndex]->mServoMoves = false;
         }
     }
 }
@@ -1618,9 +1619,9 @@ void stopAllServos() {
  */
 bool updateAllServos() {
     bool tAllServosStopped = true;
-    for (uint_fast8_t tServoIndex = 0; tServoIndex <= sServoArrayMaxIndex; ++tServoIndex) {
-        if (sServoArray[tServoIndex] != NULL) {
-            tAllServosStopped = sServoArray[tServoIndex]->update() && tAllServosStopped;
+    for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+            tAllServosStopped = ServoEasing::ServoEasingArray[tServoIndex]->update() && tAllServosStopped;
         }
     }
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
@@ -1672,19 +1673,19 @@ void synchronizeAllServosAndStartInterrupt(bool aStartUpdateByInterrupt) {
     uint_fast16_t tMaxMillisForCompleteMove = 0;
     uint32_t tMillisAtStartMove = 0;
 
-    for (uint_fast8_t tServoIndex = 0; tServoIndex <= sServoArrayMaxIndex; ++tServoIndex) {
-        if (sServoArray[tServoIndex] != NULL && sServoArray[tServoIndex]->mServoMoves) {
+    for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL && ServoEasing::ServoEasingArray[tServoIndex]->mServoMoves) {
             //process servos which really moves
-            tMillisAtStartMove = sServoArray[tServoIndex]->mMillisAtStartMove;
-            if (sServoArray[tServoIndex]->mMillisForCompleteMove > tMaxMillisForCompleteMove) {
-                tMaxMillisForCompleteMove = sServoArray[tServoIndex]->mMillisForCompleteMove;
+            tMillisAtStartMove = ServoEasing::ServoEasingArray[tServoIndex]->mMillisAtStartMove;
+            if (ServoEasing::ServoEasingArray[tServoIndex]->mMillisForCompleteMove > tMaxMillisForCompleteMove) {
+                tMaxMillisForCompleteMove = ServoEasing::ServoEasingArray[tServoIndex]->mMillisForCompleteMove;
             }
         }
     }
 
 #if defined(TRACE)
     Serial.print(F("Number of servos="));
-    Serial.print(sServoArrayMaxIndex);
+    Serial.print(ServoEasing::sServoArrayMaxIndex);
     Serial.print(F(" MillisAtStartMove="));
     Serial.print(tMillisAtStartMove);
     Serial.print(F(" MaxMillisForCompleteMove="));
@@ -1695,10 +1696,10 @@ void synchronizeAllServosAndStartInterrupt(bool aStartUpdateByInterrupt) {
      * Set maximum duration and start time to all servos
      * Synchronize start time to avoid race conditions at the end of movement
      */
-    for (uint_fast8_t tServoIndex = 0; tServoIndex <= sServoArrayMaxIndex; ++tServoIndex) {
-        if (sServoArray[tServoIndex] != NULL && sServoArray[tServoIndex]->mServoMoves) {
-            sServoArray[tServoIndex]->mMillisAtStartMove = tMillisAtStartMove;
-            sServoArray[tServoIndex]->mMillisForCompleteMove = tMaxMillisForCompleteMove;
+    for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL && ServoEasing::ServoEasingArray[tServoIndex]->mServoMoves) {
+            ServoEasing::ServoEasingArray[tServoIndex]->mMillisAtStartMove = tMillisAtStartMove;
+            ServoEasing::ServoEasingArray[tServoIndex]->mMillisForCompleteMove = tMaxMillisForCompleteMove;
         }
     }
 

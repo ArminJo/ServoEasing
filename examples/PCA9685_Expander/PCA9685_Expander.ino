@@ -186,7 +186,7 @@ void loop() {
     Servo1.startEaseToD(45, 1000);
 #endif
     // Blink until servo stops
-    while (areInterruptsActive()) {
+    while (ServoEasing::areInterruptsActive()) {
         blinkLED();
     }
 
@@ -204,7 +204,7 @@ void loop() {
         Servo1.startEaseToD(135, 1000);
 #endif
         // Must call yield here for the ESP boards, since we have no delay called
-        while (areInterruptsActive()) {
+        while (ServoEasing::areInterruptsActive()) {
             ; // no delays here to avoid break between forth and back movement
         }
 #ifdef ENABLE_MICROS_AS_DEGREE_PARAMETER
@@ -212,7 +212,7 @@ void loop() {
 #else
         Servo1.startEaseToD(45, 1000);
 #endif
-        while (areInterruptsActive()) {
+        while (ServoEasing::areInterruptsActive()) {
             ; // no delays here to avoid break between forth and back movement
         }
     }
@@ -235,7 +235,7 @@ void loop() {
         delay(20); // just wait until angle is above 120 degree
     }
     digitalWrite(LED_BUILTIN, HIGH);
-    while (areInterruptsActive()) {
+    while (ServoEasing::areInterruptsActive()) {
         ; // wait for servo to stop
     }
 
