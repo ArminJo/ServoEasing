@@ -58,6 +58,8 @@
 
 Servo ServoUnderTest;
 
+#define START_DEGREE_VALUE 0
+
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 

@@ -63,7 +63,7 @@ void setup() {
      * -100 and +100 can be replaced with any value you like but do not forget to change them below and in loop too.
      */
     if (Servo1.attach(SERVO1_PIN, MICROSECONDS_FOR_ROTATING_SERVO_CLOCKWISE_MAX,
-            MICROSECONDS_FOR_ROTATING_SERVO_COUNTER_CLOCKWISE_MAX, 100, -100) == INVALID_SERVO) {
+    MICROSECONDS_FOR_ROTATING_SERVO_COUNTER_CLOCKWISE_MAX, 100, -100) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
         while (true) {
             blinkLED();

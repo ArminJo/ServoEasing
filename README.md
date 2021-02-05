@@ -1,7 +1,7 @@
 # [ServoEasing](https://github.com/ArminJo/ServoEasing) - move your servo more natural
 Available as Arduino library "ServoEasing"
 
-### [Version 2.3.5](https://github.com/ArminJo/ServoEasing/archive/master.zip) - work in progress
+### [Version 2.4.0](https://github.com/ArminJo/ServoEasing/archive/master.zip) - work in progress
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
@@ -79,7 +79,7 @@ Modify it by commenting them out or in, or change the values if applicable. Or d
 | Option | Default | File | Description |
 |-|-|-|-|
 | `USE_PCA9685_SERVO_EXPANDER` | disabled | ServoEasing.h | Enables the use of the PCA9685 I2C expander chip/board. |
-| `USE_SERVO_LIB` | disabled | ServoEasing.h | Use of PCA9685 normally disables use of regular servo library. You can force using of regular servo library by defining `USE_SERVO_LIB`. See below. |
+| `USE_SERVO_LIB` | disabled | ServoEasing.h | Use of PCA9685 normally disables use of regular servo library. You can force using of regular servo library by defining `USE_SERVO_LIB`. See [below](#using-pca9685-16-channel-servo-expander). |
 | `PROVIDE_ONLY_LINEAR_MOVEMENT` | disabled | ServoEasing.h | Saves up to 1540 bytes FLASH. |
 | `DISABLE_COMPLEX_FUNCTIONS` | disabled | ServoEasing.h | Disables the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes FLASH. |
 | `ENABLE_MICROS_AS_DEGREE_PARAMETER` | disabled | ServoEasing.h | Enables passing also microsecond values as (target angle) parameter (see OneServo example). This requires additional 128 Bytes FLASH. |
@@ -115,7 +115,7 @@ Since the raw transmission time of 32 Servo positions is 17.4 µs @ 100 kHz, not 
 
 ## Using the included [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for AVR
 Using the **Lightweight Servo Library** reduces sketch size and makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
-Up to 2 servos are supported by this library and they must be attached to pin 9 and/or 10 of the Arduino board.<br/>
+Up to 2 servos are supported by this library and they must be physically attached to pin 9 and/or 10 of the Arduino board.<br/>
 To enable it, open the library file *ServoEasing.h* and activate the line `#define USE_LEIGHTWEIGHT_SERVO_LIB` or define global symbol with `-DUSE_LEIGHTWEIGHT_SERVO_LIB` which is not yet possible in Arduino IDE:-(.<br/>
 If not using the Arduino IDE, take care that Arduino Servo library sources are not compiled / included in the project.
 
@@ -238,7 +238,8 @@ If you see strange behavior, you can open the library file *ServoEasing.h* and a
 This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
 
 # Revision History
-### Version 2.3.5 - work in progress
+### Version 2.4.0 - work in progress
+- New `attach()` functions with initial degree parameter to be written immediately. This replaces the `attach()` and `write()` combination at setup.
 
 ### Version 2.3.4
 - `ENABLE_MICROS_AS_DEGREE_PARAMETER` also available for PCA9685 expander.

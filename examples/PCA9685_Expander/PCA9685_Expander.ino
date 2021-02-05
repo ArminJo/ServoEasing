@@ -70,6 +70,10 @@ ServoEasing Servo1(PCA9685_DEFAULT_ADDRESS, &Wire1); // If you use more than one
 ServoEasing Servo1(PCA9685_DEFAULT_ADDRESS, &Wire); // If you use more than one PCA9685 you should consider to modify MAX_EASING_SERVOS at line 88 in ServoEasing.h
 #endif
 
+#define START_DEGREE_VALUE 0
+
+void blinkLED();
+
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
@@ -88,53 +92,28 @@ void setup() {
     Wire.begin();  // Starts with 100 kHz. Clock will eventually be increased at first attach() except for ESP32.
 #if defined (ARDUINO_ARCH_AVR) // Other platforms do not have this new function
     Wire.setWireTimeout(); // Sets default timeout of 25 ms.
-    do {
-        Wire.beginTransmission(PCA9685_DEFAULT_ADDRESS);
-        if (Wire.getWireTimeoutFlag()) {
-            Serial.println(F("Timeout accessing I2C bus. Wait for bus becoming available"));
-            Wire.clearWireTimeoutFlag();
-            delay(100);
-        } else {
-            break;
-        }
-    } while (true);
-
-#else
-    Wire.beginTransmission(PCA9685_DEFAULT_ADDRESS);
 #endif
-    uint8_t tWireReturnCode = Wire.endTransmission(true);
-
-    if (tWireReturnCode == 0) {
-        Serial.print(F("Found"));
-    } else {
-        Serial.print(F("Error code="));
-        Serial.print(tWireReturnCode);
-        Serial.print(F(". Communication with I2C was successful, but found no"));
-    }
-    Serial.print(F(" I2C device attached at address: 0x"));
-    Serial.println(PCA9685_DEFAULT_ADDRESS, HEX);
-
-    Serial.println(F("Attach servo to port 9 of PCA9685 expander"));
-    /*
-     * Check at least the last call to attach()
-     */
-    if (Servo1.attach(SERVO1_PIN) == INVALID_SERVO) {
-        Serial.println(
-                F("Error attaching servo - maybe MAX_EASING_SERVOS=" STR(MAX_EASING_SERVOS) " is to small to hold all servos"));
+    if (checkI2CConnection(PCA9685_DEFAULT_ADDRESS, &Serial)) {
+        Serial.println(F("PCA9685 expander not connected"));
         while (true) {
-            digitalWrite(LED_BUILTIN, HIGH);
-            delay(100);
-            digitalWrite(LED_BUILTIN, LOW);
-            delay(100);
+            blinkLED();
+        }
+    } else {
+        Serial.println(F("Attach servo to port 9 of PCA9685 expander"));
+        /************************************************************
+         * Attach servo to pin and set servos to start position.
+         * This is the position where the movement starts.
+         *
+         * Check at least the last call to attach()
+         ***********************************************************/
+        if (Servo1.attach(SERVO1_PIN, START_DEGREE_VALUE) == INVALID_SERVO) {
+            Serial.println(
+                    F("Error attaching servo - maybe MAX_EASING_SERVOS=" STR(MAX_EASING_SERVOS) " is to small to hold all servos"));
+            while (true) {
+                blinkLED();
+            }
         }
     }
-
-    /**************************************************
-     * Set servos to start position.
-     * This is the position where the movement starts.
-     *************************************************/
-    Servo1.write(0);
-
     // Wait for servos to reach start position.
     delay(500);
 }

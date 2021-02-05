@@ -47,6 +47,8 @@
 ServoEasing Servo1;
 ServoEasing Servo2;
 
+#define START_DEGREE_VALUE 0
+
 void blinkLED();
 
 void setup() {
@@ -59,12 +61,17 @@ void setup() {
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_SERVO_EASING));
 
-    // Attach servos to pins
-    // The order of the attaches determine the position of the Servos in internal ServoEasing::ServoEasingNextPositionArray[]
+    /************************************************************
+     * Attach servo to pin and set servos to start position.
+     * This is the position where the movement starts.
+     *
+     * The order of the attach() determine the position
+     * of the Servos in internal ServoEasing::ServoEasingArray[]
+     ***********************************************************/
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO1_PIN);
 #endif
-    if (Servo1.attach(SERVO1_PIN) == INVALID_SERVO) {
+    if (Servo1.attach(SERVO1_PIN, START_DEGREE_VALUE) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
 
@@ -75,7 +82,7 @@ void setup() {
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO2_PIN);
 #endif
-    if (Servo2.attach(SERVO2_PIN) == INVALID_SERVO) {
+    if (Servo2.attach(SERVO2_PIN, START_DEGREE_VALUE) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
         while (true) {
             blinkLED();
@@ -93,13 +100,6 @@ void setup() {
      */
     Servo1.setTrim(90);
 
-
-    /**************************************************
-     * Set servos to start position.
-     * This is the position where the movement starts.
-     *************************************************/
-    Servo1.write(-90);
-    Servo2.write(0);
     setSpeedForAllServos(30);
 
     // Just wait for servos to reach position.

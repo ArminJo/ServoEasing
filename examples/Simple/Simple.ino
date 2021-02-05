@@ -42,6 +42,8 @@
 
 ServoEasing Servo1;
 
+#define START_DEGREE_VALUE 0
+
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
@@ -51,18 +53,15 @@ void setup() {
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_SERVO_EASING));
 
-    // Attach servo to pin
+    /********************************************************
+     * Attach servo to pin and set servos to start position.
+     * This is the position where the movement starts.
+     *******************************************************/
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO1_PIN);
-    if (Servo1.attach(SERVO1_PIN) == INVALID_SERVO) {
+    if (Servo1.attach(SERVO1_PIN, START_DEGREE_VALUE) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
-
-    /**************************************************
-     * Set servo to start position.
-     * This is the position where the movement starts.
-     *************************************************/
-    Servo1.write(0);
 
     // Wait for servo to reach start position.
     delay(500);

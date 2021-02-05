@@ -93,8 +93,7 @@ void setup() {
 #if defined(QUADRUPED_HAS_US_DISTANCE)
     Serial.println(F("Init US distance sensor"));
     initUSDistancePins(PIN_TRIGGER_OUT, PIN_ECHO_IN);
-    USServo.attach(PIN_US_SERVO);
-    USServo.write(90); // start value
+    USServo.attach(PIN_US_SERVO, 90);
 #endif
 
     /*

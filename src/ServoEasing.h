@@ -24,9 +24,9 @@
 #ifndef SERVOEASING_H_
 #define SERVOEASING_H_
 
-#define VERSION_SERVO_EASING "2.3.4"
+#define VERSION_SERVO_EASING "2.4.0"
 #define VERSION_SERVO_EASING_MAJOR 2
-#define VERSION_SERVO_EASING_MINOR 3
+#define VERSION_SERVO_EASING_MINOR 4
 // The change log is at the bottom of the file
 
 // @formatter:off
@@ -129,6 +129,9 @@
 #  endif
 #endif // ! defined(MAX_EASING_SERVOS)
 
+#if ! defined(DEFAULT_PULSE_WIDTH)
+#define DEFAULT_PULSE_WIDTH 1500     // default pulse width when servo is attached (from Servo.h)
+#endif
 #if ! defined(REFRESH_INTERVAL)
 #define REFRESH_INTERVAL 20000   // // minimum time to refresh servos in microseconds (from Servo.h)
 #endif
@@ -181,11 +184,12 @@
 // @formatter:on
 
 #define DEFAULT_MICROSECONDS_FOR_0_DEGREE 544
-#define DEFAULT_MICROSECONDS_FOR_90_DEGREE (544 + ((2400 - 544) / 2))
+#define DEFAULT_MICROSECONDS_FOR_90_DEGREE (544 + ((2400 - 544) / 2)) // 1472
 #define DEFAULT_MICROSECONDS_FOR_180_DEGREE 2400
 // Approximately 10 microseconds per degree
 
 #define DEFAULT_PCA9685_UNITS_FOR_0_DEGREE  111 // 111.411 = 544 µs
+#define DEFAULT_PCA9685_UNITS_FOR_90_DEGREE (111 + ((491 - 111) / 2)) // 301 = 1472 us
 #define DEFAULT_PCA9685_UNITS_FOR_180_DEGREE 491 // 491.52 = 2400 µs
 // Approximately 2 units per degree
 
@@ -326,9 +330,13 @@ public:
     ServoEasing();
 
     uint8_t attach(int aPin);
+    uint8_t attach(int aPin, int aInitialDegree);
     // Here no units accepted, only microseconds!
     uint8_t attach(int aPin, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree);
+    uint8_t attach(int aPin, int aInitialDegree, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree);
     uint8_t attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree,
+            int aServoHighDegree);
+    uint8_t attach(int aPin, int aInitialDegree, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree,
             int aServoHighDegree);
 
     void detach();
@@ -520,10 +528,20 @@ float EaseOutBounce(float aPercentageOfCompletion);
 
 extern float (*sEaseFunctionArray[])(float aPercentageOfCompletion);
 
+// convenience function
+#if defined(__AVR__)
+bool checkI2CConnection(uint8_t aI2CAddress, Print *aSerial); // saves 95 bytes flash
+#else
+bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print has no flush()
+#endif
+
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
 /*
+ * Version 2.4.0 - 02/2021
+ * - New `attach()` functions with initial degree parameter to be written immediately. This replaces the `attach()` and `write()` combination at setup.
+ *
  * Version 2.3.4 - 02/2021
  * - ENABLE_MICROS_AS_DEGREE_PARAMETER also available for PCA9685 expander.
  * - Moved `sServoArrayMaxIndex`, `sServoNextPositionArray` and `sServoArray` to `ServoEasing::sServoArrayMaxIndex`, `ServoEasing::ServoEasingNextPositionArray` and `ServoEasing::ServoEasingArray`.

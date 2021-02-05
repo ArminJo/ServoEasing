@@ -286,6 +286,25 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServo0Degree, int aMic
     return attach(aPin, aMicrosecondsForServo0Degree, aMicrosecondsForServo180Degree, 0, 180);
 }
 
+/*
+ * Combination of attach with initial write
+ */
+uint8_t ServoEasing::attach(int aPin, int aInitialDegree) {
+    return attach(aPin, aInitialDegree, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
+}
+
+uint8_t ServoEasing::attach(int aPin, int aInitialDegree, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree) {
+    return attach(aPin, aInitialDegree, aMicrosecondsForServo0Degree, aMicrosecondsForServo180Degree, 0, 180);
+}
+
+uint8_t ServoEasing::attach(int aPin, int aInitialDegree, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree,
+        int aServoLowDegree, int aServoHighDegree) {
+    uint8_t tReturnValue = attach(aPin, aMicrosecondsForServoLowDegree, aMicrosecondsForServoHighDegree, aServoLowDegree,
+            aServoHighDegree);
+    write(aInitialDegree);
+    return tReturnValue;
+}
+
 /**
  * Attaches servo to pin and sets the servo timing parameters
  * @param aMicrosecondsForServoLowDegree no units accepted, only microseconds!
@@ -357,6 +376,7 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
 #endif
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
+    mCurrentMicrosecondsOrUnits = DEFAULT_PCA9685_UNITS_FOR_90_DEGREE; // The start value if we forget the initial write()
 #  if defined(USE_SERVO_LIB)
     if (mServoIsConnectedToExpander) {
         if (mServoIndex == 0) {
@@ -385,6 +405,7 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
     if (mServoIndex == INVALID_SERVO) {
         return INVALID_SERVO;
     }
+    mCurrentMicrosecondsOrUnits = DEFAULT_PULSE_WIDTH; // this is the start value of the Servo::attach() function below
 #  if defined(ARDUINO_ARCH_APOLLO3)
     Servo::attach(aPin, tMicrosecondsForServo0Degree, tMicrosecondsForServo180Degree);
     return aPin; // Sparkfun apollo3 Servo library has no return value for attach :-(
@@ -476,6 +497,9 @@ void ServoEasing::registerUserEaseInFunction(float (*aUserEaseInFunction)(float 
 }
 #endif
 
+/*
+ * @param aValue treat values less than 400 as angles in degrees, others are handled as microseconds
+ */
 void ServoEasing::write(int aValue) {
 #if defined(TRACE)
     Serial.print(F("write "));
@@ -1785,3 +1809,53 @@ float EaseOutBounce(float aPercentageOfCompletion) {
     }
     return tRetval;
 }
+
+/************************************
+ * Convenience I2C check function
+ ***********************************/
+#if defined(USE_PCA9685_SERVO_EXPANDER)
+/*
+ * Check if I2C communication is possible. If not, we will wait forever at endTransmission.
+ * 0x40 is default PCA9685 address
+ * @return true if error happened, i.e. device is not attached at this address.
+ */
+#if defined(__AVR__)
+bool checkI2CConnection(uint8_t aI2CAddress, Print *aSerial) // saves 95 bytes flash
+#else
+bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial) // Print has no flush()
+#endif
+        {
+
+    bool tRetValue = false;
+    aSerial->print(F("Try to communicate with I2C device at address=0x"));
+    aSerial->println(aI2CAddress, HEX);
+    aSerial->flush();
+#if defined (ARDUINO_ARCH_AVR) // Other platforms do not have this new function
+    do {
+        Wire.beginTransmission(aI2CAddress);
+        if (Wire.getWireTimeoutFlag()) {
+            aSerial->println(F("Timeout accessing I2C bus. Wait for bus becoming available"));
+            Wire.clearWireTimeoutFlag();
+            delay(100);
+        } else {
+            break;
+        }
+    } while (true);
+#else
+    Wire.beginTransmission(aI2CAddress);
+#endif
+
+    uint8_t tWireReturnCode = Wire.endTransmission(true);
+    if (tWireReturnCode == 0) {
+        aSerial->print(F("Found"));
+    } else {
+        aSerial->print(F("Error code="));
+        aSerial->print(tWireReturnCode);
+        aSerial->print(F(". Communication with I2C was successful, but found no"));
+        tRetValue = true;
+    }
+    aSerial->print(F(" I2C device attached at address: 0x"));
+    aSerial->println(aI2CAddress, HEX);
+    return tRetValue;
+}
+# endif // defined(USE_PCA9685_SERVO_EXPANDER)

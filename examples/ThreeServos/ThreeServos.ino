@@ -46,6 +46,8 @@ ServoEasing Servo1;
 ServoEasing Servo2;
 ServoEasing Servo3;
 
+#define START_DEGREE_VALUE 0
+
 void blinkLED();
 
 void setup() {
@@ -59,13 +61,18 @@ void setup() {
     Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_SERVO_EASING));
 #endif
 
-    // Attach servos to pins
-    // The order of the attaches determine the position of the Servos in internal ServoEasing::ServoEasingArray[]
+    /************************************************************
+     * Attach servo to pin and set servos to start position.
+     * This is the position where the movement starts.
+     *
+     * The order of the attach() determine the position
+     * of the Servos in internal ServoEasing::ServoEasingArray[]
+     ***********************************************************/
 #ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO1_PIN);
 #endif
-    if (Servo1.attach(SERVO1_PIN) == INVALID_SERVO) {
+    if (Servo1.attach(SERVO1_PIN, START_DEGREE_VALUE) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
 
@@ -73,7 +80,7 @@ void setup() {
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO2_PIN);
 #endif
-    if (Servo2.attach(SERVO2_PIN) == INVALID_SERVO) {
+    if (Servo2.attach(SERVO2_PIN, START_DEGREE_VALUE) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
 
@@ -84,8 +91,9 @@ void setup() {
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO3_PIN);
 #endif
-    if (Servo3.attach(SERVO3_PIN) == INVALID_SERVO) {
-        Serial.println(F("Error attaching servo - maybe MAX_EASING_SERVOS=" STR(MAX_EASING_SERVOS) " is to small to hold all servos"));
+    if (Servo3.attach(SERVO3_PIN, START_DEGREE_VALUE) == INVALID_SERVO) {
+        Serial.println(
+                F("Error attaching servo - maybe MAX_EASING_SERVOS=" STR(MAX_EASING_SERVOS) " is to small to hold all servos"));
         while (true) {
             blinkLED();
         }
@@ -94,16 +102,9 @@ void setup() {
 #ifndef PRINT_FOR_SERIAL_PLOTTER
     Servo1.print(&Serial);
     Servo2.print(&Serial);
-    ServoEasing::ServoEasingArray[2]->print(&Serial);; // "ServoEasing::ServoEasingArray[2]->" can be used instead of "Servo3."
+    ServoEasing::ServoEasingArray[2]->print(&Serial);
+    ; // "ServoEasing::ServoEasingArray[2]->" can be used instead of "Servo3."
 #endif
-
-    /**************************************************
-     * Set servos to start position.
-     * This is the position where the movement starts.
-     *************************************************/
-    ServoEasing::ServoEasingArray[0]->write(0); // "ServoEasing::ServoEasingArray[0]->" can be used instead of "Servo1."
-    Servo2.write(0);
-    Servo3.write(0);
 
 #ifdef PRINT_FOR_SERIAL_PLOTTER
     // Legend for Arduino plotter

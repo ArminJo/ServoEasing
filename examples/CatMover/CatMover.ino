@@ -55,6 +55,8 @@ ServoControlStruct ServoVerticalControl;
 ServoEasing ServoHorizontal;
 ServoEasing ServoVertical;
 
+#define START_DEGREE_VALUE 90 // This values helps mounting the pan / tilt housing
+
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
@@ -68,12 +70,13 @@ void setup() {
     pinMode(LASER_POWER_PIN, OUTPUT);
     digitalWrite(LASER_POWER_PIN, HIGH);
 
-    /*
-     * Set up servos
-     */
+    /************************************************************
+     * Attach servo to pin and set servos to start position.
+     * This is the position where the movement starts.
+     ***********************************************************/
     Serial.print(F("Attach servo at pin "));
     Serial.println(HORIZONTAL_SERVO_PIN);
-    if (ServoHorizontal.attach(HORIZONTAL_SERVO_PIN) == INVALID_SERVO) {
+    if (ServoHorizontal.attach(HORIZONTAL_SERVO_PIN, START_DEGREE_VALUE) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
 
@@ -82,7 +85,7 @@ void setup() {
      */
     Serial.print(F("Attach servo at pin "));
     Serial.println(VERTICAL_SERVO_PIN);
-    if (ServoVertical.attach(VERTICAL_SERVO_PIN) == INVALID_SERVO) {
+    if (ServoVertical.attach(VERTICAL_SERVO_PIN, START_DEGREE_VALUE) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
         while (true) {
             digitalWrite(LED_BUILTIN, HIGH);
@@ -97,15 +100,7 @@ void setup() {
     ServoVerticalControl.minDegree = 0;
     ServoVerticalControl.maxDegree = 45;
 
-    /**************************************************
-     * Set servos to start position.
-     * This is the position where the movement starts.
-     *************************************************/
-    // This values helps mounting the pan / tilt housing
-    ServoHorizontal.write(90);
-    ServoVertical.write(90);
-
-    delay(4000);
+    delay(4000); // This values helps mounting the pan / tilt housing
 
     /*
      * show border of area which can be reached by laser

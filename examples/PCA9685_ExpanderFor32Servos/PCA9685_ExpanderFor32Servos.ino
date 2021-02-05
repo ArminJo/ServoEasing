@@ -67,7 +67,6 @@
 
 #define NUMBER_OF_SERVOS MAX_EASING_SERVOS
 
-bool checkI2CConnection(uint8_t aI2CAddress);
 void getAndAttach16ServosToPCA9685Expander(uint8_t aPCA9685I2CAddress);
 #if defined (SP)
 uint16_t getFreeRam(void);
@@ -90,11 +89,11 @@ void setup() {
 #if defined (ARDUINO_ARCH_AVR) // Other platforms do not have this new function
     Wire.setWireTimeout(); // Sets default timeout of 25 ms.
 #endif
-    checkI2CConnection(FIRST_PCA9685_EXPANDER_ADDRESS);
+    checkI2CConnection(FIRST_PCA9685_EXPANDER_ADDRESS, &Serial);
     getAndAttach16ServosToPCA9685Expander(FIRST_PCA9685_EXPANDER_ADDRESS);
 
 #if !defined(USE_ONLY_ONE_EXPANDER)
-    if (checkI2CConnection(SECOND_PCA9685_EXPANDER_ADDRESS)) {
+    if (checkI2CConnection(SECOND_PCA9685_EXPANDER_ADDRESS, &Serial)) {
         Serial.println(F("Second PCA9685 expander not connected -> only 16 servos initialized"));
     } else {
         getAndAttach16ServosToPCA9685Expander(SECOND_PCA9685_EXPANDER_ADDRESS);
@@ -106,6 +105,7 @@ void setup() {
      * This is the position where the movement starts.
      *************************************************/
     writeAllServos(0);
+
 #ifdef DEBUG
     for (uint8_t i = 0; i <= ServoEasing::sServoArrayMaxIndex; ++i) {
         ServoEasing::ServoEasingArray[i]->print(&Serial);
@@ -153,45 +153,6 @@ void loop() {
     }
 
     delay(1000);
-}
-
-/*
- * Check if I2C communication is possible. If not, we will wait forever at endTransmission.
- * 0x40 is default PCA9685 address
- * @return true if error happened, i.e. device is not attached at this address.
- */
-bool checkI2CConnection(uint8_t aI2CAddress) {
-    bool tRetValue = false;
-    Serial.print(F("Try to communicate with I2C device at address=0x"));
-    Serial.println(aI2CAddress, HEX);
-    Serial.flush();
-#if defined (ARDUINO_ARCH_AVR) // Other platforms do not have this new function
-    do {
-        Wire.beginTransmission(aI2CAddress);
-        if (Wire.getWireTimeoutFlag()) {
-            Serial.println(F("Timeout accessing I2C bus. Wait for bus becoming available"));
-            Wire.clearWireTimeoutFlag();
-            delay(100);
-        } else {
-            break;
-        }
-    } while (true);
-#else
-    Wire.beginTransmission(aI2CAddress);
-#endif
-
-    uint8_t tWireReturnCode = Wire.endTransmission(true);
-    if (tWireReturnCode == 0) {
-        Serial.print(F("Found"));
-    } else {
-        Serial.print(F("Error code="));
-        Serial.print(tWireReturnCode);
-        Serial.print(F(". Communication with I2C was successful, but found no"));
-        tRetValue = true;
-    }
-    Serial.print(F(" I2C device attached at address: 0x"));
-    Serial.println(aI2CAddress, HEX);
-    return tRetValue;
 }
 
 /*

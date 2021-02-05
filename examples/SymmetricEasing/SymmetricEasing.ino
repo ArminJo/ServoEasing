@@ -46,6 +46,8 @@ ServoEasing Servo1;
 ServoEasing Servo2;
 ServoEasing Servo3;
 
+#define START_DEGREE_VALUE 90
+
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
@@ -61,12 +63,19 @@ void setup() {
     analogReadResolution(10);
 #endif
 
-    // Attach servos to pins
+    /************************************************************
+     * Attach servo to pin and set servos to start position.
+     * This is the position where the movement starts.
+     *
+     * The order of the attach() determine the position
+     * of the Servos in internal ServoEasing::ServoEasingArray[]
+     ***********************************************************/
 #ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO1_PIN);
 #endif
-    if (Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE) == INVALID_SERVO) {
+    if (Servo1.attach(SERVO1_PIN, START_DEGREE_VALUE, DEFAULT_MICROSECONDS_FOR_0_DEGREE,
+    DEFAULT_MICROSECONDS_FOR_180_DEGREE) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
 
@@ -74,7 +83,8 @@ void setup() {
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO2_PIN);
 #endif
-    if (Servo2.attach(SERVO2_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE) == INVALID_SERVO) {
+    if (Servo2.attach(SERVO2_PIN, START_DEGREE_VALUE, DEFAULT_MICROSECONDS_FOR_0_DEGREE,
+    DEFAULT_MICROSECONDS_FOR_180_DEGREE) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
 
@@ -85,7 +95,8 @@ void setup() {
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO3_PIN);
 #endif
-    if (Servo3.attach(SERVO3_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE) == INVALID_SERVO) {
+    if (Servo3.attach(SERVO3_PIN, START_DEGREE_VALUE, DEFAULT_MICROSECONDS_FOR_0_DEGREE,
+    DEFAULT_MICROSECONDS_FOR_180_DEGREE) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
         while (true) {
             digitalWrite(LED_BUILTIN, HIGH);
@@ -94,14 +105,6 @@ void setup() {
             delay(100);
         }
     }
-
-    /**************************************************
-     * Set servos to start position.
-     * This is the position where the movement starts.
-     *************************************************/
-    Servo1.write(90);
-    Servo2.write(90);
-    Servo3.write(90);
 
     // Wait for servos to reach start position.
     delay(2000);
