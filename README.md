@@ -241,8 +241,10 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 ### Version 2.3.5 - work in progress
 
 ### Version 2.3.4
-- ENABLE_MICROS_AS_DEGREE_PARAMETER also available for PCA9685 expander.
+- `ENABLE_MICROS_AS_DEGREE_PARAMETER` also available for PCA9685 expander.
 - Moved `sServoArrayMaxIndex`, `sServoNextPositionArray` and `sServoArray` to `ServoEasing::sServoArrayMaxIndex`, `ServoEasing::ServoEasingNextPositionArray` and `ServoEasing::ServoEasingArray`.
+- Support for Apollo3 2.x core.
+- Fixed ESP8266 pin definitions.
 
 ### Version 2.3.3
 - Added compile option `ENABLE_MICROS_AS_DEGREE_PARAMETER` to allow usage of microseconds instead of degree as function arguments for all functions using degrees as argument.
