@@ -137,7 +137,7 @@ uint16_t readADCChannelWithReferenceOversample(uint8_t aChannelNumber, uint8_t a
          */
         loop_until_bit_is_set(ADCSRA, ADIF);
 
-        ADCSRA |= _BV(ADIF); // clear bit to recognize next conversion has finished
+        ADCSRA |= _BV(ADIF); // clear bit to enable recognizing next conversion has finished
         // Add value
         tSumValue += ADCL | (ADCH << 8); // using myWord does not save space here
         // tSumValue += (ADCH << 8) | ADCL; // this does NOT work!
@@ -164,7 +164,7 @@ uint16_t readADCChannelWithReferenceOversampleFast(uint8_t aChannelNumber, uint8
          */
         loop_until_bit_is_set(ADCSRA, ADIF);
 
-        ADCSRA |= _BV(ADIF); // clear bit to recognize next conversion has finished
+        ADCSRA |= _BV(ADIF); // clear bit to enable recognizing next conversion has finished
         // Add value
         tSumValue += ADCL | (ADCH << 8); // using myWord does not save space here
         // tSumValue += (ADCH << 8) | ADCL; // this does NOT work!
@@ -192,7 +192,7 @@ uint16_t readADCChannelWithReferenceMultiSamples(uint8_t aChannelNumber, uint8_t
          */
         loop_until_bit_is_set(ADCSRA, ADIF);
 
-        ADCSRA |= _BV(ADIF); // clear bit to recognize next conversion has finished
+        ADCSRA |= _BV(ADIF); // clear bit to enable recognizing next conversion has finished
         // Add value
         tSumValue += ADCL | (ADCH << 8); // using myWord does not save space here
         // tSumValue += (ADCH << 8) | ADCL; // this does NOT work!
@@ -221,7 +221,7 @@ uint16_t readADCChannelWithReferenceMax(uint8_t aChannelNumber, uint8_t aReferen
          */
         loop_until_bit_is_set(ADCSRA, ADIF);
 
-        ADCSRA |= _BV(ADIF); // clear bit to recognize next conversion has finished
+        ADCSRA |= _BV(ADIF); // clear bit to enable recognizing next conversion has finished
         // check value
         tADCValue = ADCL | (ADCH << 8);
         if (tADCValue > tMaximum) {

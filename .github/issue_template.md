@@ -4,6 +4,7 @@ about: If something isn't working as expected 🤔.
 assignees: ArminJo
 ---
 
+If you have handling problems or questions, consider to open a discussion https://github.com/ArminJo/ServoEasing/discussions instead of an issue.
 
 ## Bug Report
 
@@ -43,24 +44,23 @@ assignees: ArminJo
 * [ ] ContinuousRotatingServo
 * [ ] Other
 
-### Pin(s) used for servo, if not default
-
 ### Version
 * [ ] Yes I use the [latest repo version](https://github.com/ArminJo/ServoEasing/archive/master.zip) and verified this!
 * [ ] Other - please specify
 
-### Current behavior
-<!-- Paste the code and output you run -->
+Please delete all unchecked lines above :-)
 
+### Pin(s) used for servo, if not default
+
+### Current behavior
+<!-- Paste the code or repository link, if applicable. -->
+
+<!-- Add a the serial output which indicates the error happened. -->
 
 <!-- Add a clear and concise description of the behavior. -->
 
-
 ### Expected behavior
 <!-- Add a clear and concise description of what you expected to happen. -->
-
-### Error output
-<!-- Add a the serial output which indicates the error happened. -->
 
 ### Additional context
 <!-- (Optional) Add any other context about the problem here. -->

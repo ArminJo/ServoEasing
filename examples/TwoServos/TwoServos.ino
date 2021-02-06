@@ -4,7 +4,7 @@
  *  Shows smooth movement from one servo position to another for 2 servos synchronously.
  *  Operate the first servo from -90 to +90 degree
  *
- *  Copyright (C) 2019  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2021  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.

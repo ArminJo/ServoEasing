@@ -162,6 +162,11 @@ Only for AVR, because it uses EEPROM.
 [![mePed V2 in actions](https://i.ytimg.com/vi/MsIjTRRUyGU/hqdefault.jpg)](https://youtu.be/MsIjTRRUyGU)
 [![Another implementation](https://i.ytimg.com/vi/CSodffeebyg/hqdefault.jpg)](https://youtu.be/CSodffeebyg)
 
+### Building breadboard servo adapter
+Converting a 10 pin double row pin header with 21 mm pin length to a breadboard servo adapter.
+![Side view](pictures/ServoAdapter.jpg)
+![Top view](pictures/ServoAdapterTop.jpg)
+
 ## RobotArmControl example
 Program for controlling a [robot arm with 4 servos](https://www.instructables.com/id/4-DOF-Mechanical-Arm-Robot-Controlled-by-Arduino) using 4 potentiometers and/or an IR Remote.
 Only for AVR, because it uses EEPROM.
