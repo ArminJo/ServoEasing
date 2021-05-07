@@ -42,7 +42,7 @@ Ticker Timer20ms;
 #include <HardwareTimer.h> // 4 timers and 3. timer is used for tone(), 2. for Servo
 /*
  * Use timer 4 as IRMP timer.
- * Timer 4 blocks PB6, PB7, PB8, PB9, so if you need one them as Servo output, you must choose another timer.
+ * Timer 4 blocks PB6, PB7, PB8, PB9, so if you require one of them as Servo output, you must choose another timer.
  */
 HardwareTimer Timer20ms(TIM4);
 
@@ -270,6 +270,9 @@ ServoEasing::ServoEasing() // @suppress("Class members should be properly initia
 }
 
 /*
+ * Specify the microseconds values for 0 and 180 degree for the servo.
+ * The values can be determined by the EndPositionsTest example.
+ *
  * If USE_LEIGHTWEIGHT_SERVO_LIB is enabled:
  *      Return 0/false if not pin 9 or 10 else return aPin
  *      Pin number != 9 results in using pin 10.
@@ -287,16 +290,24 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServo0Degree, int aMic
 }
 
 /*
- * Combination of attach with initial write
+ * Combination of attach with initial write.
  */
 uint8_t ServoEasing::attach(int aPin, int aInitialDegree) {
     return attach(aPin, aInitialDegree, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
 }
 
+/*
+ * Specify the start value written to the servo and the microseconds values for 0 and 180 degree for the servo.
+ * The values can be determined by the EndPositionsTest example.
+ */
 uint8_t ServoEasing::attach(int aPin, int aInitialDegree, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree) {
     return attach(aPin, aInitialDegree, aMicrosecondsForServo0Degree, aMicrosecondsForServo180Degree, 0, 180);
 }
 
+/*
+ * The microseconds values at aServoLowDegree and aServoHighDegree are used to compute the microseconds values at 0 and 180 degrees
+ * and can be used e.g. to run the servo from virtual -90 to +90 degree (See TwoServos example).
+ */
 uint8_t ServoEasing::attach(int aPin, int aInitialDegree, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree,
         int aServoLowDegree, int aServoHighDegree) {
     uint8_t tReturnValue = attach(aPin, aMicrosecondsForServoLowDegree, aMicrosecondsForServoHighDegree, aServoLowDegree,
@@ -306,7 +317,7 @@ uint8_t ServoEasing::attach(int aPin, int aInitialDegree, int aMicrosecondsForSe
 }
 
 /**
- * Attaches servo to pin and sets the servo timing parameters
+ * Attaches servo to pin and sets the servo timing parameters.
  * @param aMicrosecondsForServoLowDegree no units accepted, only microseconds!
  * @param aServoLowDegree can be negative. For this case an appropriate trim value is added, since this is the only way to handle negative values.
  * @return If USE_LEIGHTWEIGHT_SERVO_LIB is enabled:
@@ -1052,13 +1063,20 @@ int ServoEasing::getMillisForCompleteMove() {
     return mMillisForCompleteMove;
 }
 
+/**
+ * Do a printDynamic() and a printStatic()
+ * @param aSerial The Print object on which to write, for Arduino you can use &Serial.
+ * @param doExtendedOutput Print also microseconds values for degrees.
+ */
 void ServoEasing::print(Print *aSerial, bool doExtendedOutput) {
     printDynamic(aSerial, doExtendedOutput);
     printStatic(aSerial);
 }
 
-/*
+/**
  * Prints values which may change from move to move.
+ * @param aSerial The Print object on which to write, for Arduino you can use &Serial.
+ * @param doExtendedOutput Print also microseconds values for degrees.
  */
 void ServoEasing::printDynamic(Print *aSerial, bool doExtendedOutput) {
 // pin is static but it is required for identifying the servo
@@ -1110,7 +1128,7 @@ void ServoEasing::printDynamic(Print *aSerial, bool doExtendedOutput) {
 
 /*
  * Prints values which normally does NOT change from move to move.
- * call with
+ * @param aSerial The Print object on which to write, for Arduino you can use &Serial.
  */
 void ServoEasing::printStatic(Print *aSerial) {
 
@@ -1416,7 +1434,7 @@ void disableServoEasingInterrupt() {
 
 //@formatter:on
 /*
- * 60 탎 for single servo + 160 탎 per servo if using I2C e.g.for PCA9685 expander at 400000 Hz or + 100 at 800000 Hz
+ * 60 탎 for single servo + 160 탎 per servo if using I2C e.g.for PCA9685 expander at 400 kHz or + 100 at 800 kHz
  * 20 탎 for last interrupt
  * The first servo pulse starts just after this interrupt routine has finished
  */
@@ -1516,6 +1534,10 @@ void synchronizeAndEaseToArrayPositions(uint_fast16_t aDegreesPerSecond) {
     synchronizeAllServosStartAndWaitForAllServosToStop();
 }
 
+/**
+ * Prints content of ServoNextPositionArray for debugging purposes.
+ * @param aSerial The Print object on which to write, for Arduino you can use &Serial.
+ */
 void printArrayPositions(Print *aSerial) {
 //    uint_fast8_t tServoIndex = 0;
     aSerial->print(F("ServoNextPositionArray="));
@@ -1817,6 +1839,7 @@ float EaseOutBounce(float aPercentageOfCompletion) {
 /*
  * Check if I2C communication is possible. If not, we will wait forever at endTransmission.
  * 0x40 is default PCA9685 address
+ * @param aSerial The Print object on which to write, for Arduino you can use &Serial.
  * @return true if error happened, i.e. device is not attached at this address.
  */
 #if defined(__AVR__)

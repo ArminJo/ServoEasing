@@ -104,6 +104,7 @@ jobs:
               PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: arduino:mbed:nano33ble
+            arduino-platform: arduino:mbed@1.3.2 # the 2.0.0 is incompatible with Servo library
             sketches-exclude: QuadrupedControl,RobotArmControl,PCA9685_ExpanderFor32Servos,PCA9685_Expander,PCA9685_ExpanderAndServo  # No Wire
 
           - arduino-boards-fqbn: esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
