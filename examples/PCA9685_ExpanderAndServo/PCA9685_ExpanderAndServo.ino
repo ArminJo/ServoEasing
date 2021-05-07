@@ -76,7 +76,7 @@ ServoEasing Servo1AtPCA9685(PCA9685_DEFAULT_ADDRESS, &Wire); // If you use more 
 
 ServoEasing Servo1;
 
-#define START_DEGREE_VALUE 0
+#define START_DEGREE_VALUE  0 // The degree value written to the servo at time of attach.
 
 void blinkLED();
 
@@ -84,7 +84,7 @@ void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
 #if defined(__AVR_ATmega32U4__) || defined(SERIAL_USB) || defined(SERIAL_PORT_USBVIRTUAL)  || defined(ARDUINO_attiny3217)
-    delay(2000); // To be able to connect Serial monitor after reset or power up and before first printout
+    delay(4000); // To be able to connect Serial monitor after reset or power up and before first print out. Do not wait for an attached Serial Monitor!
 #endif
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_SERVO_EASING));

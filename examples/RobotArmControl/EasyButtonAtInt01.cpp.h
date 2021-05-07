@@ -606,7 +606,7 @@ void EasyButton::handleINT01Interrupts() {
                     interrupts();
                     ButtonReleaseCallback(ButtonToggleState, ButtonPressDurationMillis);
                     /*
-                     * Check button again since it may ba activated while processing callback function
+                     * Check button again since it may be activated while processing callback function
                      */
                     if (readButtonState()) {
                         // button activated now, so maintain status

@@ -37,6 +37,9 @@
  *  If you did not yet store the example as your own sketch, then with Ctrl+K you are instantly in the right library folder.
  *  *****************************************************************************************************************************/
 
+// Enable this to generate output for Arduino Serial Plotter (Ctrl-Shift-L)
+//#define PRINT_FOR_SERIAL_PLOTTER
+
 #define START_EASE_TO_SPEED 5 // If not specified use 5 degree per second. It is chosen so low in order to signal that it was forgotten to specify.
 /*
  * For use with e.g. the Adafruit PCA9685 16-Channel Servo Driver board. It has a resolution of 4096 per 20 ms => 4.88 µs per step/unit.
@@ -71,7 +74,7 @@
 #error Please define only one of the symbols USE_PCA9685_SERVO_EXPANDER or USE_LEIGHTWEIGHT_SERVO_LIB
 #endif
 
-#if ! ( defined(__AVR__) || defined(ESP8266) || defined(ESP32) || defined(STM32F1xx) || defined(__STM32F1__) || defined(__SAM3X8E__) || defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_APOLLO3)|| defined(TEENSYDUINO))
+#if ! ( defined(__AVR__) || defined(ESP8266) || defined(ESP32) || defined(STM32F1xx) || defined(__STM32F1__) || defined(__SAM3X8E__) || defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_APOLLO3) || defined(ARDUINO_ARCH_MBED) || defined(TEENSYDUINO))
 #warning No periodic timer support existent (or known) for this platform. Only blocking functions and simple example will run!
 #endif
 
@@ -86,6 +89,10 @@
 #   include <Servo.h>
 #  endif // defined(ESP32)
 #endif // ! defined(DO_NOT_USE_SERVO_LIB)
+
+#if defined(ARDUINO_ARCH_MBED) // Arduino Nano 33 BLE
+#include "mbed.h"
+#endif
 
 #if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 #  include "LightweightServo.h"
@@ -103,7 +110,7 @@
 #  if defined(ESP32)
 // The ESP32 I2C interferes with the Ticker / Timer library used.
 // Even with 100 kHz clock we have some dropouts / NAK's because of sending address again instead of first data.
-#    define I2C_CLOCK_FREQUENCY 100000 // 200000 does not work for my ESP32 module together with the timer :-(
+#    define I2C_CLOCK_FREQUENCY 100000 // 200000 does not work for my ESP32 module together with the timer even with external pullups :-(
 #  elif defined(ESP8266)
 #    define I2C_CLOCK_FREQUENCY 400000 // 400000 is the maximum for 80 MHz clocked ESP8266 (I measured real 330000 Hz for this setting)
 #  else
@@ -172,9 +179,6 @@
  */
 //#define ENABLE_MICROS_AS_DEGREE_PARAMETER
 #define THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS  400  // treat values less than 400 as angles in degrees, others are handled as microseconds
-
-// Enable this to generate output for Arduino Serial Plotter (Ctrl-Shift-L)
-//#define PRINT_FOR_SERIAL_PLOTTER
 
 #if ! defined(va_arg)
 // workaround for STM32
@@ -305,7 +309,7 @@
 #define PCA9685_PRESCALER_FOR_20_MS ((25000000L /(4096L * 50))-1) // = 121 / 0x79 at 50 Hz
 
 class ServoEasing
-#if ! defined(DO_NOT_USE_SERVO_LIB)
+#if !defined(DO_NOT_USE_SERVO_LIB)
         : public Servo
 #endif
 {

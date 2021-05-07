@@ -66,6 +66,13 @@
 #define SPEED_IN_PIN A2
 #define MODE_ANALOG_INPUT_PIN A3
 
+#elif defined(ARDUINO_ARCH_MBED) // Arduino Nano 33 BLE
+#define SERVO1_PIN 9
+#define SERVO2_PIN 10
+#define SERVO3_PIN 11
+#define SPEED_IN_PIN A0
+#define MODE_ANALOG_INPUT_PIN A1
+
 #elif defined(__AVR__)
 #define SERVO1_PIN 9 // For ATmega328 pins 9 + 10 are connected to timer 2 and can therefore be used also by the Lightweight Servo library
 #define SERVO2_PIN 10

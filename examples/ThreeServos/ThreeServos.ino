@@ -46,7 +46,7 @@ ServoEasing Servo1;
 ServoEasing Servo2;
 ServoEasing Servo3;
 
-#define START_DEGREE_VALUE 0
+#define START_DEGREE_VALUE  0 // The degree value written to the servo at time of attach.
 
 void blinkLED();
 
@@ -54,7 +54,7 @@ void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
 #if defined(__AVR_ATmega32U4__) || defined(SERIAL_USB) || defined(SERIAL_PORT_USBVIRTUAL)  || defined(ARDUINO_attiny3217)
-    delay(2000); // To be able to connect Serial monitor after reset or power up and before first printout
+    delay(4000); // To be able to connect Serial monitor after reset or power up and before first print out. Do not wait for an attached Serial Monitor!
 #endif
     // Just to know which program is running on my Arduino
 #ifndef PRINT_FOR_SERIAL_PLOTTER
@@ -100,6 +100,9 @@ void setup() {
     }
 
 #ifndef PRINT_FOR_SERIAL_PLOTTER
+    /*
+     * Print internal servo control data
+     */
     Servo1.print(&Serial);
     Servo2.print(&Serial);
     ServoEasing::ServoEasingArray[2]->print(&Serial);
