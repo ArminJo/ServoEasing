@@ -33,9 +33,9 @@
 #define INFO // enable some prints
 
 #if defined(ROBOT_ARM_IR_CONTROL)
-#define USE_TINY_IR_RECEIVER // must be specified before including IRCommandDispatcher.cpp.h to define which IR library to use
-#include "IRCommandMapping.h" // must be included before IRCommandDispatcher.cpp.h to define IR_ADDRESS and IRMapping and string "unknown".
-#include "IRCommandDispatcher.cpp.h"
+#define USE_TINY_IR_RECEIVER // must be specified before including IRCommandDispatcher.hpp to define which IR library to use
+#include "IRCommandMapping.h" // must be included before IRCommandDispatcher.hpp to define IR_ADDRESS and IRMapping and string "unknown".
+#include "IRCommandDispatcher.hpp"
 #include "RobotArmRTCControl.h"
 #endif
 
@@ -76,7 +76,7 @@
 //#define DEBUG
 #define USE_BUTTON_0
 #define USE_ATTACH_INTERRUPT // to be compatible with IRLremote
-#include "EasyButtonAtInt01.cpp.h" // for switching easing modes
+#include "EasyButtonAtInt01.hpp" // for switching easing modes
 
 #include "ADCUtils.h" // for get getVCCVoltageMillivolt
 

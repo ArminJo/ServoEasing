@@ -38,10 +38,10 @@
 
 #if defined(QUADRUPED_HAS_IR_CONTROL)
 // saves around 800 bytes program space
-#define USE_TINY_IR_RECEIVER // must be specified before including IRCommandDispatcher.cpp.h to define which IR library to use
+#define USE_TINY_IR_RECEIVER // must be specified before including IRCommandDispatcher.hpp to define which IR library to use
 
-#include "IRCommandMapping.h" // must be included before IRCommandDispatcher.cpp.h to define IR_ADDRESS and IRMapping and string "unknown".
-#include "IRCommandDispatcher.cpp.h"
+#include "IRCommandMapping.h" // must be included before IRCommandDispatcher.hpp to define IR_ADDRESS and IRMapping and string "unknown".
+#include "IRCommandDispatcher.hpp"
 #endif
 
 #include "QuadrupedServoControl.h"

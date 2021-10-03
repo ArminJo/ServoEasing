@@ -1,5 +1,5 @@
 /*
- * EasyButtonAtInt01.cpp.h
+ * EasyButtonAtInt01.hpp
  *
  * This file can be directly configured and included in one source.
  * Include EasyButtonAtInt01.h file if you need the declarations in a second source file.
@@ -12,7 +12,7 @@
  *
  *  Usage:
  *  #define USE_BUTTON_0
- *  #include "EasyButtonAtInt01.cpp.h"
+ *  #include "EasyButtonAtInt01.hpp"
  *  EasyButton Button0AtPin2(true);
  *
  *  Copyright (C) 2018  Armin Joachimsmeyer
@@ -42,7 +42,7 @@
  * Usage:
  * #define USE_BUTTON_0  // Enable code for button at INT0 (pin2 on 328P, PB6 on ATtiny167, PB2 on ATtinyX5)
  * #define USE_BUTTON_1  // Enable code for button at INT1 (pin3 on 328P, PA3 on ATtiny167, PCINT0 / PCx for ATtinyX5)
- * #include "EasyButtonAtInt01.cpp.h"
+ * #include "EasyButtonAtInt01.hpp"
  * EasyButton Button0AtPin2(true);  // true  -> Button is connected to INT0
  * EasyButton Button0AtPin3(false, &Button3CallbackHandler); // false -> button is not connected to INT0 => connected to INT1
  * ...
@@ -436,6 +436,8 @@ bool EasyButton::checkForLongPressBlocking(uint16_t aLongPressThresholdMillis) {
  * Double press detection by computing difference between current (active) timestamp ButtonLastChangeMillis
  * and last release timestamp ButtonReleaseMillis.
  * !!!Works only reliable if called early in ButtonPress callback function!!!
+ * Be aware, that the first press after booting may be detected as double press!
+ * This is because ButtonReleaseMillis is initialized with 0 milliseconds, which is interpreted as the first press happened at the beginning of boot.
  * @return true if double press detected.
  */
 bool EasyButton::checkForDoublePress(uint16_t aDoublePressDelayMillis) {

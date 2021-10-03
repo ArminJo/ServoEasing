@@ -4,7 +4,8 @@ about: If something isn't working as expected 🤔.
 assignees: ArminJo
 ---
 
-If you have handling problems or questions, consider to open a discussion https://github.com/ArminJo/ServoEasing/discussions instead of an issue.
+**Issues are expected to lead to changes in the repository, like code or documentation improvements or bug fixes.**<br/>
+If you have handling problems or questions, consider to **open a [discussion](https://github.com/ArminJo/ServoEasing/discussions)** instead of an issue.
 
 ## Bug Report
 

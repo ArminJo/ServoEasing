@@ -359,7 +359,7 @@ public:
 #endif
 
     void write(int aValue);                         // Apply trim and reverse to the value and write it direct to the Servo library.
-    void writeMicrosecondsOrUnits(int aValue);
+    void writeMicrosecondsOrUnits(int aMicrosecondsOrUnits);
 
     void setSpeed(uint_fast16_t aDegreesPerSecond);             // This speed is taken if no speed argument is given.
     uint_fast16_t getSpeed();

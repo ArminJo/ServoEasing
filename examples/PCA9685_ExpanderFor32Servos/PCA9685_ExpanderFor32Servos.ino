@@ -46,6 +46,10 @@
  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 #include "ServoEasing.h"
 
+#if !defined(USE_PCA9685_SERVO_EXPANDER)
+#error You must activate the line "#define USE_PCA9685_SERVO_EXPANDER" in ServoEasing.h to make the expander example work.
+#endif
+
 //#define DEBUG // to see all ServoEasing's object info
 #define INFO // to see serial output of loop
 

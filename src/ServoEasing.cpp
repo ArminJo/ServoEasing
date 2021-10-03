@@ -538,7 +538,7 @@ void ServoEasing::write(int aValue) {
 /**
  * Before sending the value to the underlying Servo library, trim and reverse is applied
  */
-void ServoEasing::writeMicrosecondsOrUnits(int aValue) {
+void ServoEasing::writeMicrosecondsOrUnits(int aMicrosecondsOrUnits) {
     /*
      * Check for valid initialization of servo.
      */
@@ -549,39 +549,39 @@ void ServoEasing::writeMicrosecondsOrUnits(int aValue) {
         return;
     }
 
-    mCurrentMicrosecondsOrUnits = aValue;
+    mCurrentMicrosecondsOrUnits = aMicrosecondsOrUnits;
 
 #if defined(TRACE)
     Serial.print(mServoIndex);
     Serial.print('/');
     Serial.print(mServoPin);
     Serial.print(F(" us/u="));
-    Serial.print(aValue);
+    Serial.print(aMicrosecondsOrUnits);
     if (mTrimMicrosecondsOrUnits != 0) {
         Serial.print(" t=");
-        Serial.print(aValue + mTrimMicrosecondsOrUnits);
+        Serial.print(aMicrosecondsOrUnits + mTrimMicrosecondsOrUnits);
     }
 #endif // TRACE
 
 // Apply trim - this is the only place mTrimMicrosecondsOrUnits is evaluated
-    aValue += mTrimMicrosecondsOrUnits;
+    aMicrosecondsOrUnits += mTrimMicrosecondsOrUnits;
 // Apply reverse, values for 0 to 180 are swapped if reverse - this is the only place mOperateServoReverse is evaluated
 // (except in the DegreeToMicrosecondsOrUnitsWithTrimAndReverse() function for external testing purposes)
     if (mOperateServoReverse) {
-        aValue = mServo180DegreeMicrosecondsOrUnits - (aValue - mServo0DegreeMicrosecondsOrUnits);
+        aMicrosecondsOrUnits = mServo180DegreeMicrosecondsOrUnits - (aMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits);
 #if defined(TRACE)
         Serial.print(F(" r="));
-        Serial.print(aValue);
+        Serial.print(aMicrosecondsOrUnits);
 #endif
     }
 
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
     Serial.print(' ');
-    Serial.print(aValue);
+    Serial.print(aMicrosecondsOrUnits);
 #endif
 
 #if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-    writeMicrosecondsLightweightServo(aValue, (mServoPin == 9));
+    writeMicrosecondsLightweightServo(aMicrosecondsOrUnits, (mServoPin == 9));
 
 #elif defined(USE_PCA9685_SERVO_EXPANDER)
 #  if defined(TRACE)
@@ -591,20 +591,20 @@ void ServoEasing::writeMicrosecondsOrUnits(int aValue) {
 #  endif
 #  if defined(USE_SERVO_LIB)
     if (mServoIsConnectedToExpander) {
-        setPWM(mServoPin * ((4096 - (DEFAULT_PCA9685_UNITS_FOR_180_DEGREE + 100)) / 15), aValue); // mServoPin * 233
+        setPWM(mServoPin * ((4096 - (DEFAULT_PCA9685_UNITS_FOR_180_DEGREE + 100)) / 15), aMicrosecondsOrUnits); // mServoPin * 233
     } else {
-        Servo::writeMicroseconds(aValue); // requires 7 탎
+        Servo::writeMicroseconds(aMicrosecondsOrUnits); // requires 7 탎
     }
 #  else
     /*
      * Distribute the servo start time over the 20 ms period.
      * Unexpectedly this even saves 20 bytes Flash for an ATmega328P
      */
-    setPWM(mServoPin * ((4096 - (DEFAULT_PCA9685_UNITS_FOR_180_DEGREE + 100)) / 15), aValue); // mServoPin * 233
+    setPWM(mServoPin * ((4096 - (DEFAULT_PCA9685_UNITS_FOR_180_DEGREE + 100)) / 15), aMicrosecondsOrUnits); // mServoPin * 233
 #  endif
 
 #else
-    Servo::writeMicroseconds(aValue); // requires 7 탎
+    Servo::writeMicroseconds(aMicrosecondsOrUnits); // requires 7 탎
 #endif
 
 #if defined(TRACE)

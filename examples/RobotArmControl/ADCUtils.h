@@ -48,6 +48,14 @@
 #endif
 
 /*
+ * By replacing this value with the voltage you measured a the AREF pin after a conversion
+ * with INTERNAL you can calibrate your ADC readout. For my Nanos I measured e.g. 1060 mV and 1093 mV.
+ */
+#ifndef ADC_INTERNAL_REFERENCE_MILLIVOLT
+#define ADC_INTERNAL_REFERENCE_MILLIVOLT 1100L    // Value measured at the AREF pin
+#endif
+
+/*
  * Reference shift values are complicated for ATtinyX5 since we have the extra register bit REFS2
  * in ATTinyCore, this bit is handled programmatical and therefore the defines are different.
  * To keep my library small, I use the changed defines.
@@ -110,7 +118,9 @@
 
 uint16_t readADCChannel(uint8_t aChannelNumber);
 uint16_t readADCChannelWithReference(uint8_t aChannelNumber, uint8_t aReference);
+uint16_t waitAndReadADCChannelWithReference(uint8_t aChannelNumber, uint8_t aReference);
 uint16_t readADCChannelWithOversample(uint8_t aChannelNumber, uint8_t aOversampleExponent);
+void setADCMultiplexerAndReferenceForNextConversion(uint8_t aChannelNumber, uint8_t aReference);
 uint16_t readADCChannelWithReferenceOversample(uint8_t aChannelNumber, uint8_t aReference, uint8_t aOversampleExponent);
 uint16_t readADCChannelWithReferenceOversampleFast(uint8_t aChannelNumber, uint8_t aReference, uint8_t aOversampleExponent);
 uint16_t readADCChannelWithReferenceMultiSamples(uint8_t aChannelNumber, uint8_t aReference, uint8_t aNumberOfSamples);
@@ -126,7 +136,8 @@ uint16_t getVCCVoltageMillivoltSimple(void);
 float getTemperatureSimple(void);
 float getVCCVoltage(void);
 uint16_t getVCCVoltageMillivolt(void);
-void printVCCVoltageMillivolt(Print* aSerial);
+uint16_t printVCCVoltageMillivolt(Print *aSerial);
+void printVCCVoltageMillivolt(Print *aSerial, uint16_t aVCCVoltageMillivolt);
 float getTemperature(void);
 
 #endif // defined(ADATE)
