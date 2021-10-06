@@ -106,7 +106,7 @@ ServoEasing *ServoEasing::ServoEasingArray[MAX_EASING_SERVOS];
 int ServoEasing::ServoEasingNextPositionArray[MAX_EASING_SERVOS];
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
-#  if ! defined _BV
+#  if !defined _BV
 #  define _BV(bit) (1 << (bit))
 #  endif
 // Constructor with I2C address required
@@ -245,7 +245,7 @@ int ServoEasing::PCA9685UnitsToMicroseconds(int aPCA9685Units) {
 
 // Constructor without I2C address
 ServoEasing::ServoEasing() // @suppress("Class members should be properly initialized")
-#if ! defined(DO_NOT_USE_SERVO_LIB)
+#if !defined(DO_NOT_USE_SERVO_LIB)
 :
         Servo()
 #endif
@@ -357,21 +357,22 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
     /*
      * Now put this servo instance into list of servos
      */
-    mServoIndex = INVALID_SERVO; // flag indicating an invalid servo index
+    uint8_t tReturnValue = INVALID_SERVO; // flag indicating an invalid servo index
     for (uint_fast8_t tServoIndex = 0; tServoIndex < MAX_EASING_SERVOS; ++tServoIndex) {
         if (ServoEasingArray[tServoIndex] == NULL) {
             ServoEasingArray[tServoIndex] = this;
-            mServoIndex = tServoIndex;
+            tReturnValue = tServoIndex;
             if (tServoIndex > sServoArrayMaxIndex) {
                 sServoArrayMaxIndex = tServoIndex;
             }
             break;
         }
     }
+    mServoIndex = tReturnValue;
 
 #if defined(TRACE)
     Serial.print("Index=");
-    Serial.print(mServoIndex);
+    Serial.print(tReturnValue);
     Serial.print(" pin=");
     Serial.print(mServoPin);
     Serial.print(" low=");
@@ -390,20 +391,20 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
     mCurrentMicrosecondsOrUnits = DEFAULT_PCA9685_UNITS_FOR_90_DEGREE; // The start value if we forget the initial write()
 #  if defined(USE_SERVO_LIB)
     if (mServoIsConnectedToExpander) {
-        if (mServoIndex == 0) {
+        if (tReturnValue == 0) {
             I2CInit();          // init only once
             PCA9685Reset();     // reset only once
         }
         PCA9685Init(); // initialize at every attach is simpler but initializing once for every board would be sufficient.
-        return mServoIndex;
+        return tReturnValue;
     }
 #  else
-    if (mServoIndex == 0) {
+    if (tReturnValue == 0) {
         I2CInit();          // init only once
         PCA9685Reset();     // reset only once
     }
     PCA9685Init(); // initialize at every attach is simpler but initializing once for every board would be sufficient.
-    return mServoIndex;
+    return tReturnValue;
 #  endif
 #elif defined(USE_LEIGHTWEIGHT_SERVO_LIB)
     if(aPin != 9 && aPin != 10) {
@@ -412,18 +413,22 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
     return aPin;
 #endif // defined(USE_PCA9685_SERVO_EXPANDER)
 
-#if ! defined(DO_NOT_USE_SERVO_LIB)
-    if (mServoIndex == INVALID_SERVO) {
-        return INVALID_SERVO;
+#if !defined(DO_NOT_USE_SERVO_LIB)
+    // This error value has priority over the regular return value from Servo::attach()
+    if (tReturnValue == INVALID_SERVO) {
+        return tReturnValue;
     }
-    mCurrentMicrosecondsOrUnits = DEFAULT_PULSE_WIDTH; // this is the start value of the Servo::attach() function below
+    mCurrentMicrosecondsOrUnits = DEFAULT_PULSE_WIDTH;
+    /*
+     * Call attach() of the underlying Servo library
+     */
 #  if defined(ARDUINO_ARCH_APOLLO3)
     Servo::attach(aPin, tMicrosecondsForServo0Degree, tMicrosecondsForServo180Degree);
     return aPin; // Sparkfun apollo3 Servo library has no return value for attach :-(
 #  else
     return Servo::attach(aPin, tMicrosecondsForServo0Degree, tMicrosecondsForServo180Degree);
 #  endif
-#endif //! defined(DO_NOT_USE_SERVO_LIB)
+#endif //!defined(DO_NOT_USE_SERVO_LIB)
 }
 
 void ServoEasing::detach() {
@@ -770,9 +775,9 @@ bool ServoEasing::startEaseTo(int aDegree, uint_fast16_t aDegreesPerSecond, bool
         tDegree = MicrosecondsOrUnitsToDegree(tDegree);
 #endif
     }
-    tMillisForCompleteMove = abs(tDegree - tCurrentAngle) * 1000L / aDegreesPerSecond;
+    tMillisForCompleteMove = abs(tDegree - tCurrentAngle) * MILLIS_IN_ONE_SECOND / aDegreesPerSecond;
 #else
-    tMillisForCompleteMove = abs(aDegree - tCurrentAngle) * 1000L / aDegreesPerSecond;
+    tMillisForCompleteMove = abs(aDegree - tCurrentAngle) * MILLIS_IN_ONE_SECOND / aDegreesPerSecond;
 #endif
 
 #ifndef PROVIDE_ONLY_LINEAR_MOVEMENT
@@ -881,7 +886,7 @@ bool ServoEasing::update() {
      * Linear movement: new position is: start position + total delta * (millis_done / millis_total aka "percentage of completion")
      * 40 µs to compute
      */
-    uint_fast16_t tNewMicrosecondsOrUnits = mStartMicrosecondsOrUnits
+    int_fast16_t tNewMicrosecondsOrUnits = mStartMicrosecondsOrUnits
     + ((mDeltaMicrosecondsOrUnits * (int32_t) tMillisSinceStart) / mMillisForCompleteMove);
     /*
      * Write new position only if changed
@@ -1023,6 +1028,9 @@ float ServoEasing::callEasingFunction(float aPercentageOfCompletion) {
 #endif //PROVIDE_ONLY_LINEAR_MOVEMENT
 
 bool ServoEasing::isMoving() {
+#if defined(ESP8266)
+    yield(); // Not required for ESP32, since our code is running on CPU1 and using yield seems to disturb the I2C interface
+#endif
     return mServoMoves;
 }
 
@@ -1232,7 +1240,7 @@ __attribute__((weak)) void handleServoTimerInterrupt()
 void enableServoEasingInterrupt() {
 #if defined(__AVR__)
 #  if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
-#    if defined(USE_PCA9685_SERVO_EXPANDER) && ! defined(USE_SERVO_LIB)
+#    if defined(USE_PCA9685_SERVO_EXPANDER) && !defined(USE_SERVO_LIB)
 // set timer 5 to 20 ms, since the servo library does not do this for us
     TCCR5A = _BV(WGM11);// FastPWM Mode mode TOP (20 ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
     TCCR5B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);// set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
@@ -1259,7 +1267,7 @@ void enableServoEasingInterrupt() {
     /*
      * Standard AVR use timer 1
      */
-#    if defined(USE_PCA9685_SERVO_EXPANDER) && ! defined(USE_SERVO_LIB)
+#    if defined(USE_PCA9685_SERVO_EXPANDER) && !defined(USE_SERVO_LIB)
 //    // set timer 1 to 20 ms, since the servo library does not do this for us
     TCCR1A = _BV(WGM11);     // FastPWM Mode mode TOP (20 ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
     TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);     // set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
@@ -1685,6 +1693,8 @@ void updateAndWaitForAllServosToStop() {
 }
 
 /*
+ * @param aMillisDelay the milliseconds for blocking wait and update
+ * @param aTerminateDelayIfAllServosStopped if true, function returns before aMillisDelay if all servos are stopped
  * returns true if all Servos reached endAngle / stopped
  */
 bool delayAndUpdateAndWaitForAllServosToStop(unsigned long aMillisDelay, bool aTerminateDelayIfAllServosStopped) {

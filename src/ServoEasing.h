@@ -29,6 +29,16 @@
 #define VERSION_SERVO_EASING_MINOR 4
 // The change log is at the bottom of the file
 
+#if !defined(__has_include)
+#error This compiler does not support the "__has_include" operator
+#endif
+
+#if __has_include("build_opts.h")
+#include "build_opts.h"
+#endif
+
+#define MILLIS_IN_ONE_SECOND 1000L
+
 // @formatter:off
 /*  *****************************************************************************************************************************
  *  To access the library files from your sketch, you have to first use `Sketch > Show Sketch Folder (Ctrl+K)` in the Arduino IDE.
@@ -37,19 +47,25 @@
  *  If you did not yet store the example as your own sketch, then with Ctrl+K you are instantly in the right library folder.
  *  *****************************************************************************************************************************/
 
-// Enable this to generate output for Arduino Serial Plotter (Ctrl-Shift-L)
-//#define PRINT_FOR_SERIAL_PLOTTER
+#if !defined(PRINT_FOR_SERIAL_PLOTTER)
+//#define PRINT_FOR_SERIAL_PLOTTER // Enable this to generate output for Arduino Serial Plotter (Ctrl-Shift-L)
+#endif
 
 #define START_EASE_TO_SPEED 5 // If not specified use 5 degree per second. It is chosen so low in order to signal that it was forgotten to specify.
+
 /*
  * For use with e.g. the Adafruit PCA9685 16-Channel Servo Driver board. It has a resolution of 4096 per 20 ms => 4.88 µs per step/unit.
  * One PCA9685 has 16 outputs. You must modify MAX_EASING_SERVOS below, if you have more than one PCA9685 attached!
  * Use of PCA9685 normally disables use of regular servo library. You can force using of regular servo library by defining USE_SERVO_LIB
  * All internal values *MicrosecondsOrUnits now contains no more microseconds but PCA9685 units!!!
  */
+#if !defined(USE_PCA9685_SERVO_EXPANDER)
 //#define USE_PCA9685_SERVO_EXPANDER
-//#define USE_SERVO_LIB
-#if defined(USE_PCA9685_SERVO_EXPANDER) && ! defined(USE_SERVO_LIB)
+#endif
+#if !defined(USE_SERVO_LIB)
+//#define USE_SERVO_LIB // Force additional using of regular servo library in conjunction with PCA9685 library.
+#endif
+#if defined(USE_PCA9685_SERVO_EXPANDER) && !defined(USE_SERVO_LIB)
 #define DO_NOT_USE_SERVO_LIB
 #endif
 
@@ -61,10 +77,13 @@
  * If not using the Arduino IDE take care that Arduino Servo library sources are not compiled / included in the project.
  * Use of Lightweight Servo library disables use of regular servo library.
  */
+#if !defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 //#define USE_LEIGHTWEIGHT_SERVO_LIB
+#endif
 #if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 #define DO_NOT_USE_SERVO_LIB
 #endif
+
 
 #if ( defined(ESP8266) || defined(ESP32) || defined(__STM32F1__)) && defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 #error No Lightweight Servo Library available (and required) for ESP boards
@@ -74,11 +93,11 @@
 #error Please define only one of the symbols USE_PCA9685_SERVO_EXPANDER or USE_LEIGHTWEIGHT_SERVO_LIB
 #endif
 
-#if ! ( defined(__AVR__) || defined(ESP8266) || defined(ESP32) || defined(STM32F1xx) || defined(__STM32F1__) || defined(__SAM3X8E__) || defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_APOLLO3) || defined(ARDUINO_ARCH_MBED) || defined(TEENSYDUINO))
+#if !( defined(__AVR__) || defined(ESP8266) || defined(ESP32) || defined(STM32F1xx) || defined(__STM32F1__) || defined(__SAM3X8E__) || defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_APOLLO3) || defined(ARDUINO_ARCH_MBED) || defined(TEENSYDUINO))
 #warning No periodic timer support existent (or known) for this platform. Only blocking functions and simple example will run!
 #endif
 
-#if ! defined(DO_NOT_USE_SERVO_LIB)
+#if !defined(DO_NOT_USE_SERVO_LIB)
 #  if defined(ESP32)
 // This does not work in Arduino IDE for step "Generating function prototypes..."
 //#    if ! __has_include("ESP32Servo.h")
@@ -88,7 +107,7 @@
 #  else
 #   include <Servo.h>
 #  endif // defined(ESP32)
-#endif // ! defined(DO_NOT_USE_SERVO_LIB)
+#endif // !defined(DO_NOT_USE_SERVO_LIB)
 
 #if defined(ARDUINO_ARCH_MBED) // Arduino Nano 33 BLE
 #include "mbed.h"
@@ -96,13 +115,13 @@
 
 #if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 #  include "LightweightServo.h"
-#  if ! defined(MAX_EASING_SERVOS)
+#  if !defined(MAX_EASING_SERVOS)
 #    define MAX_EASING_SERVOS 2 // default value for UNO etc.
 #  endif
-#endif // ! defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#endif // !defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
-#  if ! defined(MAX_EASING_SERVOS)
+#  if !defined(MAX_EASING_SERVOS)
 #    define MAX_EASING_SERVOS 16 // One PCA9685 has 16 outputs. You must MODIFY this, if you have more than one PCA9685 attached!
 #  endif // defined(USE_PCA9685_SERVO_EXPANDER)
    #include <Wire.h>
@@ -122,32 +141,30 @@
 /*****************************************************************************************
  * Important definition of MAX_EASING_SERVOS !!!
  * If this value is smaller than the amount of servos declared,
- * attach() will return error and detach() will not work as expected.
- * As well as all *AllServos*() functions and isOneServoMoving()
- * won't work correctly! (they will only work for the first MAX_EASING_SERVOS -2 servos)
- *
- * If you do not need these functions, you may define MAX_EASING_SERVOS as 1
+ * attach() will return error and other library functions will not work as expected.
+ * Of course all *AllServos*() functions and isOneServoMoving() can't work correctly!
+ * Saves 4 byte RAM per servo.
  ****************************************************************************************/
-#if ! defined(MAX_EASING_SERVOS)
+#if !defined(MAX_EASING_SERVOS)
 #  if defined(MAX_SERVOS)
 #   define MAX_EASING_SERVOS MAX_SERVOS // =12 use default value from Servo.h for UNO etc.
 #  else
 #   define MAX_EASING_SERVOS 12 // just take default value from Servo.h for UNO etc.
 #  endif
-#endif // ! defined(MAX_EASING_SERVOS)
+#endif // !defined(MAX_EASING_SERVOS)
 
-#if ! defined(DEFAULT_PULSE_WIDTH)
+#if !defined(DEFAULT_PULSE_WIDTH)
 #define DEFAULT_PULSE_WIDTH 1500     // default pulse width when servo is attached (from Servo.h)
 #endif
-#if ! defined(REFRESH_INTERVAL)
+#if !defined(REFRESH_INTERVAL)
 #define REFRESH_INTERVAL 20000   // // minimum time to refresh servos in microseconds (from Servo.h)
 #endif
-#if ! defined(INVALID_SERVO)
+#if !defined(INVALID_SERVO)
 #define INVALID_SERVO    255     // flag indicating an invalid servo index (from Servo.h)
 #endif
 #define REFRESH_INTERVAL_MICROS REFRESH_INTERVAL         // 20000
 #define REFRESH_INTERVAL_MILLIS (REFRESH_INTERVAL/1000)  // 20 - used for delay()
-#define REFRESH_FREQUENCY (1000/REFRESH_INTERVAL_MILLIS) // 50
+#define REFRESH_FREQUENCY (MILLIS_IN_ONE_SECOND/REFRESH_INTERVAL_MILLIS) // 50
 
 /*
  * Define `DISABLE_COMPLEX_FUNCTIONS` if space (1850 Bytes) matters.
@@ -156,16 +173,16 @@
  * If you need only a single complex easing function and want to save space,
  * you can specify it any time as a user function. See EaseQuadraticInQuarticOut() function in AsymmetricEasing example line 206.
  */
-#ifdef KEEP_SERVO_EASING_LIBRARY_SMALL // to be backwards compatible
-#warning Please change the defined macro KEEP_SERVO_EASING_LIBRARY_SMALL to the new name DISABLE_COMPLEX_FUNCTIONS
-#define DISABLE_COMPLEX_FUNCTIONS
-#endif
+#if !defined(DISABLE_COMPLEX_FUNCTIONS)
 //#define DISABLE_COMPLEX_FUNCTIONS
+#endif
 
 /*
  * If you need only the linear movement you may define `PROVIDE_ONLY_LINEAR_MOVEMENT`. This saves additional 1540 Bytes FLASH.
  */
+#if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
 //#define PROVIDE_ONLY_LINEAR_MOVEMENT
+#endif
 
 // Enable this if you want to measure timing by toggling pin12 on an arduino
 //#define MEASURE_SERVO_EASING_INTERRUPT_TIMING
@@ -177,10 +194,14 @@
 /*
  * If you require passing microsecond values as parameter instead of degree values. This requires additional 128 Bytes FLASH.
  */
+#if !defined(ENABLE_MICROS_AS_DEGREE_PARAMETER)
 //#define ENABLE_MICROS_AS_DEGREE_PARAMETER
+#endif
+#if !defined(THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS)
 #define THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS  400  // treat values less than 400 as angles in degrees, others are handled as microseconds
+#endif
 
-#if ! defined(va_arg)
+#if !defined(va_arg)
 // workaround for STM32
 #include <stdarg.h>
 #endif
@@ -451,8 +472,8 @@ public:
 
     /*
      * It is required for ESP32, where the timer interrupt routine does not block the loop. Maybe it runs on another CPU?
-     * The interrupt routine sets first the mServoMoves flag to false and then disables the timer,
-     * but on a ESP32 polling the flag and then starting next movement and enabling timer happens BEFORE the timer is disabled.
+     * The interrupt routine first sets the mServoMoves flag to false and then disables the timer.
+     * But on a ESP32 polling the flag and then starting next movement and enabling timer happens BEFORE the timer is disabled.
      * And this crashes the kernel in esp_timer_delete, which will lead to a reboot.
      */
     static volatile bool sInterruptsAreActive; // true if interrupts are still active, i.e. at least one Servo is moving with interrupts.

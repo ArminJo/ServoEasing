@@ -72,17 +72,13 @@ void setup() {
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO1_PIN);
 #endif
-    if (Servo1.attach(SERVO1_PIN, START_DEGREE_VALUE) == INVALID_SERVO) {
-        Serial.println(F("Error attaching servo"));
-    }
+    Servo1.attach(SERVO1_PIN, START_DEGREE_VALUE);
 
 #ifndef PRINT_FOR_SERIAL_PLOTTER
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO2_PIN);
 #endif
-    if (Servo2.attach(SERVO2_PIN, START_DEGREE_VALUE) == INVALID_SERVO) {
-        Serial.println(F("Error attaching servo"));
-    }
+    Servo2.attach(SERVO2_PIN, START_DEGREE_VALUE, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
 
     /*
      * Check at least the last call to attach()
@@ -105,8 +101,7 @@ void setup() {
      */
     Servo1.print(&Serial);
     Servo2.print(&Serial);
-    ServoEasing::ServoEasingArray[2]->print(&Serial);
-    ; // "ServoEasing::ServoEasingArray[2]->" can be used instead of "Servo3."
+    ServoEasing::ServoEasingArray[2]->print(&Serial); // "ServoEasing::ServoEasingArray[2]->" can be used instead of "Servo3."
 #endif
 
 #ifdef PRINT_FOR_SERIAL_PLOTTER
@@ -132,17 +127,19 @@ void loop() {
      * Move three servos synchronously without interrupt handler
      */
 #ifndef PRINT_FOR_SERIAL_PLOTTER
-    Serial.println(F("Move to 90/90/180 degree with 20 degree per second with updates by own do-while loop"));
+    Serial.println(F("Move to 90/135/180 degree with up to 20 degree per second with updates by own do-while loop"));
 #endif
-    setSpeedForAllServos(20); // this speed is changed for the first 2 servos below by synchronizing to the longest duration
-    ServoEasing::ServoEasingArray[0]->setEaseTo(90); // "ServoEasing::ServoEasingArray[0]->" can be used instead of "Servo1."
-    Servo2.setEaseTo(90);
-    Servo3.setEaseTo(180);
-    synchronizeAllServosAndStartInterrupt(false); // do not start interrupt
+    // this speed is changed for the first 2 servos below by synchronizing to the longest duration
+    setSpeedForAllServos(20);
+
+    ServoEasing::ServoEasingArray[0]->setEaseTo(90);    // This servo uses effectively 10 degrees per second, since it is synchronized to Servo3
+    ServoEasing::ServoEasingArray[1]->setEaseTo(135);   // "ServoEasing::ServoEasingArray[1]->" can be used instead of "Servo2."
+    Servo3.setEaseTo(180);                              // This servo has the longest distance -> it uses 20 degrees per second
+    synchronizeAllServosAndStartInterrupt(false);       // Do not start interrupt
 
     do {
         // here you can call your own program
-        delay(REFRESH_INTERVAL / 1000); // optional 20ms delay - REFRESH_INTERVAL is in Microseconds
+        delay(REFRESH_INTERVAL_MILLIS); // optional 20ms delay
     } while (!updateAllServos());
 
     delay(1000);
@@ -151,7 +148,7 @@ void loop() {
      * Move three servos synchronously with interrupt handler
      */
 #ifndef PRINT_FOR_SERIAL_PLOTTER
-    Serial.println(F("Move to 180/180/0 degree with 30 degree per second using interrupts"));
+    Serial.println(F("Move to 180/180/0 degree with up to 30 degree per second using interrupts"));
 #endif
     ServoEasing::ServoEasingNextPositionArray[0] = 180;
     ServoEasing::ServoEasingNextPositionArray[1] = 180;

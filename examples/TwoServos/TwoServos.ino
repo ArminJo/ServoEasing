@@ -71,9 +71,7 @@ void setup() {
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO1_PIN);
 #endif
-    if (Servo1.attach(SERVO1_PIN, START_DEGREE_VALUE, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE) == INVALID_SERVO) {
-        Serial.println(F("Error attaching servo"));
-    }
+    Servo1.attach(SERVO1_PIN, START_DEGREE_VALUE, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
 
 #ifndef PRINT_FOR_SERIAL_PLOTTER
     /*
@@ -130,7 +128,7 @@ void loop() {
      * Now continue faster.
      */
 #ifdef INFO
-    Serial.println(F("Move to 90/10 degree with 60 degree per second using interrupts"));
+    Serial.println(F("Move to 90/10 degree with up to 60 degree per second using interrupts"));
 #endif
     Servo1.setEaseTo(90, 60);
     /*
@@ -152,7 +150,7 @@ void loop() {
      *  The second will be synchronized to slower speed (longer duration, than specified) because it has to move only 80 degree.
      */
 #ifdef INFO
-    Serial.println(F("Move to 0/90 degree with 90 degree per second using interrupts. Use cubic easing for first servo."));
+    Serial.println(F("Move to 0/90 degree with up to 90 degree per second using interrupts. Use cubic easing for first servo."));
 #endif
     Servo1.setEasingType(EASE_CUBIC_IN_OUT);
     /*

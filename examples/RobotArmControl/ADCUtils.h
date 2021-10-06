@@ -24,7 +24,7 @@
 #ifndef SRC_ADCUTILS_H_
 #define SRC_ADCUTILS_H_
 
-#if defined(__AVR__) && (! defined(__AVR_ATmega4809__))
+#if defined(__AVR__) && (!defined(__AVR_ATmega4809__))
 #include <Arduino.h>
 #if defined(ADATE)
 

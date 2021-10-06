@@ -44,6 +44,8 @@ ServoEasing Servo1;
 
 #define START_DEGREE_VALUE  0 // The degree value written to the servo at time of attach.
 
+void toggleLED_BUILTIN_Every10thCall();
+
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
@@ -74,57 +76,49 @@ void setup() {
 
     // Now move faster
     Servo1.setSpeed(40);  // This speed is taken if no speed argument is given.
-    Serial.println(F("Move to 180 degree with 40 degree per second blocking using cubic easing"));
+    Serial.println(F("Move to 180 degree using cubic easing with 40 degree per second blocking"));
     Servo1.setEasingType(EASE_CUBIC_IN_OUT);
     Servo1.easeTo(180);
 
     delay(2000);
-
-    Serial.println(F("Move back to 0 degree using circular easing and calling update() manually"));
     Servo1.setEasingType(EASE_CIRCULAR_IN_OUT);
-    /*
-     * Call non blocking function and call update() in the loop below
-     */
-    Servo1.startEaseTo(0, 40, false);
-    /*
-     * Now do the updates manually and wait until servo finished
-     */
-    do {
-        /*
-         * First do the delay, then check for update, since we are likely called directly after start and there is nothing to move yet.
-         *
-         * Use delay of 20 ms here, since it is the refresh rate of the servos and all Arduino Servo libraries.
-         * You can use smaller delay values, but keep in mind that every 20 ms a new value can be accepted by a servo.
-         */
-        delay(REFRESH_INTERVAL / 1000);
-
-    } while (!Servo1.update());
-
     Serial.println(F("End of setup, start of loop."));
 }
 
 void loop() {
-    Serial.println(F("Move to 135 degree circular"));
-    /*
-     * Call non blocking function and call update() in the loop below
-     */
-    Servo1.startEaseTo(135, 40, false);
-    do {
-        digitalWrite(LED_BUILTIN, HIGH);
-        delayAndUpdateAndWaitForAllServosToStop(100);
-        digitalWrite(LED_BUILTIN, LOW);
-        delayAndUpdateAndWaitForAllServosToStop(100);
-    } while (Servo1.isMoving());
 
-    Serial.println(F("Move to 45 degree circular"));
-    Servo1.startEaseTo(45, 40, false);
+    Serial.println(F("Move to 135 degree circular with 40 degree per second blocking"));
+    Servo1.easeTo(135); // Speed was specified above by Servo1.setSpeed(40)
+
+    Serial.println(F("Move to 45 degree circular with 40 degree per second using interrupts"));
     /*
-     * Call non blocking function and call update() in the loop below
+     * Use interrupts for moving and wait until moving stops
      */
+    Servo1.startEaseTo(45);
     do {
-        digitalWrite(LED_BUILTIN, HIGH);
-        delayAndUpdateAndWaitForAllServosToStop(100);
-        digitalWrite(LED_BUILTIN, LOW);
-        delayAndUpdateAndWaitForAllServosToStop(100);
+        /*
+         * Put your own code here
+         */
+        toggleLED_BUILTIN_Every10thCall();
+
+        /*
+         * First do the delay, then check for moving, since we are likely called directly after start and there is nothing to move yet.
+         *
+         * Use delay of 20 ms here, since it is the refresh rate of the servos and all Arduino Servo libraries.
+         * You can use smaller delay values, but keep in mind that every 20 ms a new value is sent to the servo.
+         */
+        delay(REFRESH_INTERVAL_MILLIS);
+
     } while (Servo1.isMoving());
+}
+
+/*
+ * Enable low delays for slow blink
+ */
+void toggleLED_BUILTIN_Every10thCall() {
+    static int tCount = 0;
+    if (++tCount == 10) {
+        tCount = 0;
+        digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+    }
 }

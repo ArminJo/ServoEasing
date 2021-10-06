@@ -82,9 +82,10 @@ Modify them by activating/deactivating the lines where they are defined, or chan
 | Option | Default | File | Description |
 |-|-|-|-|
 | `USE_PCA9685_SERVO_EXPANDER` | disabled | ServoEasing.h | Enables the use of the PCA9685 I2C expander chip/board. |
-| `USE_SERVO_LIB` | disabled | ServoEasing.h | Use of PCA9685 normally disables use of regular servo library. You can force using of regular servo library by defining `USE_SERVO_LIB`. See [below](#using-pca9685-16-channel-servo-expander). |
+| `USE_SERVO_LIB` | disabled | ServoEasing.h | Use of PCA9685 normally disables use of regular servo library. You can force additional using of regular servo library by defining `USE_SERVO_LIB`. See [below](#using-pca9685-16-channel-servo-expander). |
 | `PROVIDE_ONLY_LINEAR_MOVEMENT` | disabled | ServoEasing.h | Saves up to 1540 bytes FLASH. |
 | `DISABLE_COMPLEX_FUNCTIONS` | disabled | ServoEasing.h | Disables the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes FLASH. |
+| `MAX_EASING_SERVOS` | 12, 16(for PCA9685) | ServoEasing.h | Saves 4 byte RAM per servo. If this value is smaller than the amount of servos declared, attach() will return error and other library functions will not work as expected.<br/>Of course all *AllServos*() functions and isOneServoMoving() can't work correctly! |
 | `ENABLE_MICROS_AS_DEGREE_PARAMETER` | disabled | ServoEasing.h | Enables passing also microsecond values as (target angle) parameter (see OneServo example). This requires additional 128 Bytes FLASH. |
 | `PRINT_FOR_SERIAL_PLOTTER` | disabled | ServoEasing.h | Generate serial output for Arduino Plotter. |
 | `USE_LEIGHTWEIGHT_SERVO_LIB` | disabled | ServoEasing.h | Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple. See below. Saves up to 742 bytes FLASH and 42 bytes RAM. |
@@ -133,9 +134,11 @@ This example does not use interrupts and should therefore run on any platform wh
 ## [OneServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino)
 This example moves one Servo with different speeds and using blocking and interrupt commands. The internal LED blinks when using interrupt based commands.
 
-## [TwoServo](https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServo/TwoServo.ino) and [ThreeServo examples](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServo/ThreeServo.ino)
-This example shows how to move 2 or 3 servos synchronized or independently.
+## [TwoServo](https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServo/TwoServo.ino)
+This example shows how to move 2 servos attached at pin 9 and 10 synchronized or independently using the LightweightServo library. This saves 640 bytes program space compared to using Arduino Servo library.
 
+## [ThreeServo examples](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServo/ThreeServo.ino)
+This example shows how to move 3 servos synchronized or independently.<br/>
 WOKWI online simulation of the ThreeServo example.<br/>
 [![WOKWI online simulation of the ThreeServo example](https://github.com/ArminJo/ServoEasing/blob/master/pictures/Wokwi_ThreeServos.png)](https://wokwi.com/arduino/projects/299552195816194570).
 

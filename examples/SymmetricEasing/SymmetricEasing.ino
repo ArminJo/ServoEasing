@@ -161,7 +161,7 @@ void loop() {
 
     do {
         // here you can call your own program
-        delay(REFRESH_INTERVAL / 1000); // optional 20ms delay - REFRESH_INTERVAL is in Microseconds
+        delay(REFRESH_INTERVAL_MILLIS); // optional 20ms delay
     } while (!updateAllServos());
 
     /*
