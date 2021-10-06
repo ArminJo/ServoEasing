@@ -2,7 +2,8 @@
  * TwoServos.cpp
  *
  *  Shows smooth movement from one servo position to another for 2 servos synchronously.
- *  Operate the first servo from -90 to +90 degree
+ *  Operate the first servo from -90 to +90 degree.
+ *  This example uses the LightweightServo library. This saves 640 bytes program space compared to using Arduino Servo library.
  *
  *  Copyright (C) 2019-2021  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
@@ -25,7 +26,13 @@
 
 #include <Arduino.h>
 
-#include "ServoEasing.h"
+// Must specify this before the include of "ServoEasing.hpp"
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__)
+#define USE_LEIGHTWEIGHT_SERVO_LIB
+#include "LightweightServo.hpp" // include sources of LightweightServo library
+#endif
+
+#include "ServoEasing.hpp"
 
 #ifndef PRINT_FOR_SERIAL_PLOTTER
 #define INFO // to see serial text output for loop

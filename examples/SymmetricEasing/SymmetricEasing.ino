@@ -24,10 +24,10 @@
 
 #include <Arduino.h>
 
-/*
- * To generate the Arduino plotter output, you must activate the line #define PRINT_FOR_SERIAL_PLOTTER in ServoEasing.h
- */
-#include "ServoEasing.h"
+// Must specify this before the include of "ServoEasing.hpp"
+//#define PRINT_FOR_SERIAL_PLOTTER // Activate this to generate the Arduino plotter output
+
+#include "ServoEasing.hpp"
 
 #include "PinDefinitionsAndMore.h"
 /*

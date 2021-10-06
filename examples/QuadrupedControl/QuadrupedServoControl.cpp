@@ -31,6 +31,8 @@
 
 #include <Arduino.h>
 
+#define DISABLE_COMPLEX_FUNCTIONS
+#include "ServoEasing.hpp"    // include ServoEasing library source code
 #include "QuadrupedServoConfiguration.h"
 #include "QuadrupedServoControl.h"
 #include "QuadrupedControl.h"

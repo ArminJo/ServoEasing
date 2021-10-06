@@ -59,7 +59,7 @@
  */
 //#define USE_LEIGHTWEIGHT_SERVO_LIB  // Only available for AVR
 #ifdef USE_LEIGHTWEIGHT_SERVO_LIB
-#include "LightweightServo.h"
+#include "LightweightServo.hpp"
 #endif
 #endif
 

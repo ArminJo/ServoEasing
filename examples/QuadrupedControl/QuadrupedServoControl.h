@@ -9,7 +9,7 @@
 #define QUADRUPEDSERVOCONTROL_H_
 
 #include "QuadrupedServoConfiguration.h"
-#include "ServoEasing.h"    // include servo library
+#include "ServoEasing.h"
 
 // Define 8 servos in exact this order!
 extern ServoEasing frontLeftPivotServo;    // 0 - Front Left Pivot Servo

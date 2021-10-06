@@ -36,27 +36,16 @@
 
 #include <Arduino.h>
 
-/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
- * !!! Activate the line "#define USE_PCA9685_SERVO_EXPANDER" in ServoEasing.h to make the expander example work !!!
- * Otherwise you will see errors like: "PCA9685_Expander:44:46: error: 'Wire' was not declared in this scope"
- * or "no matching function for call to 'ServoEasing::ServoEasing(int&, TwoWire*)'"
- *
- * For this example you must also modify MAX_EASING_SERVOS to 32 at line 88 in ServoEasing.h or commenting out
- * the line #define USE_ONLY_ONE_EXPANDER below
- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-#include "ServoEasing.h"
+// Must specify this before the include of "ServoEasing.hpp"
+#define USE_PCA9685_SERVO_EXPANDER
+#define MAX_EASING_SERVOS 32
 
-#if !defined(USE_PCA9685_SERVO_EXPANDER)
-#error You must activate the line "#define USE_PCA9685_SERVO_EXPANDER" in ServoEasing.h to make the expander example work.
-#endif
+#include "ServoEasing.hpp"
 
 //#define DEBUG // to see all ServoEasing's object info
 #define INFO // to see serial output of loop
 
-//#define USE_ONLY_ONE_EXPANDER // Reuse this example for one expander at PCA9685_DEFAULT_ADDRESS
-#if !defined(USE_ONLY_ONE_EXPANDER) && (MAX_EASING_SERVOS < 32)
-#warning You use at least 2 expanders but MAX_EASING_SERVOS is less than 32, so you have no space for 32 servos (which might be ok, since you must not use 16 servos on one expander)
-#endif
+//#define USE_ONLY_ONE_EXPANDER // Activate this to reuse this example for one expander at PCA9685_DEFAULT_ADDRESS
 
 // for ESP32 LED_BUILTIN is defined as static const uint8_t LED_BUILTIN = 2;
 #if !defined(LED_BUILTIN) && !defined(ESP32)

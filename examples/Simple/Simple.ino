@@ -25,7 +25,7 @@
 
 #include <Arduino.h>
 
-#include "ServoEasing.h"
+#include "ServoEasing.hpp"
 
 #include "PinDefinitionsAndMore.h"
 /*

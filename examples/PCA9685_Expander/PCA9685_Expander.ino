@@ -36,16 +36,10 @@
 
 #include <Arduino.h>
 
-/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
- * !!! Activate the line "#define USE_PCA9685_SERVO_EXPANDER" in ServoEasing.h to make the expander example work !!!
- * Otherwise you will see errors like: "PCA9685_Expander:44:46: error: 'Wire' was not declared in this scope"
- * or "no matching function for call to 'ServoEasing::ServoEasing(int&, TwoWire*)'"
- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-#include "ServoEasing.h"
+// Must specify this before the include of "ServoEasing.hpp"
+#define USE_PCA9685_SERVO_EXPANDER
 
-#if !defined(USE_PCA9685_SERVO_EXPANDER)
-#error You must activate the line "#define USE_PCA9685_SERVO_EXPANDER" in ServoEasing.h to make the expander example work.
-#endif
+#include "ServoEasing.hpp"
 
 #define INFO // to see serial output of loop
 
@@ -71,9 +65,9 @@ const int SERVO1_PIN = 9;
  * Servo implementation libraries (Arduino Servo, Lightweight Servo and I2C Expansion Board)
  */
 #if defined(ARDUINO_SAM_DUE)
-ServoEasing Servo1(PCA9685_DEFAULT_ADDRESS, &Wire1); // If you use more than one PCA9685 you should consider to modify MAX_EASING_SERVOS at line 88 in ServoEasing.h
+ServoEasing Servo1(PCA9685_DEFAULT_ADDRESS, &Wire1); // If you use more than one PCA9685 you probably must modify MAX_EASING_SERVOS at line 88 in ServoEasing.h
 #else
-ServoEasing Servo1(PCA9685_DEFAULT_ADDRESS, &Wire); // If you use more than one PCA9685 you should consider to modify MAX_EASING_SERVOS at line 88 in ServoEasing.h
+ServoEasing Servo1(PCA9685_DEFAULT_ADDRESS, &Wire); // If you use more than one PCA9685 you probably must modify MAX_EASING_SERVOS at line 88 in ServoEasing.h
 #endif
 
 #define START_DEGREE_VALUE  0 // The degree value written to the servo at time of attach.

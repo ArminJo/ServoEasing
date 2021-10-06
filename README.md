@@ -258,6 +258,7 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 # Revision History
 ### Version 2.4.0 - work in progress
 - New `attach()` functions with initial degree parameter to be written immediately. This replaces the `attach()` and `write()` combination at setup.
+- Renamed `ServoEasing.cpp` to `ServoEasing.hpp` and `LightweightServo.cpp` to `LightweightServo.hpp`.
 
 ### Version 2.3.4
 - `ENABLE_MICROS_AS_DEGREE_PARAMETER` also available for PCA9685 expander.

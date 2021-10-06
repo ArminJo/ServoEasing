@@ -29,14 +29,6 @@
 #define VERSION_SERVO_EASING_MINOR 4
 // The change log is at the bottom of the file
 
-#if !defined(__has_include)
-#error This compiler does not support the "__has_include" operator
-#endif
-
-#if __has_include("build_opts.h")
-#include "build_opts.h"
-#endif
-
 #define MILLIS_IN_ONE_SECOND 1000L
 
 // @formatter:off
@@ -564,8 +556,9 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print has no f
 #define STR(x) STR_HELPER(x)
 
 /*
- * Version 2.4.0 - 02/2021
+ * Version 2.4.0 - 10/2021
  * - New `attach()` functions with initial degree parameter to be written immediately. This replaces the `attach()` and `write()` combination at setup.
+ * - Renamed ServoEasing.cpp.h to ServoEasing.hpp and LightweightServo.cpp to LightweightServo.hpp.
  *
  * Version 2.3.4 - 02/2021
  * - ENABLE_MICROS_AS_DEGREE_PARAMETER also available for PCA9685 expander.
@@ -673,6 +666,19 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print has no f
  * - added convenience function clipDegreeSpecial().
  */
 
+/*
+ * Workaround for old sources only including ServoEasing.h
+ */
+#ifndef SERVOEASING_HPP
+#  if !defined(__has_include)
+#error This compiler does not support the "__has_include" operator
+#  endif
+
+#  if __has_include("build_opts.h")
+#include "ServoEasing.hpp"
+  #endif
 #endif /* SERVOEASING_H_ */
+
+#endif// #ifndef SERVOEASING_H_
 
 #pragma once

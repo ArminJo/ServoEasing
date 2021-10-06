@@ -26,6 +26,9 @@
  *
  */
 
+#ifndef LIGHTWEIGHT_SERVO_HPP
+#define LIGHTWEIGHT_SERVO_HPP
+
 #include <Arduino.h>
 
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__)
@@ -216,5 +219,6 @@ int MicrosecondsToDegreeLightweightServo(int aMicroseconds) {
     return map(aMicroseconds, sMicrosecondsForServo0Degree, sMicrosecondsForServo180Degree, 0, 180);
 }
 
-#endif
-
+#endif // defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__)
+#endif // #ifndef LIGHTWEIGHT_SERVO_HPP
+#pragma once

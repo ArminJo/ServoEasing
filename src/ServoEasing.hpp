@@ -28,6 +28,9 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/gpl.html>.
  */
 
+#ifndef SERVOEASING_HPP
+#define SERVOEASING_HPP
+
 #include <Arduino.h>
 
 #include "ServoEasing.h"
@@ -1892,3 +1895,5 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial) // Print has no fl
     return tRetValue;
 }
 # endif // defined(USE_PCA9685_SERVO_EXPANDER)
+
+#endif // #ifndef SERVOEASING_HPP

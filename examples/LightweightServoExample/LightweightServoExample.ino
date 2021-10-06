@@ -25,7 +25,7 @@
 
 #include <Arduino.h>
 
-#include "LightweightServo.h"
+#include "LightweightServo.hpp"
 
 void setup() {
     Serial.begin(115200);

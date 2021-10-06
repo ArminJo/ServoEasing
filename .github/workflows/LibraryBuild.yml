@@ -59,15 +59,15 @@ jobs:
           - arduino-boards-fqbn: arduino:avr:uno
             build-properties: # the flags were put in compiler.cpp.extra_flags
               SymmetricEasing:
+                -DDISABLE_COMPLEX_FUNCTIONS
                 -DDEBUG
               AsymmetricEasing:
                 -DTRACE
               Simple: -DPRINT_FOR_SERIAL_PLOTTER
+              PCA9685_ExpanderFor32Servos: -DTRACE -DENABLE_MICROS_AS_DEGREE_PARAMETER
 
           - arduino-boards-fqbn: arduino:megaavr:nona4809:mode=off
             sketches-exclude: SpeedTest,EndPositionsTest,QuadrupedControl,RobotArmControl # No getVCCVoltageMillivolt(), no EasyButton
-            build-properties:
-              PCA9685_ExpanderFor32Servos: -DTRACE
 
           - arduino-boards-fqbn: arduino:sam:arduino_due_x
             sketches-exclude: QuadrupedControl,RobotArmControl # QuadrupedControl RobotArmControl because of missing EEprom
@@ -82,35 +82,19 @@ jobs:
           - arduino-boards-fqbn: esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
             platform-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
             sketches-exclude: QuadrupedControl,RobotArmControl,SpeedTest # SpeedTest because of only one analog input
-            build-properties:
-              PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
-              PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
-              PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: esp32:esp32:featheresp32:FlashFreq=80
             platform-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
             required-libraries: ESP32Servo
             sketches-exclude: QuadrupedControl,RobotArmControl # Comma separated list of example names to exclude in build
-            build-properties:
-#              PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
-#              PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
-#              PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: STMicroelectronics:stm32:GenF1:pnum=BLUEPILL_F103C8 # STM version
             platform-url: https://raw.githubusercontent.com/stm32duino/BoardManagerFiles/main/package_stmicroelectronics_index.json
             sketches-exclude: QuadrupedControl,RobotArmControl
-            build-properties:
-#              PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
-#              PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
-#              PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: stm32duino:STM32F1:genericSTM32F103C # Roger Clark version
             platform-url: http://dan.drown.org/stm32duino/package_STM32duino_index.json
             sketches-exclude: QuadrupedControl,RobotArmControl
-            build-properties:
-              PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
-              PCA9685_ExpanderAndServo: -DUSE_PCA9685_SERVO_EXPANDER -DUSE_SERVO_LIB
-              PCA9685_ExpanderFor32Servos: -DUSE_PCA9685_SERVO_EXPANDER -DMAX_EASING_SERVOS=32 -DTRACE
 
           - arduino-boards-fqbn: SparkFun:apollo3:sfe_artemis_nano
             platform-url: https://raw.githubusercontent.com/sparkfun/Arduino_Apollo3/master/package_sparkfun_apollo3_index.json
@@ -119,7 +103,7 @@ jobs:
 
 
       # Do not cancel all jobs / architectures if one job fails
-      fail-fast: false
+#      fail-fast: false
 
     # This is the list of steps this job will run.
     steps:

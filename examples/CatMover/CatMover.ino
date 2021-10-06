@@ -25,7 +25,13 @@
 
 #include <Arduino.h>
 
-#include "ServoEasing.h"
+// Must specify this before the include of "ServoEasing.hpp"
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__)
+#define USE_LEIGHTWEIGHT_SERVO_LIB
+#include "LightweightServo.hpp" // include sources of LightweightServo library
+#endif
+
+#include "ServoEasing.hpp"
 
 #include "PinDefinitionsAndMore.h"
 /*
