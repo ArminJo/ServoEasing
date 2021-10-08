@@ -6,7 +6,7 @@
     "type": "git",
     "url": "https://github.com/ArminJo/ServoEasing"
   },
-  "version": "2.3.4",
+  "version": "2.4.0",
   "exclude": "pictures",
   "authors": {
     "name": "Armin Joachimsmeyer",

@@ -1,7 +1,7 @@
 # [ServoEasing](https://github.com/ArminJo/ServoEasing) - move your servo more natural
 Available as Arduino library "ServoEasing"
 
-### [Version 2.4.0](https://github.com/ArminJo/ServoEasing/archive/master.zip) - work in progress
+### [Version 2.4.1](https://github.com/ArminJo/ServoEasing/archive/master.zip) - work in progress
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
@@ -256,7 +256,9 @@ If you see strange behavior, you can open the library file *ServoEasing.h* and a
 This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
 
 # Revision History
-### Version 2.4.0 - work in progress
+### Version 2.4.1 - work in progress
+
+### Version 2.4.0
 - New `attach()` functions with initial degree parameter to be written immediately. This replaces the `attach()` and `write()` combination at setup.
 - Renamed `ServoEasing.cpp` to `ServoEasing.hpp` and `LightweightServo.cpp` to `LightweightServo.hpp`.
 
