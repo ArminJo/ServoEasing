@@ -1,5 +1,5 @@
 /*
- * ServoEasing.cpp
+ * ServoEasing.hpp
  *
  *  Enables smooth movement from one servo position to another.
  *  Linear as well as other ease movements (e.g. cubic) for all servos attached to the Arduino Servo library are provided.
