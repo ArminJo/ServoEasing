@@ -84,11 +84,12 @@ These macros must be defined in your program before the line `#include "ServoEas
 |-|-|-|
 | `USE_PCA9685_SERVO_EXPANDER` | disabled | Enables the use of the PCA9685 I2C expander chip/board. |
 | `USE_SERVO_LIB` | disabled | Use of PCA9685 normally disables use of regular servo library. You can force additional using of regular servo library by defining `USE_SERVO_LIB`. See [below](#using-pca9685-16-channel-servo-expander). |
-| `PROVIDE_ONLY_LINEAR_MOVEMENT` | disabled | Saves up to 1540 bytes FLASH. |
+| `PROVIDE_ONLY_LINEAR_MOVEMENT` | disabled | Disables all but LINEAR movement. Saves up to 1540 bytes FLASH. |
 | `DISABLE_COMPLEX_FUNCTIONS` | disabled | Disables the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes FLASH. |
 | `MAX_EASING_SERVOS` | 12, 16(for PCA9685) | Saves 4 byte RAM per servo. If this value is smaller than the amount of servos declared, attach() will return error and other library functions will not work as expected.<br/>Of course all *AllServos*() functions and isOneServoMoving() can't work correctly! |
-| `ENABLE_MICROS_AS_DEGREE_PARAMETER` | disabled | Enables passing also microsecond values as (target angle) parameter (see OneServo example). This requires additional 128 Bytes FLASH. |
-| `PRINT_FOR_SERIAL_PLOTTER` | disabled | Generate serial output for Arduino Plotter. |
+| `ENABLE_MICROS_AS_DEGREE_PARAMETER` | disabled | Enables passing also microsecond values as (target angle) parameter (see [OneServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino#L92)). Requires additional 128 Bytes FLASH. |
+| `PRINT_FOR_SERIAL_PLOTTER` | disabled | Generate serial output for Arduino Plotter (Ctrl-Shift-L). |
+| `DEBUG` | disabled | Generates lots of lovely debug output for this library. |
 | `USE_LEIGHTWEIGHT_SERVO_LIB` | disabled | Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple. See below. Saves up to 742 bytes FLASH and 42 bytes RAM. |
 
 # Modifying compile options

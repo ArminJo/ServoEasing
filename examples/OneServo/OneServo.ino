@@ -24,6 +24,16 @@
 
 #include <Arduino.h>
 
+// Must specify this before the include of "ServoEasing.hpp"
+//#define USE_PCA9685_SERVO_EXPANDER // Activate this to enables the use of the PCA9685 I2C expander chip/board.
+//#define USE_SERVO_LIB // Activate this to force additional using of regular servo library.
+//#define PROVIDE_ONLY_LINEAR_MOVEMENT // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes FLASH.
+#define DISABLE_COMPLEX_FUNCTIONS // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes FLASH.
+#define MAX_EASING_SERVOS 1
+#define ENABLE_MICROS_AS_DEGREE_PARAMETER // Activate this to enable also microsecond values as (target angle) parameter. Requires additional 128 Bytes FLASH.
+//#define DEBUG // Activate this to generate lots of lovely debug output for this library.
+
+//#define PRINT_FOR_SERIAL_PLOTTER // Activate this to generate the Arduino plotter output.
 #include "ServoEasing.hpp"
 
 #include "PinDefinitionsAndMore.h"
@@ -90,11 +100,11 @@ void loop() {
 #ifdef INFO
     Serial.println(F("Move to 180 degree with 30 degree per second using interrupts"));
 #endif
-#ifdef ENABLE_MICROS_AS_DEGREE_PARAMETER
-    Servo1.startEaseTo(DEFAULT_MICROSECONDS_FOR_180_DEGREE, 30);
-#else
+    /*
+     * Just for demonstration we use degree value here, which is still possible with the ENABLE_MICROS_AS_DEGREE_PARAMETER option
+     */
     Servo1.startEaseTo(180, 30);
-#endif
+
     /*
      * Now you can run your program while the servo is moving.
      * Just let the LED blink for 3 seconds (90 degrees moving by 30 degrees per second).

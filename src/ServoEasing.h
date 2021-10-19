@@ -24,7 +24,7 @@
 #ifndef SERVOEASING_H_
 #define SERVOEASING_H_
 
-#define VERSION_SERVO_EASING "2.4.0"
+#define VERSION_SERVO_EASING "2.4.1"
 #define VERSION_SERVO_EASING_MAJOR 2
 #define VERSION_SERVO_EASING_MINOR 4
 // The change log is at the bottom of the file
@@ -32,31 +32,15 @@
 #define MILLIS_IN_ONE_SECOND 1000L
 
 // @formatter:off
-/*  *****************************************************************************************************************************
- *  To access the library files from your sketch, you have to first use `Sketch > Show Sketch Folder (Ctrl+K)` in the Arduino IDE.
- *  Then navigate to the parallel `libraries` folder and select the library you want to access.
- *  The library files itself are located in the `src` sub-directory.
- *  If you did not yet store the example as your own sketch, then with Ctrl+K you are instantly in the right library folder.
- *  *****************************************************************************************************************************/
-
-#if !defined(PRINT_FOR_SERIAL_PLOTTER)
-//#define PRINT_FOR_SERIAL_PLOTTER // Enable this to generate output for Arduino Serial Plotter (Ctrl-Shift-L)
-#endif
-
 #define START_EASE_TO_SPEED 5 // If not specified use 5 degree per second. It is chosen so low in order to signal that it was forgotten to specify.
 
 /*
- * For use with e.g. the Adafruit PCA9685 16-Channel Servo Driver board. It has a resolution of 4096 per 20 ms => 4.88 µs per step/unit.
+ * USE_PCA9685_SERVO_EXPANDER is for use with e.g. the Adafruit PCA9685 16-Channel Servo Driver board.
+ * It has a resolution of 4096 per 20 ms => 4.88 µs per step/unit.
  * One PCA9685 has 16 outputs. You must modify MAX_EASING_SERVOS below, if you have more than one PCA9685 attached!
  * Use of PCA9685 normally disables use of regular servo library. You can force using of regular servo library by defining USE_SERVO_LIB
  * All internal values *MicrosecondsOrUnits now contains no more microseconds but PCA9685 units!!!
  */
-#if !defined(USE_PCA9685_SERVO_EXPANDER)
-//#define USE_PCA9685_SERVO_EXPANDER
-#endif
-#if !defined(USE_SERVO_LIB)
-//#define USE_SERVO_LIB // Force additional using of regular servo library in conjunction with PCA9685 library.
-#endif
 #if defined(USE_PCA9685_SERVO_EXPANDER) && !defined(USE_SERVO_LIB)
 #define DO_NOT_USE_SERVO_LIB
 #endif
@@ -219,8 +203,9 @@
  * Use attach(PIN, MICROSECONDS_FOR_ROTATING_SERVO_CLOCKWISE_MAX, MICROSECONDS_FOR_ROTATING_SERVO_COUNTER_CLOCKWISE_MAX, 100, -100);
  * Use write(100) for maximum clockwise and write(-100) for maximum counter clockwise rotation.
  */
+#if !defined(MICROSECONDS_FOR_ROTATING_SERVO_STOP)
 #define MICROSECONDS_FOR_ROTATING_SERVO_STOP 1500 // Change this value to your servos real stop value
-
+#endif
 /*
  * Definitions here are only for convenience. You may freely modify them.
  */
@@ -666,18 +651,9 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print has no f
  * - added convenience function clipDegreeSpecial().
  */
 
-/*
- * Workaround for old sources only including ServoEasing.h
- */
-#ifndef SERVOEASING_HPP
-#  if !defined(__has_include)
-#error This compiler does not support the "__has_include" operator
-#  endif
-
-#  if __has_include("build_opts.h")
-#include "ServoEasing.hpp"
-  #endif
-#endif /* SERVOEASING_H_ */
+#if !defined(SERVOEASING_HPP) && !defined(SUPPRESS_HPP_WARNING)
+#warning You probably must change the line #include "ServoEasing.h" to #include "ServoEasing.hpp" in your ino file.
+#endif
 
 #endif// #ifndef SERVOEASING_H_
 

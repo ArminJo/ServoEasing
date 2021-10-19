@@ -56,12 +56,12 @@
  */
 
 /*
- * Define BUTTON_IS_ACTIVE_HIGH if you buttons are active high.
+ * Enable this if you buttons are active high.
  */
 //#define BUTTON_IS_ACTIVE_HIGH
 /*
  * Define USE_ATTACH_INTERRUPT to force use of the arduino function attachInterrupt().
- * Required if you get the error " multiple definition of `__vector_1'" (or `__vector_2'), because another library uses the attachInterrupt() function.
+ * It is required if you get the error " multiple definition of `__vector_1'" (or `__vector_2'), because another library uses the attachInterrupt() function.
  * For one button it needs additional 160 bytes FLASH, for 2 buttons it needs additional 88 bytes.
  */
 //#define USE_ATTACH_INTERRUPT
@@ -99,15 +99,15 @@
 #define EASY_BUTTON_DOUBLE_PRESS_DEFAULT_MILLIS 400
 
 /*
- * Activate LED_BUILTIN as long as button is pressed
+ * This activates LED_BUILTIN as long as button is pressed
  */
-//#define LED_FEEDBACK_TEST
-#if defined(LED_FEEDBACK_TEST)
-#  if !defined(BUTTON_TEST_FEEDBACK_LED_PIN)
+//#define BUTTON_LED_FEEDBACK
+#if defined(BUTTON_LED_FEEDBACK)
+#  if !defined(BUTTON_LED_FEEDBACK_PIN)
 #    if defined(LED_BUILTIN)
-#    define BUTTON_TEST_FEEDBACK_LED_PIN LED_BUILTIN  // if not specified, use built in led - pin 13 on Uno board
+#    define BUTTON_LED_FEEDBACK_PIN LED_BUILTIN  // if not specified, use built in led - pin 13 on Uno board
 #    else
-#    error "LED_FEEDBACK_TEST defined but no BUTTON_TEST_FEEDBACK_LED_PIN or LED_BUILTIN defined"
+#    error "BUTTON_LED_FEEDBACK is defined but neither BUTTON_LED_FEEDBACK_PIN nor LED_BUILTIN is defined"
 #    endif
 #  endif
 #endif
@@ -320,7 +320,7 @@ public:
     volatile unsigned long ButtonLastChangeMillis;
 
     /*
-     * If last button change is going inactive, it contains the same value as ButtonLastChangeMillis
+     * If last button change was going inactive, ButtonReleaseMillis contains the same value as ButtonLastChangeMillis
      * It is required for double press recognition, which is done when button is active and ButtonLastChangeMillis has just changed.
      * Be aware, that the first press after booting may be detected as double press!
      * This is because ButtonReleaseMillis is initialized with 0 milliseconds, which is interpreted as the first press happened at the beginning of boot.

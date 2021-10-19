@@ -136,8 +136,12 @@ uint16_t getVCCVoltageMillivoltSimple(void);
 float getTemperatureSimple(void);
 float getVCCVoltage(void);
 uint16_t getVCCVoltageMillivolt(void);
+uint16_t getVCCVoltageReadingFor1_1VoltReference(void);
 uint16_t printVCCVoltageMillivolt(Print *aSerial);
 void printVCCVoltageMillivolt(Print *aSerial, uint16_t aVCCVoltageMillivolt);
+uint16_t getVoltageMillivolt(uint16_t aVCCVoltageMillivolt, uint8_t aADCChannelForVoltageMeasurement);
+uint16_t getVoltageMillivolt(uint8_t aADCChannelForVoltageMeasurement);
+uint16_t getVoltageMillivoltWith_1_1VoltReference(uint8_t aADCChannelForVoltageMeasurement);
 float getTemperature(void);
 
 #endif // defined(ADATE)

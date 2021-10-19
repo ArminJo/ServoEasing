@@ -29,7 +29,7 @@
 
 #include <math.h>
 #include <Arduino.h>     // for PI etc.
-#include "ServoEasing.hpp" // for clipDegreeSpecial()
+#include "ServoEasing.h" // for clipDegreeSpecial()
 
 //#define TRACE
 

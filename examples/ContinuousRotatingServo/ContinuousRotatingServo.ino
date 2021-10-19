@@ -24,6 +24,18 @@
 
 #include <Arduino.h>
 
+// Must specify this before the include of "ServoEasing.hpp"
+//#define USE_PCA9685_SERVO_EXPANDER // Activate this to enables the use of the PCA9685 I2C expander chip/board.
+//#define USE_SERVO_LIB // Activate this to force additional using of regular servo library.
+//#define PROVIDE_ONLY_LINEAR_MOVEMENT // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes FLASH.
+//#define DISABLE_COMPLEX_FUNCTIONS // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes FLASH.
+//#define MAX_EASING_SERVOS 3
+//#define ENABLE_MICROS_AS_DEGREE_PARAMETER // Activate this to enable also microsecond values as (target angle) parameter. Requires additional 128 Bytes FLASH.
+//#define DEBUG // Activate this to generate lots of lovely debug output for this library.
+
+//#define PRINT_FOR_SERIAL_PLOTTER // Activate this to generate the Arduino plotter output
+
+#define MICROSECONDS_FOR_ROTATING_SERVO_STOP 1500 // Change this value to your servos real stop value
 #include "ServoEasing.hpp"
 
 #include "PinDefinitionsAndMore.h"
@@ -58,7 +70,7 @@ void setup() {
 
     /*
      * Special attach parameters for continuous rotating servo. Only usable if stop value of your servo is exactly 1500 microseconds.
-     * If the stop value of your servo is not exactly 1500 microseconds, you must modify the "MICROSECONDS_FOR_ROTATING_SERVO_STOP" value in ServoEasing.h
+     * If the stop value of your servo is not exactly 1500 microseconds, you must modify the "MICROSECONDS_FOR_ROTATING_SERVO_STOP" value above
      *
      * -100 and +100 can be replaced with any value you like but do not forget to change them below and in loop too.
      */

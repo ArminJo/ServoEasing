@@ -40,8 +40,8 @@
 
 /*
  * Usage:
- * #define USE_BUTTON_0  // Enable code for button at INT0 (pin2 on 328P, PB6 on ATtiny167, PB2 on ATtinyX5)
- * #define USE_BUTTON_1  // Enable code for button at INT1 (pin3 on 328P, PA3 on ATtiny167, PCINT0 / PCx for ATtinyX5)
+ * #define USE_BUTTON_0  // Enables code for button at INT0 (pin2 on 328P, PB6 on ATtiny167, PB2 on ATtinyX5)
+ * #define USE_BUTTON_1  // Enables code for button at INT1 (pin3 on 328P, PA3 on ATtiny167, PCINT0 / PCx for ATtinyX5)
  * #include "EasyButtonAtInt01.hpp"
  * EasyButton Button0AtPin2(true);  // true  -> Button is connected to INT0
  * EasyButton Button0AtPin3(false, &Button3CallbackHandler); // false -> button is not connected to INT0 => connected to INT1
@@ -53,7 +53,7 @@
 
 // For external measurement of code timing
 //#define MEASURE_EASY_BUTTON_INTERRUPT_TIMING
-#if defined(MEASURE_EASY_BUTTON_INTERRUPT_TIMING) || defined(LED_FEEDBACK_TEST)
+#if defined(MEASURE_EASY_BUTTON_INTERRUPT_TIMING) || defined(BUTTON_LED_FEEDBACK)
 #include "digitalWriteFast.h"
 #endif
 
@@ -169,8 +169,8 @@ void EasyButton::init(bool aIsButtonAtINT0) {
     pinModeFast(INTERRUPT_TIMING_OUTPUT_PIN, OUTPUT);
 #endif
 
-#if defined(LED_FEEDBACK_TEST)
-    pinModeFast(BUTTON_TEST_FEEDBACK_LED_PIN, OUTPUT);
+#if defined(BUTTON_LED_FEEDBACK)
+    pinModeFast(BUTTON_LED_FEEDBACK_PIN, OUTPUT);
 #endif
 
 #if defined(USE_BUTTON_0) && not defined(USE_BUTTON_1)
@@ -565,8 +565,8 @@ void EasyButton::handleINT01Interrupts() {
                 /*
                  * Button pressed
                  */
-#ifdef LED_FEEDBACK_TEST
-                digitalWriteFast(BUTTON_TEST_FEEDBACK_LED_PIN, HIGH);
+#ifdef BUTTON_LED_FEEDBACK
+                digitalWriteFast(BUTTON_LED_FEEDBACK_PIN, HIGH);
 #endif
                 ButtonToggleState = !ButtonToggleState;
                 if (ButtonPressCallback != NULL) {
@@ -622,8 +622,8 @@ void EasyButton::handleINT01Interrupts() {
                     }
                 }
 #endif
-#ifdef LED_FEEDBACK_TEST
-                digitalWriteFast(BUTTON_TEST_FEEDBACK_LED_PIN, LOW);
+#ifdef BUTTON_LED_FEEDBACK
+                digitalWriteFast(BUTTON_LED_FEEDBACK_PIN, LOW);
 #endif
             }
         }

@@ -32,6 +32,13 @@
 #include "LightweightServo.hpp" // include sources of LightweightServo library
 #endif
 
+//#define PROVIDE_ONLY_LINEAR_MOVEMENT // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes FLASH.
+#define DISABLE_COMPLEX_FUNCTIONS // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes FLASH.
+//#define MAX_EASING_SERVOS 2
+//#define ENABLE_MICROS_AS_DEGREE_PARAMETER // Activate this to enable also microsecond values as (target angle) parameter. Requires additional 128 Bytes FLASH.
+//#define DEBUG // Activate this to generate lots of lovely debug output for this library.
+
+//#define PRINT_FOR_SERIAL_PLOTTER // Activate this to generate the Arduino plotter output.
 #include "ServoEasing.hpp"
 
 #ifndef PRINT_FOR_SERIAL_PLOTTER

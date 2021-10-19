@@ -350,8 +350,7 @@ uint16_t getVCCVoltageMillivoltSimple(void) {
  * Similar to getVCCVoltageMillivolt() * 1023 / 1100
  */
 uint16_t getVCCVoltageReadingFor1_1VoltReference(void) {
-    checkAndWaitForReferenceAndChannelToSwitch(ADC_1_1_VOLT_CHANNEL_MUX, DEFAULT);
-    uint16_t tVCC = readADCChannelWithReference(ADC_1_1_VOLT_CHANNEL_MUX, DEFAULT); // 225 for 1.1 V at 5 V VCC
+    uint16_t tVCC = waitAndReadADCChannelWithReference(ADC_1_1_VOLT_CHANNEL_MUX, DEFAULT); // 225 for 1.1 V at 5 V VCC
     /*
      * Do not switch back ADMUX to enable checkAndWaitForReferenceAndChannelToSwitch() to work correctly for the next measurement
      */
@@ -364,8 +363,7 @@ uint16_t getVCCVoltageReadingFor1_1VoltReference(void) {
  * !!! Resolution is only 20 millivolt !!!
  */
 uint16_t getVCCVoltageMillivolt(void) {
-    checkAndWaitForReferenceAndChannelToSwitch(ADC_1_1_VOLT_CHANNEL_MUX, DEFAULT);
-    uint16_t tVCC = readADCChannelWithReference(ADC_1_1_VOLT_CHANNEL_MUX, DEFAULT);
+    uint16_t tVCC = waitAndReadADCChannelWithReference(ADC_1_1_VOLT_CHANNEL_MUX, DEFAULT);
     /*
      * Do not switch back ADMUX to enable checkAndWaitForReferenceAndChannelToSwitch() to work correctly for the next measurement
      */
@@ -380,6 +378,20 @@ uint16_t printVCCVoltageMillivolt(Print *aSerial) {
     return tVCCVoltageMillivolt;
 }
 
+uint16_t getVoltageMillivolt(uint16_t aVCCVoltageMillivolt, uint8_t aADCChannelForVoltageMeasurement) {
+    uint16_t tInputVoltageRaw = waitAndReadADCChannelWithReference(aADCChannelForVoltageMeasurement, DEFAULT);
+    return (aVCCVoltageMillivolt * (uint32_t) tInputVoltageRaw) / 1023;
+}
+
+uint16_t getVoltageMillivolt(uint8_t aADCChannelForVoltageMeasurement) {
+    uint16_t tInputVoltageRaw = waitAndReadADCChannelWithReference(aADCChannelForVoltageMeasurement, DEFAULT);
+    return (getVCCVoltageMillivolt() * (uint32_t) tInputVoltageRaw) / 1023;
+}
+
+uint16_t getVoltageMillivoltWith_1_1VoltReference(uint8_t aADCChannelForVoltageMeasurement) {
+    uint16_t tInputVoltageRaw = waitAndReadADCChannelWithReference(aADCChannelForVoltageMeasurement, INTERNAL);
+    return (ADC_INTERNAL_REFERENCE_MILLIVOLT * (uint32_t) tInputVoltageRaw) / 1023;
+}
 /*
  * !!! Function without handling of switched reference and channel.!!!
  * Use it ONLY if you only use INTERNAL reference (call getTemperatureSimple()) in your program.
