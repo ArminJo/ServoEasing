@@ -10,7 +10,8 @@
   "exclude": "pictures",
   "authors": {
     "name": "Armin Joachimsmeyer",
-    "email": "armin.joachimsmeyer@gmail.com"
+    "email": "armin.joachimsmeyer@gmail.com",
+    "maintainer": true
   },
   "license": "GPL-3.0-or-later",
   "frameworks": "arduino",

@@ -77,8 +77,8 @@ Digital Servos have a **deadband of approximately 5 µs / 0.5 degree** which mean
 If you control them with a PCA9685 expander it may get worse, since one step of 4.88 µs can be within the deadband, so it takes 2 steps to move the servo from its current position.
 
 # Compile options / macros for this library
-To customize the software to different requrements, there are some compile options / macros available.<br/>
-These macros must be defined in your program before the line `#include "ServoEasing.hpp"`.<br/>
+To customize the library to different requrements, there are some compile options / macros available.<br/>
+These macros must be defined in your program before the line `#include "ServoEasing.hpp"` to take effect.<br/>
  Or define the macro with the -D compiler option for global compile (the latter is not possible with the Arduino IDE, so consider using [Sloeber](https://eclipse.baeyens.it).<br/>
 | Option | Default | Description |
 |-|-|-|
@@ -87,7 +87,7 @@ These macros must be defined in your program before the line `#include "ServoEas
 | `PROVIDE_ONLY_LINEAR_MOVEMENT` | disabled | Disables all but LINEAR movement. Saves up to 1540 bytes FLASH. |
 | `DISABLE_COMPLEX_FUNCTIONS` | disabled | Disables the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes FLASH. |
 | `MAX_EASING_SERVOS` | 12, 16(for PCA9685) | Saves 4 byte RAM per servo. If this value is smaller than the amount of servos declared, attach() will return error and other library functions will not work as expected.<br/>Of course all *AllServos*() functions and isOneServoMoving() can't work correctly! |
-| `ENABLE_MICROS_AS_DEGREE_PARAMETER` | disabled | Enables passing also microsecond values as (target angle) parameter (see [OneServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino#L92)). Requires additional 128 Bytes FLASH. |
+| `ENABLE_MICROS_AS_DEGREE_PARAMETER` | disabled | Enables passing also microsecond values as (target angle) parameter (see [OneServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino#L93)). Requires additional 128 Bytes FLASH. |
 | `PRINT_FOR_SERIAL_PLOTTER` | disabled | Generate serial output for Arduino Plotter (Ctrl-Shift-L). |
 | `DEBUG` | disabled | Generates lots of lovely debug output for this library. |
 | `USE_LEIGHTWEIGHT_SERVO_LIB` | disabled | Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple. See below. Saves up to 742 bytes FLASH and 42 bytes RAM. |
