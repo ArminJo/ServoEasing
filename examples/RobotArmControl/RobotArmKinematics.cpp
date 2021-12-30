@@ -29,6 +29,7 @@
 
 #include <math.h>
 #include <Arduino.h>     // for PI etc.
+#define SUPPRESS_HPP_WARNING
 #include "ServoEasing.h" // for clipDegreeSpecial()
 
 //#define TRACE

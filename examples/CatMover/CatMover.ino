@@ -61,6 +61,7 @@ const int VERTICAL_SERVO_PIN = SERVO2_PIN;
 
 const int LASER_POWER_PIN = SPEED_IN_PIN;
 
+// Holds max and min values for the servo / laser range
 struct ServoControlStruct {
     uint16_t minDegree;
     uint16_t maxDegree;
@@ -111,12 +112,16 @@ void setup() {
         }
     }
 
+    /*
+     * Set the border of the servo/ laser range.
+     * This of course depends on the orientation of the pan/tilt mounting.
+     */
     ServoHorizontalControl.minDegree = 45;
     ServoHorizontalControl.maxDegree = 135;
     ServoVerticalControl.minDegree = 0;
     ServoVerticalControl.maxDegree = 45;
 
-    delay(4000); // This values helps mounting the pan / tilt housing
+    delay(4000); // This delay helps mounting the pan / tilt housing
 
     /*
      * show border of area which can be reached by laser

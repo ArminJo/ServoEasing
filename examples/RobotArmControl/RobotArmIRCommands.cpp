@@ -1,5 +1,5 @@
 /*
- * Commands.cpp
+ * RobotArmIRCommands.cpp
  *
  * Contains all the IR command functions available.
  *
@@ -26,8 +26,8 @@
  */
 
 #include <Arduino.h>
+#include <RobotArmIRCommands.h>
 
-#include "Commands.h"
 #include "RobotArmServoControl.h"
 
 bool sInverseKinematicModeActive = true;
@@ -177,9 +177,7 @@ void __attribute__((weak)) doRobotArmAutoMove() {
 
     // go back to start
     goToPosition(0, 148, 80);
-    RETURN_IF_STOP;
-
-    delayAndCheckForRobotArm(2000);
+    DELAY_AND_RETURN_IF_STOP(2000);
 }
 /*************************
  * Instant Commands

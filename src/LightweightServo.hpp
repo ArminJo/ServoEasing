@@ -1,5 +1,5 @@
 /*
- *  LightweightServo.cpp
+ *  LightweightServo.hpp
  *
  *  Lightweight Servo implementation only for pin 9 and 10 using only timer1 hardware and no interrupts or other overhead.
  *  Provides auto initialization.

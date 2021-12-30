@@ -7,9 +7,10 @@ Available as Arduino library "ServoEasing"
 [![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
 [![Commits since latest](https://img.shields.io/github/commits-since/ArminJo/ServoEasing/latest)](https://github.com/ArminJo/ServoEasing/commits/master)
 [![Build Status](https://github.com/ArminJo/ServoEasing/workflows/LibraryBuild/badge.svg)](https://github.com/ArminJo/ServoEasing/actions)
-[![Hit Counter](https://hitcounter.pythonanywhere.com/count/tag.svg?url=https://github.com/ArminJo/ServoEasing)](https://github.com/brentvollebregt/hit-counter)
+![Hit Counter](https://visitor-badge.laobi.icu/badge?page_id=ArminJo_ServoEasing)
 
-YouTube video of ServoEasing in action
+
+#### YouTube video of ServoEasing in action
 
 [![Demonstration of different servo easings](https://i.ytimg.com/vi/fC9uxdOBhfA/hqdefault.jpg)](https://www.youtube.com/watch?v=fC9uxdOBhfA)
 
@@ -76,10 +77,31 @@ Just call **myServo.startEaseTo()** instead of **myServo.write()** and you are d
 Digital Servos have a **deadband of approximately 5 µs / 0.5 degree** which means, that you will see a **stuttering movement** if the moving speed is slow.
 If you control them with a PCA9685 expander it may get worse, since one step of 4.88 µs can be within the deadband, so it takes 2 steps to move the servo from its current position.
 
+# Speed of servo positioning
+These values are measured with the [SpeedTest example](https://github.com/ArminJo/ServoEasing/blob/master/examples/SpeedTest/SpeedTest.ino).
+
+These are the fastest values for my SG90 servos at 5 volt (4.2 volt with servo active).
+| Degree | Duration | Speed |
+|-|-|-|
+| 180 | 400 ms | 450 degree per second |
+| 90 | 300 ms  | 300 degree per second |
+| 45 | 180 ms  | 250 degree per second |
+| 30 | 150 ms  | 200 degree per second |
+| 20 | 130 ms  | 150 degree per second |
+| 10 | 80 ms   | 125 degree per second |
+
+Values for the MG90Sservos servos at 5 volt (4.2 volt with servo active).
+| Degree | Duration | Speed |
+|-|-|-|
+| 180 | 330 ms | 540 degree per second |
+| 90 | 220 ms  | 410 degree per second |
+| 45 | 115 ms  | 390 degree per second |
+
 # Compile options / macros for this library
 To customize the library to different requrements, there are some compile options / macros available.<br/>
-These macros must be defined in your program before the line `#include "ServoEasing.hpp"` to take effect.<br/>
- Or define the macro with the -D compiler option for global compile (the latter is not possible with the Arduino IDE, so consider using [Sloeber](https://eclipse.baeyens.it).<br/>
+These macros must be defined in your program before the line `#include <ServoEasing.hpp>` to take effect.<br/>
+Modify them by enabling / disabling them, or change the values if applicable.
+
 | Option | Default | Description |
 |-|-|-|
 | `USE_PCA9685_SERVO_EXPANDER` | disabled | Enables the use of the PCA9685 I2C expander chip/board. |
@@ -92,16 +114,19 @@ These macros must be defined in your program before the line `#include "ServoEas
 | `DEBUG` | disabled | Generates lots of lovely debug output for this library. |
 | `USE_LEIGHTWEIGHT_SERVO_LIB` | disabled | Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple. See below. Saves up to 742 bytes FLASH and 42 bytes RAM. |
 
-# Modifying compile options
-### Modifying compile options with Arduino IDE
+### Changing include (*.h) files with Arduino IDE
 First, use *Sketch > Show Sketch Folder (Ctrl+K)*.<br/>
-If you did not yet stored the example as your own sketch, then you are instantly in the right library folder.<br/>
+If you have not yet saved the example as your own sketch, then you are instantly in the right library folder.<br/>
 Otherwise you have to navigate to the parallel `libraries` folder and select the library you want to access.<br/>
-In both cases the library files itself are located in the `src` directory.<br/>
+In both cases the library source and include files are located in the libraries `src` directory.<br/>
+The modification must be renewed for each new library version!
 
-### Modifying compile options with Sloeber IDE
-If you are using Sloeber as your IDE, you can easily define global symbols with *Properties > Arduino > CompileOptions*.<br/>
-![Sloeber settings](https://github.com/ArminJo/ServoEasing/blob/master/pictures/SloeberDefineSymbols.png)
+### Modifying compile options / macros with PlatformIO
+If you are using PlatformIO, you can define the macros in the *[platformio.ini](https://docs.platformio.org/en/latest/projectconf/section_env_build.html)* file with `build_flags = -D MACRO_NAME` or `build_flags = -D MACRO_NAME=macroValue`.
+
+### Modifying compile options / macros with Sloeber IDE
+If you are using [Sloeber](https://eclipse.baeyens.it) as your IDE, you can easily define global symbols with *Properties > Arduino > CompileOptions*.<br/>
+![Sloeber settings](https://github.com/Arduino-IRremote/Arduino-IRremote/blob/master/pictures/SloeberDefineSymbols.png)
 
 ## Using PCA9685 16-Channel Servo Expander
 To enable the use of the expander, open the library file *ServoEasing.h* and activate the line `#define USE_PCA9685_SERVO_EXPANDER`.<br/>
@@ -155,10 +180,10 @@ It includes a partially **user defined easing function**  `EaseQuadraticInQuarti
 **Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` in the library file *ServoEasing.h* is enabled.<br/>
 ![Arduino plot](pictures/AsymmetricEasing.png)
 
-## ContinuousRotatingServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/ContinuousRotatingServo/ContinuousRotatingServo.ino)
+## [ContinuousRotatingServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/ContinuousRotatingServo/ContinuousRotatingServo.ino)
 Example for using the servoEasing library to create speed ramps for a continuous rotating servo. This example rely on your servos stop value being **exacly 1500 microseconds**. If the stop value of your servo is NOT exactly 1500 microseconds, you must modify the `MICROSECONDS_FOR_ROTATING_SERVO_STOP` value in the library file *ServoEasing.h*.
 
-## LightweightServoExample example](https://github.com/ArminJo/ServoEasing/blob/master/examples/LightweightServoExample/LightweightServoExample.ino)
+## [LightweightServoExample example](https://github.com/ArminJo/ServoEasing/blob/master/examples/LightweightServoExample/LightweightServoExample.ino)
 This example moves 2 servos attached at pin 9 and 10 using the LightweightServo library for ATmega328*.
 
 ## [CatMover example](https://github.com/ArminJo/ServoEasing/blob/master/examples/CatMover/CatMover.ino)
@@ -200,7 +225,7 @@ You must activate the line `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.
 
 ### mePed V2 with PCA9685 expander
 | | |
-|---|---|
+|-|-|
 | ![mePed V2 with PCA9685 expander](pictures/mePedWithPCA9685.jpg) | ![mePed V2 with PCA9685 expander](pictures/mePed_topWithPCA9685.jpg) |
 
 

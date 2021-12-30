@@ -64,7 +64,9 @@ EasyButton *EasyButton::sPointerToButton0ForISR;
 EasyButton *EasyButton::sPointerToButton1ForISR;
 #endif
 
-// @formatter:off // the eclipse formatter has problems with // comments in undefined code blocks
+// The eclipse formatter has problems with // comments in undefined code blocks
+// !!! Must be without comment and closed by @formatter:on
+// @formatter:off
 
 /*
  * These constructors are deterministic if only one button is enabled
@@ -332,7 +334,7 @@ bool EasyButton::readButtonState() {
 #endif
 }
 
-// @formatter:on // the eclipse formatter has problems with // comments in undefined code blocks
+// @formatter:on
 
 /*
  * Returns stored state if in debouncing period otherwise current state of button

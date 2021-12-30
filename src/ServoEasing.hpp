@@ -1233,7 +1233,9 @@ __attribute__((weak)) void handleServoTimerInterrupt()
     }
 }
 
-//@formatter:off
+// The eclipse formatter has problems with // comments in undefined code blocks
+// !!! Must be without comment and closed by @formatter:on
+// @formatter:off
 /*
  * Timer1 is used for the Arduino Servo library.
  * To have non blocking easing functions its unused channel B is used to generate an interrupt 100 탎 before the end of the 20 ms Arduino Servo refresh period.
@@ -1443,7 +1445,7 @@ void disableServoEasingInterrupt() {
     ServoEasing::sInterruptsAreActive = false;
 }
 
-//@formatter:on
+// @formatter:on
 /*
  * 60 탎 for single servo + 160 탎 per servo if using I2C e.g.for PCA9685 expander at 400 kHz or + 100 at 800 kHz
  * 20 탎 for last interrupt

@@ -9,6 +9,7 @@
 #define QUADRUPEDSERVOCONTROL_H_
 
 #include "QuadrupedServoConfiguration.h"
+#define SUPPRESS_HPP_WARNING
 #include "ServoEasing.h"
 
 // Define 8 servos in exact this order!

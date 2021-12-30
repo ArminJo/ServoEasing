@@ -77,7 +77,7 @@ void setupRobotArmServos() {
      */
     delay(200);
     HorizontalServo.attach(HORIZONTAL_SERVO_PIN, HORIZONTAL_NEUTRAL_OFFSET_DEGREE, HORIZONTAL_ZERO_DEGREE_VALUE_MICROS,
-            HORIZONTAL_AT_180_DEGREE_VALUE_MICROS);
+    HORIZONTAL_AT_180_DEGREE_VALUE_MICROS);
     HorizontalServo.registerUserEaseInFunction(&moveInverseKinematicForHorizontal);
 
     /*
@@ -433,17 +433,13 @@ void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree) {
 void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree, uint16_t aDegreesPerSecond) {
     ServoEasing::ServoEasingArray[aServoIndex]->startEaseTo(aDegree, aDegreesPerSecond, false);
     do {
-        if (!delayAndCheckForRobotArm(REFRESH_INTERVAL_MILLIS)) { // 20 ms - REFRESH_INTERVAL is in Microseconds
-            return;
-        }
+        DELAY_AND_RETURN_IF_STOP(REFRESH_INTERVAL_MILLIS); // 20 ms - REFRESH_INTERVAL is in Microseconds
     } while (!ServoEasing::ServoEasingArray[aServoIndex]->update());
 }
 
 void updateAndCheckInputAndWaitForAllServosToStop() {
     do {
-        if (!delayAndCheckForRobotArm(REFRESH_INTERVAL_MILLIS)) { // 20 ms - REFRESH_INTERVAL is in Microseconds
-            return;
-        }
+        DELAY_AND_RETURN_IF_STOP(REFRESH_INTERVAL_MILLIS); // 20 ms - REFRESH_INTERVAL is in Microseconds
     } while (!updateAllServos());
 }
 

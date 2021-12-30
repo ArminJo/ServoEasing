@@ -15,7 +15,7 @@
  *  With the potentiometer at pin A3 you can change the refresh interval of the servo pulse between 2.5 and 20 ms.
  *  The layout of pins for this potentiometer is chosen to be able to directly put this potentiometer at the breadboard without additional wiring.
  *
- * These are the fastest values for my SG90 servos at 5 volt (4.2 with servo active)
+ * These are the fastest values for my SG90 servos at 5 volt (4.2 volt with servo active)
  *   180 degree 400 ms  -> 450 degree per second
  *    90 degree 300 ms   -> 300 degree per second
  *    45 degree 180 ms
@@ -23,7 +23,7 @@
  *    20 degree 130 ms
  *    10 degree 80 ms    -> 125 degree per second
  *
- *  MG90Sservo
+ *  MG90Sservos at 5 volt (4.2 volt with servo active)
  *   180 degree 330 ms -> 540 degree per second
  *    90 degree 220 ms
  *    45 degree 115 ms

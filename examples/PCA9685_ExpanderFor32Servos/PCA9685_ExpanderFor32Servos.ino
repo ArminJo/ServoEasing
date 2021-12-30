@@ -109,7 +109,7 @@ void setup() {
     writeAllServos(0);
 
 #ifdef DEBUG
-    for (uint8_t i = 0; i <= ServoEasing::sServoArrayMaxIndex; ++i) {
+    for (uint_fast8_t i = 0; i <= ServoEasing::sServoArrayMaxIndex; ++i) {
         ServoEasing::ServoEasingArray[i]->print(&Serial);
     }
 #endif
@@ -129,7 +129,7 @@ void loop() {
     Serial.println(F(" ms delay"));
 #endif
     setSpeedForAllServos(20);  // This speed is taken if no further speed argument is given.
-    for (uint8_t i = 0; i <= ServoEasing::sServoArrayMaxIndex; ++i) {
+    for (uint_fast8_t i = 0; i <= ServoEasing::sServoArrayMaxIndex; ++i) {
         ServoEasing::ServoEasingArray[i]->startEaseTo(180);
         /*
          * Choose delay so that the last servo starts when the first is about to end
@@ -142,7 +142,7 @@ void loop() {
 #ifdef INFO
     Serial.println(F("Move all back to 0 degree with 20 degree per second"));
 #endif
-    for (uint8_t i = 0; i <= ServoEasing::sServoArrayMaxIndex; ++i) {
+    for (uint_fast8_t i = 0; i <= ServoEasing::sServoArrayMaxIndex; ++i) {
         ServoEasing::ServoEasingArray[i]->startEaseTo(0);
 #ifdef DEBUG
         Serial.print(F("Start i="));
@@ -166,7 +166,7 @@ void getAndAttach16ServosToPCA9685Expander(uint8_t aPCA9685I2CAddress) {
 
     Serial.print(F("Get ServoEasing objects and attach servos to PCA9685 expander at address=0x"));
     Serial.println(aPCA9685I2CAddress, HEX);
-    for (uint8_t i = 0; i < PCA9685_MAX_CHANNELS; ++i) {
+    for (uint_fast8_t i = 0; i < PCA9685_MAX_CHANNELS; ++i) {
 #if defined(ARDUINO_SAM_DUE)
         tServoEasingObjectPtr= new ServoEasing(aPCA9685I2CAddress, &Wire1);
 #else

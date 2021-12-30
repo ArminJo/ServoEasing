@@ -43,7 +43,7 @@
 #include "ClockMovements.h"
 #endif
 
-#include "Commands.h"
+#include <RobotArmIRCommands.h>
 #include "RobotArmServoConfiguration.h"
 #include "RobotArmServoControl.h"
 
@@ -155,15 +155,16 @@ void loop() {
 
 #if defined(ROBOT_ARM_IR_CONTROL)
     /*
-     * Check for IR commands and execute them
+     * Check for IR commands and execute them.
+     * Returns only AFTER finishing of requested movement
      */
-    IRDispatcher.loop();
+    IRDispatcher.checkAndRunSuspendedBlockingCommands();
 
     /*
      * Do auto move if timeout after boot was reached and no IR command was received
      */
-    if (sActionType != ACTION_TYPE_DRAW_TIME && IRDispatcher.IRReceivedData.MillisOfLastCode != 0 && !sManualActionHappened && !sVCCTooLow
-            && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
+    if (sActionType != ACTION_TYPE_DRAW_TIME && IRDispatcher.IRReceivedData.MillisOfLastCode != 0 && !sManualActionHappened
+            && !sVCCTooLow && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
         doRobotArmAutoMove();
     }
 
@@ -186,16 +187,14 @@ bool delayAndCheckForRobotArm(uint16_t aDelayMillis) {
 
     // check only once per delay
     if (checkVCC()) {
-        do {
 #if defined(ROBOT_ARM_IR_CONTROL)
-            if (IRDispatcher.checkIRInputForAlwaysExecutableCommand()) {
-                Serial.println(F("Invalid or recursive regular command received -> set stop and exit from delayAndCheck"));
-                sActionType = ACTION_TYPE_STOP;
-                return true;
-            }
+        if (IRDispatcher.delayAndCheckForStop(aDelayMillis)) {
+            Serial.println(F("Stop requested"));
+            sActionType = ACTION_TYPE_STOP;
+            return true;
+        }
 #endif
-            yield();
-        } while (millis() - tStartMillis < aDelayMillis);
+
         return false;
     }
 #if defined(ROBOT_ARM_IR_CONTROL)

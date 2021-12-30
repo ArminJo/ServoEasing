@@ -31,6 +31,8 @@
 
 #define MILLIS_IN_ONE_SECOND 1000L
 
+// The eclipse formatter has problems with // comments in undefined code blocks
+// !!! Must be without comment and closed by @formatter:on
 // @formatter:off
 #define START_EASE_TO_SPEED 5 // If not specified use 5 degree per second. It is chosen so low in order to signal that it was forgotten to specify.
 

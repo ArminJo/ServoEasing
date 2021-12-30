@@ -25,7 +25,6 @@
 
 #include <Arduino.h>
 
-// Better define it globally (not possible for the Arduino IDE). For Sloeber, do insert -DUSE_USER_DEFINED_MOVEMENTS in:  Properties / Arduino/ Compile Options / append to C++
 //#define USE_USER_DEFINED_MOVEMENTS
 #if defined(USE_USER_DEFINED_MOVEMENTS)
 #include "QuadrupedControl.h"
@@ -35,7 +34,7 @@
 #include "QuadrupedServoControl.h"
 #include "QuadrupedMovements.h"
 
-#include "Commands.h"
+#include <QuadrupedIRCommands.h>
 
 #if defined(QUADRUPED_PLAYS_RTTTL)
 #include <PlayRtttl.h>
@@ -118,7 +117,7 @@
 
 // doTest() is mapped to the star on the remote
 void doTest() {
-    sActionType = ACTION_TYPE_TEST;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_TEST;
 
     tone(PIN_BUZZER, 2000, 400);
     delayAndCheck(400);
@@ -147,7 +146,7 @@ void doTest() {
     frontLeftLiftServo.easeTo(sBodyHeightAngle);
 
     centerServos();
-    sActionType = ACTION_TYPE_STOP;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
 }
 
 /*
@@ -156,7 +155,7 @@ void doTest() {
 
 // doTwist() is mapped to the 7 on the remote
 void doTwist() {
-    sActionType = ACTION_TYPE_TWIST;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_TWIST;
     /*
      * Put your own code here
      */
@@ -165,76 +164,76 @@ void doTwist() {
     // Move all pivot servos simultaneously
     setPivotServos(90 + tTwistAngle, 90 + tTwistAngle, 90 + tTwistAngle, 90 + tTwistAngle);
 
-    sActionType = ACTION_TYPE_STOP;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
 }
 
 // doDance() is mapped to the 1 on the remote
 void doDance() {
-    sActionType = ACTION_TYPE_DANCE;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_DANCE;
     doBeep();
     /*
      * Put your own code here
      */
-    sActionType = ACTION_TYPE_STOP;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
 }
 
 // doWave() is mapped to the 3 on the remote
 void doWave() {
-    sActionType = ACTION_TYPE_WAVE;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_WAVE;
     doBeep();
     /*
      * Put your own code here
      */
-    sActionType = ACTION_TYPE_STOP;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
 }
 
 // doQuadrupedAutoMove() is mapped to the 5 on the remote
 void doQuadrupedAutoMove() {
-    sActionType = ACTION_TYPE_AUTO_MOVE;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_AUTO_MOVE;
     doBeep();
     /*
      * Put your own code here
      */
-    sActionType = ACTION_TYPE_STOP;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
 }
 
 // doTrot() is mapped to the 9 on the remote
 void doTrot() {
-    sActionType = ACTION_TYPE_TROT;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_TROT;
     doBeep();
     /*
      * Put your own code here
      */
-    sActionType = ACTION_TYPE_STOP;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
 }
 
 // doTurnRight() is mapped to the right arrow on the remote
 void doTurnRight() {
-    sActionType = ACTION_TYPE_TURN;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_TURN;
     doBeep();
     /*
      * Put your own code here
      */
-    sActionType = ACTION_TYPE_STOP;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
 }
 
 // doTurnLeft() is mapped to the left arrow on the remote
 void doTurnLeft() {
-    sActionType = ACTION_TYPE_TURN;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_TURN;
     doBeep();
     /*
      * Put your own code here
      */
-    sActionType = ACTION_TYPE_STOP;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
 }
 
 // doTurnLeft() is mapped to the up arrow on the remote
 void doCreepForward() {
-    sActionType = ACTION_TYPE_CREEP;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_CREEP;
     doBeep();
     /*
      * Put your own code here
      */
-    sActionType = ACTION_TYPE_STOP;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
 }
 #endif

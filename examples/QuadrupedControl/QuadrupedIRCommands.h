@@ -1,5 +1,5 @@
 /*
- * Commands.h
+ * QuadrupedIRCommands.h
  *
  * list of functions to call by IR command
  *
@@ -7,10 +7,12 @@
  *      Author: Armin
  */
 
-#ifndef COMMANDS_H_
-#define COMMANDS_H_
+#ifndef QUADRUPED_IR_COMMANDS_H
+#define QUADRUPED_IR_COMMANDS_H
 
-#include "QuadrupedControl.h"  //must be first
+#include "QuadrupedControl.h"  // must be first for Eclipse indexer to work :-(
+
+// Definition of RETURN_IF_STOP macro
 #if defined(QUADRUPED_HAS_IR_CONTROL)
 #include "IRCommandDispatcher.h" // RETURN_IF_STOP is defined here
 #else
@@ -32,8 +34,8 @@
 #define ACTION_TYPE_DANCE   8
 #define ACTION_TYPE_TEST    9
 #define ACTION_TYPE_AUTO_MOVE   10
-extern uint8_t sActionType; // must be set by exclusive commands and is reset if sRequestToStopReceived is set
-extern uint8_t sLastActionType; // do determine changes of actionType
+extern uint8_t sActionTypeForNeopatternsDisplay; // A change on this action type triggers the generation of new neopatterns
+extern uint8_t sLastActionTypeForNeopatternsDisplay; // do determine changes of sActionTypeForNeopatternsDisplay
 
 // The code for the called command is available in variable sCurrentIRCode
 // All functions have the prefix __attribute__((weak)) in order to enable easy overwriting with own functions.
@@ -91,6 +93,5 @@ void doPatternFire();
 void doPatternHeartbeat();
 void wipeOutPatterns();
 
-#endif /* COMMANDS_H_ */
-
+#endif /* QUADRUPED_IR_COMMANDS_H */
 #pragma once

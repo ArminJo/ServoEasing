@@ -26,15 +26,14 @@
  */
 
 #include <Arduino.h>
-
-#include "Commands.h"
+#include <QuadrupedIRCommands.h>
 
 #include "QuadrupedMovements.h"
 #include "QuadrupedServoControl.h"
 
 //#define INFO // activate this to see serial info output
 
-uint8_t sMovingDirection = MOVE_DIRECTION_FORWARD;
+volatile uint8_t sMovingDirection = MOVE_DIRECTION_FORWARD;
 
 /*
  * Gait variations
@@ -43,11 +42,11 @@ uint8_t sMovingDirection = MOVE_DIRECTION_FORWARD;
  */
 
 void moveTrot(uint8_t aNumberOfTrots) {
-    sActionType = ACTION_TYPE_TROT;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_TROT;
     setEasingTypeForMoving();
 
-    uint8_t tCurrentDirection = sMovingDirection;
     do {
+        uint8_t tCurrentDirection = sMovingDirection;
         uint8_t LiftMaxAngle = sBodyHeightAngle + ((LIFT_HIGHEST_ANGLE - sBodyHeightAngle) / 2);
         /*
          * first move right front and left back leg up and forward
@@ -67,18 +66,15 @@ void moveTrot(uint8_t aNumberOfTrots) {
 
         checkIfBodyHeightHasChanged();
 
-        if (sMovingDirection != tCurrentDirection) {
-            tCurrentDirection = sMovingDirection;
-        }
         aNumberOfTrots--;
     } while (aNumberOfTrots != 0);
 
     setEasingTypeToLinear();
-    sActionType = ACTION_TYPE_STOP;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
 }
 
 void basicTwist(int8_t aTwistAngle, bool aTurnLeft) {
-    sActionType = ACTION_TYPE_TWIST;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_TWIST;
 #ifdef INFO
     Serial.print(F("Twist angle="));
     Serial.print(aTwistAngle);
@@ -92,14 +88,14 @@ void basicTwist(int8_t aTwistAngle, bool aTurnLeft) {
     aTurnLeft ? tTwistAngle = -aTwistAngle : tTwistAngle = aTwistAngle;
 
     setPivotServos(90 + tTwistAngle, 90 + tTwistAngle, 90 + tTwistAngle, 90 + tTwistAngle);
-    sActionType = ACTION_TYPE_STOP;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
 }
 
 /*
  * Must reverse direction of legs if turning right otherwise the COG is not supported.
  */
 void moveTurn(uint8_t aNumberOfQuarterTurns) {
-    sActionType = ACTION_TYPE_TURN;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_TURN;
     centerServos();
     setEasingTypeForMoving();
     uint8_t tNextLegIndex = FRONT_LEFT;
@@ -125,7 +121,7 @@ void moveTurn(uint8_t aNumberOfQuarterTurns) {
     } while (aNumberOfQuarterTurns != 0);
 
     setEasingTypeToLinear();
-    sActionType = ACTION_TYPE_STOP;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
 }
 
 /*
@@ -163,9 +159,10 @@ void basicQuarterTurn(uint8_t aMoveLegIndex, bool aTurnLeft) {
     /*
      *
      */
-    for (uint8_t i = 0; i < NUMBER_OF_LEGS - 1; ++i) {
+    for (uint_fast8_t i = 0; i < NUMBER_OF_LEGS - 1; ++i) {
         tServoIndex %= NUMBER_OF_SERVOS;
-        ServoEasing::ServoEasingNextPositionArray[tServoIndex] = ServoEasing::ServoEasingNextPositionArray[tServoIndex] + tTurnAngle;
+        ServoEasing::ServoEasingNextPositionArray[tServoIndex] = ServoEasing::ServoEasingNextPositionArray[tServoIndex]
+                + tTurnAngle;
 // reset lift values for all other legs
         ServoEasing::ServoEasingNextPositionArray[tServoIndex + LIFT_SERVO_OFFSET] = sBodyHeightAngle;
         tServoIndex += SERVOS_PER_LEG;
@@ -191,28 +188,24 @@ void goToYPosition(uint8_t aDirection) {
  * 0 -> 256 creeps
  */
 void moveCreep(uint8_t aNumberOfCreeps) {
-    sActionType = ACTION_TYPE_CREEP;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_CREEP;
     goToYPosition(sMovingDirection);
     setEasingTypeForMoving();
-    uint8_t tCurrentDirection = sMovingDirection;
 
     do {
+        // read current direction for next 2  creeps
+        uint8_t tCurrentDirection = sMovingDirection;
+
         basicHalfCreep(tCurrentDirection, false);
         RETURN_IF_STOP;
 // now mirror movement
         basicHalfCreep(tCurrentDirection, true);
         RETURN_IF_STOP;
-        /*
-         * Check if we have to change direction
-         */
-        if (sMovingDirection != tCurrentDirection) {
-            tCurrentDirection = sMovingDirection;
-        }
         aNumberOfCreeps--;
     } while (aNumberOfCreeps != 0);
 
     setEasingTypeToLinear();
-    sActionType = ACTION_TYPE_STOP;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
 }
 
 /*

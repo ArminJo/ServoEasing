@@ -22,5 +22,6 @@
     "espressif8266",
     "espressif32",
     "ststm32"
-  ]
+  ],
+  "headers": "ServoEasing.hpp"
 }

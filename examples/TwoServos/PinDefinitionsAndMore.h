@@ -4,12 +4,12 @@
  *  Contains SERVOX_PIN definitions for ServoEasing examples for various platforms
  *  as well as includes and definitions for LED_BUILTIN
  *
- *  Copyright (C) 2020  Armin Joachimsmeyer
+ *  Copyright (C) 2020-2021  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
  *
- *  IRMP is free software: you can redistribute it and/or modify
+ *  ServoEasing is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.

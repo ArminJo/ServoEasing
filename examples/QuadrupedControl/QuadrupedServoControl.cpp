@@ -107,7 +107,7 @@ void printSpeed() {
 }
 
 void printAndSetTrimAngles() {
-    for (uint8_t i = 0; i < NUMBER_OF_SERVOS; ++i) {
+    for (uint_fast8_t i = 0; i < NUMBER_OF_SERVOS; ++i) {
 #ifdef INFO
         Serial.print(F("ServoTrimAngle["));
         Serial.print(i);
@@ -119,7 +119,7 @@ void printAndSetTrimAngles() {
 }
 
 void resetServosTo90Degree() {
-    for (uint8_t i = 0; i < NUMBER_OF_SERVOS; ++i) {
+    for (uint_fast8_t i = 0; i < NUMBER_OF_SERVOS; ++i) {
         ServoEasing::ServoEasingArray[i]->write(90);
     }
 }
@@ -141,7 +141,7 @@ void eepromWriteServoTrim() {
 }
 
 void setEasingTypeToLinear() {
-    for (uint8_t tServoIndex = 0; tServoIndex < NUMBER_OF_SERVOS; ++tServoIndex) {
+    for (uint_fast8_t tServoIndex = 0; tServoIndex < NUMBER_OF_SERVOS; ++tServoIndex) {
         ServoEasing::ServoEasingArray[tServoIndex]->setEasingType(EASE_LINEAR);
     }
 }
@@ -335,7 +335,7 @@ void setLiftServos(int aFrontLeftLift, int aBackLeftLift, int aBackRightLift, in
  */
 void setLiftServosToBodyHeight() {
     // Set values direct, since we expect only a change of 2 degree
-    for (uint8_t i = LIFT_SERVO_OFFSET; i < NUMBER_OF_SERVOS; i += SERVOS_PER_LEG) {
+    for (uint_fast8_t i = LIFT_SERVO_OFFSET; i < NUMBER_OF_SERVOS; i += SERVOS_PER_LEG) {
         ServoEasing::ServoEasingArray[i]->write(sBodyHeightAngle);
     }
 }

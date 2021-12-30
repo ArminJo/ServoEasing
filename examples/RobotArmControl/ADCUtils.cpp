@@ -28,11 +28,11 @@
 // Union to speed up the combination of low and high bytes to a word
 // it is not optimal since the compiler still generates 2 unnecessary moves
 // but using  -- value = (high << 8) | low -- gives 5 unnecessary instructions
-union Myword {
+union WordUnionForADCUtils {
     struct {
         uint8_t LowByte;
         uint8_t HighByte;
-    } byte;
+    } UByte;
     uint16_t UWord;
     int16_t Word;
     uint8_t *BytePointer;
@@ -42,7 +42,7 @@ union Myword {
  * Conversion time is defined as 0.104 milliseconds by ADC_PRESCALE in ADCUtils.h.
  */
 uint16_t readADCChannel(uint8_t aChannelNumber) {
-    Myword tUValue;
+    WordUnionForADCUtils tUValue;
     ADMUX = aChannelNumber | (DEFAULT << SHIFT_VALUE_FOR_REFERENCE);
 
     // ADCSRB = 0; // Only active if ADATE is set to 1.
@@ -53,8 +53,8 @@ uint16_t readADCChannel(uint8_t aChannelNumber) {
     loop_until_bit_is_clear(ADCSRA, ADSC);
 
     // Get value
-    tUValue.byte.LowByte = ADCL;
-    tUValue.byte.HighByte = ADCH;
+    tUValue.UByte.LowByte = ADCL;
+    tUValue.UByte.HighByte = ADCH;
     return tUValue.UWord;
     //    return ADCL | (ADCH <<8); // needs 4 bytes more
 }
@@ -63,7 +63,7 @@ uint16_t readADCChannel(uint8_t aChannelNumber) {
  * Conversion time is defined as 0.104 milliseconds by ADC_PRESCALE in ADCUtils.h.
  */
 uint16_t readADCChannelWithReference(uint8_t aChannelNumber, uint8_t aReference) {
-    Myword tUValue;
+    WordUnionForADCUtils tUValue;
     ADMUX = aChannelNumber | (aReference << SHIFT_VALUE_FOR_REFERENCE);
 
     // ADCSRB = 0; // Only active if ADATE is set to 1.
@@ -74,19 +74,34 @@ uint16_t readADCChannelWithReference(uint8_t aChannelNumber, uint8_t aReference)
     loop_until_bit_is_clear(ADCSRA, ADSC);
 
     // Get value
-    tUValue.byte.LowByte = ADCL;
-    tUValue.byte.HighByte = ADCH;
+    tUValue.UByte.LowByte = ADCL;
+    tUValue.UByte.HighByte = ADCH;
     return tUValue.UWord;
 }
 
 /*
  * Conversion time is defined as 0.104 milliseconds by ADC_PRESCALE in ADCUtils.h.
+ * Does NOT restore ADMUX after reading
  */
 uint16_t waitAndReadADCChannelWithReference(uint8_t aChannelNumber, uint8_t aReference) {
     checkAndWaitForReferenceAndChannelToSwitch(aChannelNumber, aReference);
     return readADCChannelWithReference(aChannelNumber, aReference);
 }
 
+/*
+ * Conversion time is defined as 0.104 milliseconds by ADC_PRESCALE in ADCUtils.h.
+ * Restores ADMUX after reading
+ */
+uint16_t waitAndReadADCChannelWithReferenceAndRestoreADMUX(uint8_t aChannelNumber, uint8_t aReference) {
+    uint8_t tOldADMUX = checkAndWaitForReferenceAndChannelToSwitch(aChannelNumber, aReference);
+    uint16_t tResult = readADCChannelWithReference(aChannelNumber, aReference);
+    checkAndWaitForReferenceAndChannelToSwitch(tOldADMUX & MASK_FOR_ADC_CHANNELS, tOldADMUX >> SHIFT_VALUE_FOR_REFERENCE);
+    return tResult;
+}
+
+/*
+ * To prepare reference and ADMUX for next measurement
+ */
 void setADCMultiplexerAndReferenceForNextConversion(uint8_t aChannelNumber, uint8_t aReference) {
     ADMUX = aChannelNumber | (aReference << SHIFT_VALUE_FOR_REFERENCE);
 }
@@ -160,7 +175,7 @@ uint16_t readADCChannelWithReferenceOversample(uint8_t aChannelNumber, uint8_t a
 
         ADCSRA |= _BV(ADIF); // clear bit to enable recognizing next conversion has finished
         // Add value
-        tSumValue += ADCL | (ADCH << 8); // using myWord does not save space here
+        tSumValue += ADCL | (ADCH << 8); // using WordUnionForADCUtils does not save space here
         // tSumValue += (ADCH << 8) | ADCL; // this does NOT work!
     }
     ADCSRA &= ~_BV(ADATE); // Disable auto-triggering (free running mode)
@@ -189,7 +204,7 @@ uint16_t readADCChannelWithReferenceOversampleFast(uint8_t aChannelNumber, uint8
 
         ADCSRA |= _BV(ADIF); // clear bit to enable recognizing next conversion has finished
         // Add value
-        tSumValue += ADCL | (ADCH << 8); // using myWord does not save space here
+        tSumValue += ADCL | (ADCH << 8); // using WordUnionForADCUtils does not save space here
         // tSumValue += (ADCH << 8) | ADCL; // this does NOT work!
     }
     ADCSRA &= ~_BV(ADATE); // Disable auto-triggering (free running mode)
@@ -217,7 +232,7 @@ uint16_t readADCChannelWithReferenceMultiSamples(uint8_t aChannelNumber, uint8_t
 
         ADCSRA |= _BV(ADIF); // clear bit to enable recognizing next conversion has finished
         // Add value
-        tSumValue += ADCL | (ADCH << 8); // using myWord does not save space here
+        tSumValue += ADCL | (ADCH << 8); // using WordUnionForADCUtils does not save space here
         // tSumValue += (ADCH << 8) | ADCL; // this does NOT work!
     }
     ADCSRA &= ~_BV(ADATE); // Disable auto-triggering (free running mode)

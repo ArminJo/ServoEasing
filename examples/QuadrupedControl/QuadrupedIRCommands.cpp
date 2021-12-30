@@ -1,5 +1,5 @@
 /*
- * Commands.cpp
+ * QuadrupedIRCommands.cpp
  *
  * Contains all the IR command functions available.
  * All functions have the prefix __attribute__((weak)) in order to enable easy overwriting with own functions.
@@ -7,7 +7,7 @@
  * To run this example need to install the "ServoEasing", "IRLremote" and "PinChangeInterrupt" libraries under "Tools -> Manage Libraries..." or "Ctrl+Shift+I"
  * Use "ServoEasing", "IRLremote" and "PinChangeInterrupt" as filter string.
  *
- *  Copyright (C) 2019  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2022  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -27,15 +27,15 @@
  */
 
 #include <Arduino.h>
+#include <QuadrupedIRCommands.h>
 
-#include "Commands.h"
 #include "QuadrupedMovements.h"
 #include "QuadrupedServoControl.h"
 
 //#define INFO // activate this to see serial info output
 
-uint8_t sActionType;
-uint8_t sLastActionType;
+uint8_t sActionTypeForNeopatternsDisplay; // A change on this action type triggers the generation of new neopatterns
+uint8_t sLastActionTypeForNeopatternsDisplay; // do determine changes of sActionTypeForNeopatternsDisplay
 
 /******************************************
  * The Commands to execute
@@ -98,7 +98,7 @@ void __attribute__((weak)) doDance() {
 }
 
 void __attribute__((weak)) doWave() {
-    sActionType = ACTION_TYPE_WAVE;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_WAVE;
 
 #ifdef INFO
     Serial.print(F("Wave 3 times with right leg"));
@@ -111,7 +111,6 @@ void __attribute__((weak)) doWave() {
 
     // move all legs up, except front left -> front right lifts from the ground
     setLiftServos(LIFT_LOWEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_HIGHEST_ANGLE);
-    RETURN_IF_STOP;
 
     delayAndCheck(1000);
     RETURN_IF_STOP;
@@ -119,7 +118,7 @@ void __attribute__((weak)) doWave() {
     ServoEasing::ServoEasingArray[FRONT_RIGHT_PIVOT]->setEasingType(EASE_QUADRATIC_IN_OUT);
 
     // wave with the front right leg
-    for (uint8_t i = 0; i < 3; ++i) {
+    for (uint_fast8_t i = 0; i < 3; ++i) {
         moveOneServoAndCheckInputAndWait(FRONT_RIGHT_PIVOT, 135, sServoSpeed * 2);
         RETURN_IF_STOP;
 
@@ -132,7 +131,7 @@ void __attribute__((weak)) doWave() {
     RETURN_IF_STOP;
 
     centerServos();
-    sActionType = ACTION_TYPE_STOP;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
 }
 
 void __attribute__((weak)) doCenterServos() {
@@ -149,16 +148,15 @@ void __attribute__((weak)) doBow() {
     printSpeed();
 #endif
     centerServos();
-    RETURN_IF_STOP;
 
     delayAndCheck(300);
     RETURN_IF_STOP;
 
     // Lift front legs
     ServoEasing::ServoEasingArray[FRONT_LEFT_LIFT]->setEaseTo(LIFT_LOWEST_ANGLE, sServoSpeed);
-    ServoEasing::ServoEasingArray[FRONT_RIGHT_LIFT]->startEaseToD(LIFT_LOWEST_ANGLE, ServoEasing::ServoEasingArray[FRONT_LEFT_LIFT]->mMillisForCompleteMove);
+    ServoEasing::ServoEasingArray[FRONT_RIGHT_LIFT]->startEaseToD(LIFT_LOWEST_ANGLE,
+            ServoEasing::ServoEasingArray[FRONT_LEFT_LIFT]->mMillisForCompleteMove);
     updateAndCheckInputAndWaitForAllServosToStop();
-    RETURN_IF_STOP;
 
     delayAndCheck(300);
     RETURN_IF_STOP;
@@ -180,14 +178,14 @@ void __attribute__((weak)) doTwist() {
 }
 
 void __attribute__((weak)) doLeanLeft() {
-    sActionType = ACTION_TYPE_LEAN;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_LEAN;
 
 #ifdef INFO
     Serial.print(F("Lean left"));
     printSpeed();
 #endif
     setLiftServos(LIFT_HIGHEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_LOWEST_ANGLE, LIFT_LOWEST_ANGLE);
-    sActionType = ACTION_TYPE_STOP;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
 }
 
 void __attribute__((weak)) doLeanRight() {
@@ -196,7 +194,7 @@ void __attribute__((weak)) doLeanRight() {
     printSpeed();
 #endif
     setLiftServos(LIFT_LOWEST_ANGLE, LIFT_LOWEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_HIGHEST_ANGLE);
-    sActionType = ACTION_TYPE_STOP;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
 }
 
 void __attribute__((weak)) doLeanBack() {
@@ -205,7 +203,7 @@ void __attribute__((weak)) doLeanBack() {
     printSpeed();
 #endif
     setLiftServos(LIFT_LOWEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_LOWEST_ANGLE);
-    sActionType = ACTION_TYPE_STOP;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
 }
 
 void __attribute__((weak)) doLeanFront() {
@@ -214,7 +212,7 @@ void __attribute__((weak)) doLeanFront() {
     printSpeed();
 #endif
     setLiftServos(LIFT_HIGHEST_ANGLE, LIFT_LOWEST_ANGLE, LIFT_LOWEST_ANGLE, LIFT_HIGHEST_ANGLE);
-    sActionType = ACTION_TYPE_STOP;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
 }
 
 void __attribute__((weak)) doTurnRight() {
@@ -253,7 +251,7 @@ void __attribute__((weak)) doCreepForward() {
  * Move down and up and back to starting height
  */
 void __attribute__((weak)) doAttention() {
-    sActionType = ACTION_TYPE_ATTENTION;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_ATTENTION;
 
 #ifdef INFO
     Serial.println(F("Move to get attention"));
@@ -265,7 +263,7 @@ void __attribute__((weak)) doAttention() {
     setLiftServos(LIFT_LOWEST_ANGLE);
     RETURN_IF_STOP;
     setLiftServos(sBodyHeightAngle);
-    sActionType = ACTION_TYPE_STOP;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
 }
 
 void __attribute__((weak)) doQuadrupedAutoMove() {
@@ -299,9 +297,9 @@ void __attribute__((weak)) doQuadrupedAutoMove() {
     // creep left fast
     sMovingDirection = MOVE_DIRECTION_LEFT;
     moveCreep(4);
-    RETURN_IF_STOP;
 
     delayAndCheck(2000);
+    RETURN_IF_STOP;
 
     setSpeed(200);
     doDance();
@@ -323,16 +321,16 @@ void __attribute__((weak)) doQuadrupedAutoMove() {
     // trot back
     sMovingDirection = MOVE_DIRECTION_BACKWARD;
     moveTrot(8);
-    RETURN_IF_STOP;
 
     delayAndCheck(2000);
+    RETURN_IF_STOP;
 
     // trot right
     sMovingDirection = MOVE_DIRECTION_RIGHT;
     moveTrot(8);
-    RETURN_IF_STOP;
 
     delayAndCheck(2000);
+    RETURN_IF_STOP;
 
     // turn right
     centerServos();
@@ -353,42 +351,28 @@ void __attribute__((weak)) doQuadrupedAutoMove() {
  *************************/
 void __attribute__((weak)) doStop() {
 #if defined(QUADRUPED_HAS_IR_CONTROL)
-    sActionType = ACTION_TYPE_STOP;
+    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
 #endif
 }
 
 void __attribute__((weak)) doSetDirectionForward() {
     sMovingDirection = MOVE_DIRECTION_FORWARD;
-    /*
-     * Start a creep if not already moving
-     */
-    if (sActionType == ACTION_TYPE_STOP) {
-        moveCreep();
-    }
+    moveCreep();
 }
 
 void __attribute__((weak)) doSetDirectionBack() {
     sMovingDirection = MOVE_DIRECTION_BACKWARD;
+    moveCreep();
 }
 
 void __attribute__((weak)) doSetDirectionLeft() {
     sMovingDirection = MOVE_DIRECTION_LEFT;
-    /*
-     * Start a turn if not already moving
-     */
-    if (sActionType == ACTION_TYPE_STOP) {
-        moveTurn();
-    }
+    moveTurn();
 }
 
 void __attribute__((weak)) doSetDirectionRight() {
     sMovingDirection = MOVE_DIRECTION_RIGHT;
-    /*
-     * Start a turn if not already moving
-     */
-    if (sActionType == ACTION_TYPE_STOP) {
-        moveTurn();
-    }
+    moveTurn();
 }
 
 /*
@@ -430,7 +414,7 @@ void __attribute__((weak)) doIncreaseHeight() {
         sBodyHeightAngle -= 2;
         convertBodyHeightAngleToHeight();
 #if defined(QUADRUPED_HAS_IR_CONTROL)
-        if (!IRDispatcher.executingRegularCommand) {
+        if (!IRDispatcher.executingBlockingCommand) {
             setLiftServosToBodyHeight();
         }
 #else
@@ -444,7 +428,7 @@ void __attribute__((weak)) doDecreaseHeight() {
         sBodyHeightAngle += 2;
         convertBodyHeightAngleToHeight();
 #if defined(QUADRUPED_HAS_IR_CONTROL)
-        if (!IRDispatcher.executingRegularCommand) {
+        if (!IRDispatcher.executingBlockingCommand) {
             setLiftServosToBodyHeight();
         }
 #else
@@ -512,6 +496,7 @@ void doCalibration() {
     Serial.println(F("Use enter/OK button to go to next leg. Values are stored at receiving a different button or after 4th leg."));
 #endif
 
+    IRDispatcher.doNotUseDispatcher = true; // disable dispatcher by mapping table
     while (!tGotExitCommand) {
         // wait until next command received
         while (!IRDispatcher.IRReceivedData.isAvailable) {
@@ -520,7 +505,7 @@ void doCalibration() {
 
         unsigned long tIRCode = IRDispatcher.IRReceivedData.command;
 #ifdef INFO
-        IRDispatcher.printIRCommandString();
+        IRDispatcher.printIRCommandString(&Serial);
 #endif
         switch (tIRCode) {
         case COMMAND_RIGHT:
@@ -533,13 +518,13 @@ void doCalibration() {
             break;
         case COMMAND_FORWARD:
             sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET]++;
-            ServoEasing::ServoEasingArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->setTrim(sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET],
-                    true);
+            ServoEasing::ServoEasingArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->setTrim(
+                    sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET], true);
             break;
         case COMMAND_BACKWARD:
             sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET]--;
-            ServoEasing::ServoEasingArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->setTrim(sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET],
-                    true);
+            ServoEasing::ServoEasingArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->setTrim(
+                    sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET], true);
             break;
         case COMMAND_ENTER:
             // show 135 and 45 degree positions
@@ -578,6 +563,8 @@ void doCalibration() {
         ServoEasing::ServoEasingArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->print(&Serial);
         delay(200);
     }
+    IRDispatcher.doNotUseDispatcher = false; // re enable dispatcher by mapping table
+
 }
 #endif
 

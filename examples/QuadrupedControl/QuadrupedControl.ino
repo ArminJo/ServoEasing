@@ -33,21 +33,29 @@
  */
 
 #include <Arduino.h>
-
-#include "QuadrupedControl.h"
-
-#if defined(QUADRUPED_HAS_IR_CONTROL)
-// saves around 800 bytes program space
-#define USE_TINY_IR_RECEIVER // must be specified before including IRCommandDispatcher.hpp to define which IR library to use
-
-#include "IRCommandMapping.h" // must be included before IRCommandDispatcher.hpp to define IR_ADDRESS and IRMapping and string "unknown".
-#include "IRCommandDispatcher.hpp"
-#endif
+#include <QuadrupedIRCommands.h> // include for all the commands used in the mapping arrays below. must be included before IRCommandMapping.h
 
 #include "QuadrupedServoControl.h"
 #include "QuadrupedMovements.h"
-#include "Commands.h"
-#include "ADCUtils.h"
+#include "ADCUtils.h" // for getVCCVoltageMillivoltSimple()
+
+//#define QUADRUPED_HAS_IR_CONTROL
+//#define QUADRUPED_PLAYS_RTTTL
+//#define QUADRUPED_HAS_NEOPIXEL
+//#define QUADRUPED_HAS_US_DISTANCE
+//#define QUADRUPED_HAS_US_DISTANCE_SERVO
+
+#if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
+ServoEasing USServo;    // Servo for US sensor
+#define DO_NOT_USE_FEEDBACK_LED // Disable IR LRD feedback because servo is at the same pin
+#endif
+
+#if defined(QUADRUPED_HAS_IR_CONTROL)
+#define USE_TINY_IR_RECEIVER // must be specified before including IRCommandDispatcher.hpp to define which IR library to use
+#define IR_INPUT_PIN  A0
+#include "IRCommandMapping.h" // must be included before IRCommandDispatcher.hpp to define IR_ADDRESS and IRMapping and string "unknown".
+#include "IRCommandDispatcher.hpp"
+#endif
 
 #if defined(QUADRUPED_PLAYS_RTTTL)
 #include <PlayRtttl.h> // Click here to get the library: http://librarymanager/All#PlayRtttl
@@ -59,13 +67,12 @@
 
 #if defined(QUADRUPED_HAS_US_DISTANCE)
 #include "HCSR04.h"
-ServoEasing USServo;    // Servo for US sensor
 #endif
 
 //#define INFO // activate this to see serial info output
 
 #if defined(QUADRUPED_HAS_NEOPIXEL)
-color32_t sBarBackgroundColorArray[PIXELS_ON_ONE_BAR] = { COLOR32_RED_QUARTER, COLOR32_RED_QUARTER, COLOR32_RED_QUARTER,
+color32_t sBarBackgroundColorArrayForDistance[PIXELS_ON_ONE_BAR] = { COLOR32_RED_QUARTER, COLOR32_RED_QUARTER, COLOR32_RED_QUARTER,
 COLOR32_YELLOW, COLOR32_YELLOW, COLOR32_GREEN_QUARTER, COLOR32_GREEN_QUARTER, COLOR32_GREEN_QUARTER };
 #endif
 
@@ -74,6 +81,9 @@ COLOR32_YELLOW, COLOR32_YELLOW, COLOR32_GREEN_QUARTER, COLOR32_GREEN_QUARTER, CO
 // 2.1 auto move
 // 2.0 major refactoring
 // 1.1 mirror computation at transformAndSetPivotServos and transformOneServoIndex
+
+bool checkForLowVoltage();
+void playShutdownMelodyAndBlinkForever();
 
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
@@ -87,12 +97,14 @@ void setup() {
     setupQuadrupedServos();
     setSpeedForAllServos(sServoSpeed);
 
-    // Just for setting channel and reference
-    printVCCVoltageMillivolt(&Serial);
+    // Just for pre setting channel and reference
+    getVCCVoltageMillivoltSimple();
 
 #if defined(QUADRUPED_HAS_US_DISTANCE)
     Serial.println(F("Init US distance sensor"));
     initUSDistancePins(PIN_TRIGGER_OUT, PIN_ECHO_IN);
+#endif
+#if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
     USServo.attach(PIN_US_SERVO, 90);
 #endif
 
@@ -125,7 +137,8 @@ void setup() {
 #if defined(QUADRUPED_HAS_IR_CONTROL)
     IRDispatcher.init();
     Serial.print(F("Listening to IR remote of type "));
-    Serial.println(IR_REMOTE_NAME);
+    Serial.print(IR_REMOTE_NAME);
+    Serial.println(F(" at pin " STR(IR_INPUT_PIN)));
 #endif
 
 #if defined(QUADRUPED_HAS_NEOPIXEL)
@@ -151,13 +164,7 @@ void loop() {
      * Check for IR commands and execute them.
      * Returns only AFTER finishing of requested movement
      */
-    IRDispatcher.loop();
-#if defined(QUADRUPED_HAS_NEOPIXEL)
-    if (IRDispatcher.justCalledRegularIRCommand) {
-        IRDispatcher.justCalledRegularIRCommand = false;
-        sStartOrChangeNeoPatterns = true;
-    }
-#endif
+    IRDispatcher.checkAndRunSuspendedBlockingCommands();
 
     /*
      * Do auto move if timeout after boot was reached and no IR command was received
@@ -188,18 +195,23 @@ void loop() {
 
     if (checkForLowVoltage()) {
         shutdownServos();
-        tone(PIN_BUZZER, 2000, 200);
-        delay(400);
-        tone(PIN_BUZZER, 1400, 300);
-        delay(600);
-        tone(PIN_BUZZER, 1000, 400);
-        delay(800);
-        tone(PIN_BUZZER, 700, 500);
+        playShutdownMelodyAndBlinkForever();
+
 #if defined(QUADRUPED_HAS_NEOPIXEL)
         wipeOutPatternsBlocking();
 #endif
         delay(10000);  // blocking wait for next check
     }
+}
+
+void playShutdownMelodyAndBlinkForever(){
+    tone(PIN_BUZZER, 2000, 200);
+    delay(400);
+    tone(PIN_BUZZER, 1400, 300);
+    delay(600);
+    tone(PIN_BUZZER, 1000, 400);
+    delay(800);
+    tone(PIN_BUZZER, 700, 500);
 }
 
 /*
@@ -229,7 +241,7 @@ void handleUSSensor() {
     static uint16_t sLastDistance;
     if (millis() - sLastMeasurementMillis > MILLIS_BETWEEN_MEASUREMENTS) {
         sLastMeasurementMillis = millis();
-        uint16_t tDistance = getUSDistanceAsCentiMeter();
+        uint16_t tDistance = getUSDistanceAsCentimeter();
         if (tDistance != 0 && sLastDistance != tDistance) {
             sLastDistance = tDistance;
 #ifdef INFO
@@ -238,7 +250,7 @@ void handleUSSensor() {
 //            Serial.println(F("cm"));
 #endif
 #if defined(QUADRUPED_HAS_NEOPIXEL)
-            // Show bar if no other pattern is active
+            // Show distance bar if no other pattern is active
             if (FrontNeoPixelBar.ActivePattern == PATTERN_NONE) {
                 /*
                  * The first 6 pixel represent a distance of each 5 cm
@@ -253,14 +265,16 @@ void handleUSSensor() {
                 } else {
                     tBarLength = tDistance / 5;
                 }
-                FrontNeoPixelBar.drawBarFromColorArray(tBarLength, sBarBackgroundColorArray);
+                FrontNeoPixelBar.drawBarFromColorArray(tBarLength, sBarBackgroundColorArrayForDistance);
                 showPatternSynchronized();
             }
 #endif
         }
     }
 }
+#endif // #if defined(QUADRUPED_HAS_US_DISTANCE)
 
+#if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
 void doUSRight() {
     if (!IRDispatcher.IRReceivedData.isRepeat && USServo.getCurrentAngle() > 15) {
         USServo.write(USServo.getCurrentAngle() - 15);
@@ -280,27 +294,25 @@ void doUSScan() {
 
 /*
  * Special delay function for the quadruped control.
- * It checks for low voltage, IR input and US distance sensor
- * @return  true - if exit condition occurred like stop received
+ * It checks for low voltage and returns prematurely if requestToStopReceived is set
+ * @return  true - if stop received
  */
 bool delayAndCheck(uint16_t aDelayMillis) {
-    uint32_t tStartMillis = millis();
-
-// check only once per delay
-    if (!checkForLowVoltage()) {
-        do {
+// check voltage only once per delay
+    if (checkForLowVoltage()) {
 #if defined(QUADRUPED_HAS_IR_CONTROL)
-            if (IRDispatcher.checkIRInputForAlwaysExecutableCommand()) {
-                Serial.println(F("Invalid or recursive regular command received -> set stop"));
-                sActionType = ACTION_TYPE_STOP;
-                return true;
-            }
+        sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
 #endif
-        } while (millis() - tStartMillis < aDelayMillis);
-        return false;
+        return true;
+#if defined(QUADRUPED_HAS_IR_CONTROL)
+    } else {
+        // Voltage is OK here :-)
+        if(IRDispatcher.delayAndCheckForStop(aDelayMillis)){
+            Serial.println(F("Stop requested"));
+            sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
+            return true;
+        }
+#endif
     }
-#if defined(QUADRUPED_HAS_IR_CONTROL)
-    sActionType = ACTION_TYPE_STOP;
-#endif
-    return true;
+    return false;
 }

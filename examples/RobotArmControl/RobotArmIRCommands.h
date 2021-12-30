@@ -1,5 +1,5 @@
 /*
- * Commands.h
+ * RobotArmIRCommands.h
  *
  * list of functions to call by IR command
  *
@@ -7,8 +7,8 @@
  *      Author: Armin
  */
 
-#ifndef SRC_COMMANDS_H_
-#define SRC_COMMANDS_H_
+#ifndef ROBOT_ARM_COMMANDS_H_
+#define ROBOT_ARM_COMMANDS_H_
 
 #include "RobotArmControl.h"
 
@@ -54,6 +54,5 @@ void doIncreaseSpeed();
 void doDecreaseSpeed();
 void doSwitchEasingType();
 
-#endif /* SRC_COMMANDS_H_ */
-
+#endif /* ROBOT_ARM_COMMANDS_H_ */
 #pragma once

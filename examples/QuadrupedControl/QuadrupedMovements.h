@@ -5,14 +5,14 @@
  *      Author: Armin
  */
 
-#ifndef SRC_QUADRUPEDMOVEMENTS_H_
-#define SRC_QUADRUPEDMOVEMENTS_H_
+#ifndef QUADRUPED_MOVEMENTS_H
+#define QUADRUPED_MOVEMENTS_H
 
 #include "QuadrupedServoConfiguration.h" // for MOVE_DIRECTION_FORWARD
 
 #include <stdint.h>
 
-extern uint8_t sMovingDirection;
+extern volatile uint8_t sMovingDirection;
 
 /*
  * Movements
@@ -26,6 +26,6 @@ void moveCreep(uint8_t aNumberOfCreeps = 0);    // 0 -> 256 creeps
 
 void checkIfBodyHeightHasChanged();
 
-#endif /* SRC_QUADRUPEDMOVEMENTS_H_ */
+#endif /* QUADRUPED_MOVEMENTS_H */
 
 #pragma once
