@@ -33,7 +33,7 @@
  */
 
 #include <Arduino.h>
-#include <QuadrupedIRCommands.h> // include for all the commands used in the mapping arrays below. must be included before IRCommandMapping.h
+#include "QuadrupedIRCommands.h" // include for all the commands used in the mapping arrays below. must be included before IRCommandMapping.h
 
 #include "QuadrupedServoControl.h"
 #include "QuadrupedMovements.h"

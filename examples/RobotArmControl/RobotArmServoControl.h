@@ -11,6 +11,7 @@
 #include "RobotArmServoConfiguration.h"
 #include "RobotArmKinematics.h"
 
+#define SUPPRESS_HPP_WARNING
 #include <ServoEasing.h>    // include servo library
 
 extern ServoEasing BasePivotServo;    // 0 - Front Left Pivot Servo

@@ -26,7 +26,7 @@
  */
 
 #include <Arduino.h>
-#include <QuadrupedIRCommands.h>
+#include "QuadrupedIRCommands.h"
 
 #include "QuadrupedMovements.h"
 #include "QuadrupedServoControl.h"

@@ -43,7 +43,7 @@
 #include "ClockMovements.h"
 #endif
 
-#include <RobotArmIRCommands.h>
+#include "RobotArmIRCommands.h"
 #include "RobotArmServoConfiguration.h"
 #include "RobotArmServoControl.h"
 
@@ -183,8 +183,6 @@ void loop() {
  * @return  true - if exit condition occurred like stop received
  */
 bool delayAndCheckForRobotArm(uint16_t aDelayMillis) {
-    uint32_t tStartMillis = millis();
-
     // check only once per delay
     if (checkVCC()) {
 #if defined(ROBOT_ARM_IR_CONTROL)

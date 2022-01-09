@@ -34,7 +34,7 @@
 #include "QuadrupedServoControl.h"
 #include "QuadrupedMovements.h"
 
-#include <QuadrupedIRCommands.h>
+#include "QuadrupedIRCommands.h"
 
 #if defined(QUADRUPED_PLAYS_RTTTL)
 #include <PlayRtttl.h>

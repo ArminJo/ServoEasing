@@ -16,6 +16,7 @@
 #include "IRCommandDispatcher.h"
 #else
 #define RETURN_IF_STOP
+#define DELAY_AND_RETURN_IF_STOP(aDurationMillis)
 #endif
 
 #if defined(ROBOT_ARM_RTC_CONTROL)

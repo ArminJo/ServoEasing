@@ -433,13 +433,17 @@ void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree) {
 void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree, uint16_t aDegreesPerSecond) {
     ServoEasing::ServoEasingArray[aServoIndex]->startEaseTo(aDegree, aDegreesPerSecond, false);
     do {
+#if defined(ROBOT_ARM_IR_CONTROL)
         DELAY_AND_RETURN_IF_STOP(REFRESH_INTERVAL_MILLIS); // 20 ms - REFRESH_INTERVAL is in Microseconds
+#endif
     } while (!ServoEasing::ServoEasingArray[aServoIndex]->update());
 }
 
 void updateAndCheckInputAndWaitForAllServosToStop() {
     do {
+#if defined(ROBOT_ARM_IR_CONTROL)
         DELAY_AND_RETURN_IF_STOP(REFRESH_INTERVAL_MILLIS); // 20 ms - REFRESH_INTERVAL is in Microseconds
+#endif
     } while (!updateAllServos());
 }
 
