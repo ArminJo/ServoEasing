@@ -15,10 +15,9 @@ Available as Arduino library "ServoEasing"
 
 # Table of content
 - [Servo easing library for Arduino](#servo-easing-library-for-arduino)
-    + [Features](#features)
-    + [Includes the following **easing functions**:](#includes-the-following-easing-functions)
-    + [All easing functions can be used in the following **variants**:](#all-easing-functions-can-be-used-in-the-following-variants)
-- [[API](https://github.com/ArminJo/ServoEasing/blob/master/src/ServoEasing.h#L328)](#api)
+- [Features](#features)
+- [List of easing functions](#list-of-easing-functions)
+- [API](#api)
 - [Usage](#usage)
 - [Comparison between Quadratic, Cubic and Sine easings.](#comparison-between-quadratic-cubic-and-sine-easings)
 - [Useful resources](#useful-resources)
@@ -26,33 +25,11 @@ Available as Arduino library "ServoEasing"
 - [Speed of servo positioning](#speed-of-servo-positioning)
 - [Using the new *.hpp files](#using-the-new-hpp-files)
 - [Compile options / macros for this library](#compile-options--macros-for-this-library)
-    + [Changing include (*.h) files with Arduino IDE](#changing-include-h-files-with-arduino-ide)
-    + [Modifying compile options / macros with PlatformIO](#modifying-compile-options-macros-with-platformio)
-    + [Modifying compile options / macros with Sloeber IDE](#modifying-compile-options-macros-with-sloeber-ide)
 - [Using PCA9685 16-Channel Servo Expander](#using-pca9685-16-channel-servo-expander)
-- [Using the included [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for AVR](#using-the-included-lightweight-servo-library)
-- [Examples](https://github.com/ArminJo/ServoEasing/blob/master/examples)](#-examples)
-  * [Simple example](#simple-example)
-  * [OneServo example](#oneservo-example)
-  * [TwoServo](#twoservo)
-  * [ThreeServo examples](#threeservo-examples)
-  * [SymmetricEasing example](#symmetriceasing-example)
-  * [AsymmetricEasing example](#asymmetriceasing-example)
-  * [ContinuousRotatingServo example](#continuousrotatingservo-example)
-  * [LightweightServoExample example](#lightweightservoexample-example)
-  * [CatMover example](#catmover-example)
-  * [QuadrupedControl example](#quadrupedcontrol-example)
-    + [YouTube Videos](#youtube-videos)
-    + [Building breadboard servo adapter](#building-breadboard-servo-adapter)
-  * [RobotArmControl example](#robotarmcontrol-example)
-  * [PCA9685_Expander example](#pca9685-expander-example)
-  * [PCA9685_ExpanderAndServo example](#pca9685-expanderandservo-example)
-  * [PCA9685_ExpanderFor32Servos example](#pca9685-expanderfor32servos-example)
-    + [YouTube Video](#youtube-video)
-    + [mePed V2 with PCA9685 expander](#meped-v2-with-pca9685-expander)
-- [Servo utilities](#servo-utilities)
-  * [EndPositionsTest example](#endpositionstest-example)
-  * [SpeedTest example](#speedtest-example)
+- [Using the included Lightweight Servo library for AVR](#using-the-included-lightweight-servo-library-for-avr)
+- [Examples](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples)
+- [Servo utilities](https://github.com/ArminJo/ServoEasing/tree/master/examples#servo-utilities)
+- [Building breadboard servo adapter](#building-breadboard-servo-adapter)
 - [Internals](#internals)
 - [Supported Arduino architectures](#supported-arduino-architectures)
 - [Timer usage for interrupt based movement](#timer-usage-for-interrupt-based-movement)
@@ -72,7 +49,7 @@ If you require only one or two servos, you may want to use the included [Lightwe
 The LightweightServo library uses the internal Timer1 with no software overhead and therefore has no problems with **servo jitterring** or interrupt blocking libraries like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
 For instructions how to enable these alternatives, see [Compile options / macros](https://github.com/ArminJo/ServoEasing#compile-options--macros-for-this-library).
 
-### Features
+# Features
 - **Linear** and 9 other ease movements are provided.
 - All servos can move **synchronized** or **independently**.
 - **Non blocking** movements are enabled by using **startEaseTo\* functions** by reusing the interrupts of the servo timer Timer1 or using a dedicated timer on other platforms. This function is not available for all platforms.
@@ -83,7 +60,7 @@ For instructions how to enable these alternatives, see [Compile options / macros
 - Degree values >= 400 can optionally be taken as microsecond values for the servo pulse.
 - All ServoEasing objects are accessible by using the [`ServoEasing::ServoEasingArray[]`](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServos/ThreeServos.ino#L104).
 
-### Includes the following **easing functions**:
+# List of easing functions:
 - Linear
 - Quadratic
 - Cubic
@@ -95,7 +72,7 @@ For instructions how to enable these alternatives, see [Compile options / macros
 - Bounce
 - User defined
 
-### All easing functions can be used in the following **variants**:
+### All easing functions can be used in the following variants:
 - In
 - Out
 - InOut
@@ -202,97 +179,15 @@ Up to 2 servos are supported by this library and they must be physically attache
 To enable it, open the library file *ServoEasing.h* and activate the line `#define USE_LEIGHTWEIGHT_SERVO_LIB` or define global symbol with `-DUSE_LEIGHTWEIGHT_SERVO_LIB` which is not yet possible in Arduino IDE:-(.<br/>
 If not using the Arduino IDE, take care that Arduino Servo library sources are not compiled / included in the project.
 
-# [Examples](https://github.com/ArminJo/ServoEasing/blob/master/examples)
+# [Examples](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples)
 All examples with up to 2 Servos can be used without modifications with the [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for AVR by by commenting out the line `#define USE_LEIGHTWEIGHT_SERVO_LIB` in the library file *ServoEasing.h* (see above).
 
-## [Simple example](https://github.com/ArminJo/ServoEasing/blob/master/examples/Simple/Simple.ino)
-This example does not use interrupts and should therefore run on any platform where the Arduino Servo library is available.<br/><br/>
-**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` in the library file *ServoEasing.h* is enabled.<br/>
-![Arduino plot](pictures/ServoEasing-Linear-Cubic-Circular.png)
+# [Servo utilities](https://github.com/ArminJo/ServoEasing/tree/master/examples#servo-utilities)
 
-## [OneServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino)
-This example moves one Servo with different speeds and using blocking and interrupt commands. The internal LED blinks when using interrupt based commands.
-
-## [TwoServo](https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServo/TwoServo.ino)
-This example shows how to move 2 servos attached at pin 9 and 10 synchronized or independently using the LightweightServo library. This saves 640 bytes program space compared to using Arduino Servo library.
-
-## [ThreeServo examples](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServo/ThreeServo.ino)
-This example shows how to move 3 servos synchronized or independently.<br/>
-WOKWI online simulation of the ThreeServo example.<br/>
-[![WOKWI online simulation of the ThreeServo example](https://github.com/ArminJo/ServoEasing/blob/master/pictures/Wokwi_ThreeServos.png)](https://wokwi.com/arduino/projects/299552195816194570).
-
-## [SymmetricEasing example](https://github.com/ArminJo/ServoEasing/blob/master/examples/SymmetricEasing/SymmetricEasing.ino)
-This example shows symmetric (end movement is mirror of start movement) linear, quadratic and cubic movements for 3 servos synchronously.
-**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` in the library file *ServoEasing.h* is enabled.<br/>
-![Arduino plot](pictures/SymmetricEasing.png)
-
-## [AsymmetricEasing example](https://github.com/ArminJo/ServoEasing/blob/master/examples/AsymmetricEasing/AsymmetricEasing.ino)
-This example shows asymmetric (end movement is different from start movement) non linear movements for 3 servos synchronously.
-It includes a partially **user defined easing function**  `EaseQuadraticInQuarticOut()`.
-**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` in the library file *ServoEasing.h* is enabled.<br/>
-![Arduino plot](pictures/AsymmetricEasing.png)
-
-## [ContinuousRotatingServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/ContinuousRotatingServo/ContinuousRotatingServo.ino)
-Example for using the servoEasing library to create speed ramps for a continuous rotating servo. This example rely on your servos stop value being **exacly 1500 microseconds**. If the stop value of your servo is NOT exactly 1500 microseconds, you must modify the `MICROSECONDS_FOR_ROTATING_SERVO_STOP` value in the library file *ServoEasing.h*.
-
-## [LightweightServoExample example](https://github.com/ArminJo/ServoEasing/blob/master/examples/LightweightServoExample/LightweightServoExample.ino)
-This example moves 2 servos attached at pin 9 and 10 using the LightweightServo library for ATmega328*.
-
-## [CatMover example](https://github.com/ArminJo/ServoEasing/blob/master/examples/CatMover/CatMover.ino)
-Demo of using two servos in a pan tilt housing to move a laser pointer.
-
-## [QuadrupedControl example](https://github.com/ArminJo/ServoEasing/blob/master/examples/QuadrupedControl/QuadrupedControl.ino)
-Control 8 servos to move a Quadruped robot.<br/>
-The full example with IR remote control, NeoPixel and US distance sensor support is available [here](https://github.com/ArminJo/QuadrupedControl).
-Only for AVR, because it uses EEPROM.
-
-### YouTube Videos
-[![mePed V2 in actions](https://i.ytimg.com/vi/MsIjTRRUyGU/hqdefault.jpg)](https://youtu.be/MsIjTRRUyGU)
-[![Another implementation](https://i.ytimg.com/vi/CSodffeebyg/hqdefault.jpg)](https://youtu.be/CSodffeebyg)
-
-### Building breadboard servo adapter
+# Building breadboard servo adapter
 Converting a 10 pin double row pin header with 21 mm pin length to a breadboard servo adapter.
-![Side view](pictures/ServoAdapter.jpg)
-![Top view](pictures/ServoAdapterTop.jpg)
-
-## [RobotArmControl example](https://github.com/ArminJo/ServoEasing/blob/master/examples/RobotArmControl/RobotArmControl.ino)
-Program for controlling a [robot arm with 4 servos](https://www.instructables.com/id/4-DOF-Mechanical-Arm-Robot-Controlled-by-Arduino) using 4 potentiometers and/or an IR Remote.
-Only for AVR, because it uses EEPROM.
-
-## [PCA9685_Expander example](https://github.com/ArminJo/ServoEasing/blob/master/examples/PCA9685_Expander/PCA9685_Expander.ino)
-The OneServo example modified for using a PCA9685 expander board and the standard Arduino Wire library.<br/>
-You must activate the line `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.h* to make the expander example work.
-
-## [PCA9685_ExpanderAndServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/PCA9685_ExpanderAndServo/PCA9685_ExpanderAndServo.ino)
-Combination of OneServo example and PCA9685_Expander example. Move one servo attached to the Arduino board and one servo attached to the PCA9685 expander board **simultaneously**.
-
-## [PCA9685_ExpanderFor32Servos example](https://github.com/ArminJo/ServoEasing/blob/master/examples/PCA9685_ExpanderFor32Servos/PCA9685_ExpanderFor32Servos.ino)
-Program to show the usage of 2 PCA9685 expander boards with 32 servos.
-On the ESP32, the I2C library interferes with the 29 millisecond timer and therefore can only run at 100000 Hz or lower.<br/>
-You must activate the line `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.h* to make the expander example work.
-
-### YouTube Video
-[![Servos 16-19 and 28-31 in action](https://i.ytimg.com/vi/XMVh3IT5BgU/hqdefault.jpg)](https://youtu.be/XMVh3IT5BgU)
-
-
-### mePed V2 with PCA9685 expander
-| | |
-|-|-|
-| ![mePed V2 with PCA9685 expander](pictures/mePedWithPCA9685.jpg) | ![mePed V2 with PCA9685 expander](pictures/mePed_topWithPCA9685.jpg) |
-
-
-# Servo utilities
-
-## [EndPositionsTest example](https://github.com/ArminJo/ServoEasing/blob/master/examples/EndPositionsTest/EndPositionsTest.ino)
-This example helps you determine the right end values for your servo.<br/>
-These values are required for the `attach(int aPin, int aInitialDegree, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree)` function, if your servo does not comply to the standard values.
-E.g. some of my SG90 servos have a 0 degree period of 620 µs instead of the standard 544.<br/>
-This example does not use the ServoEasing functions.
-
-## [SpeedTest example](https://github.com/ArminJo/ServoEasing/blob/master/examples/SpeedTest/SpeedTest.ino)
-This example gives you a feeling how fast your servo can move, what the end position values are and which refresh rate they accept.<br/>
-This example does not use the ServoEasing functions.
-Not for ESP8266 because it requires 2 analog inputs.
+![Side view](https://github.com/ArminJo/ServoEasing/blob/master/pictures/ServoAdapter.jpg)
+![Top view](https://github.com/ArminJo/ServoEasing/blob/master/pictures/ServoAdapterTop.jpg)
 
 # Internals
 The API accepts only degree (except for write() and writeMicrosecondsOrUnits()) but internally only microseconds (or units (= 4.88 µs) if using PCA9685 expander) and not degree are used to speed up things. Other expander or servo libraries can therefore easily be used.<br/>

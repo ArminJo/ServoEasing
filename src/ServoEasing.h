@@ -654,7 +654,7 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print has no f
  */
 
 #if !defined(SERVOEASING_HPP) && !defined(SUPPRESS_HPP_WARNING)
-#warning You probably must change the line #include "ServoEasing.h" to #include "ServoEasing.hpp" in your ino file.
+#warning You probably must change the line #include "ServoEasing.h" to #include "ServoEasing.hpp" in your ino file or define SUPPRESS_HPP_WARNING before the include to suppress this warning.
 #endif
 
 #endif// #ifndef SERVOEASING_H_
