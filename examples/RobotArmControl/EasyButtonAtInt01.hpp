@@ -187,9 +187,9 @@ void EasyButton::init(bool aIsButtonAtINT0) {
 #  if defined(USE_ATTACH_INTERRUPT)
     attachInterrupt(digitalPinToInterrupt(INT0_PIN), &handleINT0Interrupt, CHANGE);
 #  else
-    EICRA |= (1 << ISC00);  // interrupt on any logical change
-    EIFR |= 1 << INTF0;// clear interrupt bit
-    EIMSK |= 1 << INT0;// enable interrupt on next change
+    EICRA |= _BV(ISC00);  // interrupt on any logical change
+    EIFR |= _BV(INTF0);// clear interrupt bit
+    EIMSK |= _BV(INT0);// enable interrupt on next change
 #  endif //USE_ATTACH_INTERRUPT
 
 #elif defined(USE_BUTTON_1) && not defined(USE_BUTTON_0)
@@ -204,26 +204,26 @@ void EasyButton::init(bool aIsButtonAtINT0) {
 
 #  if (!defined(ISC10)) || ((defined(__AVR_ATtiny87__) || defined(__AVR_ATtiny167__)) && INT1_PIN != 3)
 #    if defined(PCICR)
-    PCICR |= 1 << PCIE0; // Enable pin change interrupt for port PA0 to PA7
+    PCICR |= _BV(PCIE0); // Enable pin change interrupt for port PA0 to PA7
     PCMSK0 = digitalPinToBitMask(INT1_PIN);
 #    else
     // ATtinyX5 no ISC10 flag existent
-    GIMSK |= 1 << PCIE;//PCINT enable, we have only one
+    GIMSK |= _BV(PCIE);//PCINT enable, we have only one
     PCMSK = digitalPinToBitMask(INT1_PIN);
 #    endif
 #  elif (INT1_PIN != 3)
     /*
      * ATmega328 (Uno, Nano ) etc. Enable pin change interrupt for port PD0 to PD7 (Arduino pin 0 to 7)
      */
-    PCICR |= 1 << PCIE2;
+    PCICR |= _BV(PCIE2);
     PCMSK2 = digitalPinToBitMask(INT1_PIN);
 #  else
 #    if defined(USE_ATTACH_INTERRUPT)
     attachInterrupt(digitalPinToInterrupt(INT1_PIN), &handleINT1Interrupt, CHANGE);
 #    else
-    EICRA |= (1 << ISC10);  // interrupt on any logical change
-    EIFR |= 1 << INTF1;     // clear interrupt bit
-    EIMSK |= 1 << INT1;     // enable interrupt on next change
+    EICRA |= _BV(ISC10);  // interrupt on any logical change
+    EIFR |= _BV(INTF1);     // clear interrupt bit
+    EIMSK |= _BV(INT1);     // enable interrupt on next change
 #    endif //USE_ATTACH_INTERRUPT
 #  endif // !defined(ISC10)
 
@@ -243,9 +243,9 @@ void EasyButton::init(bool aIsButtonAtINT0) {
 #  if defined(USE_ATTACH_INTERRUPT)
         attachInterrupt(digitalPinToInterrupt(INT0_PIN), &handleINT0Interrupt, CHANGE);
 #  else
-        EICRA |= (1 << ISC00);  // interrupt on any logical change
-        EIFR |= 1 << INTF0;     // clear interrupt bit
-        EIMSK |= 1 << INT0;     // enable interrupt on next change
+        EICRA |= _BV(ISC00);  // interrupt on any logical change
+        EIFR |= _BV(INTF0);     // clear interrupt bit
+        EIMSK |= _BV(INT0);     // enable interrupt on next change
 #  endif //USE_ATTACH_INTERRUPT
     } else {
         /*
@@ -263,18 +263,18 @@ void EasyButton::init(bool aIsButtonAtINT0) {
         /*
          * ATtiny167 + 87. Enable pin change interrupt for port PA0 to PA7
          */
-        PCICR |= 1 << PCIE0;
+        PCICR |= _BV(PCIE0);
         PCMSK0 = digitalPinToBitMask(INT1_PIN);
 #    else
         /*
          *ATtinyX5. Enable pin change interrupt for port PB0 to PB5
          */
-        GIMSK |= 1 << PCIE; // PCINT enable, we have only one
+        GIMSK |= _BV(PCIE); // PCINT enable, we have only one
         PCMSK = digitalPinToBitMask(INT1_PIN);
 #    endif
 #  elif INT1_PIN == 4 || INT1_PIN == 5 || INT1_PIN == 6 || INT1_PIN == 7
     //ATmega328 (Uno, Nano ) etc. Enable pin change interrupt for port PD0 to PD7 (Arduino pin 0 to 7)
-        PCICR |= 1 << PCIE2;
+        PCICR |= _BV(PCIE2);
         PCMSK2 = digitalPinToBitMask(INT1_PIN);
 #    elif INT1_PIN == 8 || INT1_PIN == 9 || INT1_PIN == 10 || INT1_PIN == 11 || INT1_PIN == 12 || INT1_PIN == 13
     //ATmega328 (Uno, Nano ) etc. Enable pin change interrupt 0 to 5 for port PB0 to PB5 (Arduino pin 8 to 13)
@@ -288,9 +288,9 @@ void EasyButton::init(bool aIsButtonAtINT0) {
 #    if defined(USE_ATTACH_INTERRUPT)
         attachInterrupt(digitalPinToInterrupt(INT1_PIN), &handleINT1Interrupt, CHANGE);
 #    else
-        EICRA |= (1 << ISC10);  // interrupt on any logical change
-        EIFR |= 1 << INTF1;     // clear interrupt bit
-        EIMSK |= 1 << INT1;     // enable interrupt on next change
+        EICRA |= _BV(ISC10);  // interrupt on any logical change
+        EIFR |= _BV(INTF1);     // clear interrupt bit
+        EIMSK |= _BV(INT);     // enable interrupt on next change
 #    endif //USE_ATTACH_INTERRUPT
 #  endif // !defined(ISC10)
     }

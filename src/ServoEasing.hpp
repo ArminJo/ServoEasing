@@ -81,6 +81,22 @@ HardwareTimer Timer20ms(3);  // 4 timers and 4. timer is used for tone()
 #elif defined(ARDUINO_ARCH_MBED) // Arduino Nano 33 BLE + Sparkfun Apollo3
 mbed::Ticker Timer20ms;
 
+/*************************************************************************************************************************************
+ * RP2040 based boards for pico core
+ * https://github.com/earlephilhower/arduino-pico
+ * https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
+ * Can use any pin for PWM, no timer restrictions
+ *************************************************************************************************************************************/
+#elif defined(ARDUINO_ARCH_RP2040) // Raspberry Pi Pico, Adafruit Feather RP2040, etc.
+#include "pico/time.h"
+repeating_timer_t Timer20ms;
+void handleServoTimerInterrupt();
+// The timer callback has a parameter and a return value
+bool handleServoTimerInterruptHelper(repeating_timer_t*) {
+    handleServoTimerInterrupt();
+    return true;
+}
+
 #elif defined(TEENSYDUINO)
 // common for all Teensy
 IntervalTimer Timer20ms;
@@ -1388,6 +1404,9 @@ void enableServoEasingInterrupt() {
 #elif defined(ARDUINO_ARCH_MBED)
     Timer20ms.attach(handleServoTimerInterrupt, std::chrono::microseconds(REFRESH_INTERVAL_MICROS));
 
+#elif defined(ARDUINO_ARCH_RP2040)
+    add_repeating_timer_us(REFRESH_INTERVAL_MICROS, handleServoTimerInterruptHelper, NULL, &Timer20ms);
+
 #elif defined(TEENSYDUINO)
     // common for all Teensy
     Timer20ms.begin(handleServoTimerInterrupt, REFRESH_INTERVAL_MICROS);
@@ -1435,6 +1454,9 @@ void disableServoEasingInterrupt() {
 
 #elif defined(ARDUINO_ARCH_MBED) // Arduino Nano 33 BLE + Sparkfun Apollo3
     Timer20ms.detach();
+
+#elif defined(ARDUINO_ARCH_RP2040)
+    cancel_repeating_timer(&Timer20ms);
 
 //#elif defined(ARDUINO_ARCH_APOLLO3)
 //    am_hal_ctimer_int_disable(AM_HAL_CTIMER_INT_TIMERA3);

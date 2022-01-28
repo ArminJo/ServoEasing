@@ -81,12 +81,27 @@ uint16_t readADCChannelWithReference(uint8_t aChannelNumber, uint8_t aReference)
 
 /*
  * Conversion time is defined as 0.104 milliseconds by ADC_PRESCALE in ADCUtils.h.
+ * Does NOT restore ADMUX after reading
  */
 uint16_t waitAndReadADCChannelWithReference(uint8_t aChannelNumber, uint8_t aReference) {
     checkAndWaitForReferenceAndChannelToSwitch(aChannelNumber, aReference);
     return readADCChannelWithReference(aChannelNumber, aReference);
 }
 
+/*
+ * Conversion time is defined as 0.104 milliseconds by ADC_PRESCALE in ADCUtils.h.
+ * Restores ADMUX after reading
+ */
+uint16_t waitAndReadADCChannelWithReferenceAndRestoreADMUX(uint8_t aChannelNumber, uint8_t aReference) {
+    uint8_t tOldADMUX = checkAndWaitForReferenceAndChannelToSwitch(aChannelNumber, aReference);
+    uint16_t tResult = readADCChannelWithReference(aChannelNumber, aReference);
+    checkAndWaitForReferenceAndChannelToSwitch(tOldADMUX & MASK_FOR_ADC_CHANNELS, tOldADMUX >> SHIFT_VALUE_FOR_REFERENCE);
+    return tResult;
+}
+
+/*
+ * To prepare reference and ADMUX for next measurement
+ */
 void setADCMultiplexerAndReferenceForNextConversion(uint8_t aChannelNumber, uint8_t aReference) {
     ADMUX = aChannelNumber | (aReference << SHIFT_VALUE_FOR_REFERENCE);
 }

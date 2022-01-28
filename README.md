@@ -1,7 +1,7 @@
 # [ServoEasing](https://github.com/ArminJo/ServoEasing) - move your servo more natural
 Available as Arduino library "ServoEasing"
 
-### [Version 2.4.1](https://github.com/ArminJo/ServoEasing/archive/master.zip) - work in progress
+### [Version 2.4.2](https://github.com/ArminJo/ServoEasing/archive/master.zip) - work in progress
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
@@ -14,30 +14,30 @@ Available as Arduino library "ServoEasing"
 [![Demonstration of different servo easings](https://i.ytimg.com/vi/fC9uxdOBhfA/hqdefault.jpg)](https://www.youtube.com/watch?v=fC9uxdOBhfA)
 
 # Table of content
-- [Servo easing library for Arduino](#servo-easing-library-for-arduino)
-- [Features](#features)
-- [List of easing functions](#list-of-easing-functions)
-- [API](#api)
-- [Usage](#usage)
-- [Comparison between Quadratic, Cubic and Sine easings.](#comparison-between-quadratic-cubic-and-sine-easings)
-- [Useful resources](#useful-resources)
-- [Resolution of servo positioning](#resolution-of-servo-positioning)
-- [Speed of servo positioning](#speed-of-servo-positioning)
-- [Using the new *.hpp files](#using-the-new-hpp-files)
-- [Compile options / macros for this library](#compile-options--macros-for-this-library)
-- [Using PCA9685 16-Channel Servo Expander](#using-pca9685-16-channel-servo-expander)
-- [Using the included Lightweight Servo library for AVR](#using-the-included-lightweight-servo-library-for-avr)
+- [Servo easing library for Arduino](https://github.com/ArminJo/ServoEasing#servo-easing-library-for-arduino)
+- [Features](https://github.com/ArminJo/ServoEasing#features)
+- [List of easing functions](https://github.com/ArminJo/ServoEasing#list-of-easing-functions)
+- [API](https://github.com/ArminJo/ServoEasing#api)
+- [Usage](https://github.com/ArminJo/ServoEasing#usage)
+- [Comparison between Quadratic, Cubic and Sine easings.](https://github.com/ArminJo/ServoEasing#comparison-between-quadratic-cubic-and-sine-easings)
+- [Useful resources](https://github.com/ArminJo/ServoEasing#useful-resources)
+- [Resolution of servo positioning](https://github.com/ArminJo/ServoEasing#resolution-of-servo-positioning)
+- [Speed of servo positioning](https://github.com/ArminJo/ServoEasing#speed-of-servo-positioning)
+- [Using the new *.hpp files / how to avoid `multiple definitions` linker errors](https://github.com/ArminJo/ServoEasing#using-the-new-hpp-files--how-to-avoid-multiple-definitions-linker-errors)
+- [Compile options / macros for this library](https://github.com/ArminJo/ServoEasing#compile-options--macros-for-this-library)
+- [Using PCA9685 16-Channel Servo Expander](https://github.com/ArminJo/ServoEasing#using-pca9685-16-channel-servo-expander)
+- [Using the included Lightweight Servo library for AVR](https://github.com/ArminJo/ServoEasing#using-the-included-lightweight-servo-library-for-avr)
 - [Examples](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples)
 - [Servo utilities](https://github.com/ArminJo/ServoEasing/tree/master/examples#servo-utilities)
-- [Building breadboard servo adapter](#building-breadboard-servo-adapter)
-- [Internals](#internals)
-- [Supported Arduino architectures](#supported-arduino-architectures)
-- [Timer usage for interrupt based movement](#timer-usage-for-interrupt-based-movement)
-- [Adding a new platform / board](#adding-a-new-platform--board)
-- [Troubleshooting](#troubleshooting)
-- [Revision History](#revision-history)
-- [CI](#ci)
-- [Requests for modifications / extensions](#requests-for-modifications--extensions)
+- [Building breadboard servo adapter](https://github.com/ArminJo/ServoEasing#building-breadboard-servo-adapter)
+- [Internals](https://github.com/ArminJo/ServoEasing#internals)
+- [Supported Arduino architectures](https://github.com/ArminJo/ServoEasing#supported-arduino-architectures)
+- [Timer usage for interrupt based movement](https://github.com/ArminJo/ServoEasing#timer-usage-for-interrupt-based-movement)
+- [Adding a new platform / board](https://github.com/ArminJo/ServoEasing#adding-a-new-platform--board)
+- [Troubleshooting](https://github.com/ArminJo/ServoEasing#troubleshooting)
+- [Revision History](https://github.com/ArminJo/ServoEasing#revision-history)
+- [CI](https://github.com/ArminJo/ServoEasing#ci)
+- [Requests for modifications / extensions](https://github.com/ArminJo/ServoEasing#requests-for-modifications--extensions)
 
 # Servo easing library for Arduino
 This is a library for smooth servo movements. It uses the standard Arduino Servo library and therefore has its restrictions regarding pins and platform support.<br/>
@@ -122,7 +122,7 @@ Values for the MG90Sservos servos at 5 volt (4.2 volt with servo active).
 | 90 | 220 ms  | 410 degree per second |
 | 45 | 115 ms  | 390 degree per second |
 
-# Using the new *.hpp files
+# Using the new *.hpp files / how to avoid `multiple definitions` linker errors
 In order to support [compile options](#compile-options--macros-for-this-library) more easily, the line `#include <ServoEasing.h>` must be changed to  `#include <ServoEasing.hpp>`, but only in your **main program (.ino file)**, like it is done in the examples.<br/>
 In **all other files** you must use `#include <ServoEasing.h>`, otherwise you will get tons of **"multiple definition"** errors.
 
@@ -134,7 +134,7 @@ Modify them by enabling / disabling them, or change the values if applicable.
 | Option | Default | Description |
 |-|-|-|
 | `USE_PCA9685_SERVO_EXPANDER` | disabled | Enables the use of the PCA9685 I2C expander chip/board. |
-| `USE_SERVO_LIB` | disabled | Use of PCA9685 normally disables use of regular servo library. You can force additional using of regular servo library by defining `USE_SERVO_LIB`. See [below](#using-pca9685-16-channel-servo-expander). |
+| `USE_SERVO_LIB` | disabled | Use of PCA9685 normally disables use of regular servo library. You can force additional using of regular servo library by defining `USE_SERVO_LIB`. See [below](https://github.com/ArminJo/ServoEasing#using-pca9685-16-channel-servo-expander). |
 | `PROVIDE_ONLY_LINEAR_MOVEMENT` | disabled | Disables all but LINEAR movement. Saves up to 1540 bytes FLASH. |
 | `DISABLE_COMPLEX_FUNCTIONS` | disabled | Disables the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes FLASH. |
 | `MAX_EASING_SERVOS` | 12, 16(for PCA9685) | Saves 4 byte RAM per servo. If this value is smaller than the amount of servos declared, attach() will return error and other library functions will not work as expected.<br/>Of course all *AllServos*() functions and isOneServoMoving() can't work correctly! |
@@ -212,14 +212,16 @@ On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking ea
 | STM32F1 | 3 or 7 | HardwareTimer.h |
 | Teensy |  | IntervalTimer |
 | apollo3 | timer 3 segment A |  |
+| Mbed | mbed::Ticker | Ticker.h |
+| [RP2040 / Pi Pico](https://github.com/earlephilhower/arduino-pico | [default alarm pool](https://raspberrypi.github.io/pico-sdk-doxygen/group__repeating__timer.html) | time.h |
 
 # Adding a new platform / board
 If timer support is available for a platform the library can be ported by adding code for the Timer20ms like is was done for ESP and STM.<br/>
 To add a new platform, the following steps have to be performed:
 1. If the new platform has an **Arduino compatible Servo library**, fine, otherwise include the one required for this platform like it is done for ESP32 [here](src/ServoEasing.h#L83).
-2. You need a **20ms interrupt source** providing the functions enableServoEasingInterrupt() and (optional) disableServoEasingInterrupt(). Extend these functions with code for the new platform. Place includes and timer definitions at top of *ServoEasing.cpp*.
+2. You need a **20ms interrupt source** providing the functions enableServoEasingInterrupt() and (optional) disableServoEasingInterrupt(). Extend these functions with code for the new platform. Place includes and timer definitions at top of *ServoEasing.hpp*.
 3. If your interrupt source requires an ISR (Interrupt Service Routine) place it after disableServoEasingInterrupt() where all the other ISR are located.
-4. To test the new platform, you may want to enable **TRACE output** by commenting out the line `#define TRACE` in *ServoEasing.cpp*
+4. To test the new platform, you may want to enable **TRACE output** by commenting out the line `#define TRACE` in *ServoEasing.hpp*
 and enabling **interrupt timing feedback** by commenting out the line `#define MEASURE_SERVO_EASING_INTERRUPT_TIMING` in *ServoEasing.h*.
 5. If it works for you, please issue a Pull Request, to share your efforts with the community.
 
@@ -230,7 +232,8 @@ If you see strange behavior, you can open the library file *ServoEasing.h* and a
 This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
 
 # Revision History
-### Version 2.4.1 - work in progress
+### Version 2.4.1
+- RP2040 support.
 
 ### Version 2.4.0
 - New `attach()` functions with initial degree parameter to be written immediately. This replaces the `attach()` and `write()` combination at setup.

@@ -79,10 +79,12 @@
 
 #define SHIFT_VALUE_FOR_REFERENCE REFS2
 #define MASK_FOR_ADC_REFERENCE (_BV(REFS0) | _BV(REFS1) | _BV(REFS2))
+#define MASK_FOR_ADC_CHANNELS (_BV(MUX0) | _BV(MUX1) | _BV(MUX2) | _BV(MUX3))
 #else // AVR_ATtiny85
 
 #define SHIFT_VALUE_FOR_REFERENCE REFS0
 #define MASK_FOR_ADC_REFERENCE (_BV(REFS0) | _BV(REFS1))
+#define MASK_FOR_ADC_CHANNELS (_BV(MUX0) | _BV(MUX1) | _BV(MUX2) | _BV(MUX3))
 #endif
 
 // Temperature channel definitions - 1 LSB / 1 degree Celsius
@@ -120,6 +122,7 @@
 uint16_t readADCChannel(uint8_t aChannelNumber);
 uint16_t readADCChannelWithReference(uint8_t aChannelNumber, uint8_t aReference);
 uint16_t waitAndReadADCChannelWithReference(uint8_t aChannelNumber, uint8_t aReference);
+uint16_t waitAndReadADCChannelWithReferenceAndRestoreADMUX(uint8_t aChannelNumber, uint8_t aReference);
 uint16_t readADCChannelWithOversample(uint8_t aChannelNumber, uint8_t aOversampleExponent);
 void setADCMultiplexerAndReferenceForNextConversion(uint8_t aChannelNumber, uint8_t aReference);
 uint16_t readADCChannelWithReferenceOversample(uint8_t aChannelNumber, uint8_t aReference, uint8_t aOversampleExponent);

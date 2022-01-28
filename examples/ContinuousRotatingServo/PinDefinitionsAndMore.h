@@ -29,11 +29,12 @@
  *
  * Platform         Servo1      Servo2      Servo3      Analog
  * -----------------------------------------------------------
- * (Mega)AVR + SAMD   9           10          11          A0
- * ESP8266            14 // D5    12 // D6    13 // D7    0
- * ESP32              5           18          19          A0
- * BluePill           PB7         PB8         PB9         PA0
+ * (Mega)AVR + SAMD    9          10          11          A0
+ * ESP8266            14 // D5    12 // D6    13 // D7     0
+ * ESP32               5          18          19          A0
+ * BluePill          PB7         PB8         PB9         PA0
  * APOLLO3            11          12          13          A3
+ * RP2040             6|GPIO18     7|GPIO19    8|GPIO20
  */
 
 #if defined(ESP8266)
@@ -67,9 +68,16 @@
 #define MODE_ANALOG_INPUT_PIN A3
 
 #elif defined(ARDUINO_ARCH_MBED) // Arduino Nano 33 BLE
-#define SERVO1_PIN 9
-#define SERVO2_PIN 10
-#define SERVO3_PIN 11
+#define SERVO1_PIN 6
+#define SERVO2_PIN 7
+#define SERVO3_PIN 8
+#define SPEED_IN_PIN A0
+#define MODE_ANALOG_INPUT_PIN A1
+
+#elif defined(ARDUINO_ARCH_RP2040) // Pi Pico with arduino-pico core https://github.com/earlephilhower/arduino-pico
+#define SERVO1_PIN 18
+#define SERVO2_PIN 19
+#define SERVO3_PIN 20
 #define SPEED_IN_PIN A0
 #define MODE_ANALOG_INPUT_PIN A1
 
