@@ -52,6 +52,7 @@ jobs:
           - arduino:avr:leonardo
           - arduino:avr:mega
           - arduino:megaavr:nona4809:mode=off
+          - megaTinyCore:megaavr:atxy7:chip=3217,clock=16internal
           - arduino:sam:arduino_due_x
           - arduino:samd:arduino_zero_native
           - arduino:mbed:nano33ble
@@ -78,6 +79,10 @@ jobs:
               PCA9685_ExpanderFor32Servos: -DTRACE -DENABLE_MICROS_AS_DEGREE_PARAMETER
 
           - arduino-boards-fqbn: arduino:megaavr:nona4809:mode=off
+            sketches-exclude: SpeedTest,EndPositionsTest,QuadrupedControl,RobotArmControl # No getVCCVoltageMillivolt(), no EasyButton
+
+          - arduino-boards-fqbn: megaTinyCore:megaavr:atxy7:chip=3217,clock=16internal
+            platform-url: http://drazzy.com/package_drazzy.com_index.json
             sketches-exclude: SpeedTest,EndPositionsTest,QuadrupedControl,RobotArmControl # No getVCCVoltageMillivolt(), no EasyButton
 
           - arduino-boards-fqbn: arduino:sam:arduino_due_x

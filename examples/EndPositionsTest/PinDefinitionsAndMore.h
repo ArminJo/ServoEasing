@@ -4,7 +4,7 @@
  *  Contains SERVOX_PIN definitions for ServoEasing examples for various platforms
  *  as well as includes and definitions for LED_BUILTIN
  *
- *  Copyright (C) 2020-2021  Armin Joachimsmeyer
+ *  Copyright (C) 2020-2022  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -27,24 +27,31 @@
 /*
  * Pin mapping table for different platforms
  *
- * Platform         Servo1      Servo2      Servo3      Analog
- * -----------------------------------------------------------
+ * Platform         Servo1      Servo2      Servo3      Analog     Core/Pin schema
+ * -------------------------------------------------------------------------------
  * (Mega)AVR + SAMD    9          10          11          A0
- * ESP8266            14 // D5    12 // D6    13 // D7     0
+ * ATtiny3217         20|PA3       0|PA4       1|PA5       2|PA6   MegaTinyCore
+ * ESP8266            14|D5       12|D6       13|D7        0
  * ESP32               5          18          19          A0
  * BluePill          PB7         PB8         PB9         PA0
  * APOLLO3            11          12          13          A3
  * RP2040             6|GPIO18     7|GPIO19    8|GPIO20
  */
 
-#if defined(ESP8266)
-#define SERVO1_PIN 14 // D5
-#define SERVO2_PIN 12 // D6
-#define SERVO3_PIN 13 // D7
+#if defined(__AVR_ATtiny1616__)  || defined(__AVR_ATtiny3216__) || defined(__AVR_ATtiny3217__)
+#define SERVO1_PIN     20
+#define SERVO2_PIN      0
+#define SERVO3_PIN      1
+#define SPEED_IN_PIN    2 // A6
+
+#elif defined(ESP8266)
+#define SERVO1_PIN  14 // D5
+#define SERVO2_PIN  12 // D6
+#define SERVO3_PIN  13 // D7
 #define SPEED_IN_PIN 0
 
 #elif defined(ESP32)
-#define SERVO1_PIN 5
+#define SERVO1_PIN  5
 #define SERVO2_PIN 18
 #define SERVO3_PIN 19
 #define SPEED_IN_PIN A0 // 36/VP

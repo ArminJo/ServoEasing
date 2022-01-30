@@ -1272,17 +1272,17 @@ void enableServoEasingInterrupt() {
     TIMSK5 |= _BV(OCIE5B);// enable the output compare B interrupt
     OCR5B = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL_MICROS) / 8) - 100;// update values 100 µs before the new servo period starts
 
-#  elif defined(__AVR_ATmega4809__) // Uno WiFi Rev 2, Nano Every
+#  elif defined(__AVR_ATmega4809__) || defined(__AVR_ATtiny3217__) // Uno WiFi Rev 2, Nano Every, Tiny Core 32 Dev Board
+    // For MegaTinyCore:
     // TCB1 is used by Tone()
     // TCB2 is used by Servo, but we cannot hijack the ISR, so we must use a dedicated timer for the 20 ms interrupt
     // TCB3 is used by millis()
-    // Must use TCA0, since TCBx have only prescaler %2. Use single mode, because it seems to be easier :-)
-    TCA0.SINGLE.CTRLB = TCA_SINGLE_WGMODE_NORMAL_gc;                        // Frequency mode, top = PER
-    TCA0.SINGLE.PER = (((F_CPU / 1000000) * REFRESH_INTERVAL_MICROS) / 8); // (F_CPU / 1000000) = clockCyclesPerMicrosecond()
-//    TCA0.SINGLE.PER = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL_MICROS) / 8); // clockCyclesPerMicrosecond() is no macro here!
-    TCA0.SINGLE.INTFLAGS = TCA_SINGLE_OVF_bm;                               // reset interrupt flags
-    TCA0.SINGLE.INTCTRL = TCA_SINGLE_OVF_bm;                                // Overflow interrupt
-    TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV8_gc | TCA_SINGLE_ENABLE_bm;   // set prescaler to 8
+    // Must use TCA0, since TCBx have only prescaler %2. Use single (16bit) mode, because it seems to be easier :-)
+    TCA0.SINGLE.CTRLD = 0; // Single mode - required at least for MegaTinyCore
+    TCA0.SINGLE.CTRLB = TCA_SINGLE_WGMODE_NORMAL_gc;                        // Normal mode, top = PER
+    TCA0.SINGLE.PER =  (((F_CPU / 1000000) * REFRESH_INTERVAL_MICROS) / 8); // 40000 at 16 MHz
+    TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV8_gc | TCA_SINGLE_ENABLE_bm;   // set prescaler to 8 and enable timer
+    TCA0.SINGLE.INTCTRL = TCA_SINGLE_OVF_bm;                                // Enable overflow interrupt
 
 #  elif defined(TCCR1B) && defined(TIFR1) // defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
     /*
@@ -1422,7 +1422,7 @@ void disableServoEasingInterrupt() {
 #  if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
     TIMSK5 &= ~(_BV(OCIE5B)); // disable the output compare B interrupt
 
-#elif defined(__AVR_ATmega4809__) // Uno WiFi Rev 2, Nano Every
+#  elif defined(__AVR_ATmega4809__) || defined(__AVR_ATtiny3217__) // Uno WiFi Rev 2, Nano Every, Tiny Core 32 Dev Board
     TCA0.SINGLE.INTCTRL &= ~(TCA_SINGLE_OVF_bm); // disable the overflow interrupt
 
 #  elif defined(TIMSK1)// defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
@@ -1479,10 +1479,9 @@ ISR(TIMER5_COMPB_vect) {
     handleServoTimerInterrupt();
 }
 
-#elif defined(__AVR_ATmega4809__) // Uno WiFi Rev 2, Nano Every
+#  elif defined(__AVR_ATmega4809__) || defined(__AVR_ATtiny3217__) // Uno WiFi Rev 2, Nano Every, Tiny Core 32 Dev Board
 ISR(TCA0_OVF_vect) {
-    // Not tested, but with the experience, I made with the ATtiny3217, I guess it is required
-    TCA0.SINGLE.INTFLAGS = TCA_SINGLE_OVF_bm; // reset interrupt flags
+    TCA0.SINGLE.INTFLAGS = TCA_SINGLE_OVF_bm; // Reset interrupt flags.
     handleServoTimerInterrupt();
 }
 
@@ -1707,7 +1706,7 @@ bool updateAllServos() {
     }
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
 // End of one data set
-    Serial.println();
+        Serial.println();
 #endif
     return tAllServosStopped;
 }
@@ -1767,12 +1766,12 @@ void synchronizeAllServosAndStartInterrupt(bool aStartUpdateByInterrupt) {
     }
 
 #if defined(TRACE)
-    Serial.print(F("Number of servos="));
-    Serial.print(ServoEasing::sServoArrayMaxIndex);
-    Serial.print(F(" MillisAtStartMove="));
-    Serial.print(tMillisAtStartMove);
-    Serial.print(F(" MaxMillisForCompleteMove="));
-    Serial.println(tMaxMillisForCompleteMove);
+        Serial.print(F("Number of servos="));
+        Serial.print(ServoEasing::sServoArrayMaxIndex);
+        Serial.print(F(" MillisAtStartMove="));
+        Serial.print(tMillisAtStartMove);
+        Serial.print(F(" MaxMillisForCompleteMove="));
+        Serial.println(tMaxMillisForCompleteMove);
 #endif
 
     /*

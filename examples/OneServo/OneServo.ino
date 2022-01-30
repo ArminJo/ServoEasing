@@ -99,6 +99,7 @@ void loop() {
     // Now move faster without any delay between the moves
 #ifdef INFO
     Serial.println(F("Move to 180 degree with 30 degree per second using interrupts"));
+    Serial.flush(); // Just in case interrupts do not work
 #endif
     /*
      * Just for demonstration we use degree value here, which is still possible with the ENABLE_MICROS_AS_DEGREE_PARAMETER option

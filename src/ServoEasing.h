@@ -82,6 +82,10 @@
 //#error This ServoEasing library requires the "ESP32Servo" library for running on an ESP32. Please install it via the Arduino library manager.
 //#    endif
 #   include <ESP32Servo.h>
+
+#  elif defined(MEGATINYCORE)
+#   include <Servo_megaTinyCore.h>
+
 #  else
 #   include <Servo.h>
 #  endif // defined(ESP32)
