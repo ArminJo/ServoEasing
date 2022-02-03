@@ -332,13 +332,6 @@ uint16_t readUntil4ConsecutiveValuesAreEqual(uint8_t aChannelNumber, uint8_t aDe
 }
 
 /*
- * !!! Resolution is only 20 millivolt !!!
- */
-float getVCCVoltage(void) {
-    return (getVCCVoltageMillivolt() / 1000.0);
-}
-
-/*
  * !!! Function without handling of switched reference and channel.!!!
  * Use it ONLY if you only call getVCCVoltageSimple() or getVCCVoltageMillivoltSimple() in your program.
  * !!! Resolution is only 20 millivolt !!!
@@ -370,6 +363,13 @@ uint16_t getVCCVoltageReadingFor1_1VoltReference(void) {
      * Do not switch back ADMUX to enable checkAndWaitForReferenceAndChannelToSwitch() to work correctly for the next measurement
      */
     return ((1023L * 1023L) / tVCC);
+}
+
+/*
+ * !!! Resolution is only 20 millivolt !!!
+ */
+float getVCCVoltage(void) {
+    return (getVCCVoltageMillivolt() / 1000.0);
 }
 
 /*

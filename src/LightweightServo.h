@@ -21,8 +21,8 @@
  *
  */
 
-#ifndef LIGHTWEIGHT_SERVO_H_
-#define LIGHTWEIGHT_SERVO_H_
+#ifndef _LIGHTWEIGHT_SERVO_H
+#define _LIGHTWEIGHT_SERVO_H
 
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__)
 
@@ -73,6 +73,5 @@ int MicrosecondsToDegreeLightweightServo(int aMicroseconds);
  * - Improved API.
  */
 
-#endif // LIGHTWEIGHT_SERVO_H_
-
+#endif // _LIGHTWEIGHT_SERVO_H
 #pragma once

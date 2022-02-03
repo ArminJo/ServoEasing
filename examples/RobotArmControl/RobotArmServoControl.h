@@ -28,7 +28,7 @@ extern int sClawServoAngle;
 
 extern uint8_t sEasingType;
 extern float sLastPercentageOfCompletion;
-extern uint16_t sServoSpeed;      // in degree/second
+extern uint16_t sQuadrupedServoSpeed;      // in degree/second
 
 void setupRobotArmServos();
 void shutdownServos();

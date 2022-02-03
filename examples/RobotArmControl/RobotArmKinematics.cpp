@@ -65,7 +65,7 @@ bool cosangle(float opp, float adj1, float adj2, float& theta) {
  * returns 0 to -PI (o to -180 degree) if aYValue < 0
  */
 void cart2polar(float aXValue, float aYValue, float& aRadius, float& aAngleRadiant) {
-#ifdef TRACE
+#if defined(TRACE)
     Serial.print(F("XValue="));
     Serial.print(aXValue);
     Serial.print(F(" YValue="));
@@ -91,7 +91,7 @@ void cart2polar(float aXValue, float aYValue, float& aRadius, float& aAngleRadia
     if (aYValue < 0) {
         aAngleRadiant *= -1;
     }
-#ifdef TRACE
+#if defined(TRACE)
     Serial.print(F(" AngleRadiant="));
     Serial.println(aAngleRadiant);
 #endif
@@ -171,7 +171,7 @@ void unsolve(struct ArmPosition * aPositionStruct) {
     // here we have:  0 is vertical, front < 0, back > 0
     tInputAngle += 90;
     tInputAngleRad = tInputAngle * DEG_TO_RAD;
-#ifdef TRACE
+#if defined(TRACE)
     Serial.print(F("InputAngle BackFront="));
     Serial.print(tInputAngle);
 #endif
@@ -180,7 +180,7 @@ void unsolve(struct ArmPosition * aPositionStruct) {
     // input angle: horizontal = 0, up > 0, down < 0
     tInputAngle = aPositionStruct->DownUpDegree;
     tInputAngle -= LIFT_NEUTRAL_OFFSET_DEGREE;
-#ifdef TRACE
+#if defined(TRACE)
     Serial.print(F(" InputAngle DownUp="));
     Serial.print(tInputAngle);
 #endif
@@ -196,7 +196,7 @@ void unsolve(struct ArmPosition * aPositionStruct) {
     tInputAngle -= PIVOT_NEUTRAL_OFFSET_DEGREE;
     // here we have horizontal plane angle: forward = 0 left > 0 right < 0
     tInputAngle *= -1;
-#ifdef TRACE
+#if defined(TRACE)
     Serial.print(F(" InputAngle LeftRight="));
     Serial.println(tInputAngle);
 #endif

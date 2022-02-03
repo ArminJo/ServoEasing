@@ -1,24 +1,24 @@
 /*
  * QuadrupedControl.cpp
  *
- * Program for controlling a mePed Robot V2 with 8 servos
+ * Program for controlling a mePed Robot V2 with 8 servos. http://www.meped.io/mepedv2
  * Full version also controls IR remote receiver, 3 NeoPixel bars and a HCSR04 US distance module.
  * The IR remote receiver is attached at pin A0. Supported IR remote controls are:
  *          KEYES (the original mePed remote)
- *          KEYES_CLONE (the one with numberpad and direction control swapped, which you get when you buy a KEYES at aliexpress).
+ *          KEYES_CLONE (the one with number pad and direction control swapped, which you get when you buy a KEYES at aliexpress).
  *          WM10
- * If you use another than the KEYES_CLONE, you have to select the one you use at line 20ff. in IRCommandMapping.h
+ * If you use another than the KEYES_CLONE, you have to select the one you use in QuadrupedConfiguration.h
  *
- * To run this example you need to install the "ServoEasing"
- * For full control install also "IRLremote", "PinChangeInterrupt", "NeoPatterns" and "Adafruit_NeoPixel" libraries.
+ * To run this example you need to install the "ServoEasing" library.
+ * For full control install also "IRremote", "PlayRtttl", "NeoPatterns" and "Adafruit_NeoPixel" libraries.
  * These libraries can be installed under "Tools -> Manage Libraries..." or "Ctrl+Shift+I".
  *
- *  Copyright (C) 2019  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2022  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of QuadrupedControl https://github.com/ArminJo/QuadrupedControl.
  *
- *  ServoEasing is free software: you can redistribute it and/or modify
+ *  QuadrupedControl is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
@@ -33,57 +33,42 @@
  */
 
 #include <Arduino.h>
-#include "QuadrupedIRCommands.h" // include for all the commands used in the mapping arrays below. must be included before IRCommandMapping.h
 
-#include "QuadrupedServoControl.h"
-#include "QuadrupedMovements.h"
-#include "ADCUtils.h" // for getVCCVoltageMillivoltSimple()
+#include "QuadrupedConfiguration.h"
 
-//#define QUADRUPED_HAS_IR_CONTROL
-//#define QUADRUPED_PLAYS_RTTTL
-//#define QUADRUPED_HAS_NEOPIXEL
-//#define QUADRUPED_HAS_US_DISTANCE
-//#define QUADRUPED_HAS_US_DISTANCE_SERVO
+#include "QuadrupedServoControl.hpp"
+#include "QuadrupedBasicMovements.hpp"
+#include "QuadrupedControlCommands.hpp" // Commands can also be used e.g. in loop().
 
-#if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
-ServoEasing USServo;    // Servo for US sensor
-#define DO_NOT_USE_FEEDBACK_LED // Disable IR LRD feedback because servo is at the same pin
+#include "QuadrupedHelper.h"
+
+#include "ADCUtils.h" // for getVCCVoltageMillivoltSimple() and printVCCVoltageMillivolt()
+
+#if defined(QUADRUPED_HAS_US_DISTANCE) && defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
+Servo USServo;    // Servo for US sensor use Servo library direct, we do nor require easings here ( and we have only 8 Servo easings allocated)
+#define NO_LED_FEEDBACK_CODE // Disable IR LED feedback because servo is at the same pin. Must be included before IRCommandDispatcher.hpp
 #endif
 
 #if defined(QUADRUPED_HAS_IR_CONTROL)
-#define USE_TINY_IR_RECEIVER // must be specified before including IRCommandDispatcher.hpp to define which IR library to use
-#define IR_INPUT_PIN  A0
-#include "IRCommandMapping.h" // must be included before IRCommandDispatcher.hpp to define IR_ADDRESS and IRMapping and string "unknown".
+// Include the header only IRCommandDispatcher library in the main program
+#include "IRCommandMapping.h" // Must be included before IRCommandDispatcher.hpp to define IR_ADDRESS and IRMapping and string "unknown".
 #include "IRCommandDispatcher.hpp"
-#endif
-
-#if defined(QUADRUPED_PLAYS_RTTTL)
-#include <PlayRtttl.h> // Click here to get the library: http://librarymanager/All#PlayRtttl
-#endif
-
-#if defined(QUADRUPED_HAS_NEOPIXEL)
-#include "QuadrupedNeoPixel.h"
-#endif
-
-#if defined(QUADRUPED_HAS_US_DISTANCE)
-#include "HCSR04.h"
 #endif
 
 //#define INFO // activate this to see serial info output
 
-#if defined(QUADRUPED_HAS_NEOPIXEL)
-color32_t sBarBackgroundColorArrayForDistance[PIXELS_ON_ONE_BAR] = { COLOR32_RED_QUARTER, COLOR32_RED_QUARTER, COLOR32_RED_QUARTER,
-COLOR32_YELLOW, COLOR32_YELLOW, COLOR32_GREEN_QUARTER, COLOR32_GREEN_QUARTER, COLOR32_GREEN_QUARTER };
-#endif
+/*
+ * Loop control
+ */
+#define MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE 20000 // 20 seconds
+#define MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE 120000 // 2 Minutes
+#define MILLIS_OF_INACTIVITY_BETWEEN_REMINDER_MOVE 60000 // 1 Minute
 
 #define VERSION_EXAMPLE "3.0"
 // 3.0 NeoPixel and distance sensor added
 // 2.1 auto move
 // 2.0 major refactoring
 // 1.1 mirror computation at transformAndSetPivotServos and transformOneServoIndex
-
-bool checkForLowVoltage();
-void playShutdownMelodyAndBlinkForever();
 
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
@@ -94,8 +79,8 @@ void setup() {
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
-    setupQuadrupedServos();
-    setSpeedForAllServos(sServoSpeed);
+    initializeAllQuadrupedServos(90);
+    delay(2000);
 
     // Just for pre setting channel and reference
     getVCCVoltageMillivoltSimple();
@@ -105,34 +90,15 @@ void setup() {
     initUSDistancePins(PIN_TRIGGER_OUT, PIN_ECHO_IN);
 #endif
 #if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
-    USServo.attach(PIN_US_SERVO, 90);
+    USServo.attach(PIN_US_SERVO);
+    USServo.write(90);
 #endif
 
-    /*
-     * set servo to 90 degree WITHOUT trim and wait 2 seconds
-     */
-    resetServosTo90Degree();
-    delay(2000);
-
-    /*
-     * Read trim values and set servo to 90 degree with trim and wait
-     */
-    eepromReadAndSetServoTrim();
-//    resetServosTo90Degree();
-
-#if defined(QUADRUPED_PLAYS_RTTTL)
+#if defined(QUADRUPED_ENABLE_RTTTL)
     playRtttlBlockingPGM(PIN_BUZZER, Short);
 #else
     tone(PIN_BUZZER, 2000, 300);
 #endif
-
-    delay(1000);
-
-    /*
-     * Set to initial height
-     */
-    centerServos();
-    convertBodyHeightAngleToHeight();
 
 #if defined(QUADRUPED_HAS_IR_CONTROL)
     IRDispatcher.init();
@@ -144,175 +110,47 @@ void setup() {
 #if defined(QUADRUPED_HAS_NEOPIXEL)
     Serial.println(F("Init NeoPixel"));
     initNeoPatterns();
-    enableServoEasingInterrupt(); // This enables the interrupt, which synchronizes the NeoPixel update with the servo pulse generation.
+    enableServoEasingInterrupt(); // This enables the ServoEasing 20 ms interrupt, which we use to synchronize the NeoPixel update with the servo pulse generation.
 #endif
-
 }
 
 void loop() {
     /*
-     * Reset moving characteristic
+     * Check for low voltage
      */
-    setEasingTypeToLinear();
-
-#if defined(QUADRUPED_HAS_US_DISTANCE)
-    handleUSSensor();
-#endif
-
-#if defined(QUADRUPED_HAS_IR_CONTROL)
-    /*
-     * Check for IR commands and execute them.
-     * Returns only AFTER finishing of requested movement
-     */
-    IRDispatcher.checkAndRunSuspendedBlockingCommands();
-
-    /*
-     * Do auto move if timeout after boot was reached and no IR command was received
-     */
-    if (IRDispatcher.IRReceivedData.MillisOfLastCode == 0 && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
-#if defined(QUADRUPED_HAS_NEOPIXEL)
-        wipeOutPatternsBlocking();
-#endif
-#if !defined(USE_USER_DEFINED_MOVEMENTS)
-        doQuadrupedAutoMove();
-#endif
-    }
-
-    /*
-     * Get attention that no command was received since 2 minutes and quadruped may be switched off
-     */
-    if (millis() - IRDispatcher.IRReceivedData.MillisOfLastCode > MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE) {
-        IRDispatcher.IRReceivedData.MillisOfLastCode += MILLIS_OF_INACTIVITY_BETWEEN_REMINDER_MOVE;
-        doAttention();
-        printVCCVoltageMillivolt(&Serial);
-        // next attention in 1 minute
-    }
-#else
-    delayAndCheck(5000);
-    doQuadrupedAutoMove();
-    delayAndCheck(25000);
-#endif
-
     if (checkForLowVoltage()) {
         shutdownServos();
-        playShutdownMelodyAndBlinkForever();
-
+        playShutdownMelody();
 #if defined(QUADRUPED_HAS_NEOPIXEL)
-        wipeOutPatternsBlocking();
+        wipeOutPatternsBlocking(); // to save power
 #endif
         delay(10000);  // blocking wait for next check
     }
-}
 
-void playShutdownMelodyAndBlinkForever(){
-    tone(PIN_BUZZER, 2000, 200);
-    delay(400);
-    tone(PIN_BUZZER, 1400, 300);
-    delay(600);
-    tone(PIN_BUZZER, 1000, 400);
-    delay(800);
-    tone(PIN_BUZZER, 700, 500);
-}
-
-/*
- * Stop servos if voltage gets low
- * @return  true - if voltage too low
- */
-bool checkForLowVoltage() {
-    uint16_t tVCC = getVCCVoltageMillivoltSimple();
-    if (tVCC > VCC_STOP_THRESHOLD_MILLIVOLT) {
-        return false; // signal OK
-    }
     /*
-     * Low voltage here
+     * US distance sensor handling
      */
-    Serial.print(F("VCC "));
-    Serial.print(tVCC);
-    Serial.print(F(" below 3600 Millivolt -> "));
-    return true;
-}
-
 #if defined(QUADRUPED_HAS_US_DISTANCE)
-/*
- * Get front distance
- */
-void handleUSSensor() {
-    static uint32_t sLastMeasurementMillis;
-    static uint16_t sLastDistance;
-    if (millis() - sLastMeasurementMillis > MILLIS_BETWEEN_MEASUREMENTS) {
-        sLastMeasurementMillis = millis();
-        uint16_t tDistance = getUSDistanceAsCentimeter();
-        if (tDistance != 0 && sLastDistance != tDistance) {
-            sLastDistance = tDistance;
-#ifdef INFO
-//            Serial.print(F("Distance="));
-//            Serial.print(tDistance);
-//            Serial.println(F("cm"));
-#endif
-#if defined(QUADRUPED_HAS_NEOPIXEL)
-            // Show distance bar if no other pattern is active
-            if (FrontNeoPixelBar.ActivePattern == PATTERN_NONE) {
-                /*
-                 * The first 6 pixel represent a distance of each 5 cm
-                 * The 7. pixel is active if distance is > 50 centimeter
-                 * The 8. pixel is active if distance is > 1 meter
-                 */
-                uint8_t tBarLength;
-                if (tDistance > 100) {
-                    tBarLength = 8;
-                } else if (tDistance > 50) {
-                    tBarLength = 7;
-                } else {
-                    tBarLength = tDistance / 5;
-                }
-                FrontNeoPixelBar.drawBarFromColorArray(tBarLength, sBarBackgroundColorArrayForDistance);
-                showPatternSynchronized();
-            }
-#endif
-        }
-    }
-}
-#endif // #if defined(QUADRUPED_HAS_US_DISTANCE)
-
-#if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
-void doUSRight() {
-    if (!IRDispatcher.IRReceivedData.isRepeat && USServo.getCurrentAngle() > 15) {
-        USServo.write(USServo.getCurrentAngle() - 15);
-    }
-}
-void doUSLeft() {
-    if (!IRDispatcher.IRReceivedData.isRepeat && USServo.getCurrentAngle() < 165) {
-        USServo.write(USServo.getCurrentAngle() + 15);
-    }
-}
-void doUSScan() {
-    if (!IRDispatcher.IRReceivedData.isRepeat) {
-        USServo.write(90);
-    }
-}
+    handleUSSensor(); // currently only distance display on front bar
 #endif
 
-/*
- * Special delay function for the quadruped control.
- * It checks for low voltage and returns prematurely if requestToStopReceived is set
- * @return  true - if stop received
- */
-bool delayAndCheck(uint16_t aDelayMillis) {
-// check voltage only once per delay
-    if (checkForLowVoltage()) {
+    /*
+     * IR control handling
+     */
 #if defined(QUADRUPED_HAS_IR_CONTROL)
-        sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
-#endif
-        return true;
-#if defined(QUADRUPED_HAS_IR_CONTROL)
-    } else {
-        // Voltage is OK here :-)
-        if(IRDispatcher.delayAndCheckForStop(aDelayMillis)){
-            Serial.println(F("Stop requested"));
-            sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
-            return true;
-        }
-#endif
+    //Check for IR commands and execute them. Returns only AFTER finishing of requested blocking movement
+    IRDispatcher.checkAndRunSuspendedBlockingCommands();
+
+    // Call doQuadrupedAutoMove() if timeout (20 s) after boot was reached and no IR command was received
+    if (IRDispatcher.IRReceivedData.MillisOfLastCode == 0 && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
+        doQuadrupedAutoMove(); // Can be terminated by IR command
     }
-    return false;
+
+    //Get attention that no IR command was received since 1 minutes and quadruped may be switched off
+    if (millis() - IRDispatcher.IRReceivedData.MillisOfLastCode > MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE) {
+        IRDispatcher.IRReceivedData.MillisOfLastCode += MILLIS_OF_INACTIVITY_BETWEEN_REMINDER_MOVE; // next attention in 1 minute
+        doAttention();
+        printVCCVoltageMillivolt(&Serial);
+    }
+#endif
 }

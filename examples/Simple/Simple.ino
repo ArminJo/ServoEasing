@@ -26,99 +26,44 @@
 #include <Arduino.h>
 
 #include "ServoEasing.hpp"
-
 #include "PinDefinitionsAndMore.h"
 /*
- * Pin mapping table for different platforms
+ * Pin mapping table for different platforms - used by all examples
  *
- * Platform     Servo1      Servo2      Servo3      Analog
- * -------------------------------------------------------
- * AVR + SAMD   9           10          11          A0
- * ESP8266      14 // D5    12 // D6    13 // D7    0
- * ESP32        5           18          19          A0
- * BluePill     PB7         PB8         PB9         PA0
- * APOLLO3      11          12          13          A3
+ * Platform         Servo1      Servo2      Servo3      Analog     Core/Pin schema
+ * -------------------------------------------------------------------------------
+ * (Mega)AVR + SAMD    9          10          11          A0
+ * ATtiny3217         20|PA3       0|PA4       1|PA5       2|PA6   MegaTinyCore
+ * ESP8266            14|D5       12|D6       13|D7        0
+ * ESP32               5          18          19          A0
+ * BluePill          PB7         PB8         PB9         PA0
+ * APOLLO3            11          12          13          A3
+ * RP2040             6|GPIO18     7|GPIO19    8|GPIO20
  */
 
 ServoEasing Servo1;
 
-#define START_DEGREE_VALUE  0 // The degree value written to the servo at time of attach.
-
-void toggleLED_BUILTIN_Every10thCall();
-
 void setup() {
-    pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
-#if defined(__AVR_ATmega32U4__) || defined(SERIAL_PORT_USBVIRTUAL) || defined(SERIAL_USB) || defined(SERIALUSB_PID) || defined(ARDUINO_attiny3217)
-    delay(4000); // To be able to connect Serial monitor after reset or power up and before first print out. Do not wait for an attached Serial Monitor!
-#endif
+
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_SERVO_EASING));
 
     /********************************************************
-     * Attach servo to pin and set servos to start position.
-     * This is the position where the movement starts.
+     * Attach servo to pin and set servo to start position.
      *******************************************************/
     Serial.print(F("Attach servo at pin "));
     Serial.println(SERVO1_PIN);
-    if (Servo1.attach(SERVO1_PIN, START_DEGREE_VALUE) == INVALID_SERVO) {
-        Serial.println(F("Error attaching servo"));
-    }
+    Servo1.attach(SERVO1_PIN, 45);
 
-    // Wait for servo to reach start position.
-    delay(500);
-
-    // Move slow
-    Serial.println(F("Move to 90 degree with 20 degree per second blocking"));
-    Servo1.easeTo(90, 20);
-
-    delay(1000);
-
-    // Now move faster
-    Servo1.setSpeed(40);  // This speed is taken if no speed argument is given.
-    Serial.println(F("Move to 180 degree using cubic easing with 40 degree per second blocking"));
-    Servo1.setEasingType(EASE_CUBIC_IN_OUT);
-    Servo1.easeTo(180);
-
-    delay(2000);
-    Servo1.setEasingType(EASE_CIRCULAR_IN_OUT);
-    Serial.println(F("End of setup, start of loop."));
+    delay(500); // Wait for servo to reach start position.
 }
 
 void loop() {
+    Serial.println(F("Move to 135 degree with 40 degree per second blocking"));
+    Servo1.easeTo(135, 40);
 
-    Serial.println(F("Move to 135 degree circular with 40 degree per second blocking"));
-    Servo1.easeTo(135); // Speed was specified above by Servo1.setSpeed(40)
-
-    Serial.println(F("Move to 45 degree circular with 40 degree per second using interrupts"));
-    /*
-     * Use interrupts for moving and wait until moving stops
-     */
-    Servo1.startEaseTo(45);
-    do {
-        /*
-         * Put your own code here
-         */
-        toggleLED_BUILTIN_Every10thCall();
-
-        /*
-         * First do the delay, then check for moving, since we are likely called directly after start and there is nothing to move yet.
-         *
-         * Use delay of 20 ms here, since it is the refresh rate of the servos and all Arduino Servo libraries.
-         * You can use smaller delay values, but keep in mind that every 20 ms a new value is sent to the servo.
-         */
-        delay(REFRESH_INTERVAL_MILLIS);
-
-    } while (Servo1.isMoving());
+    Serial.println(F("Move to 45 degree  with 40 degree per second using interrupts"));
+    Servo1.easeTo(45, 40);
 }
 
-/*
- * Enable low delays for slow blink
- */
-void toggleLED_BUILTIN_Every10thCall() {
-    static int tCount = 0;
-    if (++tCount == 10) {
-        tCount = 0;
-        digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-    }
-}

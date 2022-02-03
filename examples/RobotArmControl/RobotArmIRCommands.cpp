@@ -186,26 +186,26 @@ void __attribute__((weak)) doRobotArmAutoMove() {
  * Decrease moving speed by 25%
  */
 void __attribute__((weak)) doIncreaseSpeed() {
-    sServoSpeed += sServoSpeed / 4;
-    if (sServoSpeed > 0xBF) {
-        sServoSpeed = 0xBF;
+    sQuadrupedServoSpeed += sQuadrupedServoSpeed / 4;
+    if (sQuadrupedServoSpeed > 0xBF) {
+        sQuadrupedServoSpeed = 0xBF;
     }
-    setSpeedForAllServos(sServoSpeed);
-    Serial.print(sServoSpeed);
+    setSpeedForAllServos(sQuadrupedServoSpeed);
+    Serial.print(sQuadrupedServoSpeed);
 }
 
 /*
  * Increase moving speed by 25%
  */
 void __attribute__((weak)) doDecreaseSpeed() {
-    if (sServoSpeed > 2) {
-        sServoSpeed -= sServoSpeed / 4;
-        if (sServoSpeed < 4) {
-            sServoSpeed = 4;
+    if (sQuadrupedServoSpeed > 2) {
+        sQuadrupedServoSpeed -= sQuadrupedServoSpeed / 4;
+        if (sQuadrupedServoSpeed < 4) {
+            sQuadrupedServoSpeed = 4;
         }
     }
-    setSpeedForAllServos(sServoSpeed);
-    Serial.print(sServoSpeed);
+    setSpeedForAllServos(sQuadrupedServoSpeed);
+    Serial.print(sQuadrupedServoSpeed);
 }
 
 void __attribute__((weak)) doSwitchEasingType() {

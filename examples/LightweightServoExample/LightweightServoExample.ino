@@ -38,7 +38,7 @@ void setup() {
     Serial.println(F("Using library version " VERSION_LIGHTWEIGHT_SERVO));
 #endif
     // no initialization required for LightweightServo :-)
-    // or use manual initialization (and compiler macro "DISABLE_SERVO_TIMER_AUTO_INITIALIZE") to save additional 60 bytes program space
+    // or use manual initialization (and compiler macro "DISABLE_SERVO_TIMER_AUTO_INITIALIZE") to save additional 60 bytes program memory
     // initLightweightServoPin9();
     delay(3000);
 }

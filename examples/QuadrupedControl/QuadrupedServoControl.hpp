@@ -1,5 +1,5 @@
 /*
- * QuadrupedServoControl.cpp
+ * QuadrupedServoControl.hpp
  *
  * Contains all the servo related functions and data.
  *
@@ -10,12 +10,12 @@
  * To run this example need to install the "ServoEasing", "IRLremote" and "PinChangeInterrupt" libraries under "Tools -> Manage Libraries..." or "Ctrl+Shift+I"
  * Use "ServoEasing", "IRLremote" and "PinChangeInterrupt" as filter string.
  *
- *  Copyright (C) 2019  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2022  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
- *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
+ *  This file is part of QuadrupedControl https://github.com/ArminJo/QuadrupedControl.
  *
- *  ServoEasing is free software: you can redistribute it and/or modify
+ *  QuadrupedControl is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
@@ -29,22 +29,16 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/gpl.html>.
  */
 
+#ifndef QUADRUPEDSERVOCONTROL_HPP
+#define QUADRUPEDSERVOCONTROL_HPP
+
 #include <Arduino.h>
 
-// Must specify this before the include of "ServoEasing.hpp"
-//#define USE_PCA9685_SERVO_EXPANDER // Activate this to enables the use of the PCA9685 I2C expander chip/board.
-//#define USE_SERVO_LIB // Activate this to force additional using of regular servo library.
-//#define PROVIDE_ONLY_LINEAR_MOVEMENT // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes FLASH.
-#define DISABLE_COMPLEX_FUNCTIONS // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes FLASH.
-//#define MAX_EASING_SERVOS 3
-//#define ENABLE_MICROS_AS_DEGREE_PARAMETER // Activate this to enable also microsecond values as (target angle) parameter. Requires additional 128 Bytes FLASH.
-//#define DEBUG // Activate this to generate lots of lovely debug output for this library.
-
-//#define PRINT_FOR_SERIAL_PLOTTER // Activate this to generate the Arduino plotter output#include "ServoEasing.hpp"    // include ServoEasing library source code
-#include "ServoEasing.hpp"
-#include "QuadrupedServoConfiguration.h"
+// Contains macros to configure the ServoEasing library
 #include "QuadrupedServoControl.h"
-#include "QuadrupedControl.h"
+
+// include source
+#include "ServoEasing.hpp"
 
 //#define INFO // activate this to see serial info output
 
@@ -57,58 +51,80 @@ ServoEasing backRightLiftServo;     // 5 - Back Right Lift Servo
 ServoEasing frontRightPivotServo;   // 6 - Front Right Pivot Servo
 ServoEasing frontRightLiftServo;    // 7 - Front Right Lift Servo
 
-uint16_t sServoSpeed = 90;      // in degree/second
-uint8_t sBodyHeightAngle = LIFT_LOWEST_ANGLE + 20; // From LIFT_LOWEST_ANGLE to LIFT_HIGHEST_ANGLE !!! The bigger the angle, the lower the body !!!
-uint8_t sBodyHeight;            // normalized body height from 0 (low) to 255 (high)
-uint8_t sBodyHeightPercent;     // normalized body height from 0% (low) to 100% (high)
+uint16_t sQuadrupedServoSpeed;      // in degree/second
+volatile uint8_t sRequestedBodyHeightAngle = LIFT_LOWEST_ANGLE + 20; // From LIFT_LOWEST_ANGLE to LIFT_HIGHEST_ANGLE !!! The bigger the angle, the lower the body !!!
+uint8_t sBodyHeight;            // normalized body height from 0 (low) to 255 (high), used by e.g. NeoPixel display
+uint8_t sBodyHeightPercent;     // normalized body height from 0% (low) to 100% (high), only used for printing
 
 // Arrays of trim angles stored in EEPROM
 EEMEM int8_t sServoTrimAnglesEEPROM[NUMBER_OF_SERVOS]; // The one which resides in EEPROM and IR read out at startup - filled by eepromWriteServoTrim
 int8_t sServoTrimAngles[NUMBER_OF_SERVOS]; // RAM copy for easy setting trim angles by remote, filled by eepromReadServoTrim
 
-void setupQuadrupedServos() {
+void attachAllQuadrupedServos() {
     // Attach servos to Arduino Pins in exact this order!
     frontLeftPivotServo.attach(FRONT_LEFT_PIVOT_SERVO_PIN);
     frontLeftLiftServo.attach(FRONT_LEFT_PIVOT_SERVO_PIN + 1);
     backLeftPivotServo.attach(FRONT_LEFT_PIVOT_SERVO_PIN + 2);
     backLeftLiftServo.attach(FRONT_LEFT_PIVOT_SERVO_PIN + 3);
-    // Invert direction for lift servos.
-    backLeftLiftServo.setReverseOperation(true);
     backRightPivotServo.attach(FRONT_LEFT_PIVOT_SERVO_PIN + 4);
     backRightLiftServo.attach(FRONT_LEFT_PIVOT_SERVO_PIN + 5);
     frontRightPivotServo.attach(FRONT_LEFT_PIVOT_SERVO_PIN + 6);
     frontRightLiftServo.attach(FRONT_LEFT_PIVOT_SERVO_PIN + 7);
+
+    // Invert direction for back left and front right lift servos. This is, because I mounted the right and left lift servos symmetrical.
+    backLeftLiftServo.setReverseOperation(true);
     frontRightLiftServo.setReverseOperation(true);
 }
 
+/*
+ * @param aServoSpeed in degree per second
+ */
+void initializeAllQuadrupedServos(uint_fast16_t aQuadrupedServoSpeed) {
+    attachAllQuadrupedServos();
+    setQuadrupedServoSpeed(aQuadrupedServoSpeed);
+
+    //Read and apply trim values
+    eepromReadAndSetServoTrim();
+
+    // Reset all servo to initial position of 90 degree
+    resetServosTo90Degree();
+    setLiftServosToBodyHeight();
+
+#if defined(INFO)
+    printBodyHeight();
+#endif
+}
+
 void shutdownServos() {
-#ifdef INFO
+#if defined(INFO)
     Serial.println(F("Shutdown servos"));
 #endif
-    sBodyHeightAngle = LIFT_HIGHEST_ANGLE;
+    sRequestedBodyHeightAngle = LIFT_HIGHEST_ANGLE;
     centerServos();
 }
 
 void centerServos() {
-    setAllServos(90, 90, 90, 90, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle, sBodyHeightAngle);
+    uint8_t tRequestedBodyHeightAngle = sRequestedBodyHeightAngle; // sRequestedBodyHeightAngle is volatile
+    setAllServos(90, 90, 90, 90, tRequestedBodyHeightAngle, tRequestedBodyHeightAngle, tRequestedBodyHeightAngle,
+            tRequestedBodyHeightAngle);
 }
 
-void setSpeed(uint16_t aSpeed) {
-    sServoSpeed = aSpeed;
-    setSpeedForAllServos(sServoSpeed);
-    printSpeed();
+void setQuadrupedServoSpeed(uint_fast16_t aQuadrupedServoSpeed) {
+    sQuadrupedServoSpeed = aQuadrupedServoSpeed;
+    setSpeedForAllServos(sQuadrupedServoSpeed);
+    printQuadrupedServoSpeed();
 }
 
-void printSpeed() {
-#ifdef INFO
+void printQuadrupedServoSpeed() {
+#if defined(INFO)
     Serial.print(F(" Speed="));
-    Serial.println(sServoSpeed);
+    Serial.println(sQuadrupedServoSpeed);
 #endif
 }
 
 void printAndSetTrimAngles() {
     for (uint_fast8_t i = 0; i < NUMBER_OF_SERVOS; ++i) {
-#ifdef INFO
+#if defined(INFO)
         Serial.print(F("ServoTrimAngle["));
         Serial.print(i);
         Serial.print(F("]="));
@@ -128,7 +144,7 @@ void resetServosTo90Degree() {
  * Copy calibration array from EEPROM to RAM and set uninitialized values to 0
  */
 void eepromReadAndSetServoTrim() {
-#ifdef INFO
+#if defined(INFO)
     Serial.println(F("eepromReadAndSetServoTrim()"));
 #endif
     eeprom_read_block((void*) &sServoTrimAngles, &sServoTrimAnglesEEPROM, NUMBER_OF_SERVOS);
@@ -268,12 +284,11 @@ void transformAndSetPivotServos(int aFrontLeftPivot, int aBackLeftPivot, int aBa
  * Transform index of servo by direction and mirroring
  */
 uint8_t transformOneServoIndex(uint8_t aServoIndexToTransform, uint8_t aDirection, bool doMirror) {
-    uint8_t tXorToGetMirroredIndex = 0x0;
     if (doMirror) {
-// XOR the index with this value to get the mirrored index
-        tXorToGetMirroredIndex = getMirrorXorMask(aDirection);
+        // XOR the index with this value in order to get the mirrored index
+        return ((aServoIndexToTransform + (aDirection * SERVOS_PER_LEG)) % NUMBER_OF_SERVOS) ^ getMirrorXorMask(aDirection);
     }
-    return ((aServoIndexToTransform + (aDirection * SERVOS_PER_LEG)) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
+    return ((aServoIndexToTransform + (aDirection * SERVOS_PER_LEG)) % NUMBER_OF_SERVOS);
 }
 
 void testTransform() {
@@ -331,25 +346,24 @@ void setLiftServos(int aFrontLeftLift, int aBackLeftLift, int aBackRightLift, in
 }
 
 /*
- * Used after change of sBodyHeightAngle
+ * Used after change of sRequestedBodyHeightAngle
  */
 void setLiftServosToBodyHeight() {
     // Set values direct, since we expect only a change of 2 degree
-    for (uint_fast8_t i = LIFT_SERVO_OFFSET; i < NUMBER_OF_SERVOS; i += SERVOS_PER_LEG) {
-        ServoEasing::ServoEasingArray[i]->write(sBodyHeightAngle);
+    // We write value to every second servo from the array :-)
+    for (uint_fast8_t tServoIndex = LIFT_SERVO_OFFSET; tServoIndex < NUMBER_OF_SERVOS; tServoIndex += SERVOS_PER_LEG) {
+        ServoEasing::ServoEasingArray[tServoIndex]->write(sRequestedBodyHeightAngle);
     }
 }
 
-void convertBodyHeightAngleToHeight() {
-    sBodyHeight = map(sBodyHeightAngle, LIFT_HIGHEST_ANGLE, LIFT_LOWEST_ANGLE, 0, 255);
-    sBodyHeightPercent = map(sBodyHeightAngle, LIFT_HIGHEST_ANGLE, LIFT_LOWEST_ANGLE, 0, 100);
-#ifdef INFO
+void printBodyHeight() {
+    sBodyHeight = map(sRequestedBodyHeightAngle, LIFT_HIGHEST_ANGLE, LIFT_LOWEST_ANGLE, 0, 255);
+    sBodyHeightPercent = map(sRequestedBodyHeightAngle, LIFT_HIGHEST_ANGLE, LIFT_LOWEST_ANGLE, 0, 100);
     Serial.print(F("BodyHeight="));
     Serial.print(sBodyHeight);
     Serial.print(F(" -> "));
     Serial.print(sBodyHeightPercent);
     Serial.println('%');
-#endif
 }
 
 /*
@@ -374,13 +388,13 @@ void setAllServos(int aFrontLeftPivot, int aBackLeftPivot, int aBackRightPivot, 
 }
 
 void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree) {
-    moveOneServoAndCheckInputAndWait(aServoIndex, aDegree, sServoSpeed);
+    moveOneServoAndCheckInputAndWait(aServoIndex, aDegree, sQuadrupedServoSpeed);
 }
 
 void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree, uint16_t aDegreesPerSecond) {
     ServoEasing::ServoEasingArray[aServoIndex]->startEaseTo(aDegree, aDegreesPerSecond, false);
     do {
-        if (delayAndCheck(REFRESH_INTERVAL_MILLIS)) { // 20 ms - REFRESH_INTERVAL is in Microseconds
+        if (delayAndCheckForLowVoltageAndStop(REFRESH_INTERVAL_MILLIS)) { // 20 ms - REFRESH_INTERVAL is in Microseconds
             return;
         }
     } while (!ServoEasing::ServoEasingArray[aServoIndex]->update());
@@ -388,7 +402,7 @@ void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree, uint16_t
 
 void updateAndCheckInputAndWaitForAllServosToStop() {
     do {
-        if (delayAndCheck(REFRESH_INTERVAL_MILLIS)) { // 20 ms - REFRESH_INTERVAL is in Microseconds
+        if (delayAndCheckForLowVoltageAndStop(REFRESH_INTERVAL_MILLIS)) { // 20 ms - REFRESH_INTERVAL is in Microseconds
             return;
         }
     } while (!updateAllServos());
@@ -399,3 +413,6 @@ void synchronizeMoveAllServosAndCheckInputAndWait() {
     synchronizeAllServosAndStartInterrupt(false);
     updateAndCheckInputAndWaitForAllServosToStop();
 }
+
+#endif /* QUADRUPEDSERVOCONTROL_HPP */
+#pragma once

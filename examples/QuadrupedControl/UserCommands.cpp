@@ -4,12 +4,12 @@
  * Put your code here to implement your own functions.
  * If you want to use the default function, just comment / deactivate the function in this file.
  *
- *  Copyright (C) 2019-2021  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2022  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of QuadrupedControl https://github.com/ArminJo/QuadrupedControl.
  *
- *  ServoEasing is free software: you can redistribute it and/or modify
+ *  QuadrupedControl is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
@@ -22,29 +22,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/gpl.html>.
  */
-
-#include <Arduino.h>
-
-//#define USE_USER_DEFINED_MOVEMENTS
-#if defined(USE_USER_DEFINED_MOVEMENTS)
-#include "QuadrupedControl.h"
-#if defined(QUADRUPED_HAS_IR_CONTROL)
-#include "IRCommandDispatcher.h"
-#endif
-#include "QuadrupedServoControl.h"
-#include "QuadrupedMovements.h"
-
-#include "QuadrupedIRCommands.h"
-
-#if defined(QUADRUPED_PLAYS_RTTTL)
-#include <PlayRtttl.h>
-#endif
-#if defined(QUADRUPED_HAS_NEOPIXEL)
-#include "QuadrupedNeoPixel.h"
-#endif
-#if defined(QUADRUPED_HAS_US_DISTANCE)
-#include "HCSR04.h"
-#endif
 
 /*
  * ---------------------------------
@@ -101,6 +78,29 @@
  *
  */
 
+#include <Arduino.h>
+
+#include "QuadrupedConfiguration.h"
+
+#if defined(USE_USER_DEFINED_MOVEMENTS)
+#include "QuadrupedServoControl.h"
+#include "QuadrupedBasicMovements.h"
+#include "QuadrupedControlCommands.h"
+#include "QuadrupedHelper.h" // for doBeep()
+
+#if defined(QUADRUPED_HAS_IR_CONTROL)
+#include "IRCommandDispatcher.h"
+#endif
+#if defined(QUADRUPED_ENABLE_RTTTL)
+#include <PlayRtttl.h>
+#endif
+#if defined(QUADRUPED_HAS_NEOPIXEL)
+#include "QuadrupedNeoPixel.h"
+#endif
+#if defined(QUADRUPED_HAS_US_DISTANCE)
+#include "HCSR04.h"
+#endif
+
 /*
  * Here you can create your own movements.
  *
@@ -117,16 +117,17 @@
 
 // doTest() is mapped to the star on the remote
 void doTest() {
-    sActionTypeForNeopatternsDisplay = ACTION_TYPE_TEST;
+    sCurrentlyRunningAction = ACTION_TYPE_TEST;
 
     tone(PIN_BUZZER, 2000, 400);
-    delayAndCheck(400);
+    IRDispatcher.delayAndCheckForStop(400);
     centerServos();
 
 #if defined(QUADRUPED_HAS_NEOPIXEL)
     QuadrupedNeoPixelBar.clear();
-    LeftNeoPixelBar.ScannerExtended(COLOR32_CYAN, 3, sServoSpeed / 2, 0, FLAG_SCANNER_EXT_ROCKET | FLAG_SCANNER_EXT_VANISH_COMPLETE,
-    DIRECTION_DOWN);
+    LeftNeoPixelBar.ScannerExtended(COLOR32_CYAN, 3, sQuadrupedServoSpeed / 2, 0,
+            FLAG_SCANNER_EXT_ROCKET | FLAG_SCANNER_EXT_VANISH_COMPLETE,
+            DIRECTION_DOWN);
 #endif
 
     /*
@@ -142,11 +143,11 @@ void doTest() {
      * Set back to actual body height angle (which is modified by increase and decrease height commands)
      * For demonstration purpose, this is not done simultaneously.
      */
-    backRightLiftServo.easeTo(sBodyHeightAngle);
-    frontLeftLiftServo.easeTo(sBodyHeightAngle);
+    backRightLiftServo.easeTo(sRequestedBodyHeightAngle);
+    frontLeftLiftServo.easeTo(sRequestedBodyHeightAngle);
 
     centerServos();
-    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
+    sCurrentlyRunningAction = ACTION_TYPE_STOP;
 }
 
 /*
@@ -155,7 +156,7 @@ void doTest() {
 
 // doTwist() is mapped to the 7 on the remote
 void doTwist() {
-    sActionTypeForNeopatternsDisplay = ACTION_TYPE_TWIST;
+    sCurrentlyRunningAction = ACTION_TYPE_TWIST;
     /*
      * Put your own code here
      */
@@ -164,76 +165,37 @@ void doTwist() {
     // Move all pivot servos simultaneously
     setPivotServos(90 + tTwistAngle, 90 + tTwistAngle, 90 + tTwistAngle, 90 + tTwistAngle);
 
-    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
+    sCurrentlyRunningAction = ACTION_TYPE_STOP;
 }
 
 // doDance() is mapped to the 1 on the remote
 void doDance() {
-    sActionTypeForNeopatternsDisplay = ACTION_TYPE_DANCE;
+    sCurrentlyRunningAction = ACTION_TYPE_DANCE;
     doBeep();
     /*
      * Put your own code here
      */
-    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
+    sCurrentlyRunningAction = ACTION_TYPE_STOP;
 }
 
 // doWave() is mapped to the 3 on the remote
 void doWave() {
-    sActionTypeForNeopatternsDisplay = ACTION_TYPE_WAVE;
+    sCurrentlyRunningAction = ACTION_TYPE_WAVE;
     doBeep();
     /*
      * Put your own code here
      */
-    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
+    sCurrentlyRunningAction = ACTION_TYPE_STOP;
 }
 
 // doQuadrupedAutoMove() is mapped to the 5 on the remote
 void doQuadrupedAutoMove() {
-    sActionTypeForNeopatternsDisplay = ACTION_TYPE_AUTO_MOVE;
+    sCurrentlyRunningAction = ACTION_TYPE_AUTO_MOVE;
     doBeep();
     /*
      * Put your own code here
      */
-    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
+    sCurrentlyRunningAction = ACTION_TYPE_STOP;
 }
 
-// doTrot() is mapped to the 9 on the remote
-void doTrot() {
-    sActionTypeForNeopatternsDisplay = ACTION_TYPE_TROT;
-    doBeep();
-    /*
-     * Put your own code here
-     */
-    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
-}
-
-// doTurnRight() is mapped to the right arrow on the remote
-void doTurnRight() {
-    sActionTypeForNeopatternsDisplay = ACTION_TYPE_TURN;
-    doBeep();
-    /*
-     * Put your own code here
-     */
-    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
-}
-
-// doTurnLeft() is mapped to the left arrow on the remote
-void doTurnLeft() {
-    sActionTypeForNeopatternsDisplay = ACTION_TYPE_TURN;
-    doBeep();
-    /*
-     * Put your own code here
-     */
-    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
-}
-
-// doTurnLeft() is mapped to the up arrow on the remote
-void doCreepForward() {
-    sActionTypeForNeopatternsDisplay = ACTION_TYPE_CREEP;
-    doBeep();
-    /*
-     * Put your own code here
-     */
-    sActionTypeForNeopatternsDisplay = ACTION_TYPE_STOP;
-}
 #endif

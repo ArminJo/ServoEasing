@@ -3,7 +3,7 @@
  *
  *  Shows smooth movement from one servo position to another for 2 servos synchronously.
  *  Operate the first servo from -90 to +90 degree.
- *  This example uses the LightweightServo library. This saves 640 bytes program space compared to using Arduino Servo library.
+ *  This example uses the LightweightServo library. This saves 640 bytes program memory compared to using Arduino Servo library.
  *
  *  Copyright (C) 2019-2021  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
@@ -32,30 +32,32 @@
 #include "LightweightServo.hpp" // include sources of LightweightServo library
 #endif
 
-//#define PROVIDE_ONLY_LINEAR_MOVEMENT // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes FLASH.
-#define DISABLE_COMPLEX_FUNCTIONS // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes FLASH.
+//#define PROVIDE_ONLY_LINEAR_MOVEMENT // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes program memory.
+#define DISABLE_COMPLEX_FUNCTIONS // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes program memory.
 //#define MAX_EASING_SERVOS 2
-//#define ENABLE_MICROS_AS_DEGREE_PARAMETER // Activate this to enable also microsecond values as (target angle) parameter. Requires additional 128 Bytes FLASH.
+//#define ENABLE_MICROS_AS_DEGREE_PARAMETER // Activate this to enable also microsecond values as (target angle) parameter. Requires additional 128 bytes program memory.
 //#define DEBUG // Activate this to generate lots of lovely debug output for this library.
 
 //#define PRINT_FOR_SERIAL_PLOTTER // Activate this to generate the Arduino plotter output.
 #include "ServoEasing.hpp"
 
-#ifndef PRINT_FOR_SERIAL_PLOTTER
+#if !defined(PRINT_FOR_SERIAL_PLOTTER)
 #define INFO // to see serial text output for loop
 #endif
 
 #include "PinDefinitionsAndMore.h"
 /*
- * Pin mapping table for different platforms
+ * Pin mapping table for different platforms - used by all examples
  *
- * Platform     Servo1      Servo2      Servo3      Analog
- * -------------------------------------------------------
- * AVR + SAMD   9           10          11          A0
- * ESP8266      14 // D5    12 // D6    13 // D7    0
- * ESP32        5           18          19          A0
- * BluePill     PB7         PB8         PB9         PA0
- * APOLLO3      11          12          13          A3
+ * Platform         Servo1      Servo2      Servo3      Analog     Core/Pin schema
+ * -------------------------------------------------------------------------------
+ * (Mega)AVR + SAMD    9          10          11          A0
+ * ATtiny3217         20|PA3       0|PA4       1|PA5       2|PA6   MegaTinyCore
+ * ESP8266            14|D5       12|D6       13|D7        0
+ * ESP32               5          18          19          A0
+ * BluePill          PB7         PB8         PB9         PA0
+ * APOLLO3            11          12          13          A3
+ * RP2040             6|GPIO18     7|GPIO19    8|GPIO20
  */
 
 ServoEasing Servo1;
@@ -71,7 +73,7 @@ void setup() {
 #if defined(__AVR_ATmega32U4__) || defined(SERIAL_PORT_USBVIRTUAL) || defined(SERIAL_USB) || defined(SERIALUSB_PID) || defined(ARDUINO_attiny3217)
     delay(4000); // To be able to connect Serial monitor after reset or power up and before first print out. Do not wait for an attached Serial Monitor!
 #endif
-#ifndef PRINT_FOR_SERIAL_PLOTTER
+#if !defined(PRINT_FOR_SERIAL_PLOTTER)
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_SERVO_EASING));
 
@@ -87,7 +89,7 @@ void setup() {
 #endif
     Servo1.attach(SERVO1_PIN, START_DEGREE_VALUE, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
 
-#ifndef PRINT_FOR_SERIAL_PLOTTER
+#if !defined(PRINT_FOR_SERIAL_PLOTTER)
     /*
      * Check at least the last call to attach()
      */
@@ -101,7 +103,7 @@ void setup() {
         }
     }
 
-#ifdef PRINT_FOR_SERIAL_PLOTTER
+#if defined(PRINT_FOR_SERIAL_PLOTTER)
     // Print legend for Plotter
     Serial.println("Servo1, Servo2");
 #endif
@@ -130,7 +132,7 @@ void loop() {
     /*
      * Move both servos blocking
      */
-#ifdef INFO
+#if defined(INFO)
     Serial.println(F("Move to 0/90 degree with 30 degree per second blocking"));
 #endif
     setSpeedForAllServos(30);
@@ -141,7 +143,7 @@ void loop() {
     /*
      * Now continue faster.
      */
-#ifdef INFO
+#if defined(INFO)
     Serial.println(F("Move to 90/10 degree with up to 60 degree per second using interrupts"));
 #endif
     Servo1.setEaseTo(90, 60);
@@ -163,7 +165,7 @@ void loop() {
      *  The first servo moves with the specified speed.
      *  The second will be synchronized to slower speed (longer duration, than specified) because it has to move only 80 degree.
      */
-#ifdef INFO
+#if defined(INFO)
     Serial.println(F("Move to 0/90 degree with up to 90 degree per second using interrupts. Use cubic easing for first servo."));
 #endif
     Servo1.setEasingType(EASE_CUBIC_IN_OUT);
@@ -186,7 +188,7 @@ void loop() {
     /*
      * Move both servos independently
      */
-#ifdef INFO
+#if defined(INFO)
     Serial.println(F("Move independently to -90/0 degree with 60/80 degree per second using interrupts"));
 #endif
     Servo1.setEaseTo(-90, 60);

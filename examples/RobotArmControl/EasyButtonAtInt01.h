@@ -12,7 +12,7 @@
  *  #include "EasyButtonAtInt01.h"
  *  EasyButton Button0AtPin2(true);
  *
- *  Copyright (C) 2018  Armin Joachimsmeyer
+ *  Copyright (C) 2018-2022  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of EasyButtonAtInt01 https://github.com/ArminJo/EasyButtonAtInt01.
@@ -31,10 +31,10 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/gpl.html>.
  */
 
-#ifndef EASY_BUTTON_AT_INT01_H_
-#define EASY_BUTTON_AT_INT01_H_
+#ifndef _EASY_BUTTON_AT_INT01_H
+#define _EASY_BUTTON_AT_INT01_H
 
-#define VERSION_EASY_BUTTON "3.2.0"
+#define VERSION_EASY_BUTTON "3.2.1"
 #define VERSION_EASY_BUTTON_MAJOR 3
 #define VERSION_EASY_BUTTON_MINOR 2
 // The change log is at the bottom of the file
@@ -62,7 +62,7 @@
 /*
  * Define USE_ATTACH_INTERRUPT to force use of the arduino function attachInterrupt().
  * It is required if you get the error " multiple definition of `__vector_1'" (or `__vector_2'), because another library uses the attachInterrupt() function.
- * For one button it needs additional 160 bytes FLASH, for 2 buttons it needs additional 88 bytes.
+ * For one button it needs additional 160 bytes program memory, for 2 buttons it needs additional 88 bytes.
  */
 //#define USE_ATTACH_INTERRUPT
 //
@@ -79,12 +79,12 @@
  * this is the time between first level change and last bouncing level change during BUTTON_DEBOUNCING_MILLIS
  */
 //#define ANALYZE_MAX_BOUNCING_PERIOD
-#ifndef BUTTON_DEBOUNCING_MILLIS
+#if !defined(BUTTON_DEBOUNCING_MILLIS)
 #define BUTTON_DEBOUNCING_MILLIS 50 // 35 millis measured for my button :-).
 #endif
 
 /*
- * Activate this to save 2 bytes RAM and 64 bytes FLASH
+ * Activate this to save 2 bytes RAM and 64 bytes program memory
  */
 //#define NO_BUTTON_RELEASE_CALLBACK
 //
@@ -116,19 +116,19 @@
 //#define MEASURE_EASY_BUTTON_INTERRUPT_TIMING
 
 #if defined(MEASURE_EASY_BUTTON_INTERRUPT_TIMING)
-#  ifndef INTERRUPT_TIMING_OUTPUT_PIN
+#  if !defined(INTERRUPT_TIMING_OUTPUT_PIN)
 #define INTERRUPT_TIMING_OUTPUT_PIN 6  // use pin 6
 //#define INTERRUPT_TIMING_OUTPUT_PIN 12  // use pin 12
 #  endif
 #endif
 
 //#define TRACE
-#ifdef TRACE
+#if defined(TRACE)
 #warning If using TRACE, the timing of the interrupt service routine changes, e.g. you will see more spikes, than expected!
 #endif
 
 /*
- * These defines are here to enable saving of 150 bytes FLASH if only one button is needed
+ * These defines are here to enable saving of 150 bytes program memory if only one button is needed
  */
 //#define USE_BUTTON_0
 //#define USE_BUTTON_1
@@ -391,6 +391,5 @@ void __attribute__ ((weak)) handleINT1Interrupt();
  * - Renamed to EasyButtonAtInt01.hpp
  */
 
-#endif /* EASY_BUTTON_AT_INT01_H_ */
-
+#endif // _EASY_BUTTON_AT_INT01_H
 #pragma once

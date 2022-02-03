@@ -1,5 +1,5 @@
 # QuadrupedControl example
-Using the as QuadrupedControl Arduino library for generating all the quadruped movements. It also controls the optional IR receiver and NeoPixels.
+Using the [QuadrupedControl Arduino library](https://github.com/ArminJo/QuadrupedControl) for generating all the quadruped movements and control of the optional IR receiver and NeoPixels.
 
 My mePed.
 ![Bottom view](https://github.com/ArminJo/ServoEasing/blob/master/pictures/mePed_top.jpg)

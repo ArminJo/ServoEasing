@@ -21,8 +21,8 @@
  *
  */
 
-#ifndef SRC_ADCUTILS_H_
-#define SRC_ADCUTILS_H_
+#ifndef _ADC_UTILS_H
+#define _ADC_UTILS_H
 
 #if defined(__AVR__) && (!defined(__AVR_ATmega4809__))
 #include <Arduino.h>
@@ -51,7 +51,7 @@
  * By replacing this value with the voltage you measured a the AREF pin after a conversion
  * with INTERNAL you can calibrate your ADC readout. For my Nanos I measured e.g. 1060 mV and 1093 mV.
  */
-#ifndef ADC_INTERNAL_REFERENCE_MILLIVOLT
+#if !defined(ADC_INTERNAL_REFERENCE_MILLIVOLT)
 #define ADC_INTERNAL_REFERENCE_MILLIVOLT 1100L    // Value measured at the AREF pin
 #endif
 
@@ -150,6 +150,5 @@ float getTemperature(void);
 
 #endif // defined(ADATE)
 #endif //  defined(__AVR__)
-#endif /* SRC_ADCUTILS_H_ */
-
+#endif // _ADC_UTILS_H
 #pragma once

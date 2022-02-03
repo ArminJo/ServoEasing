@@ -27,10 +27,10 @@
 // Must specify this before the include of "ServoEasing.hpp"
 //#define USE_PCA9685_SERVO_EXPANDER // Activate this to enables the use of the PCA9685 I2C expander chip/board.
 //#define USE_SERVO_LIB // Activate this to force additional using of regular servo library.
-//#define PROVIDE_ONLY_LINEAR_MOVEMENT // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes FLASH.
-//#define DISABLE_COMPLEX_FUNCTIONS // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes FLASH.
+//#define PROVIDE_ONLY_LINEAR_MOVEMENT // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes program memory.
+//#define DISABLE_COMPLEX_FUNCTIONS // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes program memory.
 //#define MAX_EASING_SERVOS 3
-//#define ENABLE_MICROS_AS_DEGREE_PARAMETER // Activate this to enable also microsecond values as (target angle) parameter. Requires additional 128 Bytes FLASH.
+//#define ENABLE_MICROS_AS_DEGREE_PARAMETER // Activate this to enable also microsecond values as (target angle) parameter. Requires additional 128 bytes program memory.
 //#define DEBUG // Activate this to generate lots of lovely debug output for this library.
 
 //#define PRINT_FOR_SERIAL_PLOTTER // Activate this to generate the Arduino plotter output
@@ -40,15 +40,17 @@
 
 #include "PinDefinitionsAndMore.h"
 /*
- * Pin mapping table for different platforms
+ * Pin mapping table for different platforms - used by all examples
  *
- * Platform     Servo1      Servo2      Servo3      Analog
- * -------------------------------------------------------
- * AVR + SAMD   9           10          11          A0
- * ESP8266      14 // D5    12 // D6    13 // D7    0
- * ESP32        5           18          19          A0
- * BluePill     PB7         PB8         PB9         PA0
- * APOLLO3      11          12          13          A3
+ * Platform         Servo1      Servo2      Servo3      Analog     Core/Pin schema
+ * -------------------------------------------------------------------------------
+ * (Mega)AVR + SAMD    9          10          11          A0
+ * ATtiny3217         20|PA3       0|PA4       1|PA5       2|PA6   MegaTinyCore
+ * ESP8266            14|D5       12|D6       13|D7        0
+ * ESP32               5          18          19          A0
+ * BluePill          PB7         PB8         PB9         PA0
+ * APOLLO3            11          12          13          A3
+ * RP2040             6|GPIO18     7|GPIO19    8|GPIO20
  */
 
 ServoEasing Servo1;

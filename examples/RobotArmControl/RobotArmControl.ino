@@ -136,7 +136,7 @@ void loop() {
     checkVCC();
 
 #if defined(ROBOT_ARM_RTC_CONTROL)
-#ifdef DEBUG
+#if defined(DEBUG)
     if (printRTCEveryPeriod(1)) {
         printRTC(DATE_FORMAT_EUROPEAN);
         printRTC(DATE_FORMAT_EUROPEAN_LONG);
@@ -212,7 +212,7 @@ bool checkVCC() {
         sLastMillisOfVoltageCheck = millis();
         uint16_t tVCC = getVCCVoltageMillivolt();
 
-#ifdef INFO
+#if defined(INFO)
         if (sLastVoltage != tVCC) {
             sLastVoltage = tVCC;
             Serial.print(F("VCC="));
@@ -314,7 +314,7 @@ void handleManualControl() {
             sLastPivot = tPivot;
             tTargetAngle = map(tPivot, 0, 1023, 10 + PIVOT_OFFSET, -10 - PIVOT_OFFSET);
             moveOneServoAndCheckInputAndWait(SERVO_BASE_PIVOT, tTargetAngle);
-#ifdef INFO
+#if defined(INFO)
             Serial.print("BasePivotServo: micros=");
             Serial.print(BasePivotServo.getEndMicrosecondsOrUnitsWithTrim());
 #endif
@@ -330,7 +330,7 @@ void handleManualControl() {
             sLastHorizontal = tHorizontal;
             tTargetAngle = map(tHorizontal, 0, 1023, 0, 180);
             moveOneServoAndCheckInputAndWait(SERVO_HORIZONTAL, tTargetAngle);
-#ifdef INFO
+#if defined(INFO)
             Serial.print("HorizontalServo: micros=");
             Serial.print(HorizontalServo.getEndMicrosecondsOrUnits());
 #endif
@@ -346,7 +346,7 @@ void handleManualControl() {
             sLastLift = tLift;
             tTargetAngle = map(tLift, 0, 1023, 0, LIFT_MAX_ANGLE);
             moveOneServoAndCheckInputAndWait(SERVO_LIFT, tTargetAngle);
-#ifdef INFO
+#if defined(INFO)
             Serial.print("LiftServo: micros=");
             Serial.print(LiftServo.getEndMicrosecondsOrUnits());
 #endif
@@ -362,7 +362,7 @@ void handleManualControl() {
             sLastClaw = tClaw;
             tTargetAngle = map(tClaw, 0, 1023, 0, CLAW_MAX_ANGLE);
             moveOneServoAndCheckInputAndWait(SERVO_CLAW, tTargetAngle);
-#ifdef INFO
+#if defined(INFO)
             Serial.print("ClawServo: micros=");
             Serial.print(ClawServo.getEndMicrosecondsOrUnits());
 #endif
@@ -372,7 +372,7 @@ void handleManualControl() {
             if (tManualAction) {
                 sManualActionHappened = true;
             }
-#ifdef INFO
+#if defined(INFO)
             Serial.print(" degree=");
             Serial.print(tTargetAngle);
             Serial.print(" | ");

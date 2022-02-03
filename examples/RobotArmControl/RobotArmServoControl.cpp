@@ -10,10 +10,10 @@
 // Must specify this before the include of "ServoEasing.hpp"
 //#define USE_PCA9685_SERVO_EXPANDER // Activate this to enables the use of the PCA9685 I2C expander chip/board.
 //#define USE_SERVO_LIB // Activate this to force additional using of regular servo library.
-//#define PROVIDE_ONLY_LINEAR_MOVEMENT // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes FLASH.
-#define DISABLE_COMPLEX_FUNCTIONS // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes FLASH.
+//#define PROVIDE_ONLY_LINEAR_MOVEMENT // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes program memory.
+#define DISABLE_COMPLEX_FUNCTIONS // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes program memory.
 //#define MAX_EASING_SERVOS 3
-//#define ENABLE_MICROS_AS_DEGREE_PARAMETER // Activate this to enable also microsecond values as (target angle) parameter. Requires additional 128 Bytes FLASH.
+//#define ENABLE_MICROS_AS_DEGREE_PARAMETER // Activate this to enable also microsecond values as (target angle) parameter. Requires additional 128 bytes program memory.
 //#define DEBUG // Activate this to generate lots of lovely debug output for this library.
 
 //#define PRINT_FOR_SERIAL_PLOTTER // Activate this to generate the Arduino plotter output.
@@ -49,7 +49,7 @@ int sClawServoAngle = CLAW_START_ANGLE;
  */
 uint8_t sEasingType = EASE_LINEAR;
 float sLastPercentageOfCompletion;
-uint16_t sServoSpeed = 60;      // in degree/second
+uint16_t sQuadrupedServoSpeed = 60;      // in degree/second
 
 // User functions for ServoEasing implementing Inverse kinematics movement
 // TODO test carefully
@@ -62,7 +62,7 @@ float moveInverseKinematicForLift(float aPercentageOfCompletion);
 
 void setupRobotArmServos() {
 
-    setSpeedForAllServos(sServoSpeed);
+    setSpeedForAllServos(sQuadrupedServoSpeed);
     /*
      * Attach servos to Arduino Pins and set to start position. Must be done with write().
      * Set pivot servo first
@@ -116,14 +116,14 @@ void setEasingType(uint8_t aEasingType) {
  *  aBasePivot,  aHorizontal,  aLift,  aClaw
  */
 void setAllServos(uint8_t aNumberOfValues, ...) {
-#ifdef DEBUG
+#if defined(DEBUG)
     printArrayPositions(&Serial);
 #endif
     va_list aDegreeValues;
     va_start(aDegreeValues, aNumberOfValues);
     setDegreeForAllServos(aNumberOfValues, &aDegreeValues);
     va_end(aDegreeValues);
-#ifdef DEBUG
+#if defined(DEBUG)
     printArrayPositions(&Serial);
 #endif
     synchronizeMoveAllServosAndCheckInputAndWait();
@@ -133,14 +133,14 @@ void setAllServos(uint8_t aNumberOfValues, ...) {
  *  aBasePivot,  aHorizontal,  aLift,  aClaw
  */
 void setAllServosD(uint16_t aMillisForMove, uint8_t aNumberOfValues, ...) {
-#ifdef DEBUG
+#if defined(DEBUG)
     printArrayPositions(&Serial);
 #endif
     va_list aDegreeValues;
     va_start(aDegreeValues, aNumberOfValues);
     setDegreeForAllServos(aNumberOfValues, &aDegreeValues);
     va_end(aDegreeValues);
-#ifdef DEBUG
+#if defined(DEBUG)
     printArrayPositions(&Serial);
 #endif
     synchronizeMoveAllServosDAndCheckInputAndWait(aMillisForMove);
@@ -170,10 +170,10 @@ uint16_t getMaxDeltaMillimeter() {
 
 uint16_t getDurationMillisForMove() {
     uint16_t tMaxDeltaMillimeter = getMaxDeltaMillimeter();
-    uint16_t tMillisForMove = ((tMaxDeltaMillimeter * 125) / sServoSpeed) * 8; // *125 *8 to avoid temporary overflow at 16 bit arithmetic.
-#ifdef DEBUG
+    uint16_t tMillisForMove = ((tMaxDeltaMillimeter * 125) / sQuadrupedServoSpeed) * 8; // *125 *8 to avoid temporary overflow at 16 bit arithmetic.
+#if defined(DEBUG)
     Serial.print(F("Speed="));
-    Serial.print(sServoSpeed);
+    Serial.print(sQuadrupedServoSpeed);
     Serial.print(F(" max mm="));
     Serial.print(tMaxDeltaMillimeter);
     Serial.print(F(" millis="));
@@ -199,7 +199,7 @@ void closeClaw() {
 bool goToPosition(int aLeftRightMilliMeter, int aBackFrontMilliMeter, int aDownUpMilliMeter) {
 // First copy old end position to new start position
     sStartPosition = sEndPosition;
-#ifdef DEBUG
+#if defined(DEBUG)
     Serial.print("Start: ");
     printPosition(&sStartPosition);
 #endif
@@ -228,7 +228,7 @@ bool goToPosition(int aLeftRightMilliMeter, int aBackFrontMilliMeter, int aDownU
         printPosition(&sEndPosition);
         return false;
     }
-#ifdef DEBUG
+#if defined(DEBUG)
     Serial.print("End: ");
     printPosition(&sEndPosition);
 #endif
@@ -241,7 +241,7 @@ bool goToPosition(int aLeftRightMilliMeter, int aBackFrontMilliMeter, int aDownU
 bool goToPositionRelative(int aLeftRightDeltaMilliMeter, int aBackFrontDeltaMilliMeter, int aDownUpDeltaMilliMeter) {
 // First copy old end position to new start position
     sStartPosition = sEndPosition;
-#ifdef DEBUG
+#if defined(DEBUG)
     Serial.print("Start: ");
     printPosition(&sStartPosition);
 #endif
@@ -260,7 +260,7 @@ bool goToPositionRelative(int aLeftRightDeltaMilliMeter, int aBackFrontDeltaMill
         printPosition(&sEndPosition);
         return false;
     }
-#ifdef DEBUG
+#if defined(DEBUG)
     Serial.print("End: ");
     printPosition(&sEndPosition);
 #endif
@@ -283,7 +283,7 @@ void computeNewCurrentAngles(float aPercentageOfCompletion) {
         Serial.print(" ");
         printPositionCartesianWithLinefeed(&sCurrentPosition);
     }
-#ifdef TRACE
+#if defined(TRACE)
     else {
         Serial.print("Current: ");
         Serial.print(aPercentageOfCompletion);
@@ -298,7 +298,7 @@ void computeNewCurrentAngles(float aPercentageOfCompletion) {
  */
 float moveInverseKinematicForBase(float aPercentageOfCompletion) {
     if (aPercentageOfCompletion - sLastPercentageOfCompletion > 0.005) {
-#ifdef TRACE
+#if defined(TRACE)
         Serial.print("B ");
 #endif
         /*
@@ -312,7 +312,7 @@ float moveInverseKinematicForBase(float aPercentageOfCompletion) {
 
 float moveInverseKinematicForHorizontal(float aPercentageOfCompletion) {
     if (aPercentageOfCompletion - sLastPercentageOfCompletion > 0.005) {
-#ifdef TRACE
+#if defined(TRACE)
         Serial.print("H ");
 #endif
         sLastPercentageOfCompletion = aPercentageOfCompletion;
@@ -323,7 +323,7 @@ float moveInverseKinematicForHorizontal(float aPercentageOfCompletion) {
 
 float moveInverseKinematicForLift(float aPercentageOfCompletion) {
     if (aPercentageOfCompletion - sLastPercentageOfCompletion > 0.005) {
-#ifdef TRACE
+#if defined(TRACE)
         Serial.print("V ");
 #endif
         sLastPercentageOfCompletion = aPercentageOfCompletion;
@@ -427,7 +427,7 @@ void testInverseAndForwardKinematic() {
 }
 
 void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree) {
-    moveOneServoAndCheckInputAndWait(aServoIndex, aDegree, sServoSpeed);
+    moveOneServoAndCheckInputAndWait(aServoIndex, aDegree, sQuadrupedServoSpeed);
 }
 
 void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree, uint16_t aDegreesPerSecond) {

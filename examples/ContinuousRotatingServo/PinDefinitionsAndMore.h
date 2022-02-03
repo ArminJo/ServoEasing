@@ -25,7 +25,7 @@
  */
 
 /*
- * Pin mapping table for different platforms
+ * Pin mapping table for different platforms - used by all examples
  *
  * Platform         Servo1      Servo2      Servo3      Analog     Core/Pin schema
  * -------------------------------------------------------------------------------
@@ -38,7 +38,7 @@
  * RP2040             6|GPIO18     7|GPIO19    8|GPIO20
  */
 
-#if defined(__AVR_ATtiny1616__)  || defined(__AVR_ATtiny3216__) || defined(__AVR_ATtiny3217__)
+#if defined(__AVR_ATtiny1616__)  || defined(__AVR_ATtiny3216__) || defined(__AVR_ATtiny3217__) // Tiny Core Dev board
 #define SERVO1_PIN     20
 #define SERVO2_PIN      0
 #define SERVO3_PIN      1
@@ -57,8 +57,7 @@
 #define SPEED_IN_PIN A0 // 36/VP
 #define MODE_ANALOG_INPUT_PIN A3 // 39
 
-#elif defined(STM32F1xx) || defined(__STM32F1__)
-// BluePill in 2 flavors
+#elif defined(STM32F1xx) || defined(__STM32F1__) // BluePill
 // STM32F1xx is for "Generic STM32F1 series / STM32:stm32" from STM32 Boards from STM32 cores of Arduino Board manager
 // __STM32F1__is for "Generic STM32F103C series / stm32duino:STM32F1" from STM32F1 Boards (STM32duino.com) of Arduino Board manager
 #define SERVO1_PIN PB7
@@ -67,7 +66,7 @@
 #define SPEED_IN_PIN PA0
 #define MODE_ANALOG_INPUT_PIN PA1
 
-#elif defined(ARDUINO_ARCH_APOLLO3)
+#elif defined(ARDUINO_ARCH_APOLLO3) // Sparkfun Apollo boards
 #define SERVO1_PIN 11
 #define SERVO2_PIN 12
 #define SERVO3_PIN 13
@@ -81,14 +80,14 @@
 #define SPEED_IN_PIN A0
 #define MODE_ANALOG_INPUT_PIN A1
 
-#elif defined(ARDUINO_ARCH_RP2040) // Pi Pico with arduino-pico core https://github.com/earlephilhower/arduino-pico
+#elif defined(ARDUINO_ARCH_RP2040) //Arduino Nano Connect, Pi Pico with arduino-pico core https://github.com/earlephilhower/arduino-pico
 #define SERVO1_PIN 18
 #define SERVO2_PIN 19
 #define SERVO3_PIN 20
 #define SPEED_IN_PIN A0
 #define MODE_ANALOG_INPUT_PIN A1
 
-#elif defined(__AVR__)
+#elif defined(__AVR__) // Default as for ATmega328 like on Uno, Nano etc.
 #define SERVO1_PIN 9 // For ATmega328 pins 9 + 10 are connected to timer 2 and can therefore be used also by the Lightweight Servo library
 #define SERVO2_PIN 10
 #define SERVO3_PIN 11

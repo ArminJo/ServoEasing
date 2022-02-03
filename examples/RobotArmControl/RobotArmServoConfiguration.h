@@ -5,8 +5,8 @@
  *      Author: Armin
  */
 
-#ifndef SRC_ROBOTARMSERVOCONFIGURATION_H_
-#define SRC_ROBOTARMSERVOCONFIGURATION_H_
+#ifndef _ROBOT_ARM_SERVO_CONFIGURATION_H
+#define _ROBOT_ARM_SERVO_CONFIGURATION_H
 
 #define PIVOT_SERVO_PIN         5
 #define HORIZONTAL_SERVO_PIN    4
@@ -38,7 +38,7 @@
 /*
  * Values for my MG90 clones. They have different values :-(
  */
-#ifdef ROBOT_ARM_2
+#if defined(ROBOT_ARM_2)
 #define PIVOT_ZERO_DEGREE_VALUE_MICROS       460 // 1120 per 90 degree
 #define PIVOT_AT_180_DEGREE_VALUE_MICROS    2620
 #define PIVOT_MAX_DEGREE_VALUE_MICROS       2480
@@ -96,6 +96,5 @@
 #define CLAW_CLOSE_ANGLE        CLAW_MAX_ANGLE
 #endif
 
-#endif /* SRC_ROBOTARMSERVOCONFIGURATION_H_ */
-
+#endif // _ROBOT_ARM_SERVO_CONFIGURATION_H
 #pragma once

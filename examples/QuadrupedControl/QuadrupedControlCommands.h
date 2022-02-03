@@ -1,27 +1,33 @@
 /*
- * QuadrupedIRCommands.h
+ * QuadrupedControlCommands.h
  *
- * list of functions to call by IR command
+ * list of functions implemented, which can e.g. be called by IR remote
  *
  *  Created on: 21.05.2019
  *      Author: Armin
  */
 
-#ifndef QUADRUPED_IR_COMMANDS_H
-#define QUADRUPED_IR_COMMANDS_H
+#ifndef QUADRUPED_CONTROL_COMMANDS_H
+#define QUADRUPED_CONTROL_COMMANDS_H
 
-#include "QuadrupedControl.h"  // must be first for Eclipse indexer to work :-(
-
-// Definition of RETURN_IF_STOP macro
+// Definition of RETURN_IF_STOP and BREAK_IF_STOP macro
 #if defined(QUADRUPED_HAS_IR_CONTROL)
-#include "IRCommandDispatcher.h" // RETURN_IF_STOP is defined here
+#include "IRCommandDispatcher.h" // RETURN_IF_STOP and BREAK_IF_STOP are defined here
 #else
 #  if defined(RETURN_IF_STOP)
 #undef RETURN_IF_STOP
 #  endif
 #define RETURN_IF_STOP // define as empty
+#  if defined(BREAK_IF_STOP)
+#undef BREAK_IF_STOP
+#  endif
+#define BREAK_IF_STOP // define as empty
 #endif
 
+/*
+ * Action type definitions
+ * Currently used for NeoPatterns display
+ */
 #define ACTION_TYPE_STOP    0
 #define ACTION_TYPE_CREEP   1
 #define ACTION_TYPE_TROT    2
@@ -34,8 +40,8 @@
 #define ACTION_TYPE_DANCE   8
 #define ACTION_TYPE_TEST    9
 #define ACTION_TYPE_AUTO_MOVE   10
-extern uint8_t sActionTypeForNeopatternsDisplay; // A change on this action type triggers the generation of new neopatterns
-extern uint8_t sLastActionTypeForNeopatternsDisplay; // do determine changes of sActionTypeForNeopatternsDisplay
+extern uint8_t sCurrentlyRunningAction; // A change on this action type triggers the generation of new neopatterns
+extern uint8_t sLastActionTypeForNeopatternsDisplay; // do determine changes of sCurrentlyRunningAction
 
 // The code for the called command is available in variable sCurrentIRCode
 // All functions have the prefix __attribute__((weak)) in order to enable easy overwriting with own functions.
@@ -59,7 +65,6 @@ void doLeanRight();
 void doLeanBack();
 void doLeanFront();
 void doAttention();
-void doBeep();
 
 // Special commands
 void doCenterServos();
@@ -79,19 +84,5 @@ void doDecreaseSpeed();
 void doIncreaseHeight();
 void doDecreaseHeight();
 
-/*
- * Functions for bigger remote controls
- */
-void doUSRight();
-void doUSLeft();
-void doUSScan();
-
-void doPattern1();
-void doPattern2();
-void doPattern3();
-void doPatternFire();
-void doPatternHeartbeat();
-void wipeOutPatterns();
-
-#endif /* QUADRUPED_IR_COMMANDS_H */
+#endif /* QUADRUPED_CONTROL_COMMANDS_H */
 #pragma once
