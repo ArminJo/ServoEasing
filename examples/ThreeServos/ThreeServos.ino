@@ -62,7 +62,7 @@ void blinkLED();
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
-#if defined(__AVR_ATmega32U4__) || defined(SERIAL_PORT_USBVIRTUAL) || defined(SERIAL_USB) || defined(SERIALUSB_PID) || defined(ARDUINO_attiny3217)
+#if defined(__AVR_ATmega32U4__) || defined(SERIAL_PORT_USBVIRTUAL) || defined(SERIAL_USB) /*stm32duino*/|| defined(USBCON) /*STM32_stm32*/|| defined(SERIALUSB_PID) || defined(ARDUINO_attiny3217)
     delay(4000); // To be able to connect Serial monitor after reset or power up and before first print out. Do not wait for an attached Serial Monitor!
 #endif
     // Just to know which program is running on my Arduino
@@ -78,14 +78,12 @@ void setup() {
      * of the Servos in internal ServoEasing::ServoEasingArray[]
      ***********************************************************/
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
-    Serial.print(F("Attach servo at pin "));
-    Serial.println(SERVO1_PIN);
+    Serial.println(F("Attach servo at pin " STR(SERVO1_PIN)));
 #endif
     Servo1.attach(SERVO1_PIN, START_DEGREE_VALUE);
 
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
-    Serial.print(F("Attach servo at pin "));
-    Serial.println(SERVO2_PIN);
+    Serial.println(F("Attach servo at pin " STR(SERVO2_PIN)));
 #endif
     Servo2.attach(SERVO2_PIN, START_DEGREE_VALUE, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
 
@@ -93,8 +91,7 @@ void setup() {
      * Check at least the last call to attach()
      */
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
-    Serial.print(F("Attach servo at pin "));
-    Serial.println(SERVO3_PIN);
+    Serial.println(F("Attach servo at pin " STR(SERVO3_PIN)));
 #endif
     if (Servo3.attach(SERVO3_PIN, START_DEGREE_VALUE) == INVALID_SERVO) {
         Serial.println(

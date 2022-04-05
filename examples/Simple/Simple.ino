@@ -52,8 +52,7 @@ void setup() {
     /********************************************************
      * Attach servo to pin and set servo to start position.
      *******************************************************/
-    Serial.print(F("Attach servo at pin "));
-    Serial.println(SERVO1_PIN);
+    Serial.println(F("Attach servo at pin " STR(SERVO1_PIN)));
     Servo1.attach(SERVO1_PIN, 45);
 
     delay(500); // Wait for servo to reach start position.
