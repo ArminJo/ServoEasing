@@ -19,21 +19,23 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/gpl.html>.
+ *  along with this program. If not, see <http://www.gnu.org/licenses/gpl.html>.
  */
 
-#ifndef QUADRUPED_BASIC_MOVEMENTS_HPP
-#define QUADRUPED_BASIC_MOVEMENTS_HPP
+#ifndef _QUADRUPED_BASIC_MOVEMENTS_HPP
+#define _QUADRUPED_BASIC_MOVEMENTS_HPP
 
 #include <Arduino.h>
 
 #include "QuadrupedBasicMovements.h"
-#include "QuadrupedControlCommands.h"
 #include "QuadrupedServoControl.h"
 
 //#define INFO // activate this to see serial info output
 
 volatile uint8_t sMovingDirection = MOVE_DIRECTION_FORWARD;
+
+uint8_t sCurrentlyRunningAction; // A change on this action type triggers the generation of new NeoPatterns
+uint8_t sLastActionTypeForNeopatternsDisplay; // do determine changes of sCurrentlyRunningAction
 
 /*
  * Gait variations
@@ -55,7 +57,7 @@ void moveTrot(uint8_t aNumberOfTrots) {
         transformAndSetAllServos(TROT_BASE_ANGLE_FL_BR + TROT_MOVE_ANGLE, TROT_BASE_ANGLE_BL_FR - TROT_MOVE_ANGLE,
         TROT_BASE_ANGLE_FL_BR - TROT_MOVE_ANGLE, TROT_BASE_ANGLE_BL_FR + TROT_MOVE_ANGLE, tRequestedBodyHeightAngle, LiftMaxAngle,
                 tRequestedBodyHeightAngle, LiftMaxAngle, tCurrentDirection);
-        BREAK_IF_STOP;
+        QUADRUPED_BREAK_IF_STOP;
 
         tRequestedBodyHeightAngle = sRequestedBodyHeightAngle;
 
@@ -63,7 +65,7 @@ void moveTrot(uint8_t aNumberOfTrots) {
         transformAndSetAllServos(TROT_BASE_ANGLE_FL_BR - TROT_MOVE_ANGLE, TROT_BASE_ANGLE_BL_FR + TROT_MOVE_ANGLE,
         TROT_BASE_ANGLE_FL_BR + TROT_MOVE_ANGLE, TROT_BASE_ANGLE_BL_FR - TROT_MOVE_ANGLE, LiftMaxAngle, tRequestedBodyHeightAngle,
                 LiftMaxAngle, tRequestedBodyHeightAngle, tCurrentDirection);
-        BREAK_IF_STOP;
+        QUADRUPED_BREAK_IF_STOP;
 
         aNumberOfTrots--;
     } while (aNumberOfTrots != 0);
@@ -110,7 +112,7 @@ void moveTurn(uint8_t aNumberOfBasicTurns) {
 
     // do at least one basic turn
     do {
-        BREAK_IF_STOP;
+        QUADRUPED_BREAK_IF_STOP;
         basicTurn(tNextLiftLegIndex, sMovingDirection == MOVE_DIRECTION_LEFT);
         /*
          * get next index of leg which must be lifted
@@ -201,10 +203,10 @@ void moveCreep(uint8_t aNumberOfCreeps) {
         uint8_t tCurrentDirection = sMovingDirection;
 
         basicHalfCreep(tCurrentDirection, false);
-        BREAK_IF_STOP;
+        QUADRUPED_BREAK_IF_STOP;
 // now mirror movement
         basicHalfCreep(tCurrentDirection, true);
-        BREAK_IF_STOP;
+        QUADRUPED_BREAK_IF_STOP;
         aNumberOfCreeps--;
     } while (aNumberOfCreeps != 0);
 
@@ -231,7 +233,7 @@ void basicHalfCreep(uint8_t aDirection, bool doMirror) {
     transformAndSetAllServos(180 - Y_POSITION_OPEN_ANGLE, Y_POSITION_OPEN_ANGLE, 180 - Y_POSITION_CLOSE_ANGLE,
     Y_POSITION_FRONT_ANGLE, tRequestedBodyHeightAngle, tRequestedBodyHeightAngle, tRequestedBodyHeightAngle, LIFT_HIGHEST_ANGLE,
             aDirection, doMirror);
-    RETURN_IF_STOP;
+    QUADRUPED_RETURN_IF_STOP;
 
     tRequestedBodyHeightAngle = sRequestedBodyHeightAngle;
 
@@ -242,7 +244,7 @@ void basicHalfCreep(uint8_t aDirection, bool doMirror) {
     transformAndSetAllServos(180 - Y_POSITION_CLOSE_ANGLE, Y_POSITION_OPEN_ANGLE + CREEP_BODY_MOVE_ANGLE,
             180 - Y_POSITION_OPEN_ANGLE, Y_POSITION_OPEN_ANGLE, tRequestedBodyHeightAngle, tRequestedBodyHeightAngle,
             tRequestedBodyHeightAngle, tRequestedBodyHeightAngle, aDirection, doMirror);
-    RETURN_IF_STOP;
+    QUADRUPED_RETURN_IF_STOP;
 
     tRequestedBodyHeightAngle = sRequestedBodyHeightAngle;
 
@@ -287,17 +289,17 @@ void basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
     Serial.println(F("1. move front leg"));
 #endif
     moveOneServoAndCheckInputAndWait(tLeftLegPivotServoIndex + LIFT_SERVO_OFFSET, LIFT_HIGHEST_ANGLE);
-    RETURN_IF_STOP;
+    QUADRUPED_RETURN_IF_STOP;
 
 // go CREEP_BODY_MOVE_ANGLE ahead of Y_POSITION_OPEN_ANGLE
     aMoveMirrored ?
             tEffectiveAngle = 180 - (Y_POSITION_OPEN_ANGLE - CREEP_BODY_MOVE_ANGLE) :
             tEffectiveAngle = Y_POSITION_OPEN_ANGLE - CREEP_BODY_MOVE_ANGLE;
     moveOneServoAndCheckInputAndWait(tLeftLegPivotServoIndex, tEffectiveAngle);
-    RETURN_IF_STOP;
+    QUADRUPED_RETURN_IF_STOP;
 
     moveOneServoAndCheckInputAndWait(tLeftLegPivotServoIndex + LIFT_SERVO_OFFSET, sRequestedBodyHeightAngle);
-    RETURN_IF_STOP;
+    QUADRUPED_RETURN_IF_STOP;
 
 // 2. Move body forward
 #if defined(INFO)
@@ -346,11 +348,11 @@ void basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
 // Move to Y position with right legs together / 120, 60, 180, 0
     uint8_t tDiagonalIndex = (tLeftLegPivotServoIndex + DIAGONAL_SERVO_OFFSET) % NUMBER_OF_SERVOS;
     moveOneServoAndCheckInputAndWait(tDiagonalIndex + LIFT_SERVO_OFFSET, LIFT_HIGHEST_ANGLE);
-    RETURN_IF_STOP;
+    QUADRUPED_RETURN_IF_STOP;
 
     aMoveMirrored ? tEffectiveAngle = 180 - Y_POSITION_CLOSE_ANGLE : tEffectiveAngle = Y_POSITION_CLOSE_ANGLE;
     moveOneServoAndCheckInputAndWait(tDiagonalIndex, tEffectiveAngle);
-    RETURN_IF_STOP;
+    QUADRUPED_RETURN_IF_STOP;
 
     moveOneServoAndCheckInputAndWait(tDiagonalIndex + LIFT_SERVO_OFFSET, sRequestedBodyHeightAngle);
 }

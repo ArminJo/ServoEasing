@@ -26,11 +26,11 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/gpl.html>.
+ *  along with this program. If not, see <http://www.gnu.org/licenses/gpl.html>.
  */
 
-#ifndef QUADRUPEDSERVOCONTROL_HPP
-#define QUADRUPEDSERVOCONTROL_HPP
+#ifndef _QUADRUPED_SERVO_CONTROL_HPP
+#define _QUADRUPED_SERVO_CONTROL_HPP
 
 #include <Arduino.h>
 
@@ -414,5 +414,5 @@ void synchronizeMoveAllServosAndCheckInputAndWait() {
     updateAndCheckInputAndWaitForAllServosToStop();
 }
 
-#endif /* QUADRUPEDSERVOCONTROL_HPP */
+#endif // _QUADRUPED_SERVO_CONTROL_HPP
 #pragma once

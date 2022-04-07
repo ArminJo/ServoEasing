@@ -29,23 +29,31 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/gpl.html>.
+ *  along with this program. If not, see <http://www.gnu.org/licenses/gpl.html>.
  */
 
 #include <Arduino.h>
 
 #include "QuadrupedConfiguration.h"
 
-#include "QuadrupedServoControl.hpp"
-#include "QuadrupedBasicMovements.hpp"
+#if defined(QUADRUPED_HAS_IR_CONTROL)
+// Include the header only IRCommandDispatcher library in the main program
+#include "IRCommandMapping.h" // Must be included before IRCommandDispatcher.hpp to define IR_ADDRESS and IRMapping and string "unknown".
+#include "IRCommandDispatcher.hpp"
+#define QUADRUPED_MOVEMENT_BREAK_FLAG (IRDispatcher.requestToStopReceived)
+#endif
+
 #include "QuadrupedControlCommands.hpp" // Commands can also be used e.g. in loop().
+#if defined(QUADRUPED_HAS_NEOPIXEL)
+#include "QuadrupedNeoPixel.hpp"
+#endif
 
 #include "QuadrupedHelper.h"
 
 #include "ADCUtils.h" // for getVCCVoltageMillivoltSimple() and printVCCVoltageMillivolt()
 
 #if defined(QUADRUPED_HAS_US_DISTANCE) && defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
-Servo USServo;    // Servo for US sensor use Servo library direct, we do nor require easings here ( and we have only 8 Servo easings allocated)
+Servo USServo; // Servo for US sensor use Servo library direct, we do nor require easings here ( and we have only 8 Servo easings allocated)
 #define NO_LED_FEEDBACK_CODE // Disable IR LED feedback because servo is at the same pin. Must be included before IRCommandDispatcher.hpp
 #endif
 
@@ -53,6 +61,10 @@ Servo USServo;    // Servo for US sensor use Servo library direct, we do nor req
 // Include the header only IRCommandDispatcher library in the main program
 #include "IRCommandMapping.h" // Must be included before IRCommandDispatcher.hpp to define IR_ADDRESS and IRMapping and string "unknown".
 #include "IRCommandDispatcher.hpp"
+#endif
+
+#if defined(QUADRUPED_ENABLE_RTTTL)
+#include <PlayRtttl.hpp>
 #endif
 
 //#define INFO // activate this to see serial info output

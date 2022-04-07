@@ -5,8 +5,8 @@
  *      Author: Armin
  */
 
-#ifndef QUADRUPED_SERVO_CONFIGURATION_H_
-#define QUADRUPED_SERVO_CONFIGURATION_H_
+#ifndef _QUADRUPED_SERVO_CONFIGURATION_H
+#define _QUADRUPED_SERVO_CONFIGURATION_H
 
 /*
  * Leg layout geometry
@@ -78,6 +78,5 @@
 #define TROT_BASE_ANGLE_BL_FR 45
 #define TROT_MOVE_ANGLE 30
 
-#endif /* QUADRUPED_SERVO_CONFIGURATION_H_ */
-
+#endif // _QUADRUPED_SERVO_CONFIGURATION_H
 #pragma once

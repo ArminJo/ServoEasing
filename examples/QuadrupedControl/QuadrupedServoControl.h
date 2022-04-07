@@ -5,8 +5,8 @@
  *      Author: Armin
  */
 
-#ifndef QUADRUPEDSERVOCONTROL_H_
-#define QUADRUPEDSERVOCONTROL_H_
+#ifndef _QUADRUPED_SERVO_CONTROL_H
+#define _QUADRUPED_SERVO_CONTROL_H
 
 #include "QuadrupedServoConfiguration.h"
 
@@ -93,5 +93,5 @@ void printAndSetTrimAngles();
 void eepromReadAndSetServoTrim();
 void eepromWriteServoTrim();
 
-#endif /* QUADRUPEDSERVOCONTROL_H_ */
+#endif // _QUADRUPED_SERVO_CONTROL_H
 #pragma once

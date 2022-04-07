@@ -19,17 +19,27 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/gpl.html>.
+ *  along with this program. If not, see <http://www.gnu.org/licenses/gpl.html>.
  */
 
 #include <Arduino.h>
 
 #include "QuadrupedConfiguration.h"
 #include "ADCUtils.h" // for getVCCVoltageMillivoltSimple()
-#include "QuadrupedControlCommands.h" // for sCurrentlyRunningAction
+#include "QuadrupedBasicMovements.h" // for sCurrentlyRunningAction
 
 #if defined(QUADRUPED_HAS_NEOPIXEL)
 #include "QuadrupedNeoPixel.h"
+#endif
+
+#if defined(QUADRUPED_ENABLE_RTTTL)
+#define SUPPRESS_HPP_WARNING
+#include <PlayRtttl.h>
+#endif
+
+#if defined(QUADRUPED_HAS_IR_CONTROL)
+#include "IRCommandDispatcher.h"
+#include "QuadrupedServoControl.h"
 #endif
 
 #if !defined(STR_HELPER)
@@ -111,7 +121,8 @@ void handleUSSensor() {
 }
 #endif // #if defined(QUADRUPED_HAS_US_DISTANCE)
 
-#if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
+#if defined(QUADRUPED_HAS_IR_CONTROL)
+#  if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
 #define SERVO_INCREMENT     10
 void doUSRight() {
     if (!IRDispatcher.IRReceivedData.isRepeat && USServo.read() >= SERVO_INCREMENT) {
@@ -128,7 +139,110 @@ void doUSScan() {
         USServo.write(90);
     }
 }
-#endif
+#  endif
+
+#  if !defined(USE_USER_DEFINED_MOVEMENTS)
+// Disable doCalibration() also for user defined movements, since just testing the remote may lead to accidental wrong calibration
+
+#include "IRCommandMapping.h" // for COMMAND_* definitions in doCalibration()
+
+/*
+ * Signals which leg is to be calibrated
+ */
+void signalLeg(uint8_t aPivotServoIndex) {
+    ServoEasing::ServoEasingArray[aPivotServoIndex + LIFT_SERVO_OFFSET]->easeTo(LIFT_HIGHEST_ANGLE, 60);
+    ServoEasing::ServoEasingArray[aPivotServoIndex]->easeTo(90, 60);
+    ServoEasing::ServoEasingArray[aPivotServoIndex + LIFT_SERVO_OFFSET]->easeTo(90, 60);
+}
+
+/*
+ * Changes the servo calibration values in EEPROM.
+ * Starts with front left i.e. ServoEasing::ServoEasingArray[0,1] and switches to the next leg with the COMMAND_ENTER
+ * Is only available if IR control is attached
+ */
+void doCalibration() {
+    uint8_t tPivotServoIndex = 0; // start with front left i.e. ServoEasing::ServoEasingArray[0]
+    bool tGotExitCommand = false;
+    resetServosTo90Degree();
+    delay(500);
+    signalLeg(tPivotServoIndex);
+#  if defined(INFO)
+    Serial.println(F("Entered calibration. Use the forward/backward right/left buttons to set the servo position to 90 degree."));
+    Serial.println(F("Use enter/OK button to go to next leg. Values are stored at receiving a different button or after 4th leg."));
+#  endif
+
+    IRDispatcher.doNotUseDispatcher = true; // disable dispatcher by mapping table
+    while (!tGotExitCommand) {
+        // wait until next command received
+        while (!IRDispatcher.IRReceivedData.isAvailable) {
+        }
+        IRDispatcher.IRReceivedData.isAvailable = false;
+
+        unsigned long tIRCode = IRDispatcher.IRReceivedData.command;
+#  if defined(INFO)
+        IRDispatcher.printIRCommandString(&Serial);
+#  endif
+        switch (tIRCode) {
+        case COMMAND_RIGHT:
+            sServoTrimAngles[tPivotServoIndex]++;
+            ServoEasing::ServoEasingArray[tPivotServoIndex]->setTrim(sServoTrimAngles[tPivotServoIndex], true);
+            break;
+        case COMMAND_LEFT:
+            sServoTrimAngles[tPivotServoIndex]--;
+            ServoEasing::ServoEasingArray[tPivotServoIndex]->setTrim(sServoTrimAngles[tPivotServoIndex], true);
+            break;
+        case COMMAND_FORWARD:
+            sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET]++;
+            ServoEasing::ServoEasingArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->setTrim(
+                    sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET], true);
+            break;
+        case COMMAND_BACKWARD:
+            sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET]--;
+            ServoEasing::ServoEasingArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->setTrim(
+                    sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET], true);
+            break;
+        case COMMAND_ENTER:
+            // show 135 and 45 degree positions
+            ServoEasing::ServoEasingArray[tPivotServoIndex]->easeTo(135, 100);
+            delay(2000);
+            ServoEasing::ServoEasingArray[tPivotServoIndex]->easeTo(45, 100);
+            delay(2000);
+            ServoEasing::ServoEasingArray[tPivotServoIndex]->easeTo(90, 100);
+            tPivotServoIndex += SERVOS_PER_LEG;
+            eepromWriteServoTrim();
+            if (tPivotServoIndex >= NUMBER_OF_SERVOS) {
+                tGotExitCommand = true;
+            } else {
+                signalLeg(tPivotServoIndex);
+            }
+            break;
+        case COMMAND_CALIBRATE:
+            // repeated command here
+            break;
+        default:
+            eepromWriteServoTrim();
+            tGotExitCommand = true;
+            break;
+        }
+#  if defined(INFO)
+        Serial.print(F("ServoTrimAngles["));
+        Serial.print(tPivotServoIndex);
+        Serial.print(F("]="));
+        Serial.print(sServoTrimAngles[tPivotServoIndex]);
+        Serial.print(F(" ["));
+        Serial.print(tPivotServoIndex + LIFT_SERVO_OFFSET);
+        Serial.print(F("]="));
+        Serial.println(sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET]);
+#  endif
+        ServoEasing::ServoEasingArray[tPivotServoIndex]->print(&Serial);
+        ServoEasing::ServoEasingArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->print(&Serial);
+        delay(200);
+    }
+    IRDispatcher.doNotUseDispatcher = false; // re enable dispatcher by mapping table
+
+}
+#  endif // !defined(USE_USER_DEFINED_MOVEMENTS)
+#endif // defined(QUADRUPED_HAS_IR_CONTROL)
 
 /*
  * Special delay function for the quadruped control.

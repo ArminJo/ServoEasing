@@ -11,12 +11,15 @@
  * Select the one you have below.
  */
 
-#ifndef IR_COMMAND_MAPPING_H_
-#define IR_COMMAND_MAPPING_H_
+#ifndef _IR_COMMAND_MAPPING_H
+#define _IR_COMMAND_MAPPING_H
 
 #include <Arduino.h>
 
+#include "IRCommandDispatcher.h" // IR_COMMAND_FLAG_BLOCKING etc. are defined here
 #include "QuadrupedControlCommands.h" // contains the command definitions used in the mapping table below
+#include "QuadrupedHelper.h"    // for additional commands
+#include "QuadrupedNeoPixel.h"  // for additional commands
 
 /*
  * !!! Choose your remote !!!
@@ -284,11 +287,9 @@
 #endif
 
 #if defined(USE_WHITE_DVD_REMOTE)
-#include "QuadrupedNeoPixel.h"  // for additional commands
-#include "QuadrupedHelper.h"    // for additional commands
 #  if defined(IR_REMOTE_NAME)
 #error "Please choose only one remote for compile"
-#  elsef
+#  else
 #define IR_REMOTE_NAME "WHITE_DVD"
 #define HAS_ADDITIONAL_REMOTE_COMMANDS
 
@@ -477,6 +478,5 @@ COMMAND_STOP, IR_COMMAND_FLAG_IS_STOP_COMMAND, &doStop, stop }
 #endif
         };
 
-#endif /* IR_COMMAND_MAPPING_H_ */
-
+#endif // _IR_COMMAND_MAPPING_H
 #pragma once

@@ -24,5 +24,8 @@ void doUSLeft();
 void doUSScan();
 #endif
 
+void doCalibration();
+
+
 #endif // _QUADRUPED_HELPER_H
 #pragma once

@@ -7,19 +7,19 @@
  *      Author: Armin
  */
 
-#ifndef QUADRUPED_CONFIGURATION_H_
-#define QUADRUPED_CONFIGURATION_H_
+#ifndef _QUADRUPED_CONFIGURATION_H
+#define _QUADRUPED_CONFIGURATION_H
 
 #define PIN_BUZZER     3
 
 #define VCC_STOP_THRESHOLD_MILLIVOLT 3500 // stop moving if below 3.5 volt
 
-//#define QUADRUPED_HAS_IR_CONTROL      // 8600 bytes (including the movements)
-//#define QUADRUPED_ENABLE_RTTTL        // 1300 bytes for Short + Down
-//#define QUADRUPED_HAS_NEOPIXEL        // 6300 to 6600 bytes
-//#define QUADRUPED_HAS_US_DISTANCE     // 800 bytes
-//#define QUADRUPED_HAS_US_DISTANCE_SERVO // 710 bytes
-//#define INFO                          // 2850 bytes
+//#define QUADRUPED_HAS_IR_CONTROL      // Requires additionally 8600 bytes (including the movements)
+//#define QUADRUPED_ENABLE_RTTTL        // Requires additionally 1300 bytes for Short + Down
+//#define QUADRUPED_HAS_NEOPIXEL        // Requires additionally 6300 to 6600 bytes
+//#define QUADRUPED_HAS_US_DISTANCE     // Requires additionally 800 bytes
+//#define QUADRUPED_HAS_US_DISTANCE_SERVO // Requires additionally 710 bytes
+//#define INFO                          // Requires additionally 2850 bytes
 
 /*
  * !!! Choose your remote !!!
@@ -89,10 +89,6 @@ extern Servo USServo;
 #  endif
 #endif
 
-#if defined(QUADRUPED_ENABLE_RTTTL)
-#include <PlayRtttl.h>
-#endif
-
 #if defined(QUADRUPED_HAS_NEOPIXEL)
 // patterns always used if Neopixel are enabled
 #define ENABLE_PATTERN_HEARTBEAT
@@ -107,5 +103,5 @@ extern Servo USServo;
  */
 bool delayAndCheckForLowVoltageAndStop(uint16_t aDelayMillis);
 
-#endif /* QUADRUPED_CONFIGURATION_H_ */
+#endif // _QUADRUPED_CONFIGURATION_H
 #pragma once

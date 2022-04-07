@@ -20,7 +20,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/gpl.html>.
+ *  along with this program. If not, see <http://www.gnu.org/licenses/gpl.html>.
  */
 
 /*
@@ -92,7 +92,8 @@
 #include "IRCommandDispatcher.h"
 #endif
 #if defined(QUADRUPED_ENABLE_RTTTL)
-#include <PlayRtttl.h>
+//#define USE_NO_RTX_EXTENSIONS // Disables RTX format definitions `'s'` (style) and `'l'` (loop). Saves up to 332 bytes program memory
+#include <PlayRtttl.hpp>
 #endif
 #if defined(QUADRUPED_HAS_NEOPIXEL)
 #include "QuadrupedNeoPixel.h"

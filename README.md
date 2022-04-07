@@ -151,7 +151,7 @@ To customize the library to different requirements, there are some compile optio
 These macros must be defined in your program before the line `#include <ServoEasing.hpp>` to take effect.<br/>
 Modify them by enabling / disabling them, or change the values if applicable.
 
-| Option | Default | Description |
+| Name | Default value | Description |
 |-|-|-|
 | `USE_PCA9685_SERVO_EXPANDER` | disabled | Enables the use of the PCA9685 I2C expander chip/board. |
 | `USE_SERVO_LIB` | disabled | Use of PCA9685 normally disables use of regular servo library. You can force additional using of regular servo library by defining `USE_SERVO_LIB`. See [below](https://github.com/ArminJo/ServoEasing#using-pca9685-16-channel-servo-expander). |
