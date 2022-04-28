@@ -14,15 +14,15 @@ on:
     paths:
     - '**.ino'
     - '**.cpp'
-    - '**.h'
     - '**.hpp'
+    - '**.h'
     - '**LibraryBuild.yml'
   pull_request:
     paths:
     - '**.ino'
     - '**.cpp'
-    - '**.h'
     - '**.hpp'
+    - '**.h'
     - '**LibraryBuild.yml'
 
 jobs:

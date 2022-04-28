@@ -91,6 +91,7 @@ void setup() {
     Servo1.attach(SERVO1_PIN, 45);
 }
 void loop() {
+    Servo1.setEasingType(EASE_CUBIC_IN_OUT); // EASE_LINEAR is default
     Servo1.easeTo(135, 40);
     Servo1.easeTo(45, 40);
 }

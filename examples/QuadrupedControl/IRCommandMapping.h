@@ -86,7 +86,7 @@
 #define COMMAND_ENTER       IR_OK
 #define COMMAND_UP          IR_UP
 #define COMMAND_DOWN        IR_DOWN
-#endif
+#endif // defined(USE_KEYES_REMOTE_CLONE)
 
 #if defined(USE_KEYES_REMOTE)
 #  if defined(IR_REMOTE_NAME)
@@ -149,8 +149,8 @@
 #define COMMAND_UP          IR_UP
 #define COMMAND_DOWN        IR_DOWN
 
-#  endif
-#endif
+#  endif // defined(IR_REMOTE_NAME)
+#endif // defined(USE_KEYES_REMOTE)
 
 #if defined(USE_WM10_REMOTE)
 #  if defined(IR_REMOTE_NAME)
@@ -212,8 +212,8 @@
 #define COMMAND_UP          IR_UP
 #define COMMAND_DOWN        IR_DOWN
 
-#  endif
-#endif
+#  endif // defined(IR_REMOTE_NAME)
+#endif // defined(USE_WM10_REMOTE)
 
 #if defined(USE_DVBT_STICK_REMOTE)
 #  if defined(IR_REMOTE_NAME)
@@ -283,8 +283,8 @@
 #define COMMAND_UP          IR_UP
 #define COMMAND_DOWN        IR_DOWN
 
-#  endif
-#endif
+#  endif // defined(IR_REMOTE_NAME)
+#endif // defined(USE_DVBT_STICK_REMOTE)
 
 #if defined(USE_WHITE_DVD_REMOTE)
 #  if defined(IR_REMOTE_NAME)
@@ -383,8 +383,8 @@
 
 #define COMMAND_PATTERN_0   IR_EJECT
 
-#  endif
-#endif
+#  endif // defined(IR_REMOTE_NAME)
+#endif // defined(USE_WHITE_DVD_REMOTE)
 
 /*
  * THIRD:

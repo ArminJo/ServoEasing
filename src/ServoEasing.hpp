@@ -278,7 +278,7 @@ int ServoEasing::PCA9685UnitsToMicroseconds(int aPCA9685Units) {
 
 // Constructor without I2C address
 ServoEasing::ServoEasing() // @suppress("Class members should be properly initialized")
-#if !defined(DO_NOT_USE_SERVO_LIB)
+#if !defined(_DO_NOT_USE_SERVO_LIB)
 :
         Servo()
 #endif
@@ -446,7 +446,7 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
     return aPin;
 #endif // defined(USE_PCA9685_SERVO_EXPANDER)
 
-#if !defined(DO_NOT_USE_SERVO_LIB)
+#if !defined(_DO_NOT_USE_SERVO_LIB)
     // This error value has priority over the regular return value from Servo::attach()
     if (tReturnValue == INVALID_SERVO) {
         return tReturnValue;
@@ -461,7 +461,7 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
 #  else
     return Servo::attach(aPin, tMicrosecondsForServo0Degree, tMicrosecondsForServo180Degree);
 #  endif
-#endif //!defined(DO_NOT_USE_SERVO_LIB)
+#endif //!defined(_DO_NOT_USE_SERVO_LIB)
 }
 
 void ServoEasing::detach() {

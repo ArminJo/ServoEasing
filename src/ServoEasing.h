@@ -44,7 +44,7 @@
  * All internal values *MicrosecondsOrUnits now contains no more microseconds but PCA9685 units!!!
  */
 #if defined(USE_PCA9685_SERVO_EXPANDER) && !defined(USE_SERVO_LIB)
-#define DO_NOT_USE_SERVO_LIB
+#define _DO_NOT_USE_SERVO_LIB
 #endif
 
 /*
@@ -59,7 +59,7 @@
 //#define USE_LEIGHTWEIGHT_SERVO_LIB
 #endif
 #if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-#define DO_NOT_USE_SERVO_LIB
+#define _DO_NOT_USE_SERVO_LIB
 #endif
 
 
@@ -75,7 +75,7 @@
 #warning No periodic timer support existent (or known) for this platform. Only blocking functions and simple example will run!
 #endif
 
-#if !defined(DO_NOT_USE_SERVO_LIB)
+#if !defined(_DO_NOT_USE_SERVO_LIB)
 #  if defined(ESP32)
 // This does not work in Arduino IDE for step "Generating function prototypes..."
 //#    if ! __has_include("ESP32Servo.h")
@@ -89,7 +89,7 @@
 #  else
 #   include <Servo.h>
 #  endif // defined(ESP32)
-#endif // !defined(DO_NOT_USE_SERVO_LIB)
+#endif // !defined(_DO_NOT_USE_SERVO_LIB)
 
 #if defined(ARDUINO_ARCH_MBED) // Arduino Nano 33 BLE
 #include "mbed.h"
@@ -313,7 +313,7 @@
 #define PCA9685_PRESCALER_FOR_20_MS ((25000000L /(4096L * 50))-1) // = 121 / 0x79 at 50 Hz
 
 class ServoEasing
-#if !defined(DO_NOT_USE_SERVO_LIB)
+#if !defined(_DO_NOT_USE_SERVO_LIB)
         : public Servo
 #endif
 {
