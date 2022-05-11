@@ -1,6 +1,6 @@
 # ServoEasing examples
 All examples with up to 2 Servos can be used without modifications with the [Lightweight Servo library](https://github.com/ArminJo/LightweightServo)
-for AVR by by [commenting out the line `#define USE_LEIGHTWEIGHT_SERVO_LIB` in the file ServoEasing.h](https://github.com/ArminJo/ServoEasing#using-the-included-lightweight-servo-library).
+for AVR by by [activating the line `#define USE_LEIGHTWEIGHT_SERVO_LIB`](https://github.com/ArminJo/ServoEasing#using-the-included-lightweight-servo-library).
 
 YouTube video of SymmetricEasing and AsymmetricEasing example
 
@@ -24,7 +24,7 @@ YouTube video of SymmetricEasing and AsymmetricEasing example
   
 ## [Simple example](https://github.com/ArminJo/ServoEasing/blob/master/examples/Simple/Simple.ino)
 This example does not use interrupts and should therefore run on any platform where the Arduino Servo library is available.<br/><br/>
-**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` in the library file *ServoEasing.h* is enabled.<br/>
+**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` is enabled.<br/>
 ![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/ServoEasing-Linear-Cubic-Circular.png)
 
 ## [OneServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino)
@@ -34,19 +34,19 @@ This example moves one Servo with different speeds and using blocking and interr
 This example shows how to move 2 servos attached at pin 9 and 10 synchronized or independently using the LightweightServo library. This saves 640 bytes program memory compared to using Arduino Servo library.
 
 ## [ThreeServo examples](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServo/ThreeServo.ino)
-This example shows how to move 3 servos synchronized or independently.<br/>
+This example shows how to move 3 servos synchronized or independently. It demonstrates the use of `ServoEasingArray` and `ServoEasingNextPositionArray`.<br/>
 WOKWI online simulation of the ThreeServo example.<br/>
 [![WOKWI online simulation of the ThreeServo example](https://github.com/ArminJo/ServoEasing/blob/master/pictures/Wokwi_ThreeServos.png)](https://wokwi.com/arduino/projects/299552195816194570).
 
 ## [SymmetricEasing example](https://github.com/ArminJo/ServoEasing/blob/master/examples/SymmetricEasing/SymmetricEasing.ino)
 This example shows symmetric (end movement is mirror of start movement) linear, quadratic and cubic movements for 3 servos synchronously.
-**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` in the library file *ServoEasing.h* is enabled.<br/>
+**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` is enabled.<br/>
 ![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/SymmetricEasing.png)
 
 ## [AsymmetricEasing example](https://github.com/ArminJo/ServoEasing/blob/master/examples/AsymmetricEasing/AsymmetricEasing.ino)
 This example shows asymmetric (end movement is different from start movement) non linear movements for 3 servos synchronously.
 It includes a partially **user defined easing function**  `EaseQuadraticInQuarticOut()`.
-**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` in the library file *ServoEasing.h* is enabled.<br/>
+**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` is enabled.<br/>
 ![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/AsymmetricEasing.png)
 
 ## [ContinuousRotatingServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/ContinuousRotatingServo/ContinuousRotatingServo.ino)
@@ -73,7 +73,7 @@ Only for AVR, because it uses EEPROM.
 
 ## [PCA9685_Expander example](https://github.com/ArminJo/ServoEasing/blob/master/examples/PCA9685_Expander/PCA9685_Expander.ino)
 The OneServo example modified for using a PCA9685 expander board and the standard Arduino Wire library.<br/>
-You must activate the line `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.h* to make the expander example work.
+You must activate the line `#define USE_PCA9685_SERVO_EXPANDER` to make the expander example work.
 
 ## [PCA9685_ExpanderAndServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/PCA9685_ExpanderAndServo/PCA9685_ExpanderAndServo.ino)
 Combination of OneServo example and PCA9685_Expander example. Move one servo attached to the Arduino board and one servo attached to the PCA9685 expander board **simultaneously**.
@@ -81,7 +81,7 @@ Combination of OneServo example and PCA9685_Expander example. Move one servo att
 ## [PCA9685_ExpanderFor32Servos example](https://github.com/ArminJo/ServoEasing/blob/master/examples/PCA9685_ExpanderFor32Servos/PCA9685_ExpanderFor32Servos.ino)
 Program to show the usage of 2 PCA9685 expander boards with 32 servos.
 On the ESP32, the I2C library interferes with the 29 millisecond timer and therefore can only run at 100000 Hz or lower.<br/>
-You must activate the line `#define USE_PCA9685_SERVO_EXPANDER` in *ServoEasing.h* to make the expander example work.
+You must activate the line `#define USE_PCA9685_SERVO_EXPANDER` to make the expander example work.
 
 ### YouTube Video
 [![Servos 16-19 and 28-31 in action](https://i.ytimg.com/vi/XMVh3IT5BgU/hqdefault.jpg)](https://youtu.be/XMVh3IT5BgU)

@@ -52,13 +52,13 @@
 #define VERSION_EXAMPLE "1.0"
 
 #if defined(__AVR__)
-#include "ADCUtils.h" // for get getVCCVoltageMillivolt
+#include "ADCUtils.hpp" // for get getVCCVoltageMillivolt
 /*
  * By using LightweightServo library we can change the refresh period.
  * ... and discover that at least SG90 and MG90 servos accept a refresh period down to 2.5 ms!
  */
-//#define USE_LEIGHTWEIGHT_SERVO_LIB  // Only available for AVR
-#if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+//#define USE_LEIGHTWEIGHT_SERVO_LIB  // Only available for ATmega328
+#if defined(USE_LEIGHTWEIGHT_SERVO_LIB) && (defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__))
 #include "LightweightServo.hpp"
 #endif
 #endif

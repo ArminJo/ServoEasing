@@ -1,7 +1,7 @@
 /*
  * ADCUtils.h
  *
- *  Copyright (C) 2016-2021  Armin Joachimsmeyer
+ *  Copyright (C) 2016-2022  Armin Joachimsmeyer
  *  Email: armin.joachimsmeyer@gmail.com
  *
  *  This file is part of Arduino-Utils https://github.com/ArminJo/Arduino-Utils.
@@ -45,14 +45,6 @@
 #define ADC_PRESCALE ADC_PRESCALE64
 #elif (F_CPU == 16000000)
 #define ADC_PRESCALE ADC_PRESCALE128
-#endif
-
-/*
- * By replacing this value with the voltage you measured a the AREF pin after a conversion
- * with INTERNAL you can calibrate your ADC readout. For my Nanos I measured e.g. 1060 mV and 1093 mV.
- */
-#if !defined(ADC_INTERNAL_REFERENCE_MILLIVOLT)
-#define ADC_INTERNAL_REFERENCE_MILLIVOLT 1100L    // Value measured at the AREF pin
 #endif
 
 /*
@@ -122,7 +114,7 @@
 uint16_t readADCChannel(uint8_t aChannelNumber);
 uint16_t readADCChannelWithReference(uint8_t aChannelNumber, uint8_t aReference);
 uint16_t waitAndReadADCChannelWithReference(uint8_t aChannelNumber, uint8_t aReference);
-uint16_t waitAndReadADCChannelWithReferenceAndRestoreADMUX(uint8_t aChannelNumber, uint8_t aReference);
+uint16_t waitAndReadADCChannelWithReferenceAndRestoreADMUXAndReference(uint8_t aChannelNumber, uint8_t aReference);
 uint16_t readADCChannelWithOversample(uint8_t aChannelNumber, uint8_t aOversampleExponent);
 void setADCMultiplexerAndReferenceForNextConversion(uint8_t aChannelNumber, uint8_t aReference);
 uint16_t readADCChannelWithReferenceOversample(uint8_t aChannelNumber, uint8_t aReference, uint8_t aOversampleExponent);

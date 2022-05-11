@@ -76,53 +76,59 @@ jobs:
               AsymmetricEasing:
                 -DTRACE
               Simple: -DPRINT_FOR_SERIAL_PLOTTER
-              PCA9685_ExpanderFor32Servos: -DTRACE -DENABLE_MICROS_AS_DEGREE_PARAMETER
+              PCA9685_ExpanderFor32Servos: -DTRACE -DDISABLE_MICROS_AS_DEGREE_PARAMETER
+
+          - arduino-boards-fqbn: arduino:avr:leonardo
+            sketches-exclude: TwoServos # No LightweightServoLib available
+
+          - arduino-boards-fqbn: arduino:avr:mega
+            sketches-exclude: TwoServos # No LightweightServoLib available
 
           - arduino-boards-fqbn: arduino:megaavr:nona4809:mode=off
-            sketches-exclude: SpeedTest,EndPositionsTest,QuadrupedControl,RobotArmControl # No getVCCVoltageMillivolt(), no EasyButton
+            sketches-exclude: TwoServos,SpeedTest,EndPositionsTest,QuadrupedControl,RobotArmControl # No getVCCVoltageMillivolt(), no EasyButton
 
           - arduino-boards-fqbn: megaTinyCore:megaavr:atxy7:chip=3217,clock=16internal
             platform-url: http://drazzy.com/package_drazzy.com_index.json
-            sketches-exclude: SpeedTest,EndPositionsTest,QuadrupedControl,RobotArmControl # No getVCCVoltageMillivolt(), no EasyButton
+            sketches-exclude: TwoServos,SpeedTest,EndPositionsTest,QuadrupedControl,RobotArmControl # No getVCCVoltageMillivolt(), no EasyButton
 
           - arduino-boards-fqbn: arduino:sam:arduino_due_x
-            sketches-exclude: QuadrupedControl,RobotArmControl # QuadrupedControl RobotArmControl because of missing EEprom
+            sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl # QuadrupedControl RobotArmControl because of missing EEprom
 
           - arduino-boards-fqbn: arduino:samd:arduino_zero_native
-            sketches-exclude: QuadrupedControl,RobotArmControl
+            sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl
 
           - arduino-boards-fqbn: arduino:mbed:nano33ble
             arduino-platform: arduino:mbed@1.3.2 # the 2.0.0 is incompatible with Servo library
-            sketches-exclude: QuadrupedControl,RobotArmControl,PCA9685_ExpanderFor32Servos,PCA9685_Expander,PCA9685_ExpanderAndServo  # No Wire
+            sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl,PCA9685_ExpanderFor32Servos,PCA9685_Expander,PCA9685_ExpanderAndServo  # No Wire
 
           - arduino-boards-fqbn: arduino:mbed_rp2040:pico
-            sketches-exclude: QuadrupedControl,RobotArmControl # Comma separated list of example names to exclude in build
+            sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl # Comma separated list of example names to exclude in build
 
           - arduino-boards-fqbn: rp2040:rp2040:arduino_nano_connect
             platform-url: https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
-            sketches-exclude: QuadrupedControl,RobotArmControl # Comma separated list of example names to exclude in build
+            sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl # Comma separated list of example names to exclude in build
 
           - arduino-boards-fqbn: esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
             platform-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
-            sketches-exclude: QuadrupedControl,RobotArmControl,SpeedTest # SpeedTest because of only one analog input
+            sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl,SpeedTest # SpeedTest because of only one analog input
 
           - arduino-boards-fqbn: esp32:esp32:featheresp32:FlashFreq=80
             platform-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
             required-libraries: ESP32Servo
-            sketches-exclude: QuadrupedControl,RobotArmControl # Comma separated list of example names to exclude in build
+            sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl # Comma separated list of example names to exclude in build
 
           - arduino-boards-fqbn: STMicroelectronics:stm32:GenF1:pnum=BLUEPILL_F103C8 # STM version
             platform-url: https://raw.githubusercontent.com/stm32duino/BoardManagerFiles/main/package_stmicroelectronics_index.json
-            sketches-exclude: QuadrupedControl,RobotArmControl
+            sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl
 
           - arduino-boards-fqbn: stm32duino:STM32F1:genericSTM32F103C # Roger Clark version
             platform-url: http://dan.drown.org/stm32duino/package_STM32duino_index.json
-            sketches-exclude: QuadrupedControl,RobotArmControl
+            sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl
 
           - arduino-boards-fqbn: SparkFun:apollo3:sfe_artemis_nano
             platform-url: https://raw.githubusercontent.com/sparkfun/Arduino_Apollo3/master/package_sparkfun_apollo3_index.json
              # 4/2020 For PCA9685_Expander, Wire cannot be found in cli, it works in the regular IDE.
-            sketches-exclude: QuadrupedControl,RobotArmControl,PCA9685_Expander,PCA9685_ExpanderAndServo,PCA9685_ExpanderFor32Servos
+            sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl,PCA9685_Expander,PCA9685_ExpanderAndServo,PCA9685_ExpanderFor32Servos
 
 
       # Do not cancel all jobs / architectures if one job fails

@@ -33,7 +33,7 @@
 #include <stdint.h>
 
 /*
- * Commenting out this saves 70 bytes flash memory. You must then use the init function initLightweightServoPin9And10() manually.
+ * Activating this saves 70 bytes program space. You must then use the init functions initLightweightServoPin*() manually.
  */
 //#define DISABLE_SERVO_TIMER_AUTO_INITIALIZE
 #define ISR1_COUNT_FOR_20_MILLIS 40000 // you can modify this if you have servos which accept a higher rate

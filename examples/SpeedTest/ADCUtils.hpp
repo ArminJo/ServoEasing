@@ -1,9 +1,9 @@
 /*
- * ADCUtils.cpp
+ * ADCUtils.hpp
  *
  * ADC utility functions. Conversion time is defined as 0.104 milliseconds for 16 MHz Arduinos in ADCUtils.h.
  *
- *  Copyright (C) 2016-2020  Armin Joachimsmeyer
+ *  Copyright (C) 2016-2022  Armin Joachimsmeyer
  *  Email: armin.joachimsmeyer@gmail.com
  *
  *  This file is part of Arduino-Utils https://github.com/ArminJo/Arduino-Utils.
@@ -22,8 +22,20 @@
  *  along with this program. If not, see <http://www.gnu.org/licenses/gpl.html>.
  */
 
+
+#ifndef _ADC_UTILS_HPP
+#define _ADC_UTILS_HPP
+
 #include "ADCUtils.h"
-#if defined(__AVR__) && defined(ADATE)
+#if defined(__AVR__) && defined(ADCSRA) && defined(ADATE)
+
+/*
+ * By replacing this value with the voltage you measured a the AREF pin after a conversion
+ * with INTERNAL you can calibrate your ADC readout. For my Nanos I measured e.g. 1060 mV and 1093 mV.
+ */
+#if !defined(ADC_INTERNAL_REFERENCE_MILLIVOLT)
+#define ADC_INTERNAL_REFERENCE_MILLIVOLT 1100L    // Value measured at the AREF pin
+#endif
 
 // Union to speed up the combination of low and high bytes to a word
 // it is not optimal since the compiler still generates 2 unnecessary moves
@@ -92,7 +104,7 @@ uint16_t waitAndReadADCChannelWithReference(uint8_t aChannelNumber, uint8_t aRef
  * Conversion time is defined as 0.104 milliseconds by ADC_PRESCALE in ADCUtils.h.
  * Restores ADMUX after reading
  */
-uint16_t waitAndReadADCChannelWithReferenceAndRestoreADMUX(uint8_t aChannelNumber, uint8_t aReference) {
+uint16_t waitAndReadADCChannelWithReferenceAndRestoreADMUXAndReference(uint8_t aChannelNumber, uint8_t aReference) {
     uint8_t tOldADMUX = checkAndWaitForReferenceAndChannelToSwitch(aChannelNumber, aReference);
     uint16_t tResult = readADCChannelWithReference(aChannelNumber, aReference);
     checkAndWaitForReferenceAndChannelToSwitch(tOldADMUX & MASK_FOR_ADC_CHANNELS, tOldADMUX >> SHIFT_VALUE_FOR_REFERENCE);
@@ -435,8 +447,12 @@ float getTemperature(void) {
     return (tTemp / 1.22);
 #endif
 }
-#elif defined(ARDUINO_ARCH_APOLLO3)
+
+#elif defined(ARDUINO_ARCH_APOLLO3) // defined(__AVR__) && defined(ADATE)
     void ADCUtilsDummyToAvoidBFDAssertions(){
         ;
     }
-#endif // defined(__AVR__)
+#endif // defined(__AVR__) && defined(ADATE)
+
+#endif // _ADC_UTILS_HPP
+#pragma once

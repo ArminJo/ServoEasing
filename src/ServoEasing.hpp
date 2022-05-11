@@ -34,12 +34,12 @@
  *
  * - USE_PCA9685_SERVO_EXPANDER         Enables the use of the PCA9685 I2C expander chip/board.
  * - USE_SERVO_LIB                      Use of PCA9685 normally disables use of regular servo library. You can force additional using of regular servo library by defining USE_SERVO_LIB.
+ * - USE_LEIGHTWEIGHT_SERVO_LIB         Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
  * - PROVIDE_ONLY_LINEAR_MOVEMENT       Disables all but LINEAR movement. Saves up to 1540 bytes program memory.
  * - DISABLE_COMPLEX_FUNCTIONS          Disables the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings.
  * - MAX_EASING_SERVOS                  Saves 4 byte RAM per servo.
- * - ENABLE_MICROS_AS_DEGREE_PARAMETER  Enables passing also microsecond values as (target angle) parameter. Requires additional 128 bytes program memory.
+ * - DISABLE_MICROS_AS_DEGREE_PARAMETER Disables passing also microsecond values as (target angle) parameter. Saves 128 bytes program memory.
  * - PRINT_FOR_SERIAL_PLOTTER           Generate serial output for Arduino Plotter (Ctrl-Shift-L).
- * - USE_LEIGHTWEIGHT_SERVO_LIB         Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
  */
 
 #ifndef _SERVO_EASING_HPP
@@ -48,6 +48,10 @@
 #include <Arduino.h>
 
 #include "ServoEasing.h"
+
+#if defined(USE_LEIGHTWEIGHT_SERVO_LIB) && (defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__))
+#include "LightweightServo.hpp" // include sources of LightweightServo library
+#endif
 
 #if defined(ESP8266) || defined(ESP32)
 #include "Ticker.h" // for ServoEasingInterrupt functions
@@ -135,7 +139,11 @@ volatile bool ServoEasing::sInterruptsAreActive = false; // true if interrupts a
  */
 uint_fast8_t ServoEasing::sServoArrayMaxIndex = 0; // maximum index of an attached servo in ServoEasing::ServoEasingArray[]
 ServoEasing *ServoEasing::ServoEasingArray[MAX_EASING_SERVOS];
-// used to move all servos
+/*
+ * Used exclusively for *ForAllServos() functions. Is updated by write() or startEaseToD() function, to keep it synchronized.
+ * Can contain degree values or microseconds but not units.
+ * Use int since we want to support negative degree values (with trim)
+ */
 int ServoEasing::ServoEasingNextPositionArray[MAX_EASING_SERVOS];
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
@@ -325,27 +333,28 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServo0Degree, int aMic
 /*
  * Combination of attach with initial write.
  */
-uint8_t ServoEasing::attach(int aPin, int aInitialDegree) {
-    return attach(aPin, aInitialDegree, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
+uint8_t ServoEasing::attach(int aPin, int aInitialDegreeOrMicrosecond) {
+    return attach(aPin, aInitialDegreeOrMicrosecond, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
 }
 
 /*
  * Specify the start value written to the servo and the microseconds values for 0 and 180 degree for the servo.
  * The values can be determined by the EndPositionsTest example.
  */
-uint8_t ServoEasing::attach(int aPin, int aInitialDegree, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree) {
-    return attach(aPin, aInitialDegree, aMicrosecondsForServo0Degree, aMicrosecondsForServo180Degree, 0, 180);
+uint8_t ServoEasing::attach(int aPin, int aInitialDegreeOrMicrosecond, int aMicrosecondsForServo0Degree,
+        int aMicrosecondsForServo180Degree) {
+    return attach(aPin, aInitialDegreeOrMicrosecond, aMicrosecondsForServo0Degree, aMicrosecondsForServo180Degree, 0, 180);
 }
 
 /*
  * The microseconds values at aServoLowDegree and aServoHighDegree are used to compute the microseconds values at 0 and 180 degrees
  * and can be used e.g. to run the servo from virtual -90 to +90 degree (See TwoServos example).
  */
-uint8_t ServoEasing::attach(int aPin, int aInitialDegree, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree,
-        int aServoLowDegree, int aServoHighDegree) {
+uint8_t ServoEasing::attach(int aPin, int aInitialDegreeOrMicrosecond, int aMicrosecondsForServoLowDegree,
+        int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree) {
     uint8_t tReturnValue = attach(aPin, aMicrosecondsForServoLowDegree, aMicrosecondsForServoHighDegree, aServoLowDegree,
             aServoHighDegree);
-    write(aInitialDegree);
+    write(aInitialDegreeOrMicrosecond);
     return tReturnValue;
 }
 
@@ -512,6 +521,7 @@ void ServoEasing::setSpeed(uint_fast16_t aDegreesPerSecond) {
 
 /**
  * @param aTrimDegrees This trim value is always added to the degree/units/microseconds value requested
+ * @param aDoWrite Apply value directly to servo by calling writeMicrosecondsOrUnits()
  */
 void ServoEasing::setTrim(int aTrimDegrees, bool aDoWrite) {
     if (aTrimDegrees >= 0) {
@@ -523,6 +533,7 @@ void ServoEasing::setTrim(int aTrimDegrees, bool aDoWrite) {
 
 /**
  * @param aTrimMicrosecondsOrUnits This trim value is always added to the degree/units/microseconds value requested
+ * @param aDoWrite Apply value directly to servo by calling writeMicrosecondsOrUnits()
  * @note It is only used/added at writeMicrosecondsOrUnits()
  */
 void ServoEasing::setTrimMicrosecondsOrUnits(int aTrimMicrosecondsOrUnits, bool aDoWrite) {
@@ -541,7 +552,7 @@ uint_fast8_t ServoEasing::getEasingType() {
     return (mEasingType);
 }
 
-void ServoEasing::registerUserEaseInFunction(float (*aUserEaseInFunction)(float aPercentageOfCompletion)) {
+void ServoEasing::registerUserEaseInFunction(float (*aUserEaseInFunction)(float aFactorOfTimeCompletion)) {
     mUserEaseInFunction = aUserEaseInFunction;
 }
 #endif
@@ -549,10 +560,10 @@ void ServoEasing::registerUserEaseInFunction(float (*aUserEaseInFunction)(float 
 /*
  * @param aValue treat values less than 400 as angles in degrees, others are handled as microseconds
  */
-void ServoEasing::write(int aValue) {
+void ServoEasing::write(int aDegreeOrMicrosecond) {
 #if defined(TRACE)
     Serial.print(F("write "));
-    Serial.print(aValue);
+    Serial.print(aDegreeOrMicrosecond);
     Serial.print(' ');
 #endif
     /*
@@ -564,13 +575,8 @@ void ServoEasing::write(int aValue) {
 #endif
         return;
     }
-    ServoEasingNextPositionArray[mServoIndex] = aValue;
-
-    if (aValue < THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
-        // treat values less than 400 as angles in degrees, others are handled as microseconds
-        aValue = DegreeToMicrosecondsOrUnits(aValue);
-    }
-    writeMicrosecondsOrUnits(aValue);
+    ServoEasingNextPositionArray[mServoIndex] = aDegreeOrMicrosecond;
+    writeMicrosecondsOrUnits(DegreeToMicrosecondsOrUnits(aDegreeOrMicrosecond));
 }
 
 /**
@@ -650,8 +656,18 @@ void ServoEasing::writeMicrosecondsOrUnits(int aMicrosecondsOrUnits) {
 #endif
 }
 
+/**
+ * Only used in startEaseTo to compute target degree
+ * For PCA9685, we have stored units in mServo0DegreeMicrosecondsOrUnits and mServo180DegreeMicrosecondsOrUnits
+ * @param aMicroseconds Always assume microseconds, thus for PCA9685 we must convert 0 and 180 degree values back to microseconds
+ */
 int ServoEasing::MicrosecondsToDegree(int aMicroseconds) {
 #if defined(USE_PCA9685_SERVO_EXPANDER)
+#  if defined(USE_SERVO_LIB)
+    if (!mServoIsConnectedToExpander) {
+        return MicrosecondsOrUnitsToDegree(aMicroseconds); // not connected to PCA9685 here
+    }
+#  endif
     int32_t tResult = aMicroseconds - PCA9685UnitsToMicroseconds(mServo0DegreeMicrosecondsOrUnits);
     tResult = (tResult * 180) + 928;
     return (tResult / PCA9685UnitsToMicroseconds((mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits)));
@@ -660,6 +676,11 @@ int ServoEasing::MicrosecondsToDegree(int aMicroseconds) {
 #endif
 }
 
+/**
+ * Used to convert e.g. mCurrentMicrosecondsOrUnits back to degree
+ * @param aMicrosecondsOrUnits For servos connected to a PCA9685 assume units, else assume microseconds
+ * Do not use map function, because it does no rounding
+ */
 int ServoEasing::MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits) {
     /*
      * Formula for microseconds:
@@ -670,7 +691,10 @@ int ServoEasing::MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits) {
      * map(aMicrosecondsOrUnits, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits, 0, 180)
      */
 
-// map with rounding
+    /*
+     * compute map with rounding
+     */
+    // remove zero degree offset
     int32_t tResult = aMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits;
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 #  if defined(USE_SERVO_LIB)
@@ -678,7 +702,7 @@ int ServoEasing::MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits) {
         // here we have PCA9685 units
         tResult = (tResult * 180) + 190;
     } else {
-        // here we have microseconds
+        // here we deal with microseconds
         tResult = (tResult * 180) + 928;
     }
 #  else
@@ -686,9 +710,10 @@ int ServoEasing::MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits) {
     tResult = (tResult * 180) + 190;
 #  endif
 #else
-    // here we have microseconds
-    tResult = (tResult * 180) + 928;
+    // here we deal with microseconds
+    tResult = (tResult * 180) + 928; // 928 is the value for 1/2 degree before scaling; (1856 = 180 - 0 degree micros) / 2
 #endif
+    // scale by 180 degree range (180 - 0 degree micros)
     return (tResult / (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits));
 
 }
@@ -696,24 +721,29 @@ int ServoEasing::MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits) {
 /**
  * We have around 10 µs per degree
  * We do not convert values >= 400.
- * This allows it to use Microseconds instead of degrees as function arguments for all functions using degree as argument.
+ * Used to convert (external) provided degree values to internal microseconds
  */
-int ServoEasing::DegreeToMicrosecondsOrUnits(int aDegree) {
+int ServoEasing::DegreeToMicrosecondsOrUnits(int aDegreeOrMicroseconds) {
 // For microseconds and PCA9685 units:
-#if defined ENABLE_MICROS_AS_DEGREE_PARAMETER
-    if (aDegree < THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
-#endif
-    return map(aDegree, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
-#if defined ENABLE_MICROS_AS_DEGREE_PARAMETER
-    } else {
-        // degree already contains Microseconds
-#if defined(USE_PCA9685_SERVO_EXPANDER)
-        return MicrosecondsToPCA9685Units(aDegree);
+#if defined(DISABLE_MICROS_AS_DEGREE_PARAMETER)
+    return map(aDegreeOrMicroseconds, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
 #else
-        return aDegree;
-#endif
+    if (aDegreeOrMicroseconds < THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
+        return map(aDegreeOrMicroseconds, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
+    } else {
+        // here aDegreeOrMicroseconds contains microseconds
+#  if defined(USE_PCA9685_SERVO_EXPANDER)
+#    if defined(USE_SERVO_LIB)
+    if (!mServoIsConnectedToExpander) {
+        return aDegreeOrMicroseconds; // we must return microseconds here
     }
-#endif
+#    endif
+    return MicrosecondsToPCA9685Units(aDegreeOrMicroseconds); // return units here
+#  else
+    return aDegreeOrMicroseconds;
+#  endif
+    }
+#endif // defined(DISABLE_MICROS_AS_DEGREE_PARAMETER)
 }
 
 /**
@@ -729,16 +759,16 @@ int ServoEasing::DegreeToMicrosecondsOrUnitsWithTrimAndReverse(int aDegree) {
     return tResultValue;
 }
 
-void ServoEasing::easeTo(int aDegree) {
-    easeTo(aDegree, mSpeed);
+void ServoEasing::easeTo(int aDegreeOrMicrosecond) {
+    easeTo(aDegreeOrMicrosecond, mSpeed);
 }
 
 /**
  * Blocking move without interrupt
  * @param aDegreesPerSecond Can range from 1 to the physically maximum value of 450
  */
-void ServoEasing::easeTo(int aDegree, uint_fast16_t aDegreesPerSecond) {
-    startEaseTo(aDegree, aDegreesPerSecond, false);
+void ServoEasing::easeTo(int aDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond) {
+    startEaseTo(aDegreeOrMicrosecond, aDegreesPerSecond, false);
     do {
         // First do the delay, then check for update, since we are likely called directly after start and there is nothing to move yet
         delay(REFRESH_INTERVAL_MILLIS); // 20 ms
@@ -749,8 +779,8 @@ void ServoEasing::easeTo(int aDegree, uint_fast16_t aDegreesPerSecond) {
 #endif
 }
 
-void ServoEasing::easeToD(int aDegree, uint_fast16_t aMillisForMove) {
-    startEaseToD(aDegree, aMillisForMove, false);
+void ServoEasing::easeToD(int aDegreeOrMicrosecond, uint_fast16_t aMillisForMove) {
+    startEaseToD(aDegreeOrMicrosecond, aMillisForMove, false);
     do {
         delay(REFRESH_INTERVAL_MILLIS); // 20 ms
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
@@ -760,35 +790,35 @@ void ServoEasing::easeToD(int aDegree, uint_fast16_t aMillisForMove) {
 #endif
 }
 
-bool ServoEasing::setEaseTo(int aDegree) {
-    return startEaseTo(aDegree, mSpeed, false);
+bool ServoEasing::setEaseTo(int aDegreeOrMicrosecond) {
+    return startEaseTo(aDegreeOrMicrosecond, mSpeed, false);
 }
 
 /**
  * Sets easing parameter, but does not start interrupt
  * @return false if servo was still moving
  */
-bool ServoEasing::setEaseTo(int aDegree, uint_fast16_t aDegreesPerSecond) {
-    return startEaseTo(aDegree, aDegreesPerSecond, false);
+bool ServoEasing::setEaseTo(int aDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond) {
+    return startEaseTo(aDegreeOrMicrosecond, aDegreesPerSecond, false);
 }
 
 /**
  * Starts interrupt for update()
  */
-bool ServoEasing::startEaseTo(int aDegree) {
-    return startEaseTo(aDegree, mSpeed, true);
+bool ServoEasing::startEaseTo(int aDegreeOrMicrosecond) {
+    return startEaseTo(aDegreeOrMicrosecond, mSpeed, true);
 }
 
 /**
- * Sets up all the values required for a smooth move to new value
- * returns false if servo was still moving
+ * Compute the MillisForCompleteMove parameter for use of startEaseToD() function
+ * and handle CALL_STYLE_BOUNCING_OUT_IN flag, which requires double time
+ * @return false if servo was still moving
  */
-bool ServoEasing::startEaseTo(int aDegree, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt) {
-    int tCurrentAngle = MicrosecondsOrUnitsToDegree(mCurrentMicrosecondsOrUnits);
-    if (aDegree == tCurrentAngle) {
-        // no effective movement -> return
-        return !mServoMoves;
-    }
+bool ServoEasing::startEaseTo(int aDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt) {
+
+    /*
+     * Avoid division by 0 below
+     */
     if (aDegreesPerSecond == 0) {
 #if defined(DEBUG)
         Serial.println(F("Speed is 0 -> set to 1"));
@@ -796,45 +826,50 @@ bool ServoEasing::startEaseTo(int aDegree, uint_fast16_t aDegreesPerSecond, bool
         aDegreesPerSecond = 1;
     }
 
-    uint_fast16_t tMillisForCompleteMove;
-#if defined ENABLE_MICROS_AS_DEGREE_PARAMETER
-    int tDegree = aDegree;
-    if (aDegree >= THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
-        // here tDegree contains microseconds and not units
-#if defined(USE_PCA9685_SERVO_EXPANDER)
-        // force convert microseconds
-        tDegree = MicrosecondsToDegree(tDegree);
+    /*
+     * Get / convert target degree
+     */
+    int tTargetDegree = aDegreeOrMicrosecond;
+#if defined(DISABLE_MICROS_AS_DEGREE_PARAMETER)
+     tTargetDegree = aDegreeOrMicrosecond; // no conversion required here
 #else
-        tDegree = MicrosecondsOrUnitsToDegree(tDegree);
-#endif
+    // Convert aDegreeOrMicrosecond to target degree
+    if (aDegreeOrMicrosecond >= THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
+        tTargetDegree = MicrosecondsToDegree(aDegreeOrMicrosecond);
     }
-    tMillisForCompleteMove = abs(tDegree - tCurrentAngle) * MILLIS_IN_ONE_SECOND / aDegreesPerSecond;
-#else
-    tMillisForCompleteMove = abs(aDegree - tCurrentAngle) * MILLIS_IN_ONE_SECOND / aDegreesPerSecond;
 #endif
 
+    int tCurrentDegree = MicrosecondsOrUnitsToDegree(mCurrentMicrosecondsOrUnits);
+
+    /*
+     * Compute the MillisForCompleteMove parameter for use of startEaseToD() function
+     */
+    uint_fast16_t tMillisForCompleteMove = abs(tTargetDegree - tCurrentDegree) * MILLIS_IN_ONE_SECOND / aDegreesPerSecond;
+
+    // bouncing has double movement, so take double time
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
     if ((mEasingType & CALL_STYLE_MASK) == CALL_STYLE_BOUNCING_OUT_IN) {
-        // bouncing has double movement, so take double time
         tMillisForCompleteMove *= 2;
     }
 #endif
-    return startEaseToD(aDegree, tMillisForCompleteMove, aStartUpdateByInterrupt);
+
+    return startEaseToD(aDegreeOrMicrosecond, tMillisForCompleteMove, aStartUpdateByInterrupt);
 }
 
 /**
- * Lower level function with time instead of speed parameter
  * Sets easing parameter, but does not start
+ * @return false if servo was still moving
  */
 bool ServoEasing::setEaseToD(int aDegree, uint_fast16_t aMillisForMove) {
     return startEaseToD(aDegree, aMillisForMove, false);
 }
 
 /**
+ * Sets up all the values required for a smooth move to new value
  * Lower level function with time instead of speed parameter
  * @return false if servo was still moving
  */
-bool ServoEasing::startEaseToD(int aDegree, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt) {
+bool ServoEasing::startEaseToD(int aDegreeOrMicrosecond, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt) {
     /*
      * Check for valid initialization of servo.
      */
@@ -845,8 +880,8 @@ bool ServoEasing::startEaseToD(int aDegree, uint_fast16_t aMillisForMove, bool a
         return true;
     }
 // write the position also to ServoEasingNextPositionArray
-    ServoEasingNextPositionArray[mServoIndex] = aDegree;
-    mEndMicrosecondsOrUnits = DegreeToMicrosecondsOrUnits(aDegree);
+    ServoEasingNextPositionArray[mServoIndex] = aDegreeOrMicrosecond;
+    mEndMicrosecondsOrUnits = DegreeToMicrosecondsOrUnits(aDegreeOrMicrosecond);
     int tCurrentMicrosecondsOrUnits = mCurrentMicrosecondsOrUnits;
     mDeltaMicrosecondsOrUnits = mEndMicrosecondsOrUnits - tCurrentMicrosecondsOrUnits;
 
@@ -964,47 +999,49 @@ bool ServoEasing::update() {
          * Non linear movement -> use floats
          * Compute tPercentageOfCompletion - from 0.0 to 1.0
          * The expected result of easing function is from 0.0 to 1.0
-         * or from EASE_FUNCTION_DEGREE_OFFSET to EASE_FUNCTION_DEGREE_OFFSET + 180 for direct degree result
+         * or from EASE_FUNCTION_DEGREE_INDICATOR_OFFSET to EASE_FUNCTION_DEGREE_INDICATOR_OFFSET + 180 for direct degree result
          */
-        float tPercentageOfCompletion = (float) tMillisSinceStart / (float) mMillisForCompleteMove;
-        float tEaseResult = 0.0;
+        float tFactorOfTimeCompletion = (float) tMillisSinceStart / (float) mMillisForCompleteMove;
+        float tFactorOfMovementCompletion = 0.0;
 
         uint_fast8_t tCallStyle = mEasingType & CALL_STYLE_MASK; // Values are CALL_STYLE_DIRECT, CALL_STYLE_OUT, CALL_STYLE_IN_OUT, CALL_STYLE_BOUNCING_OUT_IN
 
         if (tCallStyle == CALL_STYLE_DIRECT) {
             // Use IN function direct: Call with PercentageOfCompletion | 0.0 to 1.0. Result is from 0.0 to 1.0
-            tEaseResult = callEasingFunction(tPercentageOfCompletion);
+            tFactorOfMovementCompletion = callEasingFunction(tFactorOfTimeCompletion);
 
         } else if (tCallStyle == CALL_STYLE_OUT) {
             // Use IN function to generate OUT function: Call with (1 - PercentageOfCompletion) | 1.0 to 0.0. Result = (1 - result)
-            tEaseResult = 1.0 - (callEasingFunction(1.0 - tPercentageOfCompletion));
+            tFactorOfMovementCompletion = 1.0 - (callEasingFunction(1.0 - tFactorOfTimeCompletion));
 
         } else {
-            if (tPercentageOfCompletion <= 0.5) {
+            if (tFactorOfTimeCompletion <= 0.5) {
                 if (tCallStyle == CALL_STYLE_IN_OUT) {
                     // In the first half, call with (2 * PercentageOfCompletion) | 0.0 to 1.0. Result = (0.5 * result)
-                    tEaseResult = 0.5 * (callEasingFunction(2.0 * tPercentageOfCompletion));
+                    tFactorOfMovementCompletion = 0.5 * (callEasingFunction(2.0 * tFactorOfTimeCompletion));
                 }
                 if (tCallStyle == CALL_STYLE_BOUNCING_OUT_IN) {
                     // In the first half, call with (1 - (2 * PercentageOfCompletion)) | 1.0 to 0.0. Result = (1 - result) -> call OUT function faster.
-                    tEaseResult = 1.0 - (callEasingFunction(1.0 - (2.0 * tPercentageOfCompletion)));
+                    tFactorOfMovementCompletion = 1.0 - (callEasingFunction(1.0 - (2.0 * tFactorOfTimeCompletion)));
                 }
             } else {
                 if (tCallStyle == CALL_STYLE_IN_OUT) {
                     // In the second half, call with (2 - (2 * PercentageOfCompletion)) | 1.0 to 0.0. Result = ( 1- (0.5 * result))
-                    tEaseResult = 1.0 - (0.5 * (callEasingFunction(2.0 - (2.0 * tPercentageOfCompletion))));
+                    tFactorOfMovementCompletion = 1.0 - (0.5 * (callEasingFunction(2.0 - (2.0 * tFactorOfTimeCompletion))));
                 }
                 if (tCallStyle == CALL_STYLE_BOUNCING_OUT_IN) {
                     // In the second half, call with ((2 * PercentageOfCompletion) - 1) | 0.0 to 1.0. Result = (1- result) -> call OUT function faster and backwards.
-                    tEaseResult = 1.0 - (callEasingFunction((2.0 * tPercentageOfCompletion) - 1.0));
+                    tFactorOfMovementCompletion = 1.0 - (callEasingFunction((2.0 * tFactorOfTimeCompletion) - 1.0));
                 }
             }
         }
 
-        if (tEaseResult >= 2) {
-            tNewMicrosecondsOrUnits = DegreeToMicrosecondsOrUnits(tEaseResult - EASE_FUNCTION_DEGREE_INDICATOR_OFFSET + 0.5);
+        if (tFactorOfMovementCompletion >= EASE_FUNCTION_DEGREE_INDICATOR_OFFSET / 2) {
+            // Here we have called an easing function, which returns degree instead of the factor of completion (0.0 to 1.0)
+            tNewMicrosecondsOrUnits = DegreeToMicrosecondsOrUnits(
+                    tFactorOfMovementCompletion - EASE_FUNCTION_DEGREE_INDICATOR_OFFSET + 0.5);
         } else {
-            int tDeltaMicroseconds = mDeltaMicrosecondsOrUnits * tEaseResult;
+            int tDeltaMicroseconds = mDeltaMicrosecondsOrUnits * tFactorOfMovementCompletion; // having this as int value saves float operations
             tNewMicrosecondsOrUnits = mStartMicrosecondsOrUnits + tDeltaMicroseconds;
         }
     }
@@ -1023,35 +1060,35 @@ bool ServoEasing::update() {
     return false;
 }
 
-float ServoEasing::callEasingFunction(float aPercentageOfCompletion) {
+float ServoEasing::callEasingFunction(float aFactorOfTimeCompletion) {
     uint_fast8_t tEasingType = mEasingType & EASE_TYPE_MASK;
 
     switch (tEasingType) {
 
     case EASE_USER_DIRECT:
         if (mUserEaseInFunction != NULL) {
-            return mUserEaseInFunction(aPercentageOfCompletion);
+            return mUserEaseInFunction(aFactorOfTimeCompletion);
         } else {
             return 0.0;
         }
 
     case EASE_QUADRATIC_IN:
-        return QuadraticEaseIn(aPercentageOfCompletion);
+        return QuadraticEaseIn(aFactorOfTimeCompletion);
     case EASE_CUBIC_IN:
-        return CubicEaseIn(aPercentageOfCompletion);
+        return CubicEaseIn(aFactorOfTimeCompletion);
     case EASE_QUARTIC_IN:
-        return QuarticEaseIn(aPercentageOfCompletion);
+        return QuarticEaseIn(aFactorOfTimeCompletion);
 #  if !defined(DISABLE_COMPLEX_FUNCTIONS)
     case EASE_SINE_IN:
-        return SineEaseIn(aPercentageOfCompletion);
+        return SineEaseIn(aFactorOfTimeCompletion);
     case EASE_CIRCULAR_IN:
-        return CircularEaseIn(aPercentageOfCompletion);
+        return CircularEaseIn(aFactorOfTimeCompletion);
     case EASE_BACK_IN:
-        return BackEaseIn(aPercentageOfCompletion);
+        return BackEaseIn(aFactorOfTimeCompletion);
     case EASE_ELASTIC_IN:
-        return ElasticEaseIn(aPercentageOfCompletion);
+        return ElasticEaseIn(aFactorOfTimeCompletion);
     case EASE_BOUNCE_OUT:
-        return EaseOutBounce(aPercentageOfCompletion);
+        return EaseOutBounce(aFactorOfTimeCompletion);
 #  endif
     default:
         return 0.0;
@@ -1628,10 +1665,10 @@ void printArrayPositions(Print *aSerial) {
     aSerial->println();
 }
 
-void writeAllServos(int aValue) {
+void writeAllServos(int aDegreeOrMicrosecond) {
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
         if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
-            ServoEasing::ServoEasingArray[tServoIndex]->write(aValue);
+            ServoEasing::ServoEasingArray[tServoIndex]->write(aDegreeOrMicrosecond);
         }
     }
 }
@@ -1819,34 +1856,35 @@ void synchronizeAllServosAndStartInterrupt(bool aStartUpdateByInterrupt) {
     }
 }
 
-/************************************
+/*********************************************************
  * Included easing functions
- * Input is from 0.0 to 1.0 and output is from 0.0 to 1.0
- ***********************************/
+ * Input is from 0.0 to 1.0 with 0.0 -> 0 % and 1.0 -> 100% completion of time between the two endpoints
+ * Output is from 0.0 to 1.0 with: 0.0 -> 0 % and 1.0 -> 100% completion of movement (e.g. 1.1 is 10% overshot)
+ ********************************************************/
 float (*sEaseFunctionArray[])(
-        float aPercentageOfCompletion) = {&QuadraticEaseIn, &CubicEaseIn, &QuarticEaseIn, &SineEaseIn, &CircularEaseIn, &BackEaseIn, &ElasticEaseIn,
+        float aFactorOfTimeCompletion) = {&QuadraticEaseIn, &CubicEaseIn, &QuarticEaseIn, &SineEaseIn, &CircularEaseIn, &BackEaseIn, &ElasticEaseIn,
             &EaseOutBounce};
 /*
  * The simplest non linear easing function
  */
-float QuadraticEaseIn(float aPercentageOfCompletion) {
-    return (aPercentageOfCompletion * aPercentageOfCompletion);
+float QuadraticEaseIn(float aFactorOfTimeCompletion) {
+    return (aFactorOfTimeCompletion * aFactorOfTimeCompletion);
 }
 
-float CubicEaseIn(float aPercentageOfCompletion) {
-    return (aPercentageOfCompletion * QuadraticEaseIn(aPercentageOfCompletion));
+float CubicEaseIn(float aFactorOfTimeCompletion) {
+    return (aFactorOfTimeCompletion * QuadraticEaseIn(aFactorOfTimeCompletion));
 }
 
-float QuarticEaseIn(float aPercentageOfCompletion) {
-    return QuadraticEaseIn(QuadraticEaseIn(aPercentageOfCompletion));
+float QuarticEaseIn(float aFactorOfTimeCompletion) {
+    return QuadraticEaseIn(QuadraticEaseIn(aFactorOfTimeCompletion));
 }
 
 /*
  * Take half of negative cosines of first quadrant
  * Is behaves almost like QUADRATIC
  */
-float SineEaseIn(float aPercentageOfCompletion) {
-    return sin((aPercentageOfCompletion - 1) * M_PI_2) + 1;
+float SineEaseIn(float aFactorOfTimeCompletion) {
+    return sin((aFactorOfTimeCompletion - 1) * M_PI_2) + 1;
 }
 
 /*
@@ -1854,25 +1892,25 @@ float SineEaseIn(float aPercentageOfCompletion) {
  * see: https://easings.net/#easeInOutCirc
  * and https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c
  */
-float CircularEaseIn(float aPercentageOfCompletion) {
-    return 1 - sqrt(1 - (aPercentageOfCompletion * aPercentageOfCompletion));
+float CircularEaseIn(float aFactorOfTimeCompletion) {
+    return 1 - sqrt(1 - (aFactorOfTimeCompletion * aFactorOfTimeCompletion));
 }
 
 /*
  * see: https://easings.net/#easeInOutBack
  * and https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c
  */
-float BackEaseIn(float aPercentageOfCompletion) {
-    return (aPercentageOfCompletion * aPercentageOfCompletion * aPercentageOfCompletion)
-            - (aPercentageOfCompletion * sin(aPercentageOfCompletion * M_PI));
+float BackEaseIn(float aFactorOfTimeCompletion) {
+    return (aFactorOfTimeCompletion * aFactorOfTimeCompletion * aFactorOfTimeCompletion)
+            - (aFactorOfTimeCompletion * sin(aFactorOfTimeCompletion * M_PI));
 }
 
 /*
  * see: https://easings.net/#easeInOutElastic
  * and https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c
  */
-float ElasticEaseIn(float aPercentageOfCompletion) {
-    return sin(13 * M_PI_2 * aPercentageOfCompletion) * pow(2, 10 * (aPercentageOfCompletion - 1));
+float ElasticEaseIn(float aFactorOfTimeCompletion) {
+    return sin(13 * M_PI_2 * aFactorOfTimeCompletion) * pow(2, 10 * (aFactorOfTimeCompletion - 1));
 }
 
 /*
@@ -1880,21 +1918,21 @@ float ElasticEaseIn(float aPercentageOfCompletion) {
  * see: https://easings.net/de#easeOutBounce
  * and https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c
  */
-float EaseOutBounce(float aPercentageOfCompletion) {
-    float tRetval;
-    if (aPercentageOfCompletion < 4 / 11.0) {
-        tRetval = (121 * aPercentageOfCompletion * aPercentageOfCompletion) / 16.0;
-    } else if (aPercentageOfCompletion < 8 / 11.0) {
-        tRetval = (363 / 40.0 * aPercentageOfCompletion * aPercentageOfCompletion) - (99 / 10.0 * aPercentageOfCompletion)
-                + 17 / 5.0;
-    } else if (aPercentageOfCompletion < 9 / 10.0) {
-        tRetval = (4356 / 361.0 * aPercentageOfCompletion * aPercentageOfCompletion) - (35442 / 1805.0 * aPercentageOfCompletion)
-                + 16061 / 1805.0;
+float EaseOutBounce(float aFactorOfTimeCompletion) {
+    float tFactorOfMovementCompletion;
+    if (aFactorOfTimeCompletion < 4 / 11.0) {
+        tFactorOfMovementCompletion = (121 * aFactorOfTimeCompletion * aFactorOfTimeCompletion) / 16.0;
+    } else if (aFactorOfTimeCompletion < 8 / 11.0) {
+        tFactorOfMovementCompletion = (363 / 40.0 * aFactorOfTimeCompletion * aFactorOfTimeCompletion)
+                - (99 / 10.0 * aFactorOfTimeCompletion) + 17 / 5.0;
+    } else if (aFactorOfTimeCompletion < 9 / 10.0) {
+        tFactorOfMovementCompletion = (4356 / 361.0 * aFactorOfTimeCompletion * aFactorOfTimeCompletion)
+                - (35442 / 1805.0 * aFactorOfTimeCompletion) + 16061 / 1805.0;
     } else {
-        tRetval = (54 / 5.0 * aPercentageOfCompletion * aPercentageOfCompletion) - (513 / 25.0 * aPercentageOfCompletion)
-                + 268 / 25.0;
+        tFactorOfMovementCompletion = (54 / 5.0 * aFactorOfTimeCompletion * aFactorOfTimeCompletion)
+                - (513 / 25.0 * aFactorOfTimeCompletion) + 268 / 25.0;
     }
-    return tRetval;
+    return tFactorOfMovementCompletion;
 }
 
 /************************************

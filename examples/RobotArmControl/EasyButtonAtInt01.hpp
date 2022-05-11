@@ -82,6 +82,9 @@ EasyButton *EasyButton::sPointerToButton0ForISR;
 #if defined(USE_BUTTON_1)
 EasyButton *EasyButton::sPointerToButton1ForISR;
 #endif
+#if !defined(USE_BUTTON_0) && !defined(USE_BUTTON_1)
+#error One of USE_BUTTON_0 or USE_BUTTON_1 must be defined
+#endif
 
 // The eclipse formatter has problems with // comments in undefined code blocks
 // !!! Must be without comment and closed by @formatter:on

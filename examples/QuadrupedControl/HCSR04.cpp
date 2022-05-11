@@ -88,11 +88,11 @@ void initUSDistancePin(uint8_t aTriggerOutEchoInPin) {
 /*
  * Start of standard blocking implementation using pulseInLong() since PulseIn gives wrong (too small) results :-(
  * @param aTimeoutMicros timeout of 5825 micros is equivalent to 1 meter, default timeout of 20000 micro seconds is 3.43 meter
- * @return 0 if uninitialized or timeout happened
+ * @return 0 / DISTANCE_TIMEOUT_RESULT if uninitialized or timeout happened
  */
 unsigned int getUSDistance(unsigned int aTimeoutMicros) {
     if (sHCSR04Mode == HCSR04_MODE_UNITITIALIZED) {
-        return 0;
+        return DISTANCE_TIMEOUT_RESULT;
     }
 
 // need minimum 10 usec Trigger Pulse
@@ -138,11 +138,14 @@ unsigned int getUSDistance(unsigned int aTimeoutMicros) {
     unsigned long tUSPulseMicros = pulseIn(tEchoInPin, HIGH, aTimeoutMicros);
     interrupts();
 #else
-    unsigned long tUSPulseMicros = pulseInLong(tEchoInPin, HIGH, aTimeoutMicros); // returns 0 for timeout
+    unsigned long tUSPulseMicros = pulseInLong(tEchoInPin, HIGH, aTimeoutMicros); // returns 0 (DISTANCE_TIMEOUT_RESULT) for timeout
 #endif
     return tUSPulseMicros;
 }
 
+/*
+ * No return of 0 at
+ */
 unsigned int getCentimeterFromUSMicroSeconds(unsigned int aDistanceMicros) {
     // The reciprocal of formula in getUSDistanceAsCentimeterWithCentimeterTimeout()
     return (aDistanceMicros * 100L) / 5825;
@@ -150,8 +153,8 @@ unsigned int getCentimeterFromUSMicroSeconds(unsigned int aDistanceMicros) {
 
 /**
  * @param aTimeoutMicros timeout of 5825 micros is equivalent to 1 meter, default timeout of 20000 micro seconds is 3.43 meter
- * @return  Distance in centimeter @20 degree (time in us/58.25)
- *          0 if timeout or pins are not initialized
+ * @return  Distance in centimeter @20 degree celsius (time in us/58.25)
+ *          0 / DISTANCE_TIMEOUT_RESULT if timeout or pins are not initialized
  */
 unsigned int getUSDistanceAsCentimeter(unsigned int aTimeoutMicros) {
     return (getCentimeterFromUSMicroSeconds(getUSDistance(aTimeoutMicros)));

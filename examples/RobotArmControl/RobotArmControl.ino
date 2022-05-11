@@ -78,7 +78,7 @@
 #define USE_ATTACH_INTERRUPT // to be compatible with IRLremote
 #include "EasyButtonAtInt01.hpp" // for switching easing modes
 
-#include "ADCUtils.h" // for get getVCCVoltageMillivolt
+#include "ADCUtils.hpp" // for get getVCCVoltageMillivolt
 
 #define VERSION_EXAMPLE "2.0"
 

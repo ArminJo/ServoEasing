@@ -2,8 +2,9 @@
  * ThreeServos.cpp
  *
  *  Shows smooth movement from one servo position to another for 3 servos synchronously.
+ *  Demonstrates the use of ServoEasingArray and ServoEasingNextPositionArray.
  *
- *  Copyright (C) 2019-2021  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2022  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -25,15 +26,15 @@
 #include <Arduino.h>
 
 // Must specify this before the include of "ServoEasing.hpp"
-//#define USE_PCA9685_SERVO_EXPANDER // Activate this to enables the use of the PCA9685 I2C expander chip/board.
-//#define USE_SERVO_LIB // Activate this to force additional using of regular servo library.
-#define PROVIDE_ONLY_LINEAR_MOVEMENT // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes program memory.
-//#define DISABLE_COMPLEX_FUNCTIONS // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes program memory.
+//#define USE_PCA9685_SERVO_EXPANDER    // Activate this to enables the use of the PCA9685 I2C expander chip/board.
+//#define USE_SERVO_LIB                 // Activate this to force additional using of regular servo library.
+#define PROVIDE_ONLY_LINEAR_MOVEMENT  // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes program memory.
+//#define DISABLE_COMPLEX_FUNCTIONS     // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes program memory.
 //#define MAX_EASING_SERVOS 3
-//#define ENABLE_MICROS_AS_DEGREE_PARAMETER // Activate this to enable also microsecond values as (target angle) parameter. Requires additional 128 bytes program memory.
-//#define DEBUG // Activate this to generate lots of lovely debug output for this library.
+//#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
+//#define DEBUG                         // Activate this to generate lots of lovely debug output for this library.
 
-//#define PRINT_FOR_SERIAL_PLOTTER // Activate this to generate the Arduino plotter output.
+//#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output..
 #include "ServoEasing.hpp"
 
 #include "PinDefinitionsAndMore.h"
@@ -112,7 +113,7 @@ void setup() {
 
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
     // Legend for Arduino plotter
-    Serial.println();
+    Serial.println(); // end of line of attach values
     Serial.println("Servo1, Servo2, Servo3");
 #endif
 

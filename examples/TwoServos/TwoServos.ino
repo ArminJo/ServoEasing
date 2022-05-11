@@ -27,18 +27,16 @@
 #include <Arduino.h>
 
 // Must specify this before the include of "ServoEasing.hpp"
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__)
-#define USE_LEIGHTWEIGHT_SERVO_LIB
-#include "LightweightServo.hpp" // include sources of LightweightServo library
-#endif
-
-//#define PROVIDE_ONLY_LINEAR_MOVEMENT // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes program memory.
-#define DISABLE_COMPLEX_FUNCTIONS // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes program memory.
+//#define USE_PCA9685_SERVO_EXPANDER    // Activate this to enables the use of the PCA9685 I2C expander chip/board.
+//#define USE_SERVO_LIB                 // Activate this to force additional using of regular servo library.
+#define USE_LEIGHTWEIGHT_SERVO_LIB    // Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
+//#define PROVIDE_ONLY_LINEAR_MOVEMENT  // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes program memory.
+#define DISABLE_COMPLEX_FUNCTIONS     // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes program memory.
 //#define MAX_EASING_SERVOS 2
-//#define ENABLE_MICROS_AS_DEGREE_PARAMETER // Activate this to enable also microsecond values as (target angle) parameter. Requires additional 128 bytes program memory.
-//#define DEBUG // Activate this to generate lots of lovely debug output for this library.
+//#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
+//#define DEBUG                         // Activate this to generate lots of lovely debug output for this library.
 
-//#define PRINT_FOR_SERIAL_PLOTTER // Activate this to generate the Arduino plotter output.
+//#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output..
 #include "ServoEasing.hpp"
 
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)

@@ -55,9 +55,12 @@
  * If not using the Arduino IDE take care that Arduino Servo library sources are not compiled / included in the project.
  * Use of Lightweight Servo library disables use of regular servo library.
  */
-#if !defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 //#define USE_LEIGHTWEIGHT_SERVO_LIB
+
+#if defined(USE_LEIGHTWEIGHT_SERVO_LIB) && !(defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__))
+#error USE_LEIGHTWEIGHT_SERVO_LIB can only be activated for the Atmega328 CPU
 #endif
+
 #if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 #define _DO_NOT_USE_SERVO_LIB
 #endif
@@ -174,11 +177,10 @@
 #endif
 
 /*
- * If you require passing microsecond values as parameter instead of degree values. This requires additional 128 bytes program memory.
+ * If you do not require passing microsecond values as parameter instead of degree values. This saves 128 bytes program memory.
  */
-#if !defined(ENABLE_MICROS_AS_DEGREE_PARAMETER)
-//#define ENABLE_MICROS_AS_DEGREE_PARAMETER
-#endif
+//#define DISABLE_MICROS_AS_DEGREE_PARAMETER
+
 #if !defined(THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS)
 #define THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS  400  // treat values less than 400 as angles in degrees, others are handled as microseconds
 #endif
@@ -191,12 +193,16 @@
 // @formatter:on
 
 #define DEFAULT_MICROSECONDS_FOR_0_DEGREE 544
+#define DEFAULT_MICROSECONDS_FOR_45_DEGREE (544 + ((2400 - 544) / 4)) // 1008
 #define DEFAULT_MICROSECONDS_FOR_90_DEGREE (544 + ((2400 - 544) / 2)) // 1472
+#define DEFAULT_MICROSECONDS_FOR_135_DEGREE (2400 - ((2400 - 544) / 4)) // 1936
 #define DEFAULT_MICROSECONDS_FOR_180_DEGREE 2400
 // Approximately 10 microseconds per degree
 
 #define DEFAULT_PCA9685_UNITS_FOR_0_DEGREE  111 // 111.411 = 544 µs
+#define DEFAULT_PCA9685_UNITS_FOR_45_DEGREE (111 + ((491 - 111) / 4)) // 206
 #define DEFAULT_PCA9685_UNITS_FOR_90_DEGREE (111 + ((491 - 111) / 2)) // 301 = 1472 us
+#define DEFAULT_PCA9685_UNITS_FOR_135_DEGREE (491 - ((491 - 111) / 4)) // 369
 #define DEFAULT_PCA9685_UNITS_FOR_180_DEGREE 491 // 491.52 = 2400 µs
 // Approximately 2 units per degree
 
@@ -338,13 +344,13 @@ public:
     ServoEasing();
 
     uint8_t attach(int aPin);
-    uint8_t attach(int aPin, int aInitialDegree);
+    uint8_t attach(int aPin, int aInitialDegreeOrMicrosecond);
     // Here no units accepted, only microseconds!
     uint8_t attach(int aPin, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree);
-    uint8_t attach(int aPin, int aInitialDegree, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree);
+    uint8_t attach(int aPin, int aInitialDegreeOrMicrosecond, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree);
     uint8_t attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree,
             int aServoHighDegree);
-    uint8_t attach(int aPin, int aInitialDegree, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree,
+    uint8_t attach(int aPin, int aInitialDegreeOrMicrosecond, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree,
             int aServoHighDegree);
 
     void detach();
@@ -359,24 +365,24 @@ public:
 
     void registerUserEaseInFunction(float (*aUserEaseInFunction)(float aPercentageOfCompletion));
 
-    float callEasingFunction(float aPercentageOfCompletion);    // used in update()
+    float callEasingFunction(float aPercentageOfCompletion);            // used in update()
 #endif
 
-    void write(int aValue);                         // Apply trim and reverse to the value and write it direct to the Servo library.
+    void write(int aTargetDegreeOrMicrosecond);                         // Apply trim and reverse to the value and write it direct to the Servo library.
     void writeMicrosecondsOrUnits(int aMicrosecondsOrUnits);
 
-    void setSpeed(uint_fast16_t aDegreesPerSecond);             // This speed is taken if no speed argument is given.
+    void setSpeed(uint_fast16_t aDegreesPerSecond);                     // This speed is taken if no speed argument is given.
     uint_fast16_t getSpeed();
-    void easeTo(int aDegree);                                   // blocking move to new position using mLastSpeed
-    void easeTo(int aDegree, uint_fast16_t aDegreesPerSecond);      // blocking move to new position using speed
-    void easeToD(int aDegree, uint_fast16_t aMillisForMove);        // blocking move to new position using duration
+    void easeTo(int aTargetDegreeOrMicrosecond);                                       // blocking move to new position using mLastSpeed
+    void easeTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);      // blocking move to new position using speed
+    void easeToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove);        // blocking move to new position using duration
 
-    bool setEaseTo(int aDegree);                                    // shortcut for startEaseTo(..,..,false)
-    bool setEaseTo(int aDegree, uint_fast16_t aDegreesPerSecond);   // shortcut for startEaseTo(..,..,false)
-    bool startEaseTo(int aDegree);                                  // shortcut for startEaseTo(aDegree, mSpeed, true)
-    bool startEaseTo(int aDegree, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt = true);
-    bool setEaseToD(int aDegree, uint_fast16_t aDegreesPerSecond);  // shortcut for startEaseToD(..,..,false)
-    bool startEaseToD(int aDegree, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt = true);
+    bool setEaseTo(int aTargetDegreeOrMicrosecond);                                    // shortcut for startEaseTo(..,..,false)
+    bool setEaseTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);   // shortcut for startEaseTo(..,..,false)
+    bool startEaseTo(int aTargetDegreeOrMicrosecond);                                  // shortcut for startEaseTo(aDegree, mSpeed, true)
+    bool startEaseTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt = true);
+    bool setEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);  // shortcut for startEaseToD(..,..,false)
+    bool startEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt = true);
     void stop();
     void continueWithInterrupts();
     void continueWithoutInterrupts();
@@ -392,7 +398,7 @@ public:
 
     int MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits);
     int MicrosecondsToDegree(int aMicroseconds);
-    int DegreeToMicrosecondsOrUnits(int aDegree);
+    int DegreeToMicrosecondsOrUnits(int aDegreeOrMicroseconds);
     int DegreeToMicrosecondsOrUnitsWithTrimAndReverse(int aDegree);
 
     void synchronizeServosAndStartInterrupt(bool doUpdateByInterrupt);
@@ -418,7 +424,7 @@ public:
     /*
      * max speed is 450 degree/sec for SG90 and 540 degree/second for MG90 servos -> see speedTest.cpp
      */
-    uint_fast16_t mSpeed; // in DegreesPerSecond only set by setSpeed(int16_t aSpeed);
+    uint_fast16_t mSpeed; // in DegreesPerSecond - only set by setSpeed(int16_t aSpeed);
 
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
     uint8_t mEasingType; // EASE_LINEAR, EASE_QUADRATIC_IN_OUT, EASE_CUBIC_IN_OUT, EASE_QUARTIC_IN_OUT
@@ -468,7 +474,7 @@ public:
      */
     static uint_fast8_t sServoArrayMaxIndex; // maximum index of an attached servo in sServoArray[]
     static ServoEasing *ServoEasingArray[MAX_EASING_SERVOS];
-    static int ServoEasingNextPositionArray[MAX_EASING_SERVOS]; // use int since we want to support negative values
+    static int ServoEasingNextPositionArray[MAX_EASING_SERVOS];
     /*
      * Macros for backward compatibility
      */
@@ -481,7 +487,7 @@ public:
 /*
  * Functions working on all servos in the list
  */
-void writeAllServos(int aValue);
+void writeAllServos(int aTargetDegreeOrMicrosecond);
 void setSpeedForAllServos(uint_fast16_t aDegreesPerSecond);
 #if defined(va_arg)
 void setDegreeForAllServos(uint_fast8_t aNumberOfValues, va_list *aDegreeValues);
@@ -552,6 +558,10 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print has no f
 #endif
 
 /*
+ * Version 2.5.0 - 05/2022
+ * - Changed ENABLE_MICROS_AS_DEGREE_PARAMETER to DISABLE_MICROS_AS_DEGREE_PARAMETER thus enabling micros as parameter by default.
+ * - Fixed some bugs for micros as parameter.
+ *
  * Version 2.4.1 - 02/2022
  * - RP2040 support added.
  * - Fix for Nano Every interrupts.

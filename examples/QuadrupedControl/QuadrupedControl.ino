@@ -50,7 +50,7 @@
 
 #include "QuadrupedHelper.h"
 
-#include "ADCUtils.h" // for getVCCVoltageMillivoltSimple() and printVCCVoltageMillivolt()
+#include "ADCUtils.hpp" // for getVCCVoltageMillivoltSimple() and printVCCVoltageMillivolt()
 
 #if defined(QUADRUPED_HAS_US_DISTANCE) && defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
 Servo USServo; // Servo for US sensor use Servo library direct, we do nor require easings here ( and we have only 8 Servo easings allocated)

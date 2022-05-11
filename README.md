@@ -111,6 +111,8 @@ Just call `myServo.startEaseTo()` instead of `myServo.write()` and you are done.
 - [Robert Penner](http://www.robertpenner.com/easing/)
 - [C functions on Github](https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c)
 - [Interactive cubic-bezier](http://cubic-bezier.com)
+![Servo signal gif from https://workshop.pglu.ch/arduino-servo/](pictures/ServoFunktion_workshop.pglu.ch.gif)
+
 
 # Resolution of servo positioning
 - The standard range of 544 to 2400 µs per 180 degree results in an timing of around **10 µs per degree**.
@@ -159,7 +161,7 @@ Modify them by enabling / disabling them, or change the values if applicable.
 | `PROVIDE_ONLY_LINEAR_MOVEMENT` | disabled | Disables all but LINEAR movement. Saves up to 1540 bytes program memory. |
 | `DISABLE_COMPLEX_FUNCTIONS` | disabled | Disables the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes program memory. |
 | `MAX_EASING_SERVOS` | 12, 16(for PCA9685) | Saves 4 byte RAM per servo. If this value is smaller than the amount of servos declared, attach() will return error and other library functions will not work as expected.<br/>Of course all *AllServos*() functions and isOneServoMoving() can't work correctly! |
-| `ENABLE_MICROS_AS_DEGREE_PARAMETER` | disabled | Enables passing also microsecond values as (target angle) parameter (see [OneServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino#L93)). Requires additional 128 bytes program memory. |
+| `DISABLE_MICROS_AS_DEGREE_PARAMETER` | disabled | Disables passing also microsecond values as (target angle) parameter (see [OneServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino#L93)). Saves 128 bytes program memory. |
 | `PRINT_FOR_SERIAL_PLOTTER` | disabled | Generate serial output for Arduino Plotter (Ctrl-Shift-L). |
 | `DEBUG` | disabled | Generates lots of lovely debug output for this library. |
 | `USE_LEIGHTWEIGHT_SERVO_LIB` | disabled | Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple. See below. Saves up to 742 bytes program memory and 42 bytes RAM. |
@@ -179,11 +181,11 @@ If you are using [Sloeber](https://eclipse.baeyens.it) as your IDE, you can easi
 ![Sloeber settings](https://github.com/Arduino-IRremote/Arduino-IRremote/blob/master/pictures/SloeberDefineSymbols.png)
 
 # Using PCA9685 16-Channel Servo Expander
-To enable the use of the expander, open the library file *ServoEasing.h* and activate the line `#define USE_PCA9685_SERVO_EXPANDER`.<br/>
+To enable the use of the expander, activate the line `#define USE_PCA9685_SERVO_EXPANDER` before `#include <ServoEasing.hpp>` .<br/>
 In expander mode, timer1 is only required for the startEaseTo* functions.
 
 Be aware that the PCA9685 expander is **reset** at the first `attach()` and **initialized** at every further `attach()`.<br/>
-To control simultaneously servos with the Arduino Servo library i.e. servos which are directly connected to the Arduino board, activate the line `#define USE_SERVO_LIB` in the library file *ServoEasing.h*.<br/>
+To control simultaneously servos with the Arduino Servo library i.e. servos which are directly connected to the Arduino board, activate the line `#define USE_SERVO_LIB`.<br/>
 In this case you should attach the expander servos first in order to initialize the expander board correctly.
 And as long as no servo using the Arduino Servo library is attached, the expander servos will not move,
 which should not be a problem since you normally attach all servos in `setup()`.<br/>
@@ -197,12 +199,12 @@ If you do not use any timer in your program you can increase speed up to 800 kHz
 # Using the included [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for AVR
 Using the **Lightweight Servo Library** reduces sketch size and makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
 Up to 2 servos are supported by this library and they must be physically attached to pin 9 and/or 10 of the Arduino board.<br/>
-To enable it, open the library file *ServoEasing.h* and activate the line `#define USE_LEIGHTWEIGHT_SERVO_LIB` or define global symbol with `-DUSE_LEIGHTWEIGHT_SERVO_LIB` which is not yet possible in Arduino IDE :disappointed:.<br/>
-If not using the Arduino IDE, take care that Arduino Servo library sources are not compiled / included in the project.
+To enable it, activate the line `#define USE_LEIGHTWEIGHT_SERVO_LIB` before the line `#include "LightweightServo.hpp"` [like it is done in the TwoServos example](https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServos/TwoServos.ino#L31).<br/>
+If you do not use the Arduino IDE, take care that Arduino Servo library sources are not compiled / included in the project.
 
 # Examples
 All examples are documented [here](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples)<br/>
-Examples with up to 2 Servos can be used without modifications with the [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for AVR by by commenting out the line `#define USE_LEIGHTWEIGHT_SERVO_LIB` in the library file *ServoEasing.h* (see above).
+Examples with up to 2 Servos can be used without modifications with the [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for AVR by by activating the line `#define USE_LEIGHTWEIGHT_SERVO_LIB` (see above).
 
 # [Servo utilities](https://github.com/ArminJo/ServoEasing/tree/master/examples#servo-utilities)
 
@@ -243,8 +245,8 @@ To add a new platform, the following steps have to be performed:
 1. If the new platform has an **Arduino compatible Servo library**, fine, otherwise include the one required for this platform like it is done for ESP32 [here](src/ServoEasing.h#L83).
 2. You need a **20ms interrupt source** providing the functions enableServoEasingInterrupt() and (optional) disableServoEasingInterrupt(). Extend these functions with code for the new platform. Place includes and timer definitions at top of *ServoEasing.hpp*.
 3. If your interrupt source requires an ISR (Interrupt Service Routine) place it after disableServoEasingInterrupt() where all the other ISR are located.
-4. To test the new platform, you may want to enable **TRACE output** by commenting out the line `#define TRACE` in *ServoEasing.hpp*
-and enabling **interrupt timing feedback** by commenting out the line `#define MEASURE_SERVO_EASING_INTERRUPT_TIMING` in *ServoEasing.h*.
+4. To test the new platform, you may want to enable **TRACE output** by activating the line `#define TRACE` in *ServoEasing.hpp*
+and enabling **interrupt timing feedback** by activating the line `#define MEASURE_SERVO_EASING_INTERRUPT_TIMING` in *ServoEasing.h*.
 5. If it works for you, please issue a Pull Request, to share your efforts with the community.
 
 Good luck!
