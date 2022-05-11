@@ -49,14 +49,27 @@
 //#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output.
 #include "ServoEasing.hpp"
 
+#include "PinDefinitionsAndMore.h"
+/*
+ * Pin mapping table for different platforms - used by all examples
+ *
+ * Platform         Servo1      Servo2      Servo3      Analog     Core/Pin schema
+ * -------------------------------------------------------------------------------
+ * (Mega)AVR + SAMD    9          10          11          A0
+ * ATtiny3217         20|PA3       0|PA4       1|PA5       2|PA6   MegaTinyCore
+ * ESP8266            14|D5       12|D6       13|D7        0
+ * ESP32               5          18          19          A0
+ * BluePill          PB7         PB8         PB9         PA0
+ * APOLLO3            11          12          13          A3
+ * RP2040             6|GPIO18     7|GPIO19    8|GPIO20
+ */
 #define INFO // to see serial output of loop
 
 /*
- * This example is the OneServo example with only one modification to figure out that there is almost no difference between using the PCA9685 expander or the default Arduino Servo interface.
+ * This example is the OneServo example with only few modifications in setup to figure out that there is almost no difference between using the PCA9685 expander or the default Arduino Servo interface.
  * The PCA9685 library was successfully tested with 3 expander boards :-)
  */
-const int SERVO1_PCA9685_PIN = 9;
-const int SERVO1_PIN = 9;
+#define SERVO1_PCA9685_PIN  9
 
 // for ESP32 LED_BUILTIN is defined as static const uint8_t LED_BUILTIN = 2;
 #if !defined(LED_BUILTIN) && !defined(ESP32)
@@ -74,9 +87,9 @@ const int SERVO1_PIN = 9;
  * Servo implementation libraries (Arduino Servo, Lightweight Servo and I2C Expansion Board)
  */
 #if defined(ARDUINO_SAM_DUE)
-ServoEasing Servo1AtPCA9685(PCA9685_DEFAULT_ADDRESS, &Wire1); // If you use more than one PCA9685 you probably must modify MAX_EASING_SERVOS at line 88 in ServoEasing.h
+ServoEasing Servo1AtPCA9685(PCA9685_DEFAULT_ADDRESS, &Wire1); // If you use more than one PCA9685 you probably must modify MAX_EASING_SERVOS
 #else
-ServoEasing Servo1AtPCA9685(PCA9685_DEFAULT_ADDRESS, &Wire); // If you use more than one PCA9685 you probably must modify MAX_EASING_SERVOS at line 88 in ServoEasing.h
+ServoEasing Servo1AtPCA9685(PCA9685_DEFAULT_ADDRESS, &Wire); // If you use more than one PCA9685 you probably must modify MAX_EASING_SERVOS
 #endif
 
 ServoEasing Servo1;
@@ -94,47 +107,12 @@ void setup() {
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_SERVO_EASING));
 
-    /*
-     * Check if I2C communication is possible. If not, we will wait forever at endTransmission.
-     */
-    Serial.println(F("Try to communicate with PCA9685 Expander by TWI / I2C"));
-    Serial.flush();
-    // Initialize wire before checkI2CConnection()
-    Wire.begin();  // Starts with 100 kHz. Clock will eventually be increased at first attach() except for ESP32.
-#if defined (ARDUINO_ARCH_AVR) // Other platforms do not have this new function
-    Wire.setWireTimeout(); // Sets default timeout of 25 ms.
-    do {
-        Wire.beginTransmission(PCA9685_DEFAULT_ADDRESS);
-        if (Wire.getWireTimeoutFlag()) {
-            Serial.println(F("Timeout accessing I2C bus. Wait for bus becoming available"));
-            Wire.clearWireTimeoutFlag();
-            delay(100);
-        } else {
-            break;
-        }
-    } while (true);
-
-#else
-    Wire.beginTransmission(PCA9685_DEFAULT_ADDRESS);
-#endif
-
-    uint8_t tWireReturnCode = Wire.endTransmission(true);
-    if (tWireReturnCode == 0) {
-        Serial.print(F("Found"));
-    } else {
-        Serial.print(F("Error code="));
-        Serial.print(tWireReturnCode);
-        Serial.print(F(". Communication with I2C was successful, but found no"));
-    }
-    Serial.print(F(" I2C device attached at address: 0x"));
-    Serial.println(PCA9685_DEFAULT_ADDRESS, HEX);
-    if (checkI2CConnection(PCA9685_DEFAULT_ADDRESS, &Serial)) {
-        Serial.println(F("PCA9685 expander not connected"));
+    if (Servo1AtPCA9685.InitializeAndCheckI2CConnection(&Serial)) {
         while (true) {
             blinkLED();
         }
     } else {
-        Serial.println(F("Attach servo to port 9 of PCA9685 expander"));
+        Serial.println(F("Attach servo to port " STR(SERVO1_PCA9685_PIN) " of PCA9685 expander"));
         /************************************************************
          * Attach servo to pin and set servos to start position.
          * This is the position where the movement starts.

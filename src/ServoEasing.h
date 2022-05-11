@@ -350,8 +350,8 @@ public:
     uint8_t attach(int aPin, int aInitialDegreeOrMicrosecond, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree);
     uint8_t attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree,
             int aServoHighDegree);
-    uint8_t attach(int aPin, int aInitialDegreeOrMicrosecond, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree,
-            int aServoHighDegree);
+    uint8_t attach(int aPin, int aInitialDegreeOrMicrosecond, int aMicrosecondsForServoLowDegree,
+            int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree);
 
     void detach();
     void setReverseOperation(bool aOperateServoReverse);  // You should call it before using setTrim
@@ -368,20 +368,20 @@ public:
     float callEasingFunction(float aPercentageOfCompletion);            // used in update()
 #endif
 
-    void write(int aTargetDegreeOrMicrosecond);                         // Apply trim and reverse to the value and write it direct to the Servo library.
+    void write(int aTargetDegreeOrMicrosecond);         // Apply trim and reverse to the value and write it direct to the Servo library.
     void writeMicrosecondsOrUnits(int aMicrosecondsOrUnits);
 
-    void setSpeed(uint_fast16_t aDegreesPerSecond);                     // This speed is taken if no speed argument is given.
+    void setSpeed(uint_fast16_t aDegreesPerSecond);                                     // This speed is taken if no speed argument is given.
     uint_fast16_t getSpeed();
-    void easeTo(int aTargetDegreeOrMicrosecond);                                       // blocking move to new position using mLastSpeed
-    void easeTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);      // blocking move to new position using speed
-    void easeToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove);        // blocking move to new position using duration
+    void easeTo(int aTargetDegreeOrMicrosecond);                                        // blocking move to new position using mLastSpeed
+    void easeTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);       // blocking move to new position using speed
+    void easeToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove);         // blocking move to new position using duration
 
-    bool setEaseTo(int aTargetDegreeOrMicrosecond);                                    // shortcut for startEaseTo(..,..,false)
-    bool setEaseTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);   // shortcut for startEaseTo(..,..,false)
-    bool startEaseTo(int aTargetDegreeOrMicrosecond);                                  // shortcut for startEaseTo(aDegree, mSpeed, true)
+    bool setEaseTo(int aTargetDegreeOrMicrosecond);                                     // shortcut for startEaseTo(..,..,false)
+    bool setEaseTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);    // shortcut for startEaseTo(..,..,false)
+    bool startEaseTo(int aTargetDegreeOrMicrosecond);                                   // shortcut for startEaseTo(aDegree, mSpeed, true)
     bool startEaseTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt = true);
-    bool setEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);  // shortcut for startEaseToD(..,..,false)
+    bool setEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);   // shortcut for startEaseToD(..,..,false)
     bool startEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt = true);
     void stop();
     void continueWithInterrupts();
@@ -406,6 +406,15 @@ public:
     void print(Print *aSerial, bool doExtendedOutput = true); // Print dynamic and static info
     void printDynamic(Print *aSerial, bool doExtendedOutput = true);
     void printStatic(Print *aSerial);
+
+    /*
+     * Convenience function
+     */
+#if defined(__AVR__)
+    bool InitializeAndCheckI2CConnection(Print *aSerial); // Using Print class saves 95 bytes flash
+#else
+    bool InitializeAndCheckI2CConnection(Stream *aSerial); // Print class has no flush() here
+#endif
 
     /*
      * Static functions
@@ -545,11 +554,11 @@ float EaseOutBounce(float aPercentageOfCompletion);
 
 extern float (*sEaseFunctionArray[])(float aPercentageOfCompletion);
 
-// convenience function
+// Static convenience function
 #if defined(__AVR__)
-bool checkI2CConnection(uint8_t aI2CAddress, Print *aSerial); // saves 95 bytes flash
+bool checkI2CConnection(uint8_t aI2CAddress, Print *aSerial); // Using Print class saves 95 bytes flash
 #else
-bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print has no flush()
+bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class has no flush() here
 #endif
 
 #if !defined(STR_HELPER)
@@ -561,6 +570,7 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print has no f
  * Version 2.5.0 - 05/2022
  * - Changed ENABLE_MICROS_AS_DEGREE_PARAMETER to DISABLE_MICROS_AS_DEGREE_PARAMETER thus enabling micros as parameter by default.
  * - Fixed some bugs for micros as parameter.
+ * - Improved PCA9685 handling.
  *
  * Version 2.4.1 - 02/2022
  * - RP2040 support added.

@@ -178,6 +178,9 @@ void ServoEasing::I2CInit() {
 // Initialize I2C
     mI2CClass->begin();
     mI2CClass->setClock(I2C_CLOCK_FREQUENCY); // 1000000 does not work for me, maybe because of parasitic breadboard capacities
+#if defined (ARDUINO_ARCH_AVR) // Other platforms do not have this new function
+    mI2CClass->setWireTimeout(); // Sets default timeout of 25 ms.
+#endif
 }
 /*
  * Initialize I2C and software reset all PCA9685 expanders
@@ -1937,6 +1940,7 @@ float EaseOutBounce(float aFactorOfTimeCompletion) {
 
 /************************************
  * Convenience I2C check function
+ * One version as class methods and one version as static function
  ***********************************/
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 /*
@@ -1946,11 +1950,24 @@ float EaseOutBounce(float aFactorOfTimeCompletion) {
  * @return true if error happened, i.e. device is not attached at this address.
  */
 #if defined(__AVR__)
-bool checkI2CConnection(uint8_t aI2CAddress, Print *aSerial) // saves 95 bytes flash
+bool ServoEasing::InitializeAndCheckI2CConnection(Print *aSerial) // Print instead of Stream saves 95 bytes flash
+#else
+bool ServoEasing::InitializeAndCheckI2CConnection(Stream *aSerial) // Print has no flush()
+#endif
+{
+    // Initialize wire before checkI2CConnection()
+    I2CInit();
+    return checkI2CConnection(mPCA9685I2CAddress, aSerial);
+}
+
+#if defined(__AVR__)
+bool checkI2CConnection(uint8_t aI2CAddress, Print *aSerial) // Print instead of Stream saves 95 bytes flash
 #else
 bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial) // Print has no flush()
 #endif
         {
+    // Initialize wire before checkI2CConnection()
+//    I2CInit();
 
     bool tRetValue = false;
     aSerial->print(F("Try to communicate with I2C device at address=0x"));
@@ -1982,6 +1999,9 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial) // Print has no fl
     }
     aSerial->print(F(" I2C device attached at address: 0x"));
     aSerial->println(aI2CAddress, HEX);
+    if(tRetValue) {
+        aSerial->println(F("PCA9685 expander not connected"));
+    }
     return tRetValue;
 }
 # endif // defined(USE_PCA9685_SERVO_EXPANDER)

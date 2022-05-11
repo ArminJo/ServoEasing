@@ -48,7 +48,20 @@
 //#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output.
 #include "ServoEasing.hpp"
 
-//#define DEBUG // to see all ServoEasing's object info
+#include "PinDefinitionsAndMore.h"
+/*
+ * Pin mapping table for different platforms - used by all examples
+ *
+ * Platform         Servo1      Servo2      Servo3      Analog     Core/Pin schema
+ * -------------------------------------------------------------------------------
+ * (Mega)AVR + SAMD    9          10          11          A0
+ * ATtiny3217         20|PA3       0|PA4       1|PA5       2|PA6   MegaTinyCore
+ * ESP8266            14|D5       12|D6       13|D7        0
+ * ESP32               5          18          19          A0
+ * BluePill          PB7         PB8         PB9         PA0
+ * APOLLO3            11          12          13          A3
+ * RP2040             6|GPIO18     7|GPIO19    8|GPIO20
+ */
 #define INFO // to see serial output of loop
 
 //#define USE_ONLY_ONE_EXPANDER // Activate this to reuse this example for one expander at PCA9685_DEFAULT_ADDRESS

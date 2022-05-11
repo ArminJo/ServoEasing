@@ -2,7 +2,7 @@
  * TwoServos.cpp
  *
  *  Shows smooth movement from one servo position to another for 2 servos synchronously.
- *  Operate the first servo from -90 to +90 degree.
+ *  It operates the first servo from -90 to +90 degree using setTrim(90).
  *  This example uses the LightweightServo library. This saves 640 bytes program memory compared to using Arduino Servo library.
  *
  *  Copyright (C) 2019-2021  Armin Joachimsmeyer
@@ -36,7 +36,7 @@
 //#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
 //#define DEBUG                         // Activate this to generate lots of lovely debug output for this library.
 
-//#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output..
+//#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output.
 #include "ServoEasing.hpp"
 
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
@@ -101,13 +101,16 @@ void setup() {
 
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
     // Print legend for Plotter
-    Serial.println("Servo1, Servo2");
+    Serial.println("Servo1[us], Servo2[us]");
 #endif
     /*
      * Operate Servo1 from -90 to +90 degree
      * Instead of specifying a trim you can use above:
      *   if (Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, -90, 90) == INVALID_SERVO) {
      */
+#if !defined(PRINT_FOR_SERIAL_PLOTTER)
+    Serial.println(F("Operate servo 1 from -90 to + 90 degree by using setTrim(90)"));
+#endif
     Servo1.setTrim(90);
 
     setSpeedForAllServos(30);

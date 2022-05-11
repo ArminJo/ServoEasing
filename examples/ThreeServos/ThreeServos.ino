@@ -34,7 +34,7 @@
 //#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
 //#define DEBUG                         // Activate this to generate lots of lovely debug output for this library.
 
-//#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output..
+//#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output.
 #include "ServoEasing.hpp"
 
 #include "PinDefinitionsAndMore.h"

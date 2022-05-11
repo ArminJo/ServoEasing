@@ -1,9 +1,11 @@
 /*
- * OneServo.cpp
+ * NonlinearEasings.cpp
  *
- *  Shows smooth linear movement from one servo position to another.
+ *  Shows smooth non-linear movement from one servo position to another.
+ *  Linear->Quadratic->Cubic->Quartic->Sine-Circular->Back->Elastic
+ *  Note, that Back and Elastic are not totally visible at your servo, since they use angels above 180 and below 0 degree in this example.
  *
- *  Copyright (C) 2019-2022  Armin Joachimsmeyer
+ *  Copyright (C) 2022  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -29,7 +31,7 @@
 //#define USE_SERVO_LIB                 // Activate this to force additional using of regular servo library.
 //#define USE_LEIGHTWEIGHT_SERVO_LIB    // Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
 //#define PROVIDE_ONLY_LINEAR_MOVEMENT  // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes program memory.
-#define DISABLE_COMPLEX_FUNCTIONS     // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes program memory.
+//#define DISABLE_COMPLEX_FUNCTIONS     // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes program memory.
 #define MAX_EASING_SERVOS 1
 //#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
 //#define DEBUG                         // Activate this to generate lots of lovely debug output for this library.
@@ -59,6 +61,8 @@ ServoEasing Servo1;
 #endif
 
 #define START_DEGREE_VALUE  0 // The degree value written to the servo at time of attach.
+//#define USE_MICROSECONDS      // Use microseconds instead degrees as parameter
+
 void blinkLED();
 
 void setup() {
@@ -84,17 +88,10 @@ void setup() {
     }
 #endif
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
-#  if defined(USE_PCA9685_SERVO_EXPANDER)
-    Serial.println(F("Attach servo to port " STR(SERVO1_PIN) " of PCA9685 expander"));
-#  else
     Serial.println(F("Attach servo at pin " STR(SERVO1_PIN)));
-#  endif
 #endif
     if (Servo1.attach(SERVO1_PIN, START_DEGREE_VALUE) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
-        while (true) {
-            blinkLED();
-        }
     }
 
     // Wait for servo to reach start position.
@@ -102,118 +99,8 @@ void setup() {
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
     // Legend for Arduino Serial plotter
     Serial.println(); // end of line of attach values
-    Serial.println("OneServo[us]_Linear->Cubic->Linear");
+    Serial.println("OneServo[us]_Linear->Quadratic->Cubic->Quartic ->Sine-Circular->Back->Elastic");
 #endif
-}
-
-void loop() {
-    // Move slow
-#if !defined(PRINT_FOR_SERIAL_PLOTTER)
-    Serial.println(F("Move to 90 degree with 10 degree per second blocking"));
-#endif
-    Servo1.setSpeed(10);  // This speed is taken if no further speed argument is given.
-    Servo1.easeTo(90);
-//    Servo1.easeTo(DEFAULT_MICROSECONDS_FOR_90_DEGREE); // Alternatively you can specify the target as microsecond value
-
-    // Now move faster without any delay between the moves
-#if !defined(PRINT_FOR_SERIAL_PLOTTER)
-    Serial.println(F("Move to 180 degree with 30 degree per second using interrupts"));
-    Serial.flush(); // Just in case interrupts do not work
-#endif
-    Servo1.startEaseTo(180, 30);
-
-    /*
-     * Now you can run your program while the servo is moving.
-     * Just let the LED blink for 3 seconds (90 degrees moving by 30 degrees per second).
-     */
-    for (int i = 0; i < 15; ++i) {
-        blinkLED();
-    }
-
-    delay(1000);
-
-#if !defined(PRINT_FOR_SERIAL_PLOTTER)
-    Serial.println(F("Move to 45 degree in one second using interrupts"));
-#endif
-    Servo1.startEaseToD(45, 1000);
-//    Servo1.startEaseToD((544 + ((2400 - 544) / 4)), 1000); // Alternatively you can specify the target as microsecond value
-    // Blink until servo stops
-    while (Servo1.isMoving()) {
-        /*
-         * Put your own code here
-         */
-        blinkLED();
-    }
-
-    delay(1000);
-
-#if !defined(PRINT_FOR_SERIAL_PLOTTER)
-    Serial.println(F("Move to 135 degree and back nonlinear in one second each using interrupts"));
-#endif
-    Servo1.setEasingType(EASE_CUBIC_IN_OUT); // EASE_LINEAR is default
-
-    for (int i = 0; i < 2; ++i) {
-        Servo1.startEaseToD(135, 1000);
-//        Servo1.startEaseToD((544 + (((2400 - 544) / 4) * 3)), 1000); // Alternatively you can specify the target as microsecond value
-        // isMoving() calls yield for the ESP8266 boards
-        while (Servo1.isMoving()) {
-            /*
-             * Put your own code here
-             */
-            ; // no delays here to avoid break between forth and back movement
-        }
-        Servo1.startEaseToD(45, 1000);
-//        Servo1.startEaseToD((544 + ((2400 - 544) / 4)), 1000); // Alternatively you can specify the target as microsecond value
-        while (Servo1.isMoving()) {
-            ; // no delays here to avoid break between forth and back movement
-        }
-    }
-    Servo1.setEasingType(EASE_LINEAR);
-
-    delay(1000);
-
-    /*
-     * The LED goes on if servo reaches 120 degree
-     */
-#if !defined(PRINT_FOR_SERIAL_PLOTTER)
-    Serial.println(F("Move to 180 degree with 50 degree per second blocking"));
-#endif
-    Servo1.startEaseTo(180, 50);
-//    Servo1.startEaseTo(DEFAULT_MICROSECONDS_FOR_180_DEGREE, 50); // Alternatively you can specify the target as microsecond value
-    while (Servo1.getCurrentAngle() < 120) {
-        delay(20); // just wait until angle is above 120 degree
-    }
-    digitalWrite(LED_BUILTIN, HIGH);
-    while (Servo1.isMoving()) {
-        ; // wait for servo to stop
-    }
-
-    delay(1000);
-
-    /*
-     * Very fast move. The LED goes off when servo theoretical reaches 90 degree
-     */
-#if !defined(PRINT_FOR_SERIAL_PLOTTER)
-    Serial.println(F("Move from 180 to 0 degree with 360 degree per second using interrupts"));
-#endif
-    Servo1.startEaseTo(0, 360, true);
-//    Servo1.startEaseTo(DEFAULT_MICROSECONDS_FOR_0_DEGREE, 360, true); // Alternatively you can specify the target as microsecond value
-    // Wait for 250 ms. The servo should have moved 90 degree.
-    delay(250);
-    digitalWrite(LED_BUILTIN, LOW);
-
-#if !defined(PRINT_FOR_SERIAL_PLOTTER)
-    Serial.println(F("Interrupt movement with stop() for 1 second at 90 degree"));
-#endif
-    /*
-     * Demonstrate stop and continue in the middle of a movement
-     */
-    Servo1.stop();
-    delay(1000);
-    // continue movement using interrupts
-    Servo1.continueWithInterrupts();
-
-    delay(1000);
 }
 
 void blinkLED() {
@@ -221,4 +108,100 @@ void blinkLED() {
     delay(100);
     digitalWrite(LED_BUILTIN, LOW);
     delay(100);
+}
+
+void loop() {
+    Servo1.setSpeed(90);  // This speed is taken if no further speed argument is given.
+
+    // Move linear
+    Servo1.setEasingType(EASE_LINEAR);
+#if !defined(PRINT_FOR_SERIAL_PLOTTER)
+    Serial.println(F("Move linear to 90 degree"));
+#endif
+#if defined(USE_MICROSECONDS)
+    Servo1.easeTo(DEFAULT_MICROSECONDS_FOR_90_DEGREE);
+#else
+    Servo1.easeTo(90);
+#endif
+    delay(500);
+
+    Servo1.setEasingType(EASE_QUADRATIC_IN_OUT);
+#if !defined(PRINT_FOR_SERIAL_PLOTTER)
+    Serial.println(F("Move quadratic to 180 degree"));
+#endif
+#if defined(USE_MICROSECONDS)
+    Servo1.easeTo(DEFAULT_MICROSECONDS_FOR_180_DEGREE);
+#else
+    Servo1.easeTo(180);
+#endif
+    delay(500);
+
+    Servo1.setEasingType(EASE_CUBIC_IN_OUT);
+#if !defined(PRINT_FOR_SERIAL_PLOTTER)
+    Serial.println(F("Move cubic to 90 degree"));
+#endif
+#if defined(USE_MICROSECONDS)
+    Servo1.easeTo(DEFAULT_MICROSECONDS_FOR_90_DEGREE);
+#else
+    Servo1.easeTo(90);
+#endif
+
+    delay(500);
+
+    Servo1.setEasingType(EASE_QUARTIC_IN_OUT);
+#if !defined(PRINT_FOR_SERIAL_PLOTTER)
+    Serial.println(F("Move quartic to 0 degree"));
+#endif
+#if defined(USE_MICROSECONDS)
+    Servo1.easeTo(DEFAULT_MICROSECONDS_FOR_0_DEGREE);
+#else
+    Servo1.easeTo(0);
+#endif
+    delay(2000);
+
+    Servo1.setEasingType(EASE_SINE_IN_OUT);
+#if !defined(PRINT_FOR_SERIAL_PLOTTER)
+    Serial.println(F("Move sine to 90 degree"));
+#endif
+#if defined(USE_MICROSECONDS)
+    Servo1.easeTo(DEFAULT_MICROSECONDS_FOR_90_DEGREE);
+#else
+    Servo1.easeTo(90);
+#endif
+    delay(500);
+
+    Servo1.setEasingType(EASE_CIRCULAR_IN_OUT);
+#if !defined(PRINT_FOR_SERIAL_PLOTTER)
+    Serial.println(F("Move circular to 180 degree"));
+#endif
+#if defined(USE_MICROSECONDS)
+    Servo1.easeTo(DEFAULT_MICROSECONDS_FOR_180_DEGREE);
+#else
+    Servo1.easeTo(180);
+#endif
+    delay(500);
+
+    Servo1.setEasingType(EASE_BACK_IN_OUT);
+#if !defined(PRINT_FOR_SERIAL_PLOTTER)
+    Serial.println(F("Move back to 90 degree"));
+#endif
+#if defined(USE_MICROSECONDS)
+    Servo1.easeTo(DEFAULT_MICROSECONDS_FOR_90_DEGREE);
+#else
+    Servo1.easeTo(90);
+#endif
+    delay(500);
+
+    Servo1.setEasingType(EASE_ELASTIC_IN_OUT);
+#if !defined(PRINT_FOR_SERIAL_PLOTTER)
+    Serial.println(F("Move elastic to 0 degree"));
+#endif
+#if defined(USE_MICROSECONDS)
+    Servo1.easeTo(DEFAULT_MICROSECONDS_FOR_0_DEGREE);
+#else
+    Servo1.easeTo(0);
+#endif
+    delay(500);
+
+    delay(5000);
 }
