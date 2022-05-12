@@ -24,9 +24,9 @@
 #ifndef _SERVO_EASING_H
 #define _SERVO_EASING_H
 
-#define VERSION_SERVO_EASING "2.4.1"
-#define VERSION_SERVO_EASING_MAJOR 2
-#define VERSION_SERVO_EASING_MINOR 4
+#define VERSION_SERVO_EASING "3.0.0"
+#define VERSION_SERVO_EASING_MAJOR 3
+#define VERSION_SERVO_EASING_MINOR 0
 // The change log is at the bottom of the file
 
 #define MILLIS_IN_ONE_SECOND 1000L
@@ -192,18 +192,18 @@
 
 // @formatter:on
 
-#define DEFAULT_MICROSECONDS_FOR_0_DEGREE 544
-#define DEFAULT_MICROSECONDS_FOR_45_DEGREE (544 + ((2400 - 544) / 4)) // 1008
-#define DEFAULT_MICROSECONDS_FOR_90_DEGREE (544 + ((2400 - 544) / 2)) // 1472
+#define DEFAULT_MICROSECONDS_FOR_0_DEGREE     544
+#define DEFAULT_MICROSECONDS_FOR_45_DEGREE   (544 + ((2400 - 544) / 4)) // 1008
+#define DEFAULT_MICROSECONDS_FOR_90_DEGREE   (544 + ((2400 - 544) / 2)) // 1472
 #define DEFAULT_MICROSECONDS_FOR_135_DEGREE (2400 - ((2400 - 544) / 4)) // 1936
-#define DEFAULT_MICROSECONDS_FOR_180_DEGREE 2400
+#define DEFAULT_MICROSECONDS_FOR_180_DEGREE  2400
 // Approximately 10 microseconds per degree
 
-#define DEFAULT_PCA9685_UNITS_FOR_0_DEGREE  111 // 111.411 = 544 탎
-#define DEFAULT_PCA9685_UNITS_FOR_45_DEGREE (111 + ((491 - 111) / 4)) // 206
-#define DEFAULT_PCA9685_UNITS_FOR_90_DEGREE (111 + ((491 - 111) / 2)) // 301 = 1472 us
+#define DEFAULT_PCA9685_UNITS_FOR_0_DEGREE    111 // 111.411 = 544 탎
+#define DEFAULT_PCA9685_UNITS_FOR_45_DEGREE  (111 + ((491 - 111) / 4)) // 206
+#define DEFAULT_PCA9685_UNITS_FOR_90_DEGREE  (111 + ((491 - 111) / 2)) // 301 = 1472 us
 #define DEFAULT_PCA9685_UNITS_FOR_135_DEGREE (491 - ((491 - 111) / 4)) // 369
-#define DEFAULT_PCA9685_UNITS_FOR_180_DEGREE 491 // 491.52 = 2400 탎
+#define DEFAULT_PCA9685_UNITS_FOR_180_DEGREE  491 // 491.52 = 2400 탎
 // Approximately 2 units per degree
 
 /*
@@ -247,11 +247,12 @@
  * The call style is coded in the upper 3 bits
  */
 #define CALL_STYLE_DIRECT       0x00 // == IN
+#define CALL_STYLE_IN           0x00
 #define CALL_STYLE_OUT          0x20
 #define CALL_STYLE_IN_OUT       0x40
 #define CALL_STYLE_BOUNCING_OUT_IN  0x60 // Bouncing has double movement, so double time (half speed) is taken for this modes
 
-#define CALL_STYLE_MASK         0xE0 // for future extensions
+#define CALL_STYLE_MASK         0xE0
 #define EASE_TYPE_MASK          0x0F
 
 #define EASE_LINEAR             0x00 // No bouncing available
@@ -270,6 +271,18 @@
 #define EASE_QUARTIC_OUT        0x23
 #define EASE_QUARTIC_IN_OUT     0x43
 #define EASE_QUARTIC_BOUNCING   0x63
+
+#define EASE_PRECISION_IN       0x04
+#define EASE_PRECISION_OUT      0x24
+#define EASE_PRECISION_IN_OUT   0x44
+#define EASE_PRECISION_BOUNCING 0x64
+
+#define EASE_USER_DIRECT        0x05
+#define EASE_USER_OUT           0x25
+#define EASE_USER_IN_OUT        0x45
+#define EASE_USER_BOUNCING      0x65
+
+#define EASE_DUMMY_MOVE         0x07 // can be used as delay
 
 #if !defined(DISABLE_COMPLEX_FUNCTIONS)
 #define EASE_SINE_IN            0x08
@@ -295,12 +308,26 @@
 // the coded function is an OUT function
 #define EASE_BOUNCE_IN          0x2C // call OUT function inverse
 #define EASE_BOUNCE_OUT         0x0C // call OUT function direct
-#endif
+#endif // !defined(DISABLE_COMPLEX_FUNCTIONS)
 
-#define EASE_USER_DIRECT        0x0F
-#define EASE_USER_OUT           0x2F
-#define EASE_USER_IN_OUT        0x4F
-#define EASE_USER_BOUNCING      0x6F
+// !!! Must be without comment and closed by @formatter:on !!!
+// @formatter:off
+extern const char easeTypeLinear[]     PROGMEM;
+extern const char easeTypeQuadratic[]  PROGMEM;
+extern const char easeTypeCubic[]      PROGMEM;
+extern const char easeTypeQuartic[]    PROGMEM;
+extern const char easeTypePrecision[]  PROGMEM;
+extern const char easeTypeUser[]       PROGMEM;
+extern const char easeTypeDummy[]      PROGMEM;
+#if !defined(DISABLE_COMPLEX_FUNCTIONS)
+extern const char easeTypeSine[]       PROGMEM;
+extern const char easeTypeCircular[]   PROGMEM;
+extern const char easeTypeBack[]       PROGMEM;
+extern const char easeTypeElastic[]    PROGMEM;
+extern const char easeTypeBounce[]     PROGMEM;
+#endif // !defined(DISABLE_COMPLEX_FUNCTIONS)
+// @formatter:on
+extern const char *const easeTypeStrings[] PROGMEM;
 
 #define EASE_FUNCTION_DEGREE_INDICATOR_OFFSET 256 // Offset to decide if the user function returns degree instead of 0.0 to 1.0. => returns 256 for 0 degree.
 
@@ -317,6 +344,10 @@
 #define PCA9685_PRESCALE_REGISTER    0xFE
 
 #define PCA9685_PRESCALER_FOR_20_MS ((25000000L /(4096L * 50))-1) // = 121 / 0x79 at 50 Hz
+
+// to be used as values for parameter bool aStartUpdateByInterrupt
+#define START_UPDATE_BY_INTERRUPT           true
+#define DO_NOT_START_UPDATE_BY_INTERRUPT    false
 
 class ServoEasing
 #if !defined(_DO_NOT_USE_SERVO_LIB)
@@ -372,25 +403,31 @@ public:
     float callEasingFunction(float aPercentageOfCompletion);            // used in update()
 #endif
 
-    void write(int aTargetDegreeOrMicrosecond);         // Apply trim and reverse to the value and write it direct to the Servo library.
+    void write(int aTargetDegreeOrMicrosecond);     // Apply trim and reverse to the value and write it direct to the Servo library.
     void writeMicrosecondsOrUnits(int aMicrosecondsOrUnits);
 
-    void setSpeed(uint_fast16_t aDegreesPerSecond);                                     // This speed is taken if no speed argument is given.
+    void setSpeed(uint_fast16_t aDegreesPerSecond);                            // This speed is taken if no speed argument is given.
     uint_fast16_t getSpeed();
-    void easeTo(int aTargetDegreeOrMicrosecond);                                        // blocking move to new position using mLastSpeed
-    void easeTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);       // blocking move to new position using speed
-    void easeToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove);         // blocking move to new position using duration
+    void easeTo(int aTargetDegreeOrMicrosecond);                                   // blocking move to new position using mLastSpeed
+    void easeTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);  // blocking move to new position using speed
+    void easeToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove);    // blocking move to new position using duration
+
+    bool noMovement(uint_fast16_t aMillisToWait);                                       // stay at the position for aMillisToWait
 
     bool setEaseTo(int aTargetDegreeOrMicrosecond);                                     // shortcut for startEaseTo(..,..,false)
     bool setEaseTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);    // shortcut for startEaseTo(..,..,false)
-    bool startEaseTo(int aTargetDegreeOrMicrosecond);                                   // shortcut for startEaseTo(aDegree, mSpeed, true)
-    bool startEaseTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt = true);
+    bool startEaseTo(int aTargetDegreeOrMicrosecond);                             // shortcut for startEaseTo(aDegree, mSpeed, true)
+    bool startEaseTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt =
+            START_UPDATE_BY_INTERRUPT);
     bool setEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);   // shortcut for startEaseToD(..,..,false)
-    bool startEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt = true);
+    bool startEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt =
+            START_UPDATE_BY_INTERRUPT);
     void stop();
     void continueWithInterrupts();
     void continueWithoutInterrupts();
     bool update();
+
+    void setTargetPositionReachedHandler(void (*aTargetPositionReachedHandler)(ServoEasing*));
 
     int getCurrentAngle();
     int getEndMicrosecondsOrUnits();
@@ -402,6 +439,7 @@ public:
 
     int MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits);
     int MicrosecondsToDegree(int aMicroseconds);
+    int MicrosecondsOrUnitsToMicroseconds(int aMicrosecondsOrUnits);
     int DegreeToMicrosecondsOrUnits(int aDegreeOrMicroseconds);
     int DegreeToMicrosecondsOrUnitsWithTrimAndReverse(int aDegree);
 
@@ -410,6 +448,7 @@ public:
     void print(Print *aSerial, bool doExtendedOutput = true); // Print dynamic and static info
     void printDynamic(Print *aSerial, bool doExtendedOutput = true);
     void printStatic(Print *aSerial);
+    void printEasingType(Print *aSerial, uint_fast8_t aEasingType);
 
     /*
      * Convenience function
@@ -474,6 +513,8 @@ public:
     int mServo0DegreeMicrosecondsOrUnits;
     int mServo180DegreeMicrosecondsOrUnits;
 
+    void (*TargetPositionReachedHandler)(ServoEasing*);  // Is called any time when target servo position is reached
+
     /*
      * It is required for ESP32, where the timer interrupt routine does not block the loop. Maybe it runs on another CPU?
      * The interrupt routine first sets the mServoMoves flag to false and then disables the timer.
@@ -523,7 +564,7 @@ void printArrayPositions(Print *aSerial);
 bool isOneServoMoving();
 void stopAllServos();
 bool updateAllServos();
-void synchronizeAllServosAndStartInterrupt(bool aStartUpdateByInterrupt = true);
+void synchronizeAllServosAndStartInterrupt(bool aStartUpdateByInterrupt = START_UPDATE_BY_INTERRUPT);
 
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
 void setEasingTypeForAllServos(uint_fast8_t aEasingType);
@@ -573,10 +614,13 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
 #endif
 
 /*
- * Version 2.5.0 - 05/2022
+ * Version 3.0.0 - 05/2022
+ * - Added target reached callback functionality, to enable multiple movements without loop control.
  * - Changed ENABLE_MICROS_AS_DEGREE_PARAMETER to DISABLE_MICROS_AS_DEGREE_PARAMETER thus enabling micros as parameter by default.
  * - Fixed some bugs for micros as parameter.
  * - Improved PCA9685 handling.
+ * - Changed constants for easing types > EASE_QUARTIC.
+ * - New function `printEasingType()`.
  *
  * Version 2.4.1 - 02/2022
  * - RP2040 support added.

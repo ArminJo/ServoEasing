@@ -197,7 +197,7 @@ void loop() {
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
     Serial.println(F("Move from 180 to 0 degree with 360 degree per second using interrupts"));
 #endif
-    Servo1.startEaseTo(0, 360, true);
+    Servo1.startEaseTo(0, 360, START_UPDATE_BY_INTERRUPT);
 //    Servo1.startEaseTo(DEFAULT_MICROSECONDS_FOR_0_DEGREE, 360, true); // Alternatively you can specify the target as microsecond value
     // Wait for 250 ms. The servo should have moved 90 degree.
     delay(250);

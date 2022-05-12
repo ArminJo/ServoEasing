@@ -127,9 +127,9 @@ void setup() {
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
     Serial.println(F("Move from 90 to 45 degree in 1 second"));
 #endif
-    Servo1.startEaseToD(45, 1000, true);
-    Servo2.startEaseToD(45, 1000, true);
-    Servo3.startEaseToD(45, 1000, true);
+    Servo1.startEaseToD(45, 1000, START_UPDATE_BY_INTERRUPT);
+    Servo2.startEaseToD(45, 1000, START_UPDATE_BY_INTERRUPT);
+    Servo3.startEaseToD(45, 1000, START_UPDATE_BY_INTERRUPT);
     delay(1000);
 
     Servo1.setEasingType(EASE_USER_DIRECT);

@@ -1,7 +1,7 @@
 # [ServoEasing](https://github.com/ArminJo/ServoEasing) - move your servo more natural
 A library for smooth servo movements. It uses the standard Arduino Servo library and therefore has its restrictions regarding pins and platform support.
 
-### [Version 2.5.1](https://github.com/ArminJo/ServoEasing/archive/master.zip) - work in progress
+### [Version 3.0.1](https://github.com/ArminJo/ServoEasing/archive/master.zip) - work in progress
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
@@ -56,11 +56,12 @@ For instructions how to enable these alternatives, see [Compile options / macros
 - **Linear** and 9 other ease movements are provided.
 - All servos can move **synchronized** or **independently**.
 - **Non blocking** movements are enabled by using **startEaseTo\* functions** by reusing the interrupts of the servo timer Timer1 or using a dedicated timer on other platforms. This function is not available for all platforms.
+- **Callback at reaching target enables multiple movements independent of main loop**.
 - A **trim value** can be set for any servo. Its value is internally added to each requested position.
 - **Reverse operation** of servo is possible eg. if it is mounted head down.
 - Allow to specify an arbitrary mapping between degrees and microseconds by `attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree)`.
 - **Servo speed** can be specified in **degree per second** or **milliseconds** for the complete move.
-- Degree values >= 400 can optionally be taken as microsecond values for the servo pulse.
+- Degree values >= 400 is taken as microsecond values for the servo pulse.
 - All ServoEasing objects are accessible by using the [`ServoEasing::ServoEasingArray[]`](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServos/ThreeServos.ino#L104).
 
 # List of easing functions:
@@ -72,8 +73,9 @@ For instructions how to enable these alternatives, see [Compile options / macros
 - Circular
 - Back
 - Elastic
-- Bounce
+- Bounce (move with OUT, then return with IN to start degree)
 - User defined
+- Dummy (used for delays in callback handler)
 
 ### All easing functions can be used in the following variants:
 - In
@@ -81,7 +83,10 @@ For instructions how to enable these alternatives, see [Compile options / macros
 - InOut
 - Bouncing (mirrored Out) e.g. Bouncing of the Sine function results in the upper (positive) half of the sine.
 
-All easing types (in flavor IN_OUT) in one plot<br/>
+All easing types (starting in flavor IN_OUT, then IN, OUT and BOUNCE) in one plot.<br/>
+Since the values are computed in a fixed 20 ms raster, the last degree increment or decrement
+in an easing may be much smaller than the increment/decrement before,
+resulting in some small discontinuities between adjacent movements.<br/>
 ![Arduino Plotter Output for Linear->Quadratic->Cubic->Quartic->Sine-Circular->Back->Elastic](https://github.com/ArminJo/ServoEasing/blob/master/pictures/NonlinearMovements.png)
 
 # [API](https://github.com/ArminJo/ServoEasing/blob/master/src/ServoEasing.h#L328)
@@ -95,8 +100,8 @@ void setup() {
 }
 void loop() {
     Servo1.setEasingType(EASE_CUBIC_IN_OUT); // EASE_LINEAR is default
-    Servo1.easeTo(135, 40);             // Blocking call
-    Servo1.startEaseTo(45, 40, true);   // Non blocking call
+    Servo1.easeTo(135, 40);                                 // Blocking call
+    Servo1.startEaseTo(45, 40, START_UPDATE_BY_INTERRUPT);  // Non blocking call
     // Now the servo is moving to the end position independently of your program.
     delay(5000);
 }

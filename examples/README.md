@@ -8,6 +8,7 @@ YouTube video of SymmetricEasing and AsymmetricEasing example
 
 # Table of content
 - [Simple example](#simple-example)
+- [SimpleCallback example](#simplecallback-example)
 - [OneServo example](#oneservo-example)
   * [PCA9685_Expander example](#pca9685_expander-example)
 - [TwoServo](#twoservo)
@@ -27,7 +28,10 @@ YouTube video of SymmetricEasing and AsymmetricEasing example
   * [SpeedTest example example](#speedtest-example)
   
 # [Simple example](https://github.com/ArminJo/ServoEasing/blob/master/examples/Simple/Simple.ino)
-This example does not use interrupts and should therefore run on any platform where the Arduino Servo library is available.<br/><br/>
+This example does not use interrupts and should therefore run on any platform where the Arduino Servo library is available.<br/>
+
+# [SimpleCallback example](https://github.com/ArminJo/ServoEasing/blob/master/examples/SimpleCallback/SimpleCallback.ino)
+This example shows the usage of a callback function for multiple moves independent of the main loop function.<br/>
 
 # [OneServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino)
 This example moves one Servo with different speeds and using blocking and interrupt commands. The internal LED blinks when using interrupt based commands.
@@ -44,8 +48,9 @@ WOKWI online simulation of the ThreeServo example.<br/>
 [![WOKWI online simulation of the ThreeServo example](https://github.com/ArminJo/ServoEasing/blob/master/pictures/Wokwi_ThreeServos.png)](https://wokwi.com/arduino/projects/299552195816194570).
 
 # [NonlinearEasings example](https://github.com/ArminJo/ServoEasing/blob/master/examples/NonlinearEasings/NonlinearEasings.ino)
-This example shows non-linear easings in flavor IN_OUT for 1 servo.  Linear->Quadratic->Cubic->Quartic->Sine-Circular->Back->Elastic.<br/>
+This example shows 1 linear and 7 non-linear easings in flavor IN_OUT for 1 servo, followed with flavors of IN, OUT and BOUNCING.<br/>
 Note, that Back and Elastic are not totally visible at your servo, since they use angels above 180 and below 0 degree in this example.
+It uses a **callback handler** and **specification arrays** to generate the movement cycle.
 **Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` is enabled.<br/>
 ![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/NonlinearMovements.png)
 

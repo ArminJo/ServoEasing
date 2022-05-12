@@ -1,10 +1,7 @@
 /*
- * NonlinearEasings.cpp
+ * SimpleCallback.cpp
  *
- *  This example shows 1 linear and 7 non-linear easings in flavor IN_OUT for 1 servo, followed with flavors of IN, OUT and BOUNCING.
- *  Linear->Quadratic->Cubic->Quartic->Sine-Circular->Back->Elastic->Quadratic_in->Cubic_out->Cubic_bounce->Dummy.
- *  Note, that Back and Elastic are not totally visible at your servo, since they use angels above 180 and below 0 degree in this example.
- *  It uses a callback handler and specification arrays to generate the movement cycle.
+ *  This example shows the usage of a callback function for multiple moves independent of the main loop function.
  *
  *  Copyright (C) 2022  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
@@ -38,9 +35,7 @@
 //#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
 //#define DEBUG                         // Activate this to generate lots of lovely debug output for this library.
 
-#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output.
 #include "ServoEasing.hpp"
-
 #include "PinDefinitionsAndMore.h"
 /*
  * Pin mapping table for different platforms - used by all examples
@@ -56,16 +51,8 @@
  * RP2040             6|GPIO18     7|GPIO19    8|GPIO20
  */
 
-#if defined(USE_PCA9685_SERVO_EXPANDER)
-ServoEasing Servo1(PCA9685_DEFAULT_ADDRESS, &Wire); // If you use more than one PCA9685 you probably must modify MAX_EASING_SERVOS
-#else
 ServoEasing Servo1;
-#endif
 
-#define START_DEGREE_VALUE  0 // The degree value written to the servo at time of attach.
-//#define USE_MICROSECONDS      // Use microseconds instead degrees as parameter
-
-void blinkLED();
 void ServoTargetPositionReachedHandler(ServoEasing *aServoEasingInstance);
 
 void setup() {
@@ -74,116 +61,58 @@ void setup() {
 #if defined(__AVR_ATmega32U4__) || defined(SERIAL_PORT_USBVIRTUAL) || defined(SERIAL_USB) /*stm32duino*/|| defined(USBCON) /*STM32_stm32*/|| defined(SERIALUSB_PID) || defined(ARDUINO_attiny3217)
     delay(4000); // To be able to connect Serial monitor after reset or power up and before first print out. Do not wait for an attached Serial Monitor!
 #endif
-#if !defined(PRINT_FOR_SERIAL_PLOTTER)
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_SERVO_EASING));
-#endif
 
     /********************************************************
      * Attach servo to pin and set servos to start position.
      * This is the position where the movement starts.
      *******************************************************/
-#if defined(USE_PCA9685_SERVO_EXPANDER)
-    if (Servo1.InitializeAndCheckI2CConnection(&Serial)) {
-        while (true) {
-            blinkLED();
-        }
-    }
-#endif
-#if !defined(PRINT_FOR_SERIAL_PLOTTER)
     Serial.println(F("Attach servo at pin " STR(SERVO1_PIN)));
-#endif
-    if (Servo1.attach(SERVO1_PIN, START_DEGREE_VALUE) == INVALID_SERVO) {
+    if (Servo1.attach(SERVO1_PIN, 90) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
 
     // Wait for servo to reach start position.
     delay(500);
-#if defined(PRINT_FOR_SERIAL_PLOTTER)
-    // Legend for Arduino Serial plotter
-    Serial.println(); // end of line of attach values
-    Serial.println(
-            "OneServo[us]_Linear->Quadratic->Cubic->Quartic ->Sine-Circular->Back->Elastic ->Quadratic_in->Cubic_out->Cubic_bounce->Dummy");
-#endif
 
     /*
      * Initialize and start multiple movements controlled by callback handler
      */
     Servo1.setTargetPositionReachedHandler(ServoTargetPositionReachedHandler);
-    Servo1.setSpeed(120);  // This speed is taken if no further speed argument is given.
-    ServoTargetPositionReachedHandler(&Servo1); // start by calling handler which in turn calls Servo1.startEaseTo(tTargetDegree)
+    Servo1.setSpeed(90);                        // This speed is taken if no further speed argument is given.
+    ServoTargetPositionReachedHandler(&Servo1); // Start by calling handler which in turn calls Servo1.startEaseTo(tTargetDegree)
 }
 
 void loop() {
-
-    if (Servo1.mCurrentMicrosecondsOrUnits != Servo1.mEndMicrosecondsOrUnits) {
-        // real moving here
-        digitalWrite(LED_BUILTIN, HIGH);
-    } else {
-        // delay / noMovement here
-        digitalWrite(LED_BUILTIN, LOW);
-    }
-
-    delay(50);
-}
-
-void blinkLED() {
-    digitalWrite(LED_BUILTIN, HIGH);
-    delay(100);
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(100);
+    digitalWrite(LED_BUILTIN, Servo1.isMoving()); // show the state of servo
+    delay(500);
 }
 
 /*
- * Arrays for the parameter of movements controlled by callback
+ * Move 5 times to 135 degree and back to 45 degree
  */
-#define NUMBER_OF_EASING_TYPES_TO_SHOW  12
-uint_fast8_t EasingTypesArray[NUMBER_OF_EASING_TYPES_TO_SHOW] = { EASE_LINEAR, EASE_QUADRATIC_IN_OUT, EASE_CUBIC_IN_OUT,
-EASE_QUARTIC_IN_OUT, EASE_SINE_IN_OUT, EASE_CIRCULAR_IN_OUT, EASE_BACK_IN_OUT, EASE_ELASTIC_IN_OUT, EASE_QUADRATIC_IN, EASE_CUBIC_OUT,
-EASE_CUBIC_BOUNCING, EASE_DUMMY_MOVE };
-#if defined(USE_MICROSECONDS)
-int TargetDegreesArray[NUMBER_OF_EASING_TYPES_TO_SHOW] = { DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE,
-DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_90_DEGREE,
-DEFAULT_MICROSECONDS_FOR_180_DEGREE, DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_0_DEGREE,
-DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, DEFAULT_MICROSECONDS_FOR_90_DEGREE,
-DEFAULT_MICROSECONDS_FOR_0_DEGREE };
-#else
-int TargetDegreesArray[NUMBER_OF_EASING_TYPES_TO_SHOW] = { 90, 180, 90, 0, 90, 180, 90, 0, 90, 180, 90, 0 };
-#endif
-
 void ServoTargetPositionReachedHandler(ServoEasing *aServoEasingInstance) {
-    static uint_fast8_t sStep = 0;
+    static unsigned int sMoveCounter = 0;
 
-#if !defined(PRINT_FOR_SERIAL_PLOTTER)
-    static bool sDoDelay = false;
-    if (sDoDelay) {
-        sDoDelay = false;
-        Servo1.noMovement(500);
+    int tTargetDegree;
+    if ((sMoveCounter % 2) == 0) {
+        tTargetDegree = 135;
     } else {
-        sDoDelay = true;
-#endif
-    int tTargetDegree = TargetDegreesArray[sStep];
-    uint_fast8_t tEasingType = EasingTypesArray[sStep];
-
-    Servo1.setEasingType(tEasingType);
-    Servo1.startEaseTo(tTargetDegree);
-    sStep++;
-    if (sStep >= NUMBER_OF_EASING_TYPES_TO_SHOW) {
-        sStep = 0; // do it forever
+        tTargetDegree = 45;
     }
 
-#if !defined(PRINT_FOR_SERIAL_PLOTTER)
-        Serial.print(F("Move "));
-        Servo1.printEasingType(&Serial, tEasingType);
-        Serial.print(F(" to "));
+    sMoveCounter++;
+    // do 10 moves, then stop
+    if (sMoveCounter <= 10) {
+        Serial.print(F("Move to "));
         Serial.print(tTargetDegree);
-#  if defined(USE_MICROSECONDS)
-        Serial.println(F(" microseconds"));
-#  else
         Serial.println(F(" degree"));
-#  endif
+        /*
+         * Call startEaseTo() to start next move
+         */
+        Servo1.startEaseTo(tTargetDegree);
+    } else {
+        Serial.println(F("Stop callback movement, by NOT calling startEaseTo() again"));
     }
-#endif
-//    Servo1.print(&Serial, false);
 }
-
