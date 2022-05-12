@@ -56,7 +56,7 @@ For instructions how to enable these alternatives, see [Compile options / macros
 - **Linear** and 9 other ease movements are provided.
 - All servos can move **synchronized** or **independently**.
 - **Non blocking** movements are enabled by using **startEaseTo\* functions** by reusing the interrupts of the servo timer Timer1 or using a dedicated timer on other platforms. This function is not available for all platforms.
-- A **trim** value (added to the degree/units/microseconds value requested) for each servo may be set.
+- A **trim value** can be set for any servo. Its value is internally added to each requested position.
 - **Reverse operation** of servo is possible eg. if it is mounted head down.
 - Allow to specify an arbitrary mapping between degrees and microseconds by `attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree)`.
 - **Servo speed** can be specified in **degree per second** or **milliseconds** for the complete move.
@@ -95,8 +95,10 @@ void setup() {
 }
 void loop() {
     Servo1.setEasingType(EASE_CUBIC_IN_OUT); // EASE_LINEAR is default
-    Servo1.easeTo(135, 40);
-    Servo1.easeTo(45, 40);
+    Servo1.easeTo(135, 40);             // Blocking call
+    Servo1.startEaseTo(45, 40, true);   // Non blocking call
+    // Now the servo is moving to the end position independently of your program.
+    delay(5000);
 }
 ```
 
@@ -161,6 +163,7 @@ Modify them by enabling / disabling them, or change the values if applicable.
 | Name | Default value | Description |
 |-|-|-|
 | `USE_PCA9685_SERVO_EXPANDER` | disabled | Enables the use of the PCA9685 I2C expander chip/board. |
+| `USE_SOFT_I2C_MASTER` | disabled | Saves up to 1756 bytes program memory and 218 bytes RAM for PCA9685 I2C communication compared with Arduino Wire. |
 | `USE_SERVO_LIB` | disabled | Use of PCA9685 normally disables use of regular servo library. You can force additional using of regular servo library by defining `USE_SERVO_LIB`. See [below](https://github.com/ArminJo/ServoEasing#using-pca9685-16-channel-servo-expander). |
 | `PROVIDE_ONLY_LINEAR_MOVEMENT` | disabled | Disables all but LINEAR movement. Saves up to 1540 bytes program memory. |
 | `DISABLE_COMPLEX_FUNCTIONS` | disabled | Disables the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes program memory. |

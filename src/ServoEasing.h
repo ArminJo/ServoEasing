@@ -326,11 +326,15 @@ class ServoEasing
 public:
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
-#if defined(ARDUINO_SAM_DUE)
+#  if defined(ARDUINO_SAM_DUE)
     ServoEasing(uint8_t aPCA9685I2CAddress, TwoWire *aI2CClass = &Wire1);
-#else
+#  else
+#    if defined(USE_SOFT_I2C_MASTER)
+    ServoEasing(uint8_t aPCA9685I2CAddress);
+#    else
     ServoEasing(uint8_t aPCA9685I2CAddress, TwoWire *aI2CClass = &Wire);
-#endif
+#    endif
+#  endif
     void I2CInit();
     void PCA9685Reset();
     void PCA9685Init();
@@ -444,11 +448,13 @@ public:
     volatile bool mServoMoves;
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
-#if defined(USE_SERVO_LIB)
+#  if defined(USE_SERVO_LIB)
     bool mServoIsConnectedToExpander; // to distinguish between different servo drivers
-#endif
+#  endif
     uint8_t mPCA9685I2CAddress;
+#  if !defined(USE_SOFT_I2C_MASTER)
     TwoWire *mI2CClass;
+#  endif
 #endif
     uint8_t mServoPin; // pin number or NO_SERVO_ATTACHED_PIN_NUMBER - at least required for Lightweight Servo Library
 

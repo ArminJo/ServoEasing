@@ -147,13 +147,26 @@ ServoEasing *ServoEasing::ServoEasingArray[MAX_EASING_SERVOS];
 int ServoEasing::ServoEasingNextPositionArray[MAX_EASING_SERVOS];
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
+//#define USE_SOFT_I2C_MASTER // Saves 2110 bytes program memory and 200 bytes RAM compared with Arduino Wire
+#  if defined(USE_SOFT_I2C_MASTER)
+#include "SoftI2CMasterConfig.h"
+#include "SoftI2CMaster.h"
+#  endif // defined(USE_SOFT_I2C_MASTER)
+
 #  if !defined _BV
 #  define _BV(bit) (1 << (bit))
 #  endif
 // Constructor with I2C address required
-ServoEasing::ServoEasing(uint8_t aPCA9685I2CAddress, TwoWire *aI2CClass) { // @suppress("Class members should be properly initialized")
+#if defined(USE_SOFT_I2C_MASTER)
+ServoEasing::ServoEasing(uint8_t aPCA9685I2CAddress) // @suppress("Class members should be properly initialized")
+#else
+ServoEasing::ServoEasing(uint8_t aPCA9685I2CAddress, TwoWire *aI2CClass) // @suppress("Class members should be properly initialized")
+#endif
+{
     mPCA9685I2CAddress = aPCA9685I2CAddress;
+#if !defined(USE_SOFT_I2C_MASTER)
     mI2CClass = aI2CClass;
+#endif
 
     // On an ESP8266 it was NOT initialized to 0 :-(.
     mTrimMicrosecondsOrUnits = 0;
@@ -176,10 +189,14 @@ ServoEasing::ServoEasing(uint8_t aPCA9685I2CAddress, TwoWire *aI2CClass) { // @s
 
 void ServoEasing::I2CInit() {
 // Initialize I2C
+#if defined(USE_SOFT_I2C_MASTER)
+    i2c_init(); // Initialize everything and check for bus lockup
+#else
     mI2CClass->begin();
     mI2CClass->setClock(I2C_CLOCK_FREQUENCY); // 1000000 does not work for me, maybe because of parasitic breadboard capacities
-#if defined (ARDUINO_ARCH_AVR) // Other platforms do not have this new function
+#  if defined (ARDUINO_ARCH_AVR) // Other platforms do not have this new function
     mI2CClass->setWireTimeout(); // Sets default timeout of 25 ms.
+#  endif
 #endif
 }
 /*
@@ -187,9 +204,15 @@ void ServoEasing::I2CInit() {
  */
 void ServoEasing::PCA9685Reset() {
     // Send software reset to expander(s)
+#if defined(USE_SOFT_I2C_MASTER)
+    i2c_start(PCA9685_GENERAL_CALL_ADDRESS << 1);
+    i2c_write(PCA9685_SOFTWARE_RESET);
+    i2c_stop();
+#else
     mI2CClass->beginTransmission(PCA9685_GENERAL_CALL_ADDRESS);
     mI2CClass->write(PCA9685_SOFTWARE_RESET);
     mI2CClass->endTransmission();
+#endif
 }
 
 /*
@@ -205,17 +228,24 @@ void ServoEasing::PCA9685Init() {
 }
 
 void ServoEasing::I2CWriteByte(uint8_t aAddress, uint8_t aData) {
+#if defined(USE_SOFT_I2C_MASTER)
+    i2c_start(mPCA9685I2CAddress << 1);
+    i2c_write(aAddress);
+    i2c_write(aData);
+    i2c_stop();
+#else
     mI2CClass->beginTransmission(mPCA9685I2CAddress);
     mI2CClass->write(aAddress);
     mI2CClass->write(aData);
-#if defined(DEBUG)
+#  if defined(DEBUG)
     uint8_t tWireReturnCode = mI2CClass->endTransmission();
     if (tWireReturnCode != 0) {
         // I have seen this at my ESP32 module :-( - but it is no buffer overflow.
         Serial.print((char) (tWireReturnCode + '0')); // Error enum i2c_err_t: I2C_ERROR_ACK = 2, I2C_ERROR_TIMEOUT = 3
     }
-#else
+#  else
     mI2CClass->endTransmission();
+#  endif
 #endif
 }
 
@@ -226,12 +256,19 @@ void ServoEasing::I2CWriteByte(uint8_t aAddress, uint8_t aData) {
  * 4096 means output is signal fully off
  */
 void ServoEasing::setPWM(uint16_t aPWMOffValueAsUnits) {
+#if defined(USE_SOFT_I2C_MASTER)
+    i2c_start(mPCA9685I2CAddress << 1);
+    i2c_write((PCA9685_FIRST_PWM_REGISTER + 2) + 4 * mServoPin);
+    i2c_write(aPWMOffValueAsUnits);
+    i2c_write(aPWMOffValueAsUnits >> 8);
+    i2c_stop();
+#else
     mI2CClass->beginTransmission(mPCA9685I2CAddress);
     // +2 since we we do not set the begin value, it is fixed at 0
     mI2CClass->write((PCA9685_FIRST_PWM_REGISTER + 2) + 4 * mServoPin);
     mI2CClass->write(aPWMOffValueAsUnits);
     mI2CClass->write(aPWMOffValueAsUnits >> 8);
-#if defined(DEBUG) && not defined(ESP32)
+#  if defined(DEBUG) && not defined(ESP32)
     // The ESP32 I2C interferes with the Ticker / Timer library used.
     // Even with 100 kHz clock we have some dropouts / NAK's because of sending address again instead of first data.
     uint8_t tWireReturnCode = mI2CClass->endTransmission();
@@ -239,8 +276,9 @@ void ServoEasing::setPWM(uint16_t aPWMOffValueAsUnits) {
         // If you end up here, maybe the second module is not attached?
         Serial.print((char) (tWireReturnCode + '0'));    // Error enum i2c_err_t: I2C_ERROR_ACK = 2, I2C_ERROR_TIMEOUT = 3
     }
-#else
+#  else
     mI2CClass->endTransmission();
+#  endif
 #endif
 }
 
@@ -251,13 +289,22 @@ void ServoEasing::setPWM(uint16_t aPWMOffValueAsUnits) {
  * cannot be connected to one I2C bus, if all servos must be able to move simultaneously.
  */
 void ServoEasing::setPWM(uint16_t aPWMOnStartValueAsUnits, uint16_t aPWMPulseDurationAsUnits) {
+#if defined(USE_SOFT_I2C_MASTER)
+    i2c_start(mPCA9685I2CAddress << 1);
+    i2c_write((PCA9685_FIRST_PWM_REGISTER) + 4 * mServoPin);
+    i2c_write(aPWMOnStartValueAsUnits);
+    i2c_write(aPWMOnStartValueAsUnits >> 8);
+    i2c_write(aPWMOnStartValueAsUnits + aPWMPulseDurationAsUnits);
+    i2c_write((aPWMOnStartValueAsUnits + aPWMPulseDurationAsUnits) >> 8);
+    i2c_stop();
+#else
     mI2CClass->beginTransmission(mPCA9685I2CAddress);
     mI2CClass->write((PCA9685_FIRST_PWM_REGISTER) + 4 * mServoPin);
     mI2CClass->write(aPWMOnStartValueAsUnits);
     mI2CClass->write(aPWMOnStartValueAsUnits >> 8);
     mI2CClass->write(aPWMOnStartValueAsUnits + aPWMPulseDurationAsUnits);
     mI2CClass->write((aPWMOnStartValueAsUnits + aPWMPulseDurationAsUnits) >> 8);
-#if defined(DEBUG) && not defined(ESP32)
+#  if defined(DEBUG) && not defined(ESP32)
     // The ESP32 I2C interferes with the Ticker / Timer library used.
     // Even with 100 kHz clock we have some dropouts / NAK's because of sending address again instead of first data.
     uint8_t tWireReturnCode = mI2CClass->endTransmission();    // blocking call
@@ -265,8 +312,9 @@ void ServoEasing::setPWM(uint16_t aPWMOnStartValueAsUnits, uint16_t aPWMPulseDur
         // If you end up here, maybe the second module is not attached?
         Serial.print((char) (tWireReturnCode + '0'));    // Error enum i2c_err_t: I2C_ERROR_ACK = 2, I2C_ERROR_TIMEOUT = 3
     }
-#else
+#  else
     mI2CClass->endTransmission();
+#  endif
 #endif
 }
 
@@ -743,7 +791,7 @@ int ServoEasing::DegreeToMicrosecondsOrUnits(int aDegreeOrMicroseconds) {
 #    endif
     return MicrosecondsToPCA9685Units(aDegreeOrMicroseconds); // return units here
 #  else
-    return aDegreeOrMicroseconds;
+        return aDegreeOrMicroseconds;
 #  endif
     }
 #endif // defined(DISABLE_MICROS_AS_DEGREE_PARAMETER)
@@ -1238,10 +1286,11 @@ void ServoEasing::printStatic(Print *aSerial) {
 #if defined(USE_PCA9685_SERVO_EXPANDER)
     aSerial->print(F(" PCA9685I2CAddress=0x"));
     aSerial->print(mPCA9685I2CAddress, HEX);
+#if !defined(USE_SOFT_I2C_MASTER)
     aSerial->print(F(" &Wire=0x"));
-
 //    aSerial->print((uintptr_t) mI2CClass, HEX); // defined since C++11
     aSerial->print((uint_fast16_t) mI2CClass, HEX);
+#endif
 
 #  if defined(USE_SERVO_LIB)
     aSerial->print(F(" at expander="));
@@ -1955,8 +2004,10 @@ bool ServoEasing::InitializeAndCheckI2CConnection(Print *aSerial) // Print inste
 bool ServoEasing::InitializeAndCheckI2CConnection(Stream *aSerial) // Print has no flush()
 #endif
 {
+#if !defined(USE_SOFT_I2C_MASTER)
     // Initialize wire before checkI2CConnection()
     I2CInit();
+#endif
     return checkI2CConnection(mPCA9685I2CAddress, aSerial);
 }
 
@@ -1966,14 +2017,31 @@ bool checkI2CConnection(uint8_t aI2CAddress, Print *aSerial) // Print instead of
 bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial) // Print has no flush()
 #endif
         {
-    // Initialize wire before checkI2CConnection()
-//    I2CInit();
 
     bool tRetValue = false;
     aSerial->print(F("Try to communicate with I2C device at address=0x"));
     aSerial->println(aI2CAddress, HEX);
     aSerial->flush();
-#if defined (ARDUINO_ARCH_AVR) // Other platforms do not have this new function
+
+    // Initialize wire
+#if defined(USE_SOFT_I2C_MASTER)
+    if(i2c_init()){
+        if(!i2c_start(aI2CAddress << 1)){
+            aSerial->println(F("No acknowledge received from the slave"));
+            aSerial->print(F("Communication with I2C was successful, but found no"));
+            tRetValue = true;
+        } else {
+            aSerial->print(F("Found"));
+        }
+        i2c_stop();
+        aSerial->print(F(" I2C device attached at address: 0x"));
+        aSerial->println(aI2CAddress, HEX);
+    } else {
+        aSerial->println(F("I2C init failed"));
+    }
+#else // defined(USE_SOFT_I2C_MASTER)
+
+#  if defined (ARDUINO_ARCH_AVR) // Other platforms do not have this new function
     do {
         Wire.beginTransmission(aI2CAddress);
         if (Wire.getWireTimeoutFlag()) {
@@ -1984,9 +2052,9 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial) // Print has no fl
             break;
         }
     } while (true);
-#else
+#  else
     Wire.beginTransmission(aI2CAddress);
-#endif
+#  endif
 
     uint8_t tWireReturnCode = Wire.endTransmission(true);
     if (tWireReturnCode == 0) {
@@ -1999,6 +2067,8 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial) // Print has no fl
     }
     aSerial->print(F(" I2C device attached at address: 0x"));
     aSerial->println(aI2CAddress, HEX);
+#endif // defined(USE_SOFT_I2C_MASTER)
+
     if(tRetValue) {
         aSerial->println(F("PCA9685 expander not connected"));
     }

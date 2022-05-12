@@ -2,7 +2,7 @@
  * Simple.cpp
  *
  *  Shows smooth linear movement from one servo position to another.
- *  Do not use interrupts, therefore it can run on any platform where the Arduino Servo library is available.
+ *  This example does not use interrupts and should therefore run on any platform where the Arduino Servo library is available.
  *
  *  Copyright (C) 2019-2022  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
@@ -60,9 +60,10 @@ void setup() {
 
 void loop() {
     Serial.println(F("Move to 135 degree with 40 degree per second blocking"));
-    Servo1.easeTo(135, 40);
+    Servo1.easeTo(135, 40); // Blocking call
 
-    Serial.println(F("Move to 45 degree  with 40 degree per second using interrupts"));
-    Servo1.easeTo(45, 40);
+    Serial.println(F("Move to 45 degree  with 40 degree per second blocking"));
+    Servo1.easeTo(45, 40); // Blocking call
+    delay(1000);
 }
 

@@ -32,7 +32,7 @@ This example does not use interrupts and should therefore run on any platform wh
 # [OneServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino)
 This example moves one Servo with different speeds and using blocking and interrupt commands. The internal LED blinks when using interrupt based commands.
 ## PCA9685_Expander example
-If you activate the line `#define USE_PCA9685_SERVO_EXPANDER` you can run the example on a PCA9685 expander board.
+If you activate the line `#define USE_PCA9685_SERVO_EXPANDER` you can run the OneServo example on a PCA9685 expander board.
 
 # [TwoServo](https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServo/TwoServo.ino)
 This example shows how to move 2 servos attached at pin 9 and 10 synchronized or independently using the LightweightServo library. This saves 640 bytes program memory compared to using Arduino Servo library.<br/>

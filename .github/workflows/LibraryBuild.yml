@@ -70,13 +70,12 @@ jobs:
         include:
           - arduino-boards-fqbn: arduino:avr:uno
             build-properties: # the flags were put in compiler.cpp.extra_flags
-              SymmetricEasing:
-                -DDISABLE_COMPLEX_FUNCTIONS
-                -DDEBUG
-              AsymmetricEasing:
-                -DTRACE
+              OneServo: -DUSE_PCA9685_SERVO_EXPANDER
+              SymmetricEasing: -DDISABLE_COMPLEX_FUNCTIONS -DDEBUG
+              AsymmetricEasing: -DTRACE
               Simple: -DPRINT_FOR_SERIAL_PLOTTER
               PCA9685_ExpanderFor32Servos: -DTRACE -DDISABLE_MICROS_AS_DEGREE_PARAMETER
+              PCA9685_ExpanderAndServo: -DUSE_SOFT_I2C_MASTER
 
           - arduino-boards-fqbn: arduino:avr:leonardo
             sketches-exclude: TwoServos # No LightweightServoLib available

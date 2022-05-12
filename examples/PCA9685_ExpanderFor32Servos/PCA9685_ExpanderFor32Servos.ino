@@ -38,6 +38,7 @@
 
 // Must specify this before the include of "ServoEasing.hpp"
 #define USE_PCA9685_SERVO_EXPANDER    // Activate this to enables the use of the PCA9685 I2C expander chip/board.
+//#define USE_SOFT_I2C_MASTER           // Saves 1756 bytes program memory and 218 bytes RAM compared with Arduino Wire
 //#define USE_SERVO_LIB                 // Activate this to force additional using of regular servo library.
 //#define PROVIDE_ONLY_LINEAR_MOVEMENT  // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes program memory.
 //#define DISABLE_COMPLEX_FUNCTIONS     // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes program memory.
@@ -180,11 +181,7 @@ void getAndAttach16ServosToPCA9685Expander(uint8_t aPCA9685I2CAddress) {
     Serial.print(F("Get ServoEasing objects and attach servos to PCA9685 expander at address=0x"));
     Serial.println(aPCA9685I2CAddress, HEX);
     for (uint_fast8_t i = 0; i < PCA9685_MAX_CHANNELS; ++i) {
-#if defined(ARDUINO_SAM_DUE)
-        tServoEasingObjectPtr= new ServoEasing(aPCA9685I2CAddress, &Wire1);
-#else
-        tServoEasingObjectPtr = new ServoEasing(aPCA9685I2CAddress, &Wire);
-#endif
+        tServoEasingObjectPtr = new ServoEasing(aPCA9685I2CAddress);
         if (tServoEasingObjectPtr->attach(i) == INVALID_SERVO) {
             Serial.print(F("Address=0x"));
             Serial.print(aPCA9685I2CAddress, HEX);
