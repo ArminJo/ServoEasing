@@ -43,6 +43,7 @@ synchronizeServosAndStartInterrupt	KEYWORD2
 print	KEYWORD2
 printDynamic	KEYWORD2
 printStatic	KEYWORD2
+printEasingType	KEYWORD2
 registerUserEaseInFunction	KEYWORD2
 callEasingFunction	KEYWORD2
 QuadraticEaseIn	KEYWORD2
@@ -70,6 +71,8 @@ synchronizeAllServosStartAndWaitForAllServosToStop	KEYWORD2
 delayAndUpdateAndWaitForAllServosToStop	KEYWORD2
 enableServoEasingInterrupt	KEYWORD2
 disableServoEasingInterrupt	KEYWORD2
+areInterruptsActive	KEYWORD2
+InitializeAndCheckI2CConnection	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
@@ -85,3 +88,7 @@ EASE_BACK	LITERAL1
 EASE_ELASTIC	LITERAL1
 EASE_BOUNCE	LITERAL1
 EASE_USER	LITERAL1
+EASE_PRECISION	LITERAL1
+EASE_DUMMY_MOVE	LITERAL1
+START_UPDATE_BY_INTERRUPT	LITERAL1
+DO_NOT_START_UPDATE_BY_INTERRUPT	LITERAL1

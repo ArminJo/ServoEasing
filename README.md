@@ -153,7 +153,7 @@ Values for the MG90Sservos servos at 5 volt (4.2 volt with servo active).
 | 45 | 115 ms  | 390 degree per second |
 
 # Using the new *.hpp files / how to avoid `multiple definitions` linker errors
-In order to support [compile options](#compile-options--macros-for-this-library) more easily, the line `#include <ServoEasing.h>`
+**In order to support [compile options](#compile-options--macros-for-this-library) more easily**, the line `#include <ServoEasing.h>`
 must be changed to `#include <ServoEasing.hpp>`, but only in your **main program (aka *.ino file with setup() and loop())**, like it is done in the examples.<br/>
 In **all other files** you must use `#include <ServoEasing.h>`, otherwise you will get tons of **"multiple definition"** errors.
 Take care that all macros you define in your main program before `#include <ServoEasing.hpp>`,

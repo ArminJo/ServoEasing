@@ -166,8 +166,8 @@ const char easeTypeBounce[] PROGMEM = "bounce";
 
 const char *const easeTypeStrings[] PROGMEM = { easeTypeLinear
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
-        , easeTypeQuadratic, easeTypeCubic, easeTypeQuartic,
-        easeTypePrecision, easeTypeUser, easeTypeNotDefined, easeTypeNotDefined,
+        , easeTypeQuadratic, easeTypeCubic, easeTypeQuartic, easeTypePrecision, easeTypeUser, easeTypeNotDefined,
+        easeTypeNotDefined,
 #  if !defined(DISABLE_COMPLEX_FUNCTIONS)
         easeTypeSine, easeTypeCircular, easeTypeBack, easeTypeElastic, easeTypeBounce
 #  endif
@@ -976,7 +976,11 @@ bool ServoEasing::startEaseToD(int aDegreeOrMicrosecond, uint_fast16_t aMillisFo
         return true;
     }
 
+#if defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
+    if (true) {
+#else
     if (mEasingType != EASE_DUMMY_MOVE) {
+#endif
         // write the position also to ServoEasingNextPositionArray
         ServoEasingNextPositionArray[mServoIndex] = aDegreeOrMicrosecond;
         // No end position for dummy move. This forces mDeltaMicrosecondsOrUnits to zero, avoiding any movement
@@ -998,9 +1002,9 @@ bool ServoEasing::startEaseToD(int aDegreeOrMicrosecond, uint_fast16_t aMillisFo
     mMillisAtStartMove = millis();
 
 #if defined(TRACE)
-    printDynamic(&Serial, true);
+printDynamic(&Serial, true);
 #elif defined(DEBUG)
-    printDynamic(&Serial);
+printDynamic(&Serial);
 #endif
 
     bool tReturnValue = !mServoMoves;
