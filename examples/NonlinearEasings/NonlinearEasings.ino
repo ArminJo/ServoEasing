@@ -33,14 +33,13 @@
 //#define USE_SERVO_LIB                 // Activate this to force additional using of regular servo library.
 //#define USE_LEIGHTWEIGHT_SERVO_LIB    // Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
 //#define PROVIDE_ONLY_LINEAR_MOVEMENT  // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes program memory.
-//#define DISABLE_COMPLEX_FUNCTIONS     // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes program memory.
+//#define DISABLE_COMPLEX_FUNCTIONS     // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory.
 #define MAX_EASING_SERVOS 1
 //#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
 //#define DEBUG                         // Activate this to generate lots of lovely debug output for this library.
 
-#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output.
+//#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output.
 #include "ServoEasing.hpp"
-
 #include "PinDefinitionsAndMore.h"
 /*
  * Pin mapping table for different platforms - used by all examples
@@ -103,14 +102,17 @@ void setup() {
     // Legend for Arduino Serial plotter
     Serial.println(); // end of line of attach values
     Serial.println(
-            "OneServo[us]_Linear->Quadratic->Cubic->Quartic ->Sine-Circular->Back->Elastic ->Quadratic_in->Cubic_out->Cubic_bounce->Dummy");
+            F(
+                    "OneServo[us]_Linear->Quadratic->Cubic->Quartic ->Sine-Circular->Back->Elastic ->QuadraticIn->CubicOut->CubicBounce->Dummy->Precision->Bounce"));
+    Servo1.setSpeed(125);  // This speed is taken if no further speed argument is given.
+#else
+    Servo1.setSpeed(90);  // This speed is taken if no further speed argument is given.
 #endif
 
     /*
      * Initialize and start multiple movements controlled by callback handler
      */
     Servo1.setTargetPositionReachedHandler(ServoTargetPositionReachedHandler);
-    Servo1.setSpeed(120);  // This speed is taken if no further speed argument is given.
     ServoTargetPositionReachedHandler(&Servo1); // start by calling handler which in turn calls Servo1.startEaseTo(tTargetDegree)
 }
 
@@ -137,18 +139,18 @@ void blinkLED() {
 /*
  * Arrays for the parameter of movements controlled by callback
  */
-#define NUMBER_OF_EASING_TYPES_TO_SHOW  12
+#define NUMBER_OF_EASING_TYPES_TO_SHOW  14
 uint_fast8_t EasingTypesArray[NUMBER_OF_EASING_TYPES_TO_SHOW] = { EASE_LINEAR, EASE_QUADRATIC_IN_OUT, EASE_CUBIC_IN_OUT,
-EASE_QUARTIC_IN_OUT, EASE_SINE_IN_OUT, EASE_CIRCULAR_IN_OUT, EASE_BACK_IN_OUT, EASE_ELASTIC_IN_OUT, EASE_QUADRATIC_IN, EASE_CUBIC_OUT,
-EASE_CUBIC_BOUNCING, EASE_DUMMY_MOVE };
+EASE_QUARTIC_IN_OUT, EASE_SINE_IN_OUT, EASE_CIRCULAR_IN_OUT, EASE_BACK_IN_OUT, EASE_ELASTIC_IN_OUT, EASE_QUADRATIC_IN,
+EASE_CUBIC_OUT, EASE_CUBIC_BOUNCING, EASE_DUMMY_MOVE, EASE_PRECISION, EASE_BOUNCE_OUT };
 #if defined(USE_MICROSECONDS)
 int TargetDegreesArray[NUMBER_OF_EASING_TYPES_TO_SHOW] = { DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE,
 DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_90_DEGREE,
 DEFAULT_MICROSECONDS_FOR_180_DEGREE, DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_0_DEGREE,
-DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, DEFAULT_MICROSECONDS_FOR_90_DEGREE,
-DEFAULT_MICROSECONDS_FOR_0_DEGREE };
+DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE,
+DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_0_DEGREE };
 #else
-int TargetDegreesArray[NUMBER_OF_EASING_TYPES_TO_SHOW] = { 90, 180, 90, 0, 90, 180, 90, 0, 90, 180, 90, 0 };
+int TargetDegreesArray[NUMBER_OF_EASING_TYPES_TO_SHOW] = { 90, 180, 90, 0, 90, 180, 90, 0, 90, 180, 180, 90, 90, 0 };
 #endif
 
 void ServoTargetPositionReachedHandler(ServoEasing *aServoEasingInstance) {

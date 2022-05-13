@@ -49,8 +49,8 @@ WOKWI online simulation of the ThreeServo example.<br/>
 
 # [NonlinearEasings example](https://github.com/ArminJo/ServoEasing/blob/master/examples/NonlinearEasings/NonlinearEasings.ino)
 This example shows 1 linear and 7 non-linear easings in flavor IN_OUT for 1 servo, followed with flavors of IN, OUT and BOUNCING.<br/>
-Note, that Back and Elastic are not totally visible at your servo, since they use angels above 180 and below 0 degree in this example.
-It uses a **callback handler** and **specification arrays** to generate the movement cycle.
+Note, that Back and Elastic are not totally visible at your servo, since they use angels above 180 and below 0 degree in this example.<br/>
+This example uses a **callback handler** and **specification arrays** to generate the movement cycle.
 **Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` is enabled.<br/>
 ![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/NonlinearMovements.png)
 

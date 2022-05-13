@@ -153,7 +153,7 @@
 
 /*
  * Define `DISABLE_COMPLEX_FUNCTIONS` if space (1850 bytes) matters.
- * It disables the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings.
+ * It disables the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings.
  * The saving comes mainly from avoiding the sin() cos() sqrt() and pow() library functions in this code.
  * If you need only a single complex easing function and want to save space,
  * you can specify it any time as a user function. See EaseQuadraticInQuarticOut() function in AsymmetricEasing example line 206.
@@ -191,13 +191,12 @@
 #endif
 
 // @formatter:on
-
+// Approximately 10 microseconds per degree
 #define DEFAULT_MICROSECONDS_FOR_0_DEGREE     544
 #define DEFAULT_MICROSECONDS_FOR_45_DEGREE   (544 + ((2400 - 544) / 4)) // 1008
 #define DEFAULT_MICROSECONDS_FOR_90_DEGREE   (544 + ((2400 - 544) / 2)) // 1472
 #define DEFAULT_MICROSECONDS_FOR_135_DEGREE (2400 - ((2400 - 544) / 4)) // 1936
 #define DEFAULT_MICROSECONDS_FOR_180_DEGREE  2400
-// Approximately 10 microseconds per degree
 
 #define DEFAULT_PCA9685_UNITS_FOR_0_DEGREE    111 // 111.411 = 544 µs
 #define DEFAULT_PCA9685_UNITS_FOR_45_DEGREE  (111 + ((491 - 111) / 4)) // 206
@@ -228,87 +227,124 @@
 #define MICROSECONDS_FOR_ROTATING_SERVO_COUNTER_CLOCKWISE_HALF (MICROSECONDS_FOR_ROTATING_SERVO_STOP + 100)
 #define MICROSECONDS_FOR_ROTATING_SERVO_COUNTER_CLOCKWISE_QUARTER (MICROSECONDS_FOR_ROTATING_SERVO_STOP + 50)
 
+#if (!(defined(ENABLE_EASE_QUADRATIC) || defined(ENABLE_EASE_CUBIC) || defined(ENABLE_EASE_QUARTIC) \
+|| defined(ENABLE_EASE_SINE) || defined(ENABLE_EASE_CIRCULAR) || defined(ENABLE_EASE_BACK) \
+|| defined(ENABLE_EASE_USER) \
+|| defined(ENABLE_EASE_ELASTIC) || defined(ENABLE_EASE_BOUNCE)|| defined(ENABLE_EASE_PRECISION) \
+))
+#define ENABLE_EASE_QUADRATIC
+#define ENABLE_EASE_CUBIC
+#define ENABLE_EASE_QUARTIC
+#define ENABLE_EASE_USER
+#  if !defined(DISABLE_COMPLEX_FUNCTIONS)
+#define ENABLE_EASE_SINE
+#define ENABLE_EASE_CIRCULAR
+#define ENABLE_EASE_BACK
+#define ENABLE_EASE_ELASTIC
+#define ENABLE_EASE_BOUNCE
+#define ENABLE_EASE_PRECISION
+#  endif
+#endif
+
 /*
  * The different easing functions:
  *
  * In order to reuse the IN functions for OUT and IN_OUT functions, the following call and result conversions are used internally.
- * 1. Using IN function direct: Call with PercentageOfCompletion | 0.0 to 1.0. Result is from 0.0 to 1.0
- * 2. Using IN function to generate OUT function: Call with (1 - PercentageOfCompletion) | 1.0 to 0.0. Result = (1 - result)
+ * 1. Using IN function direct: Call with PercentageOfCompletion/100 | 0.0 to 1.0. Result is from 0.0 to 1.0
+ * 2. Using IN function to generate OUT function: Call with (1 - PercentageOfCompletion/100) | 1.0 to 0.0. Result = (1 - result)
  * 3. Using IN function to generate IN_OUT function:
- *      In the first half, call with (2 * PercentageOfCompletion) | 0.0 to 1.0. Result = (0.5 * result)
- *      In the second half, call with (2 - (2 * PercentageOfCompletion)) | 1.0 to 0.0. Result = ( 1- (0.5 * result))
+ *      In the first half, call with (2 * PercentageOfCompletion/100) | 0.0 to 1.0. Result = (0.5 * result)
+ *      In the second half, call with (2 - (2 * PercentageOfCompletion/100)) | 1.0 to 0.0. Result = ( 1- (0.5 * result))
  * 4. Using IN function to generate bouncing_OUT_IN / mirrored_OUT function, which return to start point (like the upper half of a sine):
- *      In the first half, call with (1 - (2 * PercentageOfCompletion)) | 1.0 to 0.0. Result = (1 - result) -> call OUT function 2 times faster.
- *      In the second half, call with ((2 * PercentageOfCompletion) - 1) | 0.0 to 1.0. Result = (1- result) -> call OUT function 2 times faster and backwards.
+ *      In the first half, call with (1 - (2 * PercentageOfCompletion/100)) | 1.0 to 0.0. Result = (1 - result) -> call OUT function 2 times faster.
+ *      In the second half, call with ((2 * PercentageOfCompletion/100) - 1) | 0.0 to 1.0. Result = (1- result) -> call OUT function 2 times faster and backwards.
+ *
  */
+#define EASE_FUNCTION_DEGREE_INDICATOR_OFFSET       20 // Offset to decide if the user function returns degrees instead of 0.0 to 1.0. => returns 20 for 0 degree.
+#define EASE_FUNCTION_MICROSECONDS_INDICATOR_OFFSET (EASE_FUNCTION_DEGREE_INDICATOR_OFFSET + 300) // Offset to decide if the user function returns microseconds instead of 0.0 to 1.0. => returns 256 for 0 degree.
 
 /*
  * Values for provided EaseTypes
- * The call style is coded in the upper 3 bits
+ * The call style is coded in the upper 2 bits
  */
 #define CALL_STYLE_DIRECT       0x00 // == IN
 #define CALL_STYLE_IN           0x00
-#define CALL_STYLE_OUT          0x20
-#define CALL_STYLE_IN_OUT       0x40
-#define CALL_STYLE_BOUNCING_OUT_IN  0x60 // Bouncing has double movement, so double time (half speed) is taken for this modes
+#define CALL_STYLE_OUT          0x40
+#define CALL_STYLE_IN_OUT       0x80
+#define CALL_STYLE_BOUNCING_OUT_IN  0xC0 // Bouncing has double movement, so double time (half speed) is taken for this modes
 
-#define CALL_STYLE_MASK         0xE0
+#define CALL_STYLE_MASK         0xC0
 #define EASE_TYPE_MASK          0x0F
 
 #define EASE_LINEAR             0x00 // No bouncing available
 
+#if defined(ENABLE_EASE_QUADRATIC)
 #define EASE_QUADRATIC_IN       0x01
-#define EASE_QUADRATIC_OUT      0x21
-#define EASE_QUADRATIC_IN_OUT   0x41
-#define EASE_QUADRATIC_BOUNCING 0x61
+#define EASE_QUADRATIC_OUT      0x41
+#define EASE_QUADRATIC_IN_OUT   0x81
+#define EASE_QUADRATIC_BOUNCING 0xC1
+#endif
 
+#if defined(ENABLE_EASE_CUBIC)
 #define EASE_CUBIC_IN           0x02
-#define EASE_CUBIC_OUT          0x22
-#define EASE_CUBIC_IN_OUT       0x42
-#define EASE_CUBIC_BOUNCING     0x62
+#define EASE_CUBIC_OUT          0x42
+#define EASE_CUBIC_IN_OUT       0x82
+#define EASE_CUBIC_BOUNCING     0xC2
+#endif
 
+#if defined(ENABLE_EASE_QUARTIC)
 #define EASE_QUARTIC_IN         0x03
-#define EASE_QUARTIC_OUT        0x23
-#define EASE_QUARTIC_IN_OUT     0x43
-#define EASE_QUARTIC_BOUNCING   0x63
+#define EASE_QUARTIC_OUT        0x43
+#define EASE_QUARTIC_IN_OUT     0x83
+#define EASE_QUARTIC_BOUNCING   0xC3
+#endif
 
-#define EASE_PRECISION_IN       0x04
-#define EASE_PRECISION_OUT      0x24
-#define EASE_PRECISION_IN_OUT   0x44
-#define EASE_PRECISION_BOUNCING 0x64
-
+#if defined(ENABLE_EASE_USER)
 #define EASE_USER_DIRECT        0x05
-#define EASE_USER_OUT           0x25
-#define EASE_USER_IN_OUT        0x45
-#define EASE_USER_BOUNCING      0x65
+#define EASE_USER_OUT           0x45
+#define EASE_USER_IN_OUT        0x85
+#define EASE_USER_BOUNCING      0xC5
+#endif
 
 #define EASE_DUMMY_MOVE         0x07 // can be used as delay
 
-#if !defined(DISABLE_COMPLEX_FUNCTIONS)
+#if defined(ENABLE_EASE_SINE)
 #define EASE_SINE_IN            0x08
-#define EASE_SINE_OUT           0x28
-#define EASE_SINE_IN_OUT        0x48
-#define EASE_SINE_BOUNCING      0x68
+#define EASE_SINE_OUT           0x48
+#define EASE_SINE_IN_OUT        0x88
+#define EASE_SINE_BOUNCING      0xC8
+#endif
 
+#if defined(ENABLE_EASE_CIRCULAR)
 #define EASE_CIRCULAR_IN        0x09
-#define EASE_CIRCULAR_OUT       0x29
-#define EASE_CIRCULAR_IN_OUT    0x49
-#define EASE_CIRCULAR_BOUNCING  0x69
+#define EASE_CIRCULAR_OUT       0x49
+#define EASE_CIRCULAR_IN_OUT    0x89
+#define EASE_CIRCULAR_BOUNCING  0xC9
+#endif
 
+#if defined(ENABLE_EASE_BACK)
 #define EASE_BACK_IN            0x0A
-#define EASE_BACK_OUT           0x2A
-#define EASE_BACK_IN_OUT        0x4A
-#define EASE_BACK_BOUNCING      0x6A
+#define EASE_BACK_OUT           0x4A
+#define EASE_BACK_IN_OUT        0x8A
+#define EASE_BACK_BOUNCING      0xCA
+#endif
 
+#if defined(ENABLE_EASE_ELASTIC)
 #define EASE_ELASTIC_IN         0x0B
-#define EASE_ELASTIC_OUT        0x2B
-#define EASE_ELASTIC_IN_OUT     0x4B
-#define EASE_ELASTIC_BOUNCING   0x6B
+#define EASE_ELASTIC_OUT        0x4B
+#define EASE_ELASTIC_IN_OUT     0x8B
+#define EASE_ELASTIC_BOUNCING   0xCB
+#endif
 
+#if defined(ENABLE_EASE_BOUNCE)
 // the coded function is an OUT function
-#define EASE_BOUNCE_IN          0x2C // call OUT function inverse
+#define EASE_BOUNCE_IN          0x4C // call OUT function inverse
 #define EASE_BOUNCE_OUT         0x0C // call OUT function direct
-#endif // !defined(DISABLE_COMPLEX_FUNCTIONS)
+#endif
+
+#if defined(ENABLE_EASE_PRECISION)
+#define EASE_PRECISION          0x0D
+#endif
 
 // !!! Must be without comment and closed by @formatter:on !!!
 // @formatter:off
@@ -329,7 +365,6 @@ extern const char easeTypeBounce[]     PROGMEM;
 // @formatter:on
 extern const char *const easeTypeStrings[] PROGMEM;
 
-#define EASE_FUNCTION_DEGREE_INDICATOR_OFFSET 256 // Offset to decide if the user function returns degree instead of 0.0 to 1.0. => returns 256 for 0 degree.
 
 // some PCA9685 specific constants
 #define PCA9685_GENERAL_CALL_ADDRESS 0x00
@@ -418,10 +453,10 @@ public:
     bool setEaseTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);    // shortcut for startEaseTo(..,..,false)
     bool startEaseTo(int aTargetDegreeOrMicrosecond);                             // shortcut for startEaseTo(aDegree, mSpeed, true)
     bool startEaseTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt =
-            START_UPDATE_BY_INTERRUPT);
+    START_UPDATE_BY_INTERRUPT);
     bool setEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);   // shortcut for startEaseToD(..,..,false)
     bool startEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt =
-            START_UPDATE_BY_INTERRUPT);
+    START_UPDATE_BY_INTERRUPT);
     void stop();
     void continueWithInterrupts();
     void continueWithoutInterrupts();
@@ -449,6 +484,21 @@ public:
     void printDynamic(Print *aSerial, bool doExtendedOutput = true);
     void printStatic(Print *aSerial);
     void printEasingType(Print *aSerial, uint_fast8_t aEasingType);
+
+    /*
+     * Included easing functions
+     */
+    static float QuadraticEaseIn(float aPercentageOfCompletion);
+    static float CubicEaseIn(float aPercentageOfCompletion);
+    static float QuarticEaseIn(float aPercentageOfCompletion);
+    static float SineEaseIn(float aPercentageOfCompletion);
+    static float CircularEaseIn(float aPercentageOfCompletion);
+    static float BackEaseIn(float aPercentageOfCompletion);
+    static float ElasticEaseIn(float aPercentageOfCompletion);
+    // Non symmetric function
+    static float EaseOutBounce(float aPercentageOfCompletion);
+    // Special non static function
+    float LinearWithQuadraticBounce(float aPercentageOfCompletion);
 
     /*
      * Convenience function
@@ -480,8 +530,9 @@ public:
 
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
     uint8_t mEasingType; // EASE_LINEAR, EASE_QUADRATIC_IN_OUT, EASE_CUBIC_IN_OUT, EASE_QUARTIC_IN_OUT
-
+#  if defined(ENABLE_EASE_USER)
     float (*mUserEaseInFunction)(float aPercentageOfCompletion);
+#  endif
 #endif
 
     volatile bool mServoMoves;
@@ -583,23 +634,7 @@ void disableServoEasingInterrupt();
 
 int clipDegreeSpecial(uint_fast8_t aDegreeToClip);
 
-/*
- * Included easing functions
- */
-
-float QuadraticEaseIn(float aPercentageOfCompletion);
-float CubicEaseIn(float aPercentageOfCompletion);
-float QuarticEaseIn(float aPercentageOfCompletion);
-
-float SineEaseIn(float aPercentageOfCompletion);
-float CircularEaseIn(float aPercentageOfCompletion);
-float BackEaseIn(float aPercentageOfCompletion);
-float ElasticEaseIn(float aPercentageOfCompletion);
-
-// Non symmetric functions
-float EaseOutBounce(float aPercentageOfCompletion);
-
-extern float (*sEaseFunctionArray[])(float aPercentageOfCompletion);
+//extern float (*sEaseFunctionArray[])(float aPercentageOfCompletion);
 
 // Static convenience function
 #if defined(__AVR__)
@@ -618,9 +653,12 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
  * - Added target reached callback functionality, to enable multiple movements without loop control.
  * - Changed ENABLE_MICROS_AS_DEGREE_PARAMETER to DISABLE_MICROS_AS_DEGREE_PARAMETER thus enabling micros as parameter by default.
  * - Fixed some bugs for micros as parameter.
- * - Improved PCA9685 handling.
- * - Changed constants for easing types > EASE_QUARTIC.
+ * - Changed constants for easing types.
+ * - New easing type Precision.
  * - New function `printEasingType()`.
+ * - Easing functions are converted to static member functions now.
+ * - Easing types can be disabled individually.
+ * - Improved PCA9685 handling.
  *
  * Version 2.4.1 - 02/2022
  * - RP2040 support added.

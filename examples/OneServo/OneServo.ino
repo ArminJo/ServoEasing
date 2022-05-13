@@ -30,10 +30,26 @@
 //#define USE_SERVO_LIB                 // Activate this to force additional using of regular servo library.
 //#define USE_LEIGHTWEIGHT_SERVO_LIB    // Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
 //#define PROVIDE_ONLY_LINEAR_MOVEMENT  // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes program memory.
-#define DISABLE_COMPLEX_FUNCTIONS     // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes program memory.
+#define DISABLE_COMPLEX_FUNCTIONS     // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory.
 #define MAX_EASING_SERVOS 1
 //#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
 //#define DEBUG                         // Activate this to generate lots of lovely debug output for this library.
+
+/*
+ * Specify which easings types should be available.
+ * If no easing is defined, all easings are active.
+ * This must be done before the #include "ServoEasing.hpp"
+ */
+//#define ENABLE_EASE_QUADRATIC
+#define ENABLE_EASE_CUBIC
+//#define ENABLE_EASE_QUARTIC
+//#define ENABLE_EASE_SINE
+//#define ENABLE_EASE_CIRCULAR
+//#define ENABLE_EASE_BACK
+//#define ENABLE_EASE_ELASTIC
+//#define ENABLE_EASE_BOUNCE
+//#define ENABLE_EASE_PRECISION
+//#define ENABLE_EASE_USER
 
 //#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output.
 #include "ServoEasing.hpp"

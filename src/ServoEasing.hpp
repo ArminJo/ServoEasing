@@ -36,7 +36,7 @@
  * - USE_SERVO_LIB                      Use of PCA9685 normally disables use of regular servo library. You can force additional using of regular servo library by defining USE_SERVO_LIB.
  * - USE_LEIGHTWEIGHT_SERVO_LIB         Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
  * - PROVIDE_ONLY_LINEAR_MOVEMENT       Disables all but LINEAR movement. Saves up to 1540 bytes program memory.
- * - DISABLE_COMPLEX_FUNCTIONS          Disables the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings.
+ * - DISABLE_COMPLEX_FUNCTIONS          Disables the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings.
  * - MAX_EASING_SERVOS                  Saves 4 byte RAM per servo.
  * - DISABLE_MICROS_AS_DEGREE_PARAMETER Disables passing also microsecond values as (target angle) parameter. Saves 128 bytes program memory.
  * - PRINT_FOR_SERIAL_PLOTTER           Generate serial output for Arduino Plotter (Ctrl-Shift-L).
@@ -166,10 +166,9 @@ const char easeTypeBounce[] PROGMEM = "bounce";
 
 const char *const easeTypeStrings[] PROGMEM = { easeTypeLinear
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
-        , easeTypeQuadratic, easeTypeCubic, easeTypeQuartic, easeTypePrecision, easeTypeUser, easeTypeNotDefined,
-        easeTypeNotDefined,
+        , easeTypeQuadratic, easeTypeCubic, easeTypeQuartic, easeTypeUser, easeTypeNotDefined, easeTypeDummy,
 #  if !defined(DISABLE_COMPLEX_FUNCTIONS)
-        easeTypeSine, easeTypeCircular, easeTypeBack, easeTypeElastic, easeTypeBounce
+        easeTypeSine, easeTypeCircular, easeTypeBack, easeTypeElastic, easeTypeBounce, easeTypePrecision
 #  endif
 #endif
         };
@@ -207,7 +206,9 @@ ServoEasing::ServoEasing(uint8_t aPCA9685I2CAddress, TwoWire *aI2CClass) // @sup
 #endif
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
     mEasingType = EASE_LINEAR;
+#  if defined(ENABLE_EASE_USER)
     mUserEaseInFunction = NULL;
+#  endif
 #endif
 
 #if defined(MEASURE_SERVO_EASING_INTERRUPT_TIMING)
@@ -381,7 +382,9 @@ ServoEasing::ServoEasing() // @suppress("Class members should be properly initia
 #endif
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
     mEasingType = EASE_LINEAR;
+#  if defined(ENABLE_EASE_USER)
     mUserEaseInFunction = NULL;
+#  endif
 #endif
     TargetPositionReachedHandler = NULL;
 
@@ -632,10 +635,12 @@ uint_fast8_t ServoEasing::getEasingType() {
     return (mEasingType);
 }
 
+#  if defined(ENABLE_EASE_USER)
 void ServoEasing::registerUserEaseInFunction(float (*aUserEaseInFunction)(float aFactorOfTimeCompletion)) {
     mUserEaseInFunction = aUserEaseInFunction;
 }
-#endif
+#  endif
+#endif // !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
 
 /*
  * @param aValue treat values less than 400 as angles in degrees, others are handled as microseconds
@@ -1114,14 +1119,14 @@ bool ServoEasing::update() {
          * Non linear movement -> use floats
          * Compute tPercentageOfCompletion - from 0.0 to 1.0
          * The expected result of easing function is from 0.0 to 1.0
-         * or from EASE_FUNCTION_DEGREE_INDICATOR_OFFSET to EASE_FUNCTION_DEGREE_INDICATOR_OFFSET + 180 for direct degree result
+         * or from EASE_FUNCTION_MICROSECONDS_INDICATOR_OFFSET for direct microseconds result
          */
         float tFactorOfTimeCompletion = (float) tMillisSinceStart / (float) mMillisForCompleteMove;
         float tFactorOfMovementCompletion = 0.0;
 
         uint_fast8_t tCallStyle = mEasingType & CALL_STYLE_MASK; // Values are CALL_STYLE_DIRECT, CALL_STYLE_OUT, CALL_STYLE_IN_OUT, CALL_STYLE_BOUNCING_OUT_IN
 
-        if (tCallStyle == CALL_STYLE_DIRECT) {
+        if (tCallStyle == CALL_STYLE_DIRECT) { // CALL_STYLE_IN
             // Use IN function direct: Call with PercentageOfCompletion | 0.0 to 1.0. Result is from 0.0 to 1.0
             tFactorOfMovementCompletion = callEasingFunction(tFactorOfTimeCompletion);
 
@@ -1151,11 +1156,20 @@ bool ServoEasing::update() {
             }
         }
 
-        if (tFactorOfMovementCompletion >= EASE_FUNCTION_DEGREE_INDICATOR_OFFSET / 2) {
+#if defined(ENABLE_EASE_USER) || defined(ENABLE_EASE_PRECISION)
+        if (tFactorOfMovementCompletion >= EASE_FUNCTION_MICROSECONDS_INDICATOR_OFFSET) {
+            // Here we have called an easing function, which returns microseconds or units instead of the factor of completion (0.0 to 1.0)
+            tNewMicrosecondsOrUnits = tFactorOfMovementCompletion;
+        } else
+#endif
+#if defined(ENABLE_EASE_USER)
+        if (tFactorOfMovementCompletion >= EASE_FUNCTION_DEGREE_INDICATOR_OFFSET) {
             // Here we have called an easing function, which returns degree instead of the factor of completion (0.0 to 1.0)
             tNewMicrosecondsOrUnits = DegreeToMicrosecondsOrUnits(
                     tFactorOfMovementCompletion - EASE_FUNCTION_DEGREE_INDICATOR_OFFSET + 0.5);
-        } else {
+        } else
+#endif
+        {
             int tDeltaMicroseconds = mDeltaMicrosecondsOrUnits * tFactorOfMovementCompletion; // having this as int value saves float operations
             tNewMicrosecondsOrUnits = mStartMicrosecondsOrUnits + tDeltaMicroseconds;
         }
@@ -1180,30 +1194,51 @@ float ServoEasing::callEasingFunction(float aFactorOfTimeCompletion) {
 
     switch (tEasingType) {
 
+#  if defined(ENABLE_EASE_USER)
     case EASE_USER_DIRECT:
         if (mUserEaseInFunction != NULL) {
             return mUserEaseInFunction(aFactorOfTimeCompletion);
         } else {
             return 0.0;
         }
+#  endif
 
+#  if defined(ENABLE_EASE_QUADRATIC)
     case EASE_QUADRATIC_IN:
         return QuadraticEaseIn(aFactorOfTimeCompletion);
+#  endif
+#  if defined(ENABLE_EASE_CUBIC)
     case EASE_CUBIC_IN:
         return CubicEaseIn(aFactorOfTimeCompletion);
+#  endif
+#  if defined(ENABLE_EASE_QUARTIC)
     case EASE_QUARTIC_IN:
         return QuarticEaseIn(aFactorOfTimeCompletion);
-#  if !defined(DISABLE_COMPLEX_FUNCTIONS)
+#  endif
+
+#  if defined(ENABLE_EASE_SINE)
     case EASE_SINE_IN:
         return SineEaseIn(aFactorOfTimeCompletion);
+#  endif
+#  if defined(ENABLE_EASE_CIRCULAR)
     case EASE_CIRCULAR_IN:
         return CircularEaseIn(aFactorOfTimeCompletion);
+#  endif
+#  if defined(ENABLE_EASE_BACK)
     case EASE_BACK_IN:
         return BackEaseIn(aFactorOfTimeCompletion);
+#  endif
+#  if defined(ENABLE_EASE_ELASTIC)
     case EASE_ELASTIC_IN:
         return ElasticEaseIn(aFactorOfTimeCompletion);
+#  endif
+#  if defined(ENABLE_EASE_BOUNCE)
     case EASE_BOUNCE_OUT:
         return EaseOutBounce(aFactorOfTimeCompletion);
+#  endif
+#  if defined(ENABLE_EASE_PRECISION)
+    case EASE_PRECISION:
+        return LinearWithQuadraticBounce(aFactorOfTimeCompletion);
 #  endif
     default:
         return 0.0;
@@ -1915,7 +1950,7 @@ bool updateAllServos() {
     }
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
 // End of one data set
-        Serial.println();
+    Serial.println();
 #endif
     return tAllServosStopped;
 }
@@ -2004,21 +2039,21 @@ void synchronizeAllServosAndStartInterrupt(bool aStartUpdateByInterrupt) {
  * Input is from 0.0 to 1.0 with 0.0 -> 0 % and 1.0 -> 100% completion of time between the two endpoints
  * Output is from 0.0 to 1.0 with: 0.0 -> 0 % and 1.0 -> 100% completion of movement (e.g. 1.1 is 10% overshot)
  ********************************************************/
-float (*sEaseFunctionArray[])(
-        float aFactorOfTimeCompletion) = {&QuadraticEaseIn, &CubicEaseIn, &QuarticEaseIn, &SineEaseIn, &CircularEaseIn, &BackEaseIn, &ElasticEaseIn,
-            &EaseOutBounce};
+//float (*sEaseFunctionArray[])(
+//        float aFactorOfTimeCompletion) = {&QuadraticEaseIn, &CubicEaseIn, &QuarticEaseIn, &SineEaseIn, &CircularEaseIn, &BackEaseIn, &ElasticEaseIn,
+//            &EaseOutBounce};
 /*
  * The simplest non linear easing function
  */
-float QuadraticEaseIn(float aFactorOfTimeCompletion) {
+float ServoEasing::QuadraticEaseIn(float aFactorOfTimeCompletion) {
     return (aFactorOfTimeCompletion * aFactorOfTimeCompletion);
 }
 
-float CubicEaseIn(float aFactorOfTimeCompletion) {
+float ServoEasing::CubicEaseIn(float aFactorOfTimeCompletion) {
     return (aFactorOfTimeCompletion * QuadraticEaseIn(aFactorOfTimeCompletion));
 }
 
-float QuarticEaseIn(float aFactorOfTimeCompletion) {
+float ServoEasing::QuarticEaseIn(float aFactorOfTimeCompletion) {
     return QuadraticEaseIn(QuadraticEaseIn(aFactorOfTimeCompletion));
 }
 
@@ -2026,7 +2061,7 @@ float QuarticEaseIn(float aFactorOfTimeCompletion) {
  * Take half of negative cosines of first quadrant
  * Is behaves almost like QUADRATIC
  */
-float SineEaseIn(float aFactorOfTimeCompletion) {
+float ServoEasing::SineEaseIn(float aFactorOfTimeCompletion) {
     return sin((aFactorOfTimeCompletion - 1) * M_PI_2) + 1;
 }
 
@@ -2035,7 +2070,7 @@ float SineEaseIn(float aFactorOfTimeCompletion) {
  * see: https://easings.net/#easeInOutCirc
  * and https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c
  */
-float CircularEaseIn(float aFactorOfTimeCompletion) {
+float ServoEasing::CircularEaseIn(float aFactorOfTimeCompletion) {
     return 1 - sqrt(1 - (aFactorOfTimeCompletion * aFactorOfTimeCompletion));
 }
 
@@ -2043,7 +2078,7 @@ float CircularEaseIn(float aFactorOfTimeCompletion) {
  * see: https://easings.net/#easeInOutBack
  * and https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c
  */
-float BackEaseIn(float aFactorOfTimeCompletion) {
+float ServoEasing::BackEaseIn(float aFactorOfTimeCompletion) {
     return (aFactorOfTimeCompletion * aFactorOfTimeCompletion * aFactorOfTimeCompletion)
             - (aFactorOfTimeCompletion * sin(aFactorOfTimeCompletion * M_PI));
 }
@@ -2052,8 +2087,45 @@ float BackEaseIn(float aFactorOfTimeCompletion) {
  * see: https://easings.net/#easeInOutElastic
  * and https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c
  */
-float ElasticEaseIn(float aFactorOfTimeCompletion) {
+float ServoEasing::ElasticEaseIn(float aFactorOfTimeCompletion) {
     return sin(13 * M_PI_2 * aFactorOfTimeCompletion) * pow(2, 10 * (aFactorOfTimeCompletion - 1));
+}
+
+#define PART_OF_LINEAR_MOVEMENT         0.8
+#define PART_OF_BOUNCE_MOVEMENT         (1.0 - PART_OF_LINEAR_MOVEMENT)
+#define PART_OF_BOUNCE_MOVEMENT_HALF    ((1.0 - PART_OF_LINEAR_MOVEMENT) / 2) // 0.1
+#define OVERSHOOT_AMOUNT_MILLIS         50 // around 5 degree
+/*
+ * 200 bytes
+ */
+float ServoEasing::LinearWithQuadraticBounce(float aFactorOfTimeCompletion) {
+    if (mDeltaMicrosecondsOrUnits > 0) {
+        // Use linear moving, we are approaching from below
+        return aFactorOfTimeCompletion;
+    } else {
+        /*
+         * We are approaching from above.
+         * Use scaled linear moving the first 80 % of the movement, and add a quadratic bounce.
+         */
+        if (aFactorOfTimeCompletion < PART_OF_LINEAR_MOVEMENT) {
+            return aFactorOfTimeCompletion * (1.0 / PART_OF_LINEAR_MOVEMENT);
+        } else {
+            float tRemainingFactor;
+            if (aFactorOfTimeCompletion < (1.0 - PART_OF_BOUNCE_MOVEMENT_HALF)) {
+                // Between 80 % and 90 % here. Starting part of the overshoot bounce
+                tRemainingFactor = aFactorOfTimeCompletion - PART_OF_LINEAR_MOVEMENT; // tRemainingFactor - 0.8 -> 0.0 to 0.1
+                tRemainingFactor = tRemainingFactor * (1 / PART_OF_BOUNCE_MOVEMENT_HALF); //tRemainingFactor is 0.0 to 1.0
+                tRemainingFactor = 1.0 - tRemainingFactor; //tRemainingFactor is 1.0 to 0.0 -> quadratic out
+            } else {
+                // Between 90 % and 100 % here. Returning part of the overshoot bounce
+                tRemainingFactor = aFactorOfTimeCompletion - (1.0 - PART_OF_BOUNCE_MOVEMENT_HALF); // tRemainingFactor - 0.9 -> 0.0 to 0.1
+                tRemainingFactor = tRemainingFactor * (1 / PART_OF_BOUNCE_MOVEMENT_HALF); //tRemainingFactor is 0.0 to 1.0 -> quadratic in
+            }
+            // return direct microseconds values
+            return mEndMicrosecondsOrUnits + OVERSHOOT_AMOUNT_MILLIS
+                    - (OVERSHOOT_AMOUNT_MILLIS * tRemainingFactor * tRemainingFactor);
+        }
+    }
 }
 
 /*
@@ -2061,7 +2133,7 @@ float ElasticEaseIn(float aFactorOfTimeCompletion) {
  * see: https://easings.net/de#easeOutBounce
  * and https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c
  */
-float EaseOutBounce(float aFactorOfTimeCompletion) {
+float ServoEasing::EaseOutBounce(float aFactorOfTimeCompletion) {
     float tFactorOfMovementCompletion;
     if (aFactorOfTimeCompletion < 4 / 11.0) {
         tFactorOfMovementCompletion = (121 * aFactorOfTimeCompletion * aFactorOfTimeCompletion) / 16.0;

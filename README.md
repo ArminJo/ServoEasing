@@ -29,7 +29,7 @@ Available as [Arduino library "ServoEasing"](https://www.arduinolibraries.info/l
 - [Compile options / macros for this library](https://github.com/ArminJo/ServoEasing#compile-options--macros-for-this-library)
 - [Using PCA9685 16-Channel Servo Expander](https://github.com/ArminJo/ServoEasing#using-pca9685-16-channel-servo-expander)
 - [Using the included Lightweight Servo library for AVR](https://github.com/ArminJo/ServoEasing#using-the-included-lightweight-servo-library-for-avr)
-- [Examples](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples)
+- [Description of examples](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples)
 - [Servo utilities](https://github.com/ArminJo/ServoEasing/tree/master/examples#servo-utilities)
 - [Building breadboard servo adapter](https://github.com/ArminJo/ServoEasing#building-breadboard-servo-adapter)
 - [Internals](https://github.com/ArminJo/ServoEasing#internals)
@@ -69,19 +69,23 @@ For instructions how to enable these alternatives, see [Compile options / macros
 - Quadratic
 - Cubic
 - Quartic
-- Sine (similar to Quadratic)
+- Sine
 - Circular
 - Back
 - Elastic
-- Bounce (move with OUT, then return with IN to start degree)
+- Bounce
 - User defined
-- Dummy (used for delays in callback handler)
+- Dummy - It is used for delays in callback handler
+- Precision - Like linear, but if descending, add a 5 degree negative bounce in the last 20 % of the movement time. So the target position is always approached from below. This enables it to taken out the slack/backlash of any hardware moved by the servo.
+
 
 ### All easing functions can be used in the following variants:
-- In
-- Out
-- InOut
-- Bouncing (mirrored Out) e.g. Bouncing of the Sine function results in the upper (positive) half of the sine.
+All ease functions are called internally with the value: `PercentageOfCompletion / 100` resulting in values from 0 and 1.
+
+- In (start the function with 0 and go to 1)
+- Out (start the function with 1 and go to 0)
+- InOut (start the function with 0 go to 1 and back to 0)
+- Bouncing (start with OUT, then return with IN to start degree) e.g. Bouncing of the Sine function results in the upper (positive) half of the sine.
 
 All easing types (starting in flavor IN_OUT, then IN, OUT and BOUNCE) in one plot.<br/>
 Since the values are computed in a fixed 20 ms raster, the last degree increment or decrement
@@ -171,7 +175,7 @@ Modify them by enabling / disabling them, or change the values if applicable.
 | `USE_SOFT_I2C_MASTER` | disabled | Saves up to 1756 bytes program memory and 218 bytes RAM for PCA9685 I2C communication compared with Arduino Wire. |
 | `USE_SERVO_LIB` | disabled | Use of PCA9685 normally disables use of regular servo library. You can force additional using of regular servo library by defining `USE_SERVO_LIB`. See [below](https://github.com/ArminJo/ServoEasing#using-pca9685-16-channel-servo-expander). |
 | `PROVIDE_ONLY_LINEAR_MOVEMENT` | disabled | Disables all but LINEAR movement. Saves up to 1540 bytes program memory. |
-| `DISABLE_COMPLEX_FUNCTIONS` | disabled | Disables the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes program memory. |
+| `DISABLE_COMPLEX_FUNCTIONS` | disabled | Disables the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory. |
 | `MAX_EASING_SERVOS` | 12, 16(for PCA9685) | Saves 4 byte RAM per servo. If this value is smaller than the amount of servos declared, attach() will return error and other library functions will not work as expected.<br/>Of course all *AllServos*() functions and isOneServoMoving() can't work correctly! |
 | `DISABLE_MICROS_AS_DEGREE_PARAMETER` | disabled | Disables passing also microsecond values as (target angle) parameter (see [OneServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino#L93)). Saves 128 bytes program memory. |
 | `PRINT_FOR_SERIAL_PLOTTER` | disabled | Generate serial output for Arduino Plotter (Ctrl-Shift-L). |
@@ -214,7 +218,7 @@ Up to 2 servos are supported by this library and they must be physically attache
 To enable it, activate the line `#define USE_LEIGHTWEIGHT_SERVO_LIB` before the line `#include "LightweightServo.hpp"` [like it is done in the TwoServos example](https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServos/TwoServos.ino#L31).<br/>
 If you do not use the Arduino IDE, take care that Arduino Servo library sources are not compiled / included in the project.
 
-# Examples
+# Description of examples
 All examples are documented [here](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples)<br/>
 Examples with up to 2 Servos can be used without modifications with the [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for AVR by by activating the line `#define USE_LEIGHTWEIGHT_SERVO_LIB` (see above).
 
