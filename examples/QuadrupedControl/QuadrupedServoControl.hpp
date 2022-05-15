@@ -5,10 +5,7 @@
  *
  * Program for controlling a mePed Robot V2 with 8 servos using an IR Remote at pin A0
  * Supported IR remote are KEYES (the original mePed remote) and WM10
- * Select the one you have at line 23 in QuadrupedIRConfiguration.h
- *
- * To run this example need to install the "ServoEasing", "IRLremote" and "PinChangeInterrupt" libraries under "Tools -> Manage Libraries..." or "Ctrl+Shift+I"
- * Use "ServoEasing", "IRLremote" and "PinChangeInterrupt" as filter string.
+ * Select the one you have in QuadrupedConfiguration.h
  *
  *  Copyright (C) 2019-2022  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
@@ -34,11 +31,8 @@
 
 #include <Arduino.h>
 
-// Contains macros to configure the ServoEasing library
-#include "QuadrupedServoControl.h"
-
-// include source
-#include "ServoEasing.hpp"
+#include "QuadrupedServoControl.h"  // Contains macros to configure the ServoEasing library
+#include "ServoEasing.hpp"          // include source
 
 //#define INFO // activate this to see serial info output
 
@@ -415,4 +409,3 @@ void synchronizeMoveAllServosAndCheckInputAndWait() {
 }
 
 #endif // _QUADRUPED_SERVO_CONTROL_HPP
-#pragma once

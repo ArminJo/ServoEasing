@@ -356,5 +356,4 @@ void basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
 
     moveOneServoAndCheckInputAndWait(tDiagonalIndex + LIFT_SERVO_OFFSET, sRequestedBodyHeightAngle);
 }
-#endif /* QUADRUPED_BASIC_MOVEMENTS_HPP */
-#pragma once
+#endif // _QUADRUPED_BASIC_MOVEMENTS_HPP

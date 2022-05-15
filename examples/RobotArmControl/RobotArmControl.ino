@@ -4,10 +4,7 @@
  * Program for controlling a RobotArm with 4 servos using 4 potentiometers and/or an IR remote at pin A0
  * See also: https://www.instructables.com/id/4-DOF-Mechanical-Arm-Robot-Controlled-by-Arduino
  *
- * To run this example need to install the "ServoEasing", "IRLremote" and "PinChangeInterrupt" libraries under "Tools -> Manage Libraries..." or "Ctrl+Shift+I"
- * Use "ServoEasing", "IRLremote" and "PinChangeInterrupt" as filter string.
- *
- *  Copyright (C) 2019  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2022  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -31,21 +28,30 @@
 #include "RobotArmControl.h"
 
 #define INFO // enable some prints
+#define ROBOT_ARM_HAS_IR_CONTROL
+//#define ROBOT_ARM_HAS_RTC_CONTROL
+//#define ROBOT_ARM_2 // the transparent one
 
-#if defined(ROBOT_ARM_IR_CONTROL)
+#if defined(ROBOT_ARM_HAS_IR_CONTROL)
 #define USE_TINY_IR_RECEIVER // must be specified before including IRCommandDispatcher.hpp to define which IR library to use
+#define IR_INPUT_PIN  A0
+#if defined(ROBOT_ARM_2)
+#define USE_CAR_MP3_REMOTE // Transparent arm
+#else
+#define USE_MSI_REMOTE // Black arm
+#endif
 #include "IRCommandMapping.h" // must be included before IRCommandDispatcher.hpp to define IR_ADDRESS and IRMapping and string "unknown".
 #include "IRCommandDispatcher.hpp"
-#include "RobotArmRTCControl.h"
 #endif
 
-#if defined(ROBOT_ARM_RTC_CONTROL)
+#include "RobotArmServoControl.hpp" // includes ServoEasing.hpp
+
+#if defined(ROBOT_ARM_HAS_RTC_CONTROL)
+#include "RobotArmRTCControl.h"
 #include "ClockMovements.h"
 #endif
 
-#include "RobotArmIRCommands.h"
-#include "RobotArmServoConfiguration.h"
-#include "RobotArmServoControl.h"
+#include "RobotArmIRCommands.hpp"
 
 /*
  * The auto move function. Put your own moves here.
@@ -55,7 +61,7 @@
  *
  * Useful commands:
  *
- * goToNeutral()
+ * goToCenter();
  * goToPosition(int aLeftRightMilliMeter, int aBackFrontMilliMeter, int aDownUpMilliMeter);
  * goToPositionRelative(int aLeftRightDeltaMilliMeter, int aBackFrontDeltaMilliMeter, int aDownUpDeltaMilliMeter);
  * delayAndCheckIRInput(1000);
@@ -74,27 +80,28 @@
 //}
 //#define TRACE
 //#define DEBUG
-#define USE_BUTTON_0
-#define USE_ATTACH_INTERRUPT // to be compatible with IRLremote
+#define USE_BUTTON_0 // use button at INT0 / pin 2
 #include "EasyButtonAtInt01.hpp" // for switching easing modes
+void changeEasingType(bool aButtonToggleState);
+EasyButton ButtonAtPin2(&changeEasingType);
 
 #include "ADCUtils.hpp" // for get getVCCVoltageMillivolt
 
 #define VERSION_EXAMPLE "2.0"
 
-void changeEasingType(bool aButtonToggleState);
-EasyButton OnOffButtonAtPin3(&changeEasingType);
-
 void handleManualControl();
 
-bool sManualActionHappened = false;
+bool sManualActionHappened = false; // Disables auto move after initial timeout
 bool sVCCTooLow = false;
 
+#define DEBUG_OUTPUT_ENABLE_PIN 12 // if low, enables debug output
+bool sDebugOutputIsEnabled;
 /*
  * Code starts here
  */
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(DEBUG_OUTPUT_ENABLE_PIN, INPUT_PULLUP);
     Serial.begin(115200);
 #if defined(__AVR_ATmega32U4__) || defined(SERIAL_PORT_USBVIRTUAL) || defined(SERIAL_USB) /*stm32duino*/|| defined(USBCON) /*STM32_stm32*/|| defined(SERIALUSB_PID) || defined(ARDUINO_attiny3217)
     delay(4000); // To be able to connect Serial monitor after reset or power up and before first print out. Do not wait for an attached Serial Monitor!
@@ -109,11 +116,14 @@ void setup() {
     delay(200);
     setupRobotArmServos();
 
-#if defined(ROBOT_ARM_IR_CONTROL)
+#if defined(ROBOT_ARM_HAS_IR_CONTROL)
     IRDispatcher.init();
+    Serial.print(F("Listening to IR remote of type "));
+    Serial.print(IR_REMOTE_NAME);
+    Serial.println(F(" at pin " STR(IR_INPUT_PIN)));
 #endif
 
-#if defined(ROBOT_ARM_RTC_CONTROL)
+#if defined(ROBOT_ARM_HAS_RTC_CONTROL)
     initRTC();
     Serial.print(F("RTC temperature="));
     printRTCTemperature();
@@ -128,14 +138,17 @@ void setup() {
 
 void loop() {
 
+    sDebugOutputIsEnabled = !digitalRead(DEBUG_OUTPUT_ENABLE_PIN); // enabled if LOW
+
     // Reset mode to linear for all servos
     if (sInverseKinematicModeActive) {
         setEasingTypeForAllServos(EASE_LINEAR);
+        sEasingType = EASE_LINEAR;
     }
 
     checkVCC();
 
-#if defined(ROBOT_ARM_RTC_CONTROL)
+#if defined(ROBOT_ARM_HAS_RTC_CONTROL)
 #if defined(DEBUG)
     if (printRTCEveryPeriod(1)) {
         printRTC(DATE_FORMAT_EUROPEAN);
@@ -153,7 +166,7 @@ void loop() {
     }
 #endif
 
-#if defined(ROBOT_ARM_IR_CONTROL)
+#if defined(ROBOT_ARM_HAS_IR_CONTROL)
     /*
      * Check for IR commands and execute them.
      * Returns only AFTER finishing of requested movement
@@ -161,13 +174,16 @@ void loop() {
     IRDispatcher.checkAndRunSuspendedBlockingCommands();
 
     /*
-     * Do auto move if timeout after boot was reached and no IR command was received
+     * Do auto move if timeout after boot was reached and no IR command was received, and no manual command was issued before
      */
-    if (sActionType != ACTION_TYPE_DRAW_TIME && IRDispatcher.IRReceivedData.MillisOfLastCode != 0 && !sManualActionHappened
+    if (sActionType != ACTION_TYPE_DRAW_TIME && IRDispatcher.IRReceivedData.MillisOfLastCode == 0 && !sManualActionHappened
             && !sVCCTooLow && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
         doRobotArmAutoMove();
     }
 
+    /*
+     * Enable manual control if no IR command was received
+     */
     if (sActionType != ACTION_TYPE_DRAW_TIME && IRDispatcher.IRReceivedData.MillisOfLastCode == 0) {
         handleManualControl();
     }
@@ -185,7 +201,7 @@ void loop() {
 bool delayAndCheckForRobotArm(uint16_t aDelayMillis) {
     // check only once per delay
     if (checkVCC()) {
-#if defined(ROBOT_ARM_IR_CONTROL)
+#if defined(ROBOT_ARM_HAS_IR_CONTROL)
         if (IRDispatcher.delayAndCheckForStop(aDelayMillis)) {
             Serial.println(F("Stop requested"));
             sActionType = ACTION_TYPE_STOP;
@@ -195,7 +211,7 @@ bool delayAndCheckForRobotArm(uint16_t aDelayMillis) {
 
         return false;
     }
-#if defined(ROBOT_ARM_IR_CONTROL)
+#if defined(ROBOT_ARM_HAS_IR_CONTROL)
     sActionType = ACTION_TYPE_STOP;
 #endif
     return true;
@@ -212,15 +228,14 @@ bool checkVCC() {
         sLastMillisOfVoltageCheck = millis();
         uint16_t tVCC = getVCCVoltageMillivolt();
 
-#if defined(INFO)
-        if (sLastVoltage != tVCC) {
-            sLastVoltage = tVCC;
-            Serial.print(F("VCC="));
-            Serial.print(tVCC);
-            Serial.println(" mV");
+        if (sDebugOutputIsEnabled) {
+            if (sLastVoltage != tVCC) {
+                sLastVoltage = tVCC;
+                Serial.print(F("VCC="));
+                Serial.print(tVCC);
+                Serial.println(F(" mV"));
+            }
         }
-#endif
-
         // one time flag
         if (!sVCCTooLow) {
             if (tVCC < VCC_STOP_THRESHOLD_MILLIVOLT) {
@@ -242,7 +257,7 @@ bool checkVCC() {
                      * Do it once and wait for 5 seconds
                      * Afterwards only auto move is disabled
                      */
-                    shutdownServos();
+                    goToFolded();
                     delay(5000);
                 }
             } else {
@@ -261,7 +276,7 @@ void changeEasingType(__attribute__((unused)) bool aButtonToggleState) {
 }
 
 void doSetToAutoModeForRobotArm() {
-#if defined(ROBOT_ARM_IR_CONTROL)
+#if defined(ROBOT_ARM_HAS_IR_CONTROL)
     IRDispatcher.IRReceivedData.MillisOfLastCode = 1;
 #endif
     sManualActionHappened = false;
@@ -312,12 +327,12 @@ void handleManualControl() {
                 tManualAction = true;
             }
             sLastPivot = tPivot;
-            tTargetAngle = map(tPivot, 0, 1023, 10 + PIVOT_OFFSET, -10 - PIVOT_OFFSET);
+            tTargetAngle = map(tPivot, 0, 1023, 100, -100);
             moveOneServoAndCheckInputAndWait(SERVO_BASE_PIVOT, tTargetAngle);
-#if defined(INFO)
-            Serial.print("BasePivotServo: micros=");
-            Serial.print(BasePivotServo.getEndMicrosecondsOrUnitsWithTrim());
-#endif
+            if (sDebugOutputIsEnabled) {
+                Serial.print(F("BasePivotServo: micros="));
+                Serial.print(BasePivotServo.getEndMicrosecondsOrUnitsWithTrim());
+            }
         }
 
         int tHorizontal = analogRead(HORIZONTAL_INPUT_PIN);
@@ -328,12 +343,12 @@ void handleManualControl() {
                 tManualAction = true;
             }
             sLastHorizontal = tHorizontal;
-            tTargetAngle = map(tHorizontal, 0, 1023, 0, 180);
+            tTargetAngle = map(tHorizontal, 0, 1023, HORIZONTAL_MAXIMUM_DEGREE, HORIZONTAL_MINIMUM_DEGREE);
             moveOneServoAndCheckInputAndWait(SERVO_HORIZONTAL, tTargetAngle);
-#if defined(INFO)
-            Serial.print("HorizontalServo: micros=");
-            Serial.print(HorizontalServo.getEndMicrosecondsOrUnits());
-#endif
+            if (sDebugOutputIsEnabled) {
+                Serial.print(F("HorizontalServo: micros="));
+                Serial.print(HorizontalServo.getEndMicrosecondsOrUnits());
+            }
         }
 
         int tLift = analogRead(LIFT_INPUT_PIN);
@@ -344,12 +359,12 @@ void handleManualControl() {
                 tManualAction = true;
             }
             sLastLift = tLift;
-            tTargetAngle = map(tLift, 0, 1023, 0, LIFT_MAX_ANGLE);
+            tTargetAngle = map(tLift, 0, 1023, LIFT_MAXIMUM_DEGREE - 10, LIFT_MINIMUM_DEGREE +10);
             moveOneServoAndCheckInputAndWait(SERVO_LIFT, tTargetAngle);
-#if defined(INFO)
-            Serial.print("LiftServo: micros=");
-            Serial.print(LiftServo.getEndMicrosecondsOrUnits());
-#endif
+            if (sDebugOutputIsEnabled) {
+                Serial.print(F("LiftServo: micros="));
+                Serial.print(LiftServo.getEndMicrosecondsOrUnits());
+            }
         }
 
         int tClaw = analogRead(CLAW_INPUT_PIN);
@@ -360,27 +375,27 @@ void handleManualControl() {
                 tManualAction = true;
             }
             sLastClaw = tClaw;
-            tTargetAngle = map(tClaw, 0, 1023, 0, CLAW_MAX_ANGLE);
+            tTargetAngle = map(tClaw, 0, 1023, 0, CLAW_CLOSE_DEGREE + 10);
             moveOneServoAndCheckInputAndWait(SERVO_CLAW, tTargetAngle);
-#if defined(INFO)
-            Serial.print("ClawServo: micros=");
-            Serial.print(ClawServo.getEndMicrosecondsOrUnits());
-#endif
+            if (sDebugOutputIsEnabled) {
+                Serial.print(F("ClawServo: micros="));
+                Serial.print(ClawServo.getEndMicrosecondsOrUnits());
+            }
         }
 
         if (tValueChanged) {
             if (tManualAction) {
                 sManualActionHappened = true;
             }
-#if defined(INFO)
-            Serial.print(" degree=");
-            Serial.print(tTargetAngle);
-            Serial.print(" | ");
-#endif
+            if (sDebugOutputIsEnabled) {
+                Serial.print(F(" degree="));
+                Serial.print(tTargetAngle);
+                Serial.print(F(" | "));
+            }
             sEndPosition.LeftRightDegree = ServoEasing::ServoEasingNextPositionArray[SERVO_BASE_PIVOT];
             sEndPosition.BackFrontDegree = ServoEasing::ServoEasingNextPositionArray[SERVO_HORIZONTAL];
             sEndPosition.DownUpDegree = ServoEasing::ServoEasingNextPositionArray[SERVO_LIFT];
-            unsolve(&sEndPosition);
+            doForwardKinematics(&sEndPosition);
             printPositionShortWithUnits(&sEndPosition);
         }
     }

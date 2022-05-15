@@ -122,13 +122,19 @@ IntervalTimer Timer20ms;
 
 /*
  * Enable this to see information on each call.
- * Since there should be no library which uses Serial, enable it only for development purposes.
+ * Since there should be no library which uses Serial, it should only be enabled for development purposes.
  */
-//#define TRACE
-//#define DEBUG
-// Propagate debug level
+#if defined(DEBUG)
+#define LOCAL_DEBUG
+#else
+//#define LOCAL_DEBUG // This enables debug output only for this file
+#endif
 #if defined(TRACE)
-#define DEBUG
+#define LOCAL_TRACE
+// Propagate debug level
+#define LOCAL_DEBUG
+#else
+//#define LOCAL_TRACE // This enables trace output only for this file
 #endif
 
 volatile bool ServoEasing::sInterruptsAreActive = false; // true if interrupts are still active, i.e. at least one Servo is moving with interrupts.
@@ -166,7 +172,7 @@ const char easeTypeBounce[] PROGMEM = "bounce";
 
 const char *const easeTypeStrings[] PROGMEM = { easeTypeLinear
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
-        , easeTypeQuadratic, easeTypeCubic, easeTypeQuartic, easeTypeUser, easeTypeNotDefined, easeTypeDummy,
+        , easeTypeQuadratic, easeTypeCubic, easeTypeQuartic, easeTypeNotDefined, easeTypeNotDefined, easeTypeUser, easeTypeDummy,
 #  if !defined(DISABLE_COMPLEX_FUNCTIONS)
         easeTypeSine, easeTypeCircular, easeTypeBack, easeTypeElastic, easeTypeBounce, easeTypePrecision
 #  endif
@@ -495,7 +501,7 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
     }
     mServoIndex = tReturnValue;
 
-#if defined(TRACE)
+#if defined(LOCAL_TRACE)
     Serial.print("Index=");
     Serial.print(tReturnValue);
     Serial.print(" pin=");
@@ -636,8 +642,13 @@ uint_fast8_t ServoEasing::getEasingType() {
 }
 
 #  if defined(ENABLE_EASE_USER)
-void ServoEasing::registerUserEaseInFunction(float (*aUserEaseInFunction)(float aFactorOfTimeCompletion)) {
+void ServoEasing::registerUserEaseInFunction(float (*aUserEaseInFunction)(float aFactorOfTimeCompletion, void *aUserDataPointer),
+        void *aUserDataPointer) {
     mUserEaseInFunction = aUserEaseInFunction;
+    UserDataPointer = aUserDataPointer;
+}
+void ServoEasing::setUserDataPointer(void *aUserDataPointer) {
+    UserDataPointer = aUserDataPointer;
 }
 #  endif
 #endif // !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
@@ -646,7 +657,7 @@ void ServoEasing::registerUserEaseInFunction(float (*aUserEaseInFunction)(float 
  * @param aValue treat values less than 400 as angles in degrees, others are handled as microseconds
  */
 void ServoEasing::write(int aDegreeOrMicrosecond) {
-#if defined(TRACE)
+#if defined(LOCAL_TRACE)
     Serial.print(F("write "));
     Serial.print(aDegreeOrMicrosecond);
     Serial.print(' ');
@@ -655,7 +666,7 @@ void ServoEasing::write(int aDegreeOrMicrosecond) {
      * Check for valid initialization of servo.
      */
     if (mServoIndex == INVALID_SERVO) {
-#if defined(TRACE)
+#if defined(LOCAL_TRACE)
         Serial.print(F("Error: detached servo"));
 #endif
         return;
@@ -672,7 +683,7 @@ void ServoEasing::writeMicrosecondsOrUnits(int aMicrosecondsOrUnits) {
      * Check for valid initialization of servo.
      */
     if (mServoIndex == INVALID_SERVO) {
-#if defined(TRACE)
+#if defined(LOCAL_TRACE)
         Serial.print(F("Error: detached servo"));
 #endif
         return;
@@ -680,7 +691,7 @@ void ServoEasing::writeMicrosecondsOrUnits(int aMicrosecondsOrUnits) {
 
     mCurrentMicrosecondsOrUnits = aMicrosecondsOrUnits;
 
-#if defined(TRACE)
+#if defined(LOCAL_TRACE)
     Serial.print(mServoIndex);
     Serial.print('/');
     Serial.print(mServoPin);
@@ -698,7 +709,7 @@ void ServoEasing::writeMicrosecondsOrUnits(int aMicrosecondsOrUnits) {
 // (except in the DegreeToMicrosecondsOrUnitsWithTrimAndReverse() function for external testing purposes)
     if (mOperateServoReverse) {
         aMicrosecondsOrUnits = mServo180DegreeMicrosecondsOrUnits - (aMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits);
-#if defined(TRACE)
+#if defined(LOCAL_TRACE)
         Serial.print(F(" r="));
         Serial.print(aMicrosecondsOrUnits);
 #endif
@@ -713,7 +724,7 @@ void ServoEasing::writeMicrosecondsOrUnits(int aMicrosecondsOrUnits) {
     writeMicrosecondsLightweightServo(aMicrosecondsOrUnits, (mServoPin == 9));
 
 #elif defined(USE_PCA9685_SERVO_EXPANDER)
-#  if defined(TRACE)
+#  if defined(LOCAL_TRACE)
     // For each pin show PWM on value used below
     Serial.print(F(" s="));
     Serial.print(mServoPin * (4096 - (DEFAULT_PCA9685_UNITS_FOR_180_DEGREE + 100)) / 15); // mServoPin * 233
@@ -736,7 +747,7 @@ void ServoEasing::writeMicrosecondsOrUnits(int aMicrosecondsOrUnits) {
     Servo::writeMicroseconds(aMicrosecondsOrUnits); // requires 7 µs
 #endif
 
-#if defined(TRACE)
+#if defined(LOCAL_TRACE)
     Serial.println();
 #endif
 }
@@ -975,7 +986,7 @@ bool ServoEasing::startEaseToD(int aDegreeOrMicrosecond, uint_fast16_t aMillisFo
      * Check for valid initialization of servo.
      */
     if (mServoIndex == INVALID_SERVO) {
-#if defined(TRACE)
+#if defined(LOCAL_TRACE)
         Serial.print(F("Error: detached servo"));
 #endif
         return true;
@@ -1006,7 +1017,7 @@ bool ServoEasing::startEaseToD(int aDegreeOrMicrosecond, uint_fast16_t aMillisFo
 
     mMillisAtStartMove = millis();
 
-#if defined(TRACE)
+#if defined(LOCAL_TRACE)
 printDynamic(&Serial, true);
 #elif defined(DEBUG)
 printDynamic(&Serial);
@@ -1157,13 +1168,27 @@ bool ServoEasing::update() {
         }
 
 #if defined(ENABLE_EASE_USER) || defined(ENABLE_EASE_PRECISION)
+        // Threshold of 400 corresponds to around -14 degree
         if (tFactorOfMovementCompletion >= EASE_FUNCTION_MICROSECONDS_INDICATOR_OFFSET) {
             // Here we have called an easing function, which returns microseconds or units instead of the factor of completion (0.0 to 1.0)
-            tNewMicrosecondsOrUnits = tFactorOfMovementCompletion;
+#if defined(USE_PCA9685_SERVO_EXPANDER)
+#  if defined(USE_SERVO_LIB)
+            if (mServoIsConnectedToExpander) {
+                tNewMicrosecondsOrUnits = MicrosecondsToPCA9685Units(tFactorOfMovementCompletion);
+            } else {
+                tNewMicrosecondsOrUnits = tFactorOfMovementCompletion; // not connected to PCA9685 here
+            }
+#  else
+            tNewMicrosecondsOrUnits = MicrosecondsToPCA9685Units(tFactorOfMovementCompletion);
+#  endif
+#else
+            tNewMicrosecondsOrUnits = tFactorOfMovementCompletion; // get the microseconds delivered by the function
+#endif
         } else
 #endif
 #if defined(ENABLE_EASE_USER)
-        if (tFactorOfMovementCompletion >= EASE_FUNCTION_DEGREE_INDICATOR_OFFSET) {
+            // check for degree values from -180 to 180 (tFactorOfMovementCompletion from 20 to 380)
+        if (tFactorOfMovementCompletion >= EASE_FUNCTION_DEGREE_THRESHOLD) {
             // Here we have called an easing function, which returns degree instead of the factor of completion (0.0 to 1.0)
             tNewMicrosecondsOrUnits = DegreeToMicrosecondsOrUnits(
                     tFactorOfMovementCompletion - EASE_FUNCTION_DEGREE_INDICATOR_OFFSET + 0.5);
@@ -1197,7 +1222,7 @@ float ServoEasing::callEasingFunction(float aFactorOfTimeCompletion) {
 #  if defined(ENABLE_EASE_USER)
     case EASE_USER_DIRECT:
         if (mUserEaseInFunction != NULL) {
-            return mUserEaseInFunction(aFactorOfTimeCompletion);
+            return mUserEaseInFunction(aFactorOfTimeCompletion, UserDataPointer);
         } else {
             return 0.0;
         }
@@ -1784,7 +1809,11 @@ void TC5_Handler(void) {
 
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
 void setEasingTypeForAllServos(uint_fast8_t aEasingType) {
-    for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
+    setEasingTypeForMultipleServos(ServoEasing::sServoArrayMaxIndex, aEasingType);
+}
+
+void setEasingTypeForMultipleServos(uint_fast8_t aNumberOfServos, uint_fast8_t aEasingType) {
+    for (uint_fast8_t tServoIndex = 0; tServoIndex <= aNumberOfServos; ++tServoIndex) {
         if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
             ServoEasing::ServoEasingArray[tServoIndex]->mEasingType = aEasingType;
         }
@@ -2009,7 +2038,7 @@ void synchronizeAllServosAndStartInterrupt(bool aStartUpdateByInterrupt) {
         }
     }
 
-#if defined(TRACE)
+#if defined(LOCAL_TRACE)
         Serial.print(F("Number of servos="));
         Serial.print(ServoEasing::sServoArrayMaxIndex);
         Serial.print(F(" MillisAtStartMove="));
@@ -2094,9 +2123,12 @@ float ServoEasing::ElasticEaseIn(float aFactorOfTimeCompletion) {
 #define PART_OF_LINEAR_MOVEMENT         0.8
 #define PART_OF_BOUNCE_MOVEMENT         (1.0 - PART_OF_LINEAR_MOVEMENT)
 #define PART_OF_BOUNCE_MOVEMENT_HALF    ((1.0 - PART_OF_LINEAR_MOVEMENT) / 2) // 0.1
+
 #define OVERSHOOT_AMOUNT_MILLIS         50 // around 5 degree
+#define OVERSHOOT_AMOUNT_UNITS          10 // around 5 degree
 /*
- * 200 bytes
+ * Like linear, but if descending, add a 5 degree negative bounce in the last 20 % of the movement time.
+ * So the target position is always approached from below. This enables it to taken out the slack/backlash of any hardware moved by the servo.
  */
 float ServoEasing::LinearWithQuadraticBounce(float aFactorOfTimeCompletion) {
     if (mDeltaMicrosecondsOrUnits > 0) {
@@ -2121,9 +2153,22 @@ float ServoEasing::LinearWithQuadraticBounce(float aFactorOfTimeCompletion) {
                 tRemainingFactor = aFactorOfTimeCompletion - (1.0 - PART_OF_BOUNCE_MOVEMENT_HALF); // tRemainingFactor - 0.9 -> 0.0 to 0.1
                 tRemainingFactor = tRemainingFactor * (1 / PART_OF_BOUNCE_MOVEMENT_HALF); //tRemainingFactor is 0.0 to 1.0 -> quadratic in
             }
+#if defined(USE_PCA9685_SERVO_EXPANDER)
+#  if defined(USE_SERVO_LIB)
+            if (!mServoIsConnectedToExpander) {
+                // not connected to PCA9685 here, return direct microseconds values
+                return mEndMicrosecondsOrUnits + OVERSHOOT_AMOUNT_MILLIS
+                        - (OVERSHOOT_AMOUNT_MILLIS * tRemainingFactor * tRemainingFactor);
+            }
+#  endif
+            // return converted units values to be correctly detected by EASE_FUNCTION_MICROSECONDS_INDICATOR_OFFSET
+            return PCA9685UnitsToMicroseconds(mEndMicrosecondsOrUnits + OVERSHOOT_AMOUNT_UNITS
+                    - (OVERSHOOT_AMOUNT_UNITS * tRemainingFactor * tRemainingFactor));
+#else
             // return direct microseconds values
             return mEndMicrosecondsOrUnits + OVERSHOOT_AMOUNT_MILLIS
                     - (OVERSHOOT_AMOUNT_MILLIS * tRemainingFactor * tRemainingFactor);
+#endif
         }
     }
 }
@@ -2239,5 +2284,10 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial) // Print has no fl
 }
 # endif // defined(USE_PCA9685_SERVO_EXPANDER)
 
+#if defined(LOCAL_DEBUG)
+#undef LOCAL_DEBUG
+#endif
+#if defined(LOCAL_TRACE)
+#undef LOCAL_TRACE
+#endif
 #endif // _SERVO_EASING_HPP
-#pragma once

@@ -182,7 +182,7 @@
 //#define DISABLE_MICROS_AS_DEGREE_PARAMETER
 
 #if !defined(THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS)
-#define THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS  400  // treat values less than 400 as angles in degrees, others are handled as microseconds
+#define THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS  360  // treat values less than 360 as angles in degrees, others are handled as microseconds
 #endif
 
 #if !defined(va_arg)
@@ -198,12 +198,12 @@
 #define DEFAULT_MICROSECONDS_FOR_135_DEGREE (2400 - ((2400 - 544) / 4)) // 1936
 #define DEFAULT_MICROSECONDS_FOR_180_DEGREE  2400
 
+// Approximately 2 units per degree
 #define DEFAULT_PCA9685_UNITS_FOR_0_DEGREE    111 // 111.411 = 544 µs
 #define DEFAULT_PCA9685_UNITS_FOR_45_DEGREE  (111 + ((491 - 111) / 4)) // 206
 #define DEFAULT_PCA9685_UNITS_FOR_90_DEGREE  (111 + ((491 - 111) / 2)) // 301 = 1472 us
 #define DEFAULT_PCA9685_UNITS_FOR_135_DEGREE (491 - ((491 - 111) / 4)) // 369
 #define DEFAULT_PCA9685_UNITS_FOR_180_DEGREE  491 // 491.52 = 2400 µs
-// Approximately 2 units per degree
 
 /*
  * Definitions for continuous rotating servo - Values are taken from the Parallax Continuous Rotation Servo manual
@@ -260,8 +260,10 @@
  *      In the second half, call with ((2 * PercentageOfCompletion/100) - 1) | 0.0 to 1.0. Result = (1- result) -> call OUT function 2 times faster and backwards.
  *
  */
-#define EASE_FUNCTION_DEGREE_INDICATOR_OFFSET       20 // Offset to decide if the user function returns degrees instead of 0.0 to 1.0. => returns 20 for 0 degree.
-#define EASE_FUNCTION_MICROSECONDS_INDICATOR_OFFSET (EASE_FUNCTION_DEGREE_INDICATOR_OFFSET + 300) // Offset to decide if the user function returns microseconds instead of 0.0 to 1.0. => returns 256 for 0 degree.
+// Offset to decide if the user function returns degrees instead of 0.0 to 1.0.
+#define EASE_FUNCTION_DEGREE_INDICATOR_OFFSET       200 // Returns 20 for -180°, 110 for -90°, 200 for 0° and 380 for 180°.
+#define EASE_FUNCTION_DEGREE_THRESHOLD              (EASE_FUNCTION_DEGREE_INDICATOR_OFFSET - 180) // allows -180°.
+#define EASE_FUNCTION_MICROSECONDS_INDICATOR_OFFSET (EASE_FUNCTION_DEGREE_INDICATOR_OFFSET + 200) // Offset to decide if the user function returns microseconds instead of 0.0 to 1.0. => returns 256 for 0 degree.
 
 /*
  * Values for provided EaseTypes
@@ -300,10 +302,11 @@
 #endif
 
 #if defined(ENABLE_EASE_USER)
-#define EASE_USER_DIRECT        0x05
-#define EASE_USER_OUT           0x45
-#define EASE_USER_IN_OUT        0x85
-#define EASE_USER_BOUNCING      0xC5
+#define EASE_USER_DIRECT        0x06
+#define EASE_USER_IN            0x06
+#define EASE_USER_OUT           0x46
+#define EASE_USER_IN_OUT        0x86
+#define EASE_USER_BOUNCING      0xC6
 #endif
 
 #define EASE_DUMMY_MOVE         0x07 // can be used as delay
@@ -433,9 +436,12 @@ public:
     void setEasingType(uint_fast8_t aEasingType);
     uint_fast8_t getEasingType();
 
-    void registerUserEaseInFunction(float (*aUserEaseInFunction)(float aPercentageOfCompletion));
-
     float callEasingFunction(float aPercentageOfCompletion);            // used in update()
+
+#  if defined(ENABLE_EASE_USER)
+    void registerUserEaseInFunction(float (*aUserEaseInFunction)(float aPercentageOfCompletion, void * aUserDataPointer), void * aUserDataPointer = NULL);
+    void setUserDataPointer(void * aUserDataPointer);
+#  endif
 #endif
 
     void write(int aTargetDegreeOrMicrosecond);     // Apply trim and reverse to the value and write it direct to the Servo library.
@@ -483,7 +489,8 @@ public:
     void print(Print *aSerial, bool doExtendedOutput = true); // Print dynamic and static info
     void printDynamic(Print *aSerial, bool doExtendedOutput = true);
     void printStatic(Print *aSerial);
-    void printEasingType(Print *aSerial, uint_fast8_t aEasingType);
+
+    static void printEasingType(Print *aSerial, uint_fast8_t aEasingType);
 
     /*
      * Included easing functions
@@ -531,7 +538,8 @@ public:
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
     uint8_t mEasingType; // EASE_LINEAR, EASE_QUADRATIC_IN_OUT, EASE_CUBIC_IN_OUT, EASE_QUARTIC_IN_OUT
 #  if defined(ENABLE_EASE_USER)
-    float (*mUserEaseInFunction)(float aPercentageOfCompletion);
+    void * UserDataPointer;
+    float (*mUserEaseInFunction)(float aPercentageOfCompletion, void * aUserDataPointer);
 #  endif
 #endif
 
@@ -619,6 +627,7 @@ void synchronizeAllServosAndStartInterrupt(bool aStartUpdateByInterrupt = START_
 
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
 void setEasingTypeForAllServos(uint_fast8_t aEasingType);
+void setEasingTypeForMultipleServos(uint_fast8_t aNumberOfServos, uint_fast8_t aEasingType);
 #endif
 
 // blocking wait functions
@@ -654,7 +663,8 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
  * - Changed ENABLE_MICROS_AS_DEGREE_PARAMETER to DISABLE_MICROS_AS_DEGREE_PARAMETER thus enabling micros as parameter by default.
  * - Fixed some bugs for micros as parameter.
  * - Changed constants for easing types.
- * - New easing type Precision.
+ * - Additional parameter aUserDataPointer for user easing function.
+ * - New easing type PRECISION.
  * - New function `printEasingType()`.
  * - Easing functions are converted to static member functions now.
  * - Easing types can be disabled individually.

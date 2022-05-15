@@ -78,7 +78,7 @@ jobs:
               PCA9685_ExpanderAndServo: -DUSE_SOFT_I2C_MASTER
 
           - arduino-boards-fqbn: arduino:avr:leonardo
-            sketches-exclude: TwoServos # No LightweightServoLib available
+            sketches-exclude: TwoServos,RobotArmControl # No LightweightServoLib and TinyReceiver available
 
           - arduino-boards-fqbn: arduino:avr:mega
             sketches-exclude: TwoServos # No LightweightServoLib available

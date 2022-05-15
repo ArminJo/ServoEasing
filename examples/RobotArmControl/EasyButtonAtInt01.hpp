@@ -727,4 +727,3 @@ ISR(INT1_vect)
 
 #endif // defined(__AVR__)
 #endif // _EASY_BUTTON_AT_INT01_HPP
-#pragma once

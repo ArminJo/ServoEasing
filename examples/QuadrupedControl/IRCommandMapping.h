@@ -8,7 +8,7 @@
  *
  * Mapping for controlling a mePed Robot V2 with 8 servos using an IR Remote at pin A0
  * Supported IR remote are KEYES (the original mePed remote) and WM10 and ...
- * Select the one you have below.
+ * Select the one you have below or define it in the including file.
  */
 
 #ifndef _IR_COMMAND_MAPPING_H

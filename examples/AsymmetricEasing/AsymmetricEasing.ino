@@ -74,7 +74,7 @@ ServoEasing Servo3;
 #define START_DEGREE_VALUE 90
 
 // forward declarations
-float EaseQuadraticInQuarticOut(float aPercentageOfCompletion);
+float EaseQuadraticInQuarticOut(float aPercentageOfCompletion, void * aUserDataPointer);
 
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
@@ -216,7 +216,7 @@ void loop() {
 /*
  * User defined combined movement
  */
-float EaseQuadraticInQuarticOut(float aPercentageOfCompletion) {
+float EaseQuadraticInQuarticOut(float aPercentageOfCompletion, void * aUserDataPointer ) {
     if (aPercentageOfCompletion <= 0.5) {
         // Quadratic IN - output from 0.0 to 0.5
         return (2 * ServoEasing::QuadraticEaseIn(aPercentageOfCompletion));

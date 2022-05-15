@@ -13,7 +13,7 @@ YouTube video of SymmetricEasing and AsymmetricEasing example
   * [PCA9685_Expander example](#pca9685_expander-example)
 - [TwoServo](#twoservo)
 - [ThreeServo examples](#threeservo-examples)
-- [NonlinearEasings example](#nonlineareasings-example)
+- [ConsecutiveEasingsWithCallback example](#consecutiveeasingswithcallback-example)
 - [SymmetricEasing example](#symmetriceasing-example)
 - [AsymmetricEasing example](#asymmetriceasing-example)
 - [ContinuousRotatingServo example](#continuousrotatingservo-example)
@@ -40,14 +40,14 @@ If you activate the line `#define USE_PCA9685_SERVO_EXPANDER` you can run the On
 
 # [TwoServo](https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServo/TwoServo.ino)
 This example shows how to move 2 servos attached at pin 9 and 10 synchronized or independently using the LightweightServo library. This saves 640 bytes program memory compared to using Arduino Servo library.<br/>
-It operates the first servo from -90 to +90 degree using a 
+It operates the first servo from -90 to +90 degree using a using **setTrim(90)**.
 
 # [ThreeServo examples](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServo/ThreeServo.ino)
 This example shows how to move 3 servos synchronized or independently. It demonstrates the use of `ServoEasingArray` and `ServoEasingNextPositionArray`.<br/>
 WOKWI online simulation of the ThreeServo example.<br/>
 [![WOKWI online simulation of the ThreeServo example](https://github.com/ArminJo/ServoEasing/blob/master/pictures/Wokwi_ThreeServos.png)](https://wokwi.com/arduino/projects/299552195816194570).
 
-# [NonlinearEasings example](https://github.com/ArminJo/ServoEasing/blob/master/examples/NonlinearEasings/NonlinearEasings.ino)
+# [ConsecutiveEasingsWithCallback example](https://github.com/ArminJo/ServoEasing/blob/master/examples/ConsecutiveEasingsWithCallback/ConsecutiveEasingsWithCallback.ino)
 This example shows 1 linear and 7 non-linear easings in flavor IN_OUT for 1 servo, followed with flavors of IN, OUT and BOUNCING.<br/>
 Note, that Back and Elastic are not totally visible at your servo, since they use angels above 180 and below 0 degree in this example.<br/>
 This example uses a **callback handler** and **specification arrays** to generate the movement cycle.
@@ -84,8 +84,8 @@ Only for AVR, because it uses EEPROM.
 [![Another implementation](https://i.ytimg.com/vi/CSodffeebyg/hqdefault.jpg)](https://youtu.be/CSodffeebyg)
 
 # [RobotArmControl example](https://github.com/ArminJo/ServoEasing/blob/master/examples/RobotArmControl/RobotArmControl.ino)
-Program for controlling a [robot arm with 4 servos](https://www.instructables.com/id/4-DOF-Mechanical-Arm-Robot-Controlled-by-Arduino) using 4 potentiometers and/or an IR Remote.
-Only for AVR, because it uses EEPROM.
+Program for controlling a [robot arm with 4 servos](https://www.instructables.com/id/4-DOF-Mechanical-Arm-Robot-Controlled-by-Arduino) using 4 potentiometers and/or an IR Remote.<br/>
+It uses the `EASE_USER_DIRECT` easing type was used for all servos except the claw to implement **movements by inverse kinematics**.
 
 # [PCA9685_ExpanderAndServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/PCA9685_ExpanderAndServo/PCA9685_ExpanderAndServo.ino)
 Combination of OneServo example and PCA9685_Expander example. Move one servo attached to the Arduino board and one servo attached to the PCA9685 expander board **simultaneously**.

@@ -4,9 +4,6 @@
  * Contains all the IR command functions available.
  * All functions have the prefix __attribute__((weak)) in order to enable easy overwriting with own functions.
  *
- * To run this example need to install the "ServoEasing", "IRLremote" and "PinChangeInterrupt" libraries under "Tools -> Manage Libraries..." or "Ctrl+Shift+I"
- * Use "ServoEasing", "IRLremote" and "PinChangeInterrupt" as filter string.
- *
  *  Copyright (C) 2019-2022  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
@@ -426,4 +423,3 @@ void __attribute__((weak)) doDecreaseHeight() {
 }
 
 #endif // _QUADRUPED_CONTROL_COMMANDS_HPP
-#pragma once

@@ -7,19 +7,17 @@
  *      Author: Armin
  */
 
-#ifndef ROBOT_ARM_COMMANDS_H_
-#define ROBOT_ARM_COMMANDS_H_
+#ifndef _ROBOT_ARM_IR_COMMANDS_H
+#define _ROBOT_ARM_IR_COMMANDS_H
 
-#include "RobotArmControl.h"
-
-#if defined(ROBOT_ARM_IR_CONTROL)
+#if defined(ROBOT_ARM_HAS_IR_CONTROL)
 #include "IRCommandDispatcher.h"
 #else
 #define RETURN_IF_STOP
 #define DELAY_AND_RETURN_IF_STOP(aDurationMillis)
 #endif
 
-#if defined(ROBOT_ARM_RTC_CONTROL)
+#if defined(ROBOT_ARM_HAS_RTC_CONTROL)
 #include "ClockMovements.h"
 #endif
 
@@ -30,8 +28,9 @@ extern bool sInverseKinematicModeActive;
 extern uint8_t sActionType;
 
 void doRobotArmAutoMove();
-void doCenter();
-void doFolded();
+void doRobotArmTestMove();
+void doGoCenter();
+void doGoFolded();
 void doGoForward();
 void doGoBack();
 void doTurnRight();
@@ -45,6 +44,7 @@ void doSwitchToManual();
 void doInverseKinematicOff();
 void doInverseKinematicOn();
 void doToggleInverseKinematic();
+void doTestInverseKinematic();
 
 /*
  * Instant command functions
@@ -55,5 +55,4 @@ void doIncreaseSpeed();
 void doDecreaseSpeed();
 void doSwitchEasingType();
 
-#endif /* ROBOT_ARM_COMMANDS_H_ */
-#pragma once
+#endif // _ROBOT_ARM_IR_COMMANDS_H

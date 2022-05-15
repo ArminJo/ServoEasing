@@ -455,4 +455,3 @@ float getTemperature(void) {
 #endif // defined(__AVR__) && defined(ADATE)
 
 #endif // _ADC_UTILS_HPP
-#pragma once

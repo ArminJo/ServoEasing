@@ -4,7 +4,13 @@
  * Contains the kinematics functions for the robot arm
  * See also: https://www.instructables.com/id/4-DOF-Mechanical-Arm-Robot-Controlled-by-Arduino
  *
- *  Copyright (C) 2019  Armin Joachimsmeyer
+ * Servo trims are chosen, so that 0°, 0°, 0° (left/right, back/front, up/down) results in the neutral position of the robot arm.
+ * Neutral means: pivot direction forward, and both arms rectangular up and forward
+ * Neutral position: X=0
+ *                   Y=(LIFT_ARM_LENGTH_MILLIMETER + CLAW_LENGTH_MILLIMETER) - Here claw length is from wrist to hand PLUS base center to shoulder
+ *                   Z=HORIZONTAL_ARM_LENGTH_MILLIMETER
+ *
+ *  Copyright (C) 2019-2022  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -23,60 +29,60 @@
  *  along with this program. If not, see <http://www.gnu.org/licenses/gpl.html>.
  */
 
+#include <Arduino.h>     // for PI etc.
 #include "RobotArmKinematics.h"
 
 #include "RobotArmServoConfiguration.h"
+#if !defined(HORIZONTAL_ARM_LENGTH_MILLIMETER) // defined in RobotArmServoConfiguration.h
+#define HORIZONTAL_ARM_LENGTH_MILLIMETER    80
+#define LIFT_ARM_LENGTH_MILLIMETER          80
+#define CLAW_LENGTH_MILLIMETER              68 // Length from wrist to hand PLUS base center to shoulder
+#endif
 
-#include <math.h>
-#include <Arduino.h>     // for PI etc.
-#define SUPPRESS_HPP_WARNING
-#include "ServoEasing.h" // for clipDegreeSpecial()
-
-//#define TRACE
+//#define LOCAL_TRACE
 
 /*
  * Inverse kinematics: X,Y,Z -> servo angle
  */
 
-// Get angle from a triangle using cosine rule
-bool cosangle(float opp, float adj1, float adj2, float& theta) {
-    // Cosine rule:
-    // C^2 = A^2 + B^2 - 2*A*B*cos(angle_AB)
-    // cos(angle_AB) = (A^2 + B^2 - C^2)/(2*A*B)
-    // C is opposite
-    // A, B are adjacent
-    float den = 2 * adj1 * adj2;
+/**
+ * Get angle from a triangle using the cosine rule
+ * All sides are given
+ */
+bool getAngleOfTriangle(float aOppositeSide, float aAdjacentSide1, float aAdjacentSide2, float &aComputedAngle) {
+    /*
+     * Cosine rule:
+     * C*C = A*A + B*B - 2*A*B*cos(angle_AB)
+     * C is opposite side
+     * A, B are adjacent sides
+     */
+    float tDenominator = 2 * aAdjacentSide1 * aAdjacentSide2; // (2*A*B)
 
-    if (den == 0)
+    if (tDenominator == 0) { // @suppress("Direct float comparison")
         return false;
-    float c = (adj1 * adj1 + adj2 * adj2 - opp * opp) / den;
+    }
+    float tCosinusAB = (aAdjacentSide1 * aAdjacentSide1 + aAdjacentSide2 * aAdjacentSide2 - aOppositeSide * aOppositeSide)
+            / tDenominator;
 
-    if (c > 1 || c < -1)
+    if (tCosinusAB > 1 || tCosinusAB < -1) {
         return false;
-
-    theta = acos(c);
+    }
+    aComputedAngle = acos(tCosinusAB);
 
     return true;
 }
 
 /*
- * Get polar coords from cartesian ones
+ * Convert Cartesian to polar coordinates
  * returns 0 to PI (0 to 180 degree)
  * returns 0 to -PI (o to -180 degree) if aYValue < 0
  */
-void cart2polar(float aXValue, float aYValue, float& aRadius, float& aAngleRadiant) {
-#if defined(TRACE)
-    Serial.print(F("XValue="));
-    Serial.print(aXValue);
-    Serial.print(F(" YValue="));
-    Serial.print(aYValue);
-#endif
-
-    // Determine magnitude of cartesian coords
+void cartesianToPolar(float aXValue, float aYValue, float &aRadius, float &aAngleRadiant) {
+    // Determine magnitude of Cartesian coordinates
     aRadius = sqrt(aXValue * aXValue + aYValue * aYValue);
 
     // Don't try to calculate zero-magnitude vectors' angles
-    if (aRadius == 0) {
+    if (aRadius == 0) { // @suppress("Direct float comparison")
         aAngleRadiant = 0;
         return;
     }
@@ -91,101 +97,158 @@ void cart2polar(float aXValue, float aYValue, float& aRadius, float& aAngleRadia
     if (aYValue < 0) {
         aAngleRadiant *= -1;
     }
-#if defined(TRACE)
-    Serial.print(F(" AngleRadiant="));
-    Serial.println(aAngleRadiant);
+
+#if defined(LOCAL_TRACE)
+    Serial.print(F("XValue="));
+    Serial.print(aXValue);
+    Serial.print(F(" YValue="));
+    Serial.print(aYValue);
+    Serial.print(F(" Radius="));
+    Serial.print(aRadius);
+    Serial.print(F(" AngleDegree="));
+    Serial.println(aAngleRadiant * RAD_TO_DEG);
 #endif
 }
 
-/*
+/**
+ * Inverse kinematics: X,Y,Z -> servo angle
+ * Reads the Cartesian positions from aPositionStruct and fills the angles of aPositionStruct with the computed value
+ * @param aPositionStruct structure holding input position and output angles
  * returns true if solving was successful, false if solving is not possible
  */
-bool solve(struct ArmPosition * aPositionStruct) {
+bool doInverseKinematics(struct ArmPosition *aPositionStruct) {
+    bool tReturnValue = true;
     // Get horizontal degree for servo (0-180 degree) and get radius for next computations
-    float tRadiusHorizontal, tHorizontalAngleRadiant;
-    cart2polar(aPositionStruct->LeftRight, aPositionStruct->BackFront, tRadiusHorizontal, tHorizontalAngleRadiant);
-    int tLeftRightDegree = tHorizontalAngleRadiant * RAD_TO_DEG; // (0-180 degree, 0 is right, 90 degree is neutral)
-    aPositionStruct->LeftRightDegree = tLeftRightDegree + (PIVOT_NEUTRAL_OFFSET_DEGREE - 90); // compensate with measured neutral angle of servo
+    float tRadiusHorizontalMillimeter, tHorizontalAngleRadiant;
+    /*
+     * First doInverseKinematics the horizontal (X/Y) plane. Get LeftRightDegree and radius from X and Y.
+     */
+    cartesianToPolar(aPositionStruct->LeftRight, aPositionStruct->BackFront, tRadiusHorizontalMillimeter, tHorizontalAngleRadiant);
+    int tLeftRightDegree = tHorizontalAngleRadiant * RAD_TO_DEG; // tLeftRightDegree: 0-180 degree, 0 is right, 90 degree is neutral
+    aPositionStruct->LeftRightDegree = tLeftRightDegree - 90; // tLeftRightDegree: -90 to 90 degree, -90 is right, 0 degree is neutral, 90 is left
 
-    // Account for the virtual claw length!
-    if (tRadiusHorizontal < CLAW_LENGTH_MILLIMETER) {
-        Serial.print(F("Cannot solve "));
+    /*
+     * Now we have the base rotation for horizontal (X/Y) plane.
+     * Because we cannot move claw behind the base axis, we must check if the radius in horizontal plane is smaller than the virtual claw length!
+     */
+    if (tRadiusHorizontalMillimeter < CLAW_LENGTH_MILLIMETER) {
+        Serial.print(F("For "));
         printPositionCartesian(aPositionStruct);
-        Serial.print(F(" , because horizontal radius "));
-        Serial.print(tRadiusHorizontal);
-        Serial.println(F("mm is less than claw length"));
-        return false;
+        Serial.print(F(" horizontal radius "));
+        Serial.print(tRadiusHorizontalMillimeter);
+        Serial.println(F("mm is < claw length. -> Take claw length now."));
+        tRadiusHorizontalMillimeter = 0; // fallback
+        tReturnValue = false;
+    } else {
+        tRadiusHorizontalMillimeter -= CLAW_LENGTH_MILLIMETER;
     }
-    tRadiusHorizontal -= CLAW_LENGTH_MILLIMETER;
 
-    // Get vertical angle to claw - can be negative for claw below horizontal zero plane
-    float tVerticalAngleToClawRadiant, tRadiusVertical;
-    cart2polar(tRadiusHorizontal, aPositionStruct->DownUp, tRadiusVertical, tVerticalAngleToClawRadiant);
+    /*
+     * Now doInverseKinematics the vertical plane
+     * Get vertical angle and radius/distance to claw - angle is negative for claw below horizontal zero plane
+     */
+    float tVerticalAngleToClawRadiant, tRadiusVerticalMillimeter;
+    cartesianToPolar(tRadiusHorizontalMillimeter, aPositionStruct->DownUp, tRadiusVerticalMillimeter, tVerticalAngleToClawRadiant);
+#if defined(LOCAL_TRACE)
+    Serial.print(F("RadiusHorizontal="));
+    Serial.print(tRadiusHorizontalMillimeter);
+    Serial.print(F(" VerticalAngleToClawDegee="));
+    Serial.print(tVerticalAngleToClawRadiant * RAD_TO_DEG);
+    Serial.print(F(" RadiusVertical="));
+    Serial.print(tRadiusVerticalMillimeter);
+#endif
 
     // Solve arm inner angles
     float tAngleClawHorizontalRadiant;      // angle between vertical angle to claw and horizontal arm
-    if (!cosangle(LIFT_ARM_LENGTH_MILLIMETER, HORIZONTAL_ARM_LENGTH_MILLIMETER, tRadiusVertical, tAngleClawHorizontalRadiant)) {
-        Serial.print(F("Cannot solve 1: "));
+    if (!getAngleOfTriangle(LIFT_ARM_LENGTH_MILLIMETER, HORIZONTAL_ARM_LENGTH_MILLIMETER, tRadiusVerticalMillimeter,
+            tAngleClawHorizontalRadiant)) {
+        Serial.print(F("Cannot solve angle between claw base and horizontal arm : "));
         printPositionCartesianWithLinefeed(aPositionStruct);
         return false;
     }
+#if defined(LOCAL_TRACE)
+    Serial.print(F(" AngleClawHorizontalDegree="));
+    Serial.print(tAngleClawHorizontalRadiant * RAD_TO_DEG);
+#endif
+
     float tAngleHorizontalLiftRadiant;  // angle between horizontal and lift arm
-    if (!cosangle(tRadiusVertical, HORIZONTAL_ARM_LENGTH_MILLIMETER, LIFT_ARM_LENGTH_MILLIMETER, tAngleHorizontalLiftRadiant)) {
+    if (!getAngleOfTriangle(tRadiusVerticalMillimeter, HORIZONTAL_ARM_LENGTH_MILLIMETER, LIFT_ARM_LENGTH_MILLIMETER,
+            tAngleHorizontalLiftRadiant)) {
         Serial.print(F("Cannot solve angle between horizontal and lift arm: "));
         printPositionCartesianWithLinefeed(aPositionStruct);
         return false;
     }
 
-    int tBackFrontDegree = (HALF_PI - (tVerticalAngleToClawRadiant + tAngleClawHorizontalRadiant)) * RAD_TO_DEG;
+    /*
+     * Vertical plane schematic of inverse kinematic values
+     *            LIFT_ARM
+     * __________/______________________________
+     * | <-AngleHorizontalLift                 /
+     * |                                     /
+     * |<-HORIZONTAL_ARM                   /
+     *  |                                /
+     *  |                              /
+     *  |                            /
+     *   |                         /
+     *   |                       /
+     *   |   RadiusVertical->  /
+     *    |                  /
+     *    |                /
+     *    |              /
+     *     |           /
+     *     |         /
+     *     | AngleClawHorizontal
+     *      | |  /
+     *      |  /
+     *      |/ <-VerticalAngleToClaw
+     * _______________________________
+     */
+    aPositionStruct->BackFrontDegree = (HALF_PI - (tVerticalAngleToClawRadiant + tAngleClawHorizontalRadiant)) * RAD_TO_DEG;
     // Now BackFrontDegree == 0 is vertical, front > 0, back < 0
-    aPositionStruct->BackFrontDegree = tBackFrontDegree + HORIZONTAL_NEUTRAL_OFFSET_DEGREE;
+#if defined(LOCAL_TRACE)
+    Serial.print(F(" BackFrontDegree="));
+    Serial.print(aPositionStruct->BackFrontDegree);
+#endif
 
-    int tDownUpDegree = (tVerticalAngleToClawRadiant + tAngleClawHorizontalRadiant + tAngleHorizontalLiftRadiant - PI) * RAD_TO_DEG;
+    aPositionStruct->DownUpDegree = (tVerticalAngleToClawRadiant + tAngleClawHorizontalRadiant + tAngleHorizontalLiftRadiant - PI)
+            * RAD_TO_DEG;
     // Now DownUpDegree == 0 is horizontal, up > 0, down < 0
-    aPositionStruct->DownUpDegree = tDownUpDegree + LIFT_NEUTRAL_OFFSET_DEGREE;
-
-    return true;
+#if defined(LOCAL_TRACE)
+    Serial.print(F(" DownUpDegree="));
+    Serial.println(aPositionStruct->DownUpDegree);
+#endif
+    return tReturnValue;
 }
 
 /*
  * Forward kinematics: servo angle -> X,Y,Z
  */
-
-void polar2cart(float aRadius, float aAngleRadiant, float& aXValue, float& aYValue) {
+void polarToCartesian(float aRadius, float aAngleRadiant, float &aXValue, float &aYValue) {
     aXValue = aRadius * cos(aAngleRadiant);
     aYValue = aRadius * sin(aAngleRadiant);
 }
 
-/*
- * Get X,Y,Z from angles
+/**
+ * Fill X,Y,Z in aPositionStruct according to angles of aPositionStruct.
+ * always solvable :-)
  */
-void unsolve(struct ArmPosition * aPositionStruct) {
+void doForwardKinematics(struct ArmPosition *aPositionStruct) {
     int tInputAngle;
     float tHeightOfHorizontalArm, tHorizontalArmHorizontalShift, tLiftHorizontal, tLiftHeight, tInputAngleRad;
 
     // input angle: horizontal = 0 vertical = 90
     tInputAngle = aPositionStruct->BackFrontDegree;
-    tInputAngle -= HORIZONTAL_NEUTRAL_OFFSET_DEGREE;
     // here we have:  0 is vertical, front > 0, back < 0
     tInputAngle *= -1;
     // here we have:  0 is vertical, front < 0, back > 0
-    tInputAngle += 90;
-    tInputAngleRad = tInputAngle * DEG_TO_RAD;
-#if defined(TRACE)
-    Serial.print(F("InputAngle BackFront="));
-    Serial.print(tInputAngle);
-#endif
-    polar2cart(HORIZONTAL_ARM_LENGTH_MILLIMETER, tInputAngleRad, tHorizontalArmHorizontalShift, tHeightOfHorizontalArm);
+    tInputAngleRad = (tInputAngle + 90) * DEG_TO_RAD;
+
+    polarToCartesian(HORIZONTAL_ARM_LENGTH_MILLIMETER, tInputAngleRad, tHorizontalArmHorizontalShift, tHeightOfHorizontalArm);
 
     // input angle: horizontal = 0, up > 0, down < 0
     tInputAngle = aPositionStruct->DownUpDegree;
-    tInputAngle -= LIFT_NEUTRAL_OFFSET_DEGREE;
-#if defined(TRACE)
-    Serial.print(F(" InputAngle DownUp="));
-    Serial.print(tInputAngle);
-#endif
     tInputAngleRad = tInputAngle * DEG_TO_RAD;
-    polar2cart(LIFT_ARM_LENGTH_MILLIMETER, tInputAngleRad, tLiftHorizontal, tLiftHeight);
+    polarToCartesian(LIFT_ARM_LENGTH_MILLIMETER, tInputAngleRad, tLiftHorizontal, tLiftHeight);
     aPositionStruct->DownUp = tHeightOfHorizontalArm + tLiftHeight;
 
     // Add horizontal length
@@ -193,21 +256,16 @@ void unsolve(struct ArmPosition * aPositionStruct) {
 
     // input is horizontal plane angle: forward = 0 right > 0 left < 0
     tInputAngle = aPositionStruct->LeftRightDegree;
-    tInputAngle -= PIVOT_NEUTRAL_OFFSET_DEGREE;
     // here we have horizontal plane angle: forward = 0 left > 0 right < 0
     tInputAngle *= -1;
-#if defined(TRACE)
-    Serial.print(F(" InputAngle LeftRight="));
-    Serial.println(tInputAngle);
-#endif
     tInputAngleRad = tInputAngle * DEG_TO_RAD;
-    polar2cart(tHorizontalArmAndClawShift, tInputAngleRad, aPositionStruct->BackFront, aPositionStruct->LeftRight);
+    polarToCartesian(tHorizontalArmAndClawShift, tInputAngleRad, aPositionStruct->BackFront, aPositionStruct->LeftRight);
 }
 
 /*
  * No trailing linefeed!
  */
-void printPositionCartesian(struct ArmPosition * aPositionStruct) {
+void printPositionCartesian(struct ArmPosition *aPositionStruct) {
     Serial.print(F("X="));
     Serial.print(aPositionStruct->LeftRight);
     Serial.print(F("mm, Y="));
@@ -217,12 +275,12 @@ void printPositionCartesian(struct ArmPosition * aPositionStruct) {
     Serial.print(F("mm"));
 }
 
-void printPositionCartesianWithLinefeed(struct ArmPosition * aPositionStruct) {
+void printPositionCartesianWithLinefeed(struct ArmPosition *aPositionStruct) {
     printPositionCartesian(aPositionStruct);
     Serial.println();
 }
 
-void printPosition(struct ArmPosition * aPositionStruct) {
+void printPosition(struct ArmPosition *aPositionStruct) {
     Serial.print(F("LeftRight="));
     Serial.print(aPositionStruct->LeftRight);
     Serial.print("|");
@@ -237,7 +295,7 @@ void printPosition(struct ArmPosition * aPositionStruct) {
     Serial.println(aPositionStruct->DownUpDegree);
 }
 
-void printPositionShort(struct ArmPosition * aPositionStruct) {
+void printPositionShort(struct ArmPosition *aPositionStruct) {
     Serial.print(aPositionStruct->LeftRight);
     Serial.print(" ");
     Serial.print(aPositionStruct->BackFront);
@@ -252,7 +310,7 @@ void printPositionShort(struct ArmPosition * aPositionStruct) {
     Serial.println(aPositionStruct->DownUpDegree);
 }
 
-void printPositionShortWithUnits(struct ArmPosition * aPositionStruct) {
+void printPositionShortWithUnits(struct ArmPosition *aPositionStruct) {
     printPositionCartesian(aPositionStruct);
     Serial.print(F(" <-> "));
     Serial.print(aPositionStruct->LeftRightDegree);
@@ -261,5 +319,8 @@ void printPositionShortWithUnits(struct ArmPosition * aPositionStruct) {
     Serial.print(F(", "));
     Serial.print(aPositionStruct->DownUpDegree);
     Serial.println(F(" degree"));
-
 }
+
+#if defined(LOCAL_TRACE)
+#undef LOCAL_TRACE
+#endif

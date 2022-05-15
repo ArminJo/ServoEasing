@@ -1,5 +1,5 @@
 /*
- * NonlinearEasings.cpp
+ * ConsecutiveEasingsWithCallback.cpp
  *
  *  This example shows 1 linear and 7 non-linear easings in flavor IN_OUT for 1 servo, followed with flavors of IN, OUT and BOUNCING.
  *  Linear->Quadratic->Cubic->Quartic->Sine-Circular->Back->Elastic->Quadratic_in->Cubic_out->Cubic_bounce->Dummy.

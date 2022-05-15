@@ -5,17 +5,10 @@
  *      Author: Armin
  */
 
-#ifndef ROBOTARMCONTROL_H_
-#define ROBOTARMCONTROL_H_
+#ifndef _ROBOT_ARM_CONTROL_H
+#define _ROBOT_ARM_CONTROL_H
 
 #include <stdint.h>
-
-//#define ROBOT_ARM_IR_CONTROL
-//#define ROBOT_ARM_RTC_CONTROL
-
-#if defined(ROBOT_ARM_IR_CONTROL)
-#define IR_INPUT_PIN  A0
-#endif
 
 #define VCC_STOP_THRESHOLD_MILLIVOLT 3500   // We have voltage drop at the connectors, so the battery voltage is assumed to be higher, than the Arduino VCC.
 #define VCC_STOP_MIN_MILLIVOLT 3200         // We have voltage drop at the connectors, so the battery voltage is assumed to be higher, than the Arduino VCC.
@@ -26,14 +19,11 @@
 
 #define MANUAL_CHECK_PERIOD_MILLIS 100        // Period of manual control checks
 
-
 extern bool sVCCTooLow;
+extern bool sDebugOutputIsEnabled;
 
 bool checkVCC();
-void doRobotArmAutoMove();
 bool delayAndCheckForRobotArm(uint16_t aDelayMillis);
 void doSetToAutoModeForRobotArm();
 
-#endif /* ROBOTARMCONTROL_H_ */
-
-#pragma once
+#endif // _ROBOT_ARM_CONTROL_H

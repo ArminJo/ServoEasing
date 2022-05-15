@@ -5,21 +5,23 @@
  *      Author: Armin
  */
 
-#ifndef ROBOTARMSERVOCONTROL_H_
-#define ROBOTARMSERVOCONTROL_H_
+#ifndef _ROBOT_ARM_SERVO_CONTROL_H
+#define _ROBOT_ARM_SERVO_CONTROL_H
 
-#include "RobotArmServoConfiguration.h"
-#include "RobotArmKinematics.h"
+#include "RobotArmKinematics.h" // for ArmPosition
 
 #define SUPPRESS_HPP_WARNING
 #include <ServoEasing.h>    // include servo library
 
-extern ServoEasing BasePivotServo;    // 0 - Front Left Pivot Servo
-extern ServoEasing HorizontalServo;     // 1 - Front Left Lift Servo
-extern ServoEasing LiftServo;     // 2 - Back Left Pivot Servo
-extern ServoEasing ClawServo;      // 3 - Back Left Lift Servo
+extern ServoEasing BasePivotServo;
+extern ServoEasing HorizontalServo;
+extern ServoEasing LiftServo;
+extern ServoEasing ClawServo;
 
-extern struct ArmPosition sStartPosition, sEndPosition, sCurrentPosition, sPositionDelta;
+extern struct ArmPosition sStartPosition;
+extern struct ArmPosition sEndPosition;
+extern struct ArmPosition sCurrentPosition;
+extern struct ArmPosition sPositionDelta;
 
 extern int sBodyPivotAngle;
 extern int sHorizontalServoAngle;
@@ -31,7 +33,8 @@ extern float sLastPercentageOfCompletion;
 extern uint16_t sQuadrupedServoSpeed;      // in degree/second
 
 void setupRobotArmServos();
-void shutdownServos();
+void goToFolded();
+void goToCenter();
 
 void setEasingType(uint8_t aEasingType);
 
@@ -41,7 +44,6 @@ void setAllServos(uint8_t aNumberOfValues, ...);
  * Inverse kinematic
  */
 #define KEEP_POSITION (-1000) // Can be used as parameter for goToPosition()
-void goToNeutral();
 void openClaw();
 void closeClaw();
 bool goToPosition(int aLeftRightMilliMeter, int aBackFrontMilliMeter, int aDownUpMilliMeter);
@@ -50,7 +52,7 @@ bool goToPositionRelative(int aLeftRightDeltaMilliMeter, int aBackFrontDeltaMill
 uint16_t getMaxDeltaMillimeter();
 
 void computeNewCurrentAngles(float aPercentageOfCompletion);
-void testInverseKinematic();
+void doTestMove();
 void testInverseAndForwardKinematic();
 
 /*
@@ -62,6 +64,4 @@ void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree);
 void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree, uint16_t aDegreesPerSecond);
 void updateAndCheckInputAndWaitForAllServosToStop();
 
-#endif /* ROBOTARMSERVOCONTROL_H_ */
-
-#pragma once
+#endif // _ROBOT_ARM_SERVO_CONTROL_H

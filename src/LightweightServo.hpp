@@ -221,4 +221,3 @@ int MicrosecondsToDegreeLightweightServo(int aMicroseconds) {
 
 #endif // defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__)
 #endif // _LIGHTWEIGHT_SERVO_HPP
-#pragma once
