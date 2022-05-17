@@ -150,7 +150,7 @@ ServoEasing *ServoEasing::ServoEasingArray[MAX_EASING_SERVOS];
  * Can contain degree values or microseconds but not units.
  * Use int since we want to support negative degree values (with trim)
  */
-int ServoEasing::ServoEasingNextPositionArray[MAX_EASING_SERVOS];
+float ServoEasing::ServoEasingNextPositionArray[MAX_EASING_SERVOS];
 
 const char easeTypeLinear[] PROGMEM = "linear";
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
@@ -319,7 +319,7 @@ void ServoEasing::setPWM(uint16_t aPWMOffValueAsUnits) {
 
 /**
  * Here you can specify an on/start value for the pulse in order not to start all pulses at the same time.
- * Is used by writeMicrosecondsOrUnits() with onValue as mServoPin * 235
+ * Is used by _writeMicrosecondsOrUnits() with onValue as mServoPin * 235
  * Requires 550 µs to send data => 8.8 ms for 16 Servos, 17.6 ms for 32 servos. => more than 2 expander boards
  * cannot be connected to one I2C bus, if all servos must be able to move simultaneously.
  */
@@ -357,6 +357,11 @@ int ServoEasing::MicrosecondsToPCA9685Units(int aMicroseconds) {
     /*
      * 4096 units per 20 milliseconds => aMicroseconds / 4.8828
      */
+#if defined(USE_SERVO_LIB)
+    if (!mServoIsConnectedToExpander) {
+        return aMicroseconds; // we must return microseconds here
+    }
+#endif
     return ((4096L * aMicroseconds) / REFRESH_INTERVAL_MICROS);
 }
 
@@ -420,24 +425,42 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServo0Degree, int aMic
 }
 
 /*
- * Combination of attach with initial write.
+ * Combination of attach with initial write().
  */
 uint8_t ServoEasing::attach(int aPin, int aInitialDegreeOrMicrosecond) {
     return attach(aPin, aInitialDegreeOrMicrosecond, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
 }
 
 /*
+ * Combination of attach with initial setTrim() and write().
+ */
+uint8_t ServoEasing::attachWithTrim(int aPin, int aTrimDegreeOrMicrosecond, int aInitialDegreeOrMicrosecond) {
+    return attachWithTrim(aPin, aTrimDegreeOrMicrosecond, aInitialDegreeOrMicrosecond, DEFAULT_MICROSECONDS_FOR_0_DEGREE,
+    DEFAULT_MICROSECONDS_FOR_180_DEGREE);
+}
+
+/*
  * Specify the start value written to the servo and the microseconds values for 0 and 180 degree for the servo.
  * The values can be determined by the EndPositionsTest example.
+ * By modifying the Micoseconds* parameter values you can also provide an initial trim.
+ * Initial trim is the behavior for mTrimMicrosecondsOrUnits == 0.
  */
 uint8_t ServoEasing::attach(int aPin, int aInitialDegreeOrMicrosecond, int aMicrosecondsForServo0Degree,
         int aMicrosecondsForServo180Degree) {
     return attach(aPin, aInitialDegreeOrMicrosecond, aMicrosecondsForServo0Degree, aMicrosecondsForServo180Degree, 0, 180);
 }
 
+uint8_t ServoEasing::attachWithTrim(int aPin, int aTrimDegreeOrMicrosecond, int aInitialDegreeOrMicrosecond,
+        int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree) {
+    return attachWithTrim(aPin, aTrimDegreeOrMicrosecond, aInitialDegreeOrMicrosecond, aMicrosecondsForServo0Degree,
+            aMicrosecondsForServo180Degree, 0, 180);
+}
+
 /*
  * The microseconds values at aServoLowDegree and aServoHighDegree are used to compute the microseconds values at 0 and 180 degrees
- * and can be used e.g. to run the servo from virtual -90 to +90 degree (See TwoServos example).
+ * By modifying the Micoseconds* and *Degree parameter values you can also provide an initial trim and reverse.
+ * Initial trim is the behavior for mTrimMicrosecondsOrUnits == 0.
+ * This can be used e.g. to run the servo from virtual -90 to +90 degree (See TwoServos example).
  */
 uint8_t ServoEasing::attach(int aPin, int aInitialDegreeOrMicrosecond, int aMicrosecondsForServoLowDegree,
         int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree) {
@@ -447,6 +470,14 @@ uint8_t ServoEasing::attach(int aPin, int aInitialDegreeOrMicrosecond, int aMicr
     return tReturnValue;
 }
 
+uint8_t ServoEasing::attachWithTrim(int aPin, int aTrimDegreeOrMicrosecond, int aInitialDegreeOrMicrosecond,
+        int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree) {
+    uint8_t tReturnValue = attach(aPin, aMicrosecondsForServoLowDegree, aMicrosecondsForServoHighDegree, aServoLowDegree,
+            aServoHighDegree);
+    setTrim(aTrimDegreeOrMicrosecond, false);
+    write(aInitialDegreeOrMicrosecond);
+    return tReturnValue;
+}
 /**
  * Attaches servo to pin and sets the servo timing parameters.
  * @param aMicrosecondsForServoLowDegree no units accepted, only microseconds!
@@ -545,7 +576,7 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
 #endif // defined(USE_PCA9685_SERVO_EXPANDER)
 
 #if !defined(_DO_NOT_USE_SERVO_LIB)
-    // This error value has priority over the regular return value from Servo::attach()
+// This error value has priority over the regular return value from Servo::attach()
     if (tReturnValue == INVALID_SERVO) {
         return tReturnValue;
     }
@@ -594,7 +625,7 @@ void ServoEasing::detach() {
  * @note Reverse means, that values for 180 and 0 degrees are swapped by: aValue = mServo180DegreeMicrosecondsOrUnits - (aValue - mServo0DegreeMicrosecondsOrUnits)
  * Be careful, if you specify different end values, it may not behave, as you expect.
  * For this case better use the attach function with 5 parameter.
- * This flag is only used at writeMicrosecondsOrUnits()
+ * This flag is only used at _writeMicrosecondsOrUnits()
  */
 void ServoEasing::setReverseOperation(bool aOperateServoReverse) {
     mOperateServoReverse = aOperateServoReverse;
@@ -609,26 +640,33 @@ void ServoEasing::setSpeed(uint_fast16_t aDegreesPerSecond) {
 }
 
 /**
- * @param aTrimDegrees This trim value is always added to the degree/units/microseconds value requested
- * @param aDoWrite Apply value directly to servo by calling writeMicrosecondsOrUnits()
+ * @param aTrimDegreeOrMicrosecond This trim value is always added to the degree/units/microseconds value requested
+ * @param aDoWrite If true, apply value directly to servo by calling _writeMicrosecondsOrUnits() using mCurrentMicrosecondsOrUnits
+ *                 This shows the effect of the trim as a servo movement
+ *                 If false, no internal value e.g. ServoEasingNextPositionArray or mCurrentMicrosecondsOrUnits is updated!
  */
-void ServoEasing::setTrim(int aTrimDegrees, bool aDoWrite) {
-    if (aTrimDegrees >= 0) {
-        setTrimMicrosecondsOrUnits(DegreeToMicrosecondsOrUnits(aTrimDegrees) - mServo0DegreeMicrosecondsOrUnits, aDoWrite);
+void ServoEasing::setTrim(int aTrimDegreeOrMicrosecond, bool aDoWrite) {
+    if (aTrimDegreeOrMicrosecond >= 0) {
+        _setTrimMicrosecondsOrUnits(
+                DegreeOrMicrosecondToMicrosecondsOrUnits(aTrimDegreeOrMicrosecond) - mServo0DegreeMicrosecondsOrUnits, aDoWrite);
     } else {
-        setTrimMicrosecondsOrUnits(-(DegreeToMicrosecondsOrUnits(-aTrimDegrees) - mServo0DegreeMicrosecondsOrUnits), aDoWrite);
+        _setTrimMicrosecondsOrUnits(
+                -(DegreeOrMicrosecondToMicrosecondsOrUnits(-aTrimDegreeOrMicrosecond) - mServo0DegreeMicrosecondsOrUnits),
+                aDoWrite);
     }
 }
 
 /**
  * @param aTrimMicrosecondsOrUnits This trim value is always added to the degree/units/microseconds value requested
- * @param aDoWrite Apply value directly to servo by calling writeMicrosecondsOrUnits()
- * @note It is only used/added at writeMicrosecondsOrUnits()
+ * @param aDoWrite If true, apply value directly to servo by calling _writeMicrosecondsOrUnits() using mCurrentMicrosecondsOrUnits
+ *                 This shows the effect of the trim as a servo movement
+ *                 If false, no internal value e.g. ServoEasingNextPositionArray or mCurrentMicrosecondsOrUnits is updated!
+ * @note mTrimMicrosecondsOrUnits is exclusively added by _writeMicrosecondsOrUnits()
  */
-void ServoEasing::setTrimMicrosecondsOrUnits(int aTrimMicrosecondsOrUnits, bool aDoWrite) {
+void ServoEasing::_setTrimMicrosecondsOrUnits(int aTrimMicrosecondsOrUnits, bool aDoWrite) {
     mTrimMicrosecondsOrUnits = aTrimMicrosecondsOrUnits;
     if (aDoWrite) {
-        writeMicrosecondsOrUnits(mCurrentMicrosecondsOrUnits);
+        _writeMicrosecondsOrUnits(mCurrentMicrosecondsOrUnits);
     }
 }
 
@@ -672,13 +710,33 @@ void ServoEasing::write(int aDegreeOrMicrosecond) {
         return;
     }
     ServoEasingNextPositionArray[mServoIndex] = aDegreeOrMicrosecond;
-    writeMicrosecondsOrUnits(DegreeToMicrosecondsOrUnits(aDegreeOrMicrosecond));
+    _writeMicrosecondsOrUnits(DegreeOrMicrosecondToMicrosecondsOrUnits(aDegreeOrMicrosecond));
+}
+
+void ServoEasing::write(float aDegreeOrMicrosecond) {
+#if defined(LOCAL_TRACE)
+    Serial.print(F("write "));
+    Serial.print(aDegreeOrMicrosecond);
+    Serial.print(' ');
+#endif
+    /*
+     * Check for valid initialization of servo.
+     */
+    if (mServoIndex == INVALID_SERVO) {
+#if defined(LOCAL_TRACE)
+        Serial.print(F("Error: detached servo"));
+#endif
+        return;
+    }
+    ServoEasingNextPositionArray[mServoIndex] = aDegreeOrMicrosecond;
+    _writeMicrosecondsOrUnits(DegreeOrMicrosecondToMicrosecondsOrUnits(aDegreeOrMicrosecond));
 }
 
 /**
+ * Internal function
  * Before sending the value to the underlying Servo library, trim and reverse is applied
  */
-void ServoEasing::writeMicrosecondsOrUnits(int aMicrosecondsOrUnits) {
+void ServoEasing::_writeMicrosecondsOrUnits(int aMicrosecondsOrUnits) {
     /*
      * Check for valid initialization of servo.
      */
@@ -790,7 +848,7 @@ int ServoEasing::MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits) {
     /*
      * compute map with rounding
      */
-    // remove zero degree offset
+// remove zero degree offset
     int32_t tResult = aMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits;
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 #  if defined(USE_SERVO_LIB)
@@ -806,10 +864,10 @@ int ServoEasing::MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits) {
     tResult = (tResult * 180) + 190;
 #  endif
 #else
-    // here we deal with microseconds
+// here we deal with microseconds
     tResult = (tResult * 180) + 928; // 928 is the value for 1/2 degree before scaling; (1856 = 180 - 0 degree micros) / 2
 #endif
-    // scale by 180 degree range (180 - 0 degree micros)
+// scale by 180 degree range (180 - 0 degree micros)
     return (tResult / (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits));
 
 }
@@ -822,33 +880,109 @@ int ServoEasing::MicrosecondsOrUnitsToMicroseconds(int aMicrosecondsOrUnits) {
 #endif
 
 }
+
 /**
  * We have around 10 µs per degree
  * We do not convert values >= 400.
  * Used to convert (external) provided degree values to internal microseconds
  */
-int ServoEasing::DegreeToMicrosecondsOrUnits(int aDegreeOrMicroseconds) {
+int ServoEasing::DegreeOrMicrosecondToMicrosecondsOrUnits(int aDegreeOrMicrosecond) {
 // For microseconds and PCA9685 units:
 #if defined(DISABLE_MICROS_AS_DEGREE_PARAMETER)
-    return map(aDegreeOrMicroseconds, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
-#else
-    if (aDegreeOrMicroseconds < THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
-        return map(aDegreeOrMicroseconds, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
-    } else {
-        // here aDegreeOrMicroseconds contains microseconds
 #  if defined(USE_PCA9685_SERVO_EXPANDER)
-#    if defined(USE_SERVO_LIB)
-    if (!mServoIsConnectedToExpander) {
-        return aDegreeOrMicroseconds; // we must return microseconds here
-    }
-#    endif
-    return MicrosecondsToPCA9685Units(aDegreeOrMicroseconds); // return units here
+    return ((int32_t) (aDegreeOrMicrosecond * (int32_t) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))
+            / (((180L * REFRESH_INTERVAL_MICROS) + 2048) / 4096L)) /* / 879 */ + mServo0DegreeMicrosecondsOrUnits;  // return units here
 #  else
-        return aDegreeOrMicroseconds;
+    // return map(aDegreeOrMicrosecond, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
+    return ((int32_t) (aDegreeOrMicrosecond * (int32_t) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))
+            / 180) + mServo0DegreeMicrosecondsOrUnits; // return microseconds here
+#  endif
+#else
+    if (aDegreeOrMicrosecond < THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
+        /*
+         * Here aDegreeOrMicrosecond contains degree
+         */
+        // return map(aDegreeOrMicrosecond, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
+#  if defined(USE_PCA9685_SERVO_EXPANDER)
+        // aDegreeOrMicrosecond = map(aDegreeOrMicrosecond, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
+        // return ((4096L * aDegreeOrMicrosecond) / REFRESH_INTERVAL_MICROS);
+        return ((int32_t) (aDegreeOrMicrosecond * (int32_t) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))
+                / (((180L * REFRESH_INTERVAL_MICROS) + 2048) / 4096L)) /* / 879 */ + mServo0DegreeMicrosecondsOrUnits;  // return units here
+#  else
+        return ((int32_t) (aDegreeOrMicrosecond * (int32_t) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))
+                / 180) + mServo0DegreeMicrosecondsOrUnits; // return microseconds here
+#endif
+
+    } else {
+        /*
+         * Here aDegreeOrMicrosecond contains microseconds
+         */
+#  if defined(USE_PCA9685_SERVO_EXPANDER)
+        return MicrosecondsToPCA9685Units(aDegreeOrMicrosecond); // return units here
+#  else
+        return aDegreeOrMicrosecond; // return microseconds here
 #  endif
     }
 #endif // defined(DISABLE_MICROS_AS_DEGREE_PARAMETER)
 }
+
+int ServoEasing::DegreeOrMicrosecondToMicrosecondsOrUnits(float aDegreeOrMicrosecond) {
+// For microseconds and PCA9685 units:
+#if defined(DISABLE_MICROS_AS_DEGREE_PARAMETER)
+#  if defined(USE_PCA9685_SERVO_EXPANDER)
+    return ((int32_t) (aDegreeOrMicrosecond * (float) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))
+            / (((180L * REFRESH_INTERVAL_MICROS) + 2048) / 4096L)) /* / 879 */ + mServo0DegreeMicrosecondsOrUnits;  // return units here
+#  else
+    // return map(aDegreeOrMicrosecond, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
+    return ((int32_t) (aDegreeOrMicrosecond * ((float) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))))
+            / 180 + mServo0DegreeMicrosecondsOrUnits; // return microseconds here
+#  endif
+#else
+    if (aDegreeOrMicrosecond < THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
+        /*
+         * Here aDegreeOrMicrosecond contains degree
+         */
+        // return map(aDegreeOrMicrosecond, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
+#  if defined(USE_PCA9685_SERVO_EXPANDER)
+        // aDegreeOrMicrosecond = map(aDegreeOrMicrosecond, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
+        // return ((4096L * aDegreeOrMicrosecond) / REFRESH_INTERVAL_MICROS);
+        return ((int32_t) (aDegreeOrMicrosecond * (float) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))
+                / (((180L * REFRESH_INTERVAL_MICROS) + 2048) / 4096L)) /* / 879 */ + mServo0DegreeMicrosecondsOrUnits;  // return units here
+#  else
+        return ((int32_t) (aDegreeOrMicrosecond * ((float) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))))
+                / 180 + mServo0DegreeMicrosecondsOrUnits; // return microseconds here
+#endif
+
+    } else {
+        /*
+         * Here aDegreeOrMicrosecond contains microseconds
+         */
+#  if defined(USE_PCA9685_SERVO_EXPANDER)
+        return MicrosecondsToPCA9685Units(aDegreeOrMicrosecond); // return units here
+#  else
+        return aDegreeOrMicrosecond; // return microseconds here
+#  endif
+    }
+#endif // defined(DISABLE_MICROS_AS_DEGREE_PARAMETER)
+}
+
+///**
+// * Floating point version for better resolution
+// */
+//int ServoEasing::DegreeToMicrosecondsOrUnits(float aDegree) {
+//#if defined(USE_PCA9685_SERVO_EXPANDER)
+//#  if defined(USE_SERVO_LIB)
+//    if (mServoIsConnectedToExpander) {
+//        return map(aDegree, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits); // we must return microseconds here
+//    }
+//#  endif
+//    return MicrosecondsToPCA9685Units(aDegreeOrMicrosecond); // return units here
+//#else
+////    return map(aDegree, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
+//    return ((int32_t) (aDegree * ((float) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits)))) / 180
+//            + mServo0DegreeMicrosecondsOrUnits;
+//#endif
+//}
 
 /**
  * Mainly for testing, since trim and reverse are applied at each write.
@@ -863,16 +997,20 @@ int ServoEasing::DegreeToMicrosecondsOrUnitsWithTrimAndReverse(int aDegree) {
     return tResultValue;
 }
 
-void ServoEasing::easeTo(int aDegreeOrMicrosecond) {
-    easeTo(aDegreeOrMicrosecond, mSpeed);
+void ServoEasing::easeTo(int aTargetDegreeOrMicrosecond) {
+    easeTo(aTargetDegreeOrMicrosecond, mSpeed);
+}
+
+void ServoEasing::easeTo(float aTargetDegreeOrMicrosecond) {
+    easeTo(aTargetDegreeOrMicrosecond, mSpeed);
 }
 
 /**
  * Blocking move without interrupt
  * @param aDegreesPerSecond Can range from 1 to the physically maximum value of 450
  */
-void ServoEasing::easeTo(int aDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond) {
-    startEaseTo(aDegreeOrMicrosecond, aDegreesPerSecond, DO_NOT_START_UPDATE_BY_INTERRUPT); // no interrupts
+void ServoEasing::easeTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond) {
+    startEaseTo(aTargetDegreeOrMicrosecond, aDegreesPerSecond, DO_NOT_START_UPDATE_BY_INTERRUPT); // no interrupts
     do {
         // First do the delay, then check for update, since we are likely called directly after start and there is nothing to move yet
         delay(REFRESH_INTERVAL_MILLIS); // 20 ms
@@ -883,8 +1021,20 @@ void ServoEasing::easeTo(int aDegreeOrMicrosecond, uint_fast16_t aDegreesPerSeco
 #endif
 }
 
-void ServoEasing::easeToD(int aDegreeOrMicrosecond, uint_fast16_t aMillisForMove) {
-    startEaseToD(aDegreeOrMicrosecond, aMillisForMove, DO_NOT_START_UPDATE_BY_INTERRUPT);
+void ServoEasing::easeTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond) {
+    startEaseTo(aTargetDegreeOrMicrosecond, aDegreesPerSecond, DO_NOT_START_UPDATE_BY_INTERRUPT); // no interrupts
+    do {
+        // First do the delay, then check for update, since we are likely called directly after start and there is nothing to move yet
+        delay(REFRESH_INTERVAL_MILLIS); // 20 ms
+#if defined(PRINT_FOR_SERIAL_PLOTTER)
+    } while (!updateAllServos());
+#else
+    } while (!update());
+#endif
+}
+
+void ServoEasing::easeToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove) {
+    startEaseToD(aTargetDegreeOrMicrosecond, aMillisForMove, DO_NOT_START_UPDATE_BY_INTERRUPT);
     do {
         delay(REFRESH_INTERVAL_MILLIS); // 20 ms
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
@@ -894,23 +1044,46 @@ void ServoEasing::easeToD(int aDegreeOrMicrosecond, uint_fast16_t aMillisForMove
 #endif
 }
 
-bool ServoEasing::setEaseTo(int aDegreeOrMicrosecond) {
-    return startEaseTo(aDegreeOrMicrosecond, mSpeed, DO_NOT_START_UPDATE_BY_INTERRUPT);
+void ServoEasing::easeToD(float aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove) {
+    startEaseToD(aTargetDegreeOrMicrosecond, aMillisForMove, DO_NOT_START_UPDATE_BY_INTERRUPT);
+    do {
+        delay(REFRESH_INTERVAL_MILLIS); // 20 ms
+#if defined(PRINT_FOR_SERIAL_PLOTTER)
+    } while (!updateAllServos());
+#else
+    } while (!update());
+#endif
+}
+
+bool ServoEasing::setEaseTo(int aTargetDegreeOrMicrosecond) {
+    return startEaseTo(aTargetDegreeOrMicrosecond, mSpeed, DO_NOT_START_UPDATE_BY_INTERRUPT);
+}
+
+bool ServoEasing::setEaseTo(float aTargetDegreeOrMicrosecond) {
+    return startEaseTo(aTargetDegreeOrMicrosecond, mSpeed, DO_NOT_START_UPDATE_BY_INTERRUPT);
 }
 
 /**
  * Sets easing parameter, but does not start interrupt
  * @return false if servo was still moving
  */
-bool ServoEasing::setEaseTo(int aDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond) {
-    return startEaseTo(aDegreeOrMicrosecond, aDegreesPerSecond, DO_NOT_START_UPDATE_BY_INTERRUPT);
+bool ServoEasing::setEaseTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond) {
+    return startEaseTo(aTargetDegreeOrMicrosecond, aDegreesPerSecond, DO_NOT_START_UPDATE_BY_INTERRUPT);
+}
+
+bool ServoEasing::setEaseTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond) {
+    return startEaseTo(aTargetDegreeOrMicrosecond, aDegreesPerSecond, DO_NOT_START_UPDATE_BY_INTERRUPT);
 }
 
 /**
  * Starts interrupt for update()
  */
-bool ServoEasing::startEaseTo(int aDegreeOrMicrosecond) {
-    return startEaseTo(aDegreeOrMicrosecond, mSpeed, START_UPDATE_BY_INTERRUPT);
+bool ServoEasing::startEaseTo(int aTargetDegreeOrMicrosecond) {
+    return startEaseTo(aTargetDegreeOrMicrosecond, mSpeed, START_UPDATE_BY_INTERRUPT);
+}
+
+bool ServoEasing::startEaseTo(float aTargetDegreeOrMicrosecond) {
+    return startEaseTo(aTargetDegreeOrMicrosecond, mSpeed, START_UPDATE_BY_INTERRUPT);
 }
 
 /**
@@ -918,8 +1091,8 @@ bool ServoEasing::startEaseTo(int aDegreeOrMicrosecond) {
  * and handle CALL_STYLE_BOUNCING_OUT_IN flag, which requires double time
  * @return false if servo was still moving
  */
-bool ServoEasing::startEaseTo(int aDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt) {
-
+bool ServoEasing::startEaseTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt) {
+//    return startEaseTo((float) aTargetDegreeOrMicrosecond,  aDegreesPerSecond,  aStartUpdateByInterrupt); // saves 400 bytes
     /*
      * Avoid division by 0 below
      */
@@ -931,15 +1104,15 @@ bool ServoEasing::startEaseTo(int aDegreeOrMicrosecond, uint_fast16_t aDegreesPe
     }
 
     /*
-     * Get / convert target degree
+     * Get / convert target degree for computation of duration
      */
-    int tTargetDegree = aDegreeOrMicrosecond;
+    int tTargetDegree = aTargetDegreeOrMicrosecond;
 #if defined(DISABLE_MICROS_AS_DEGREE_PARAMETER)
-     tTargetDegree = aDegreeOrMicrosecond; // no conversion required here
+     tTargetDegree = aTargetDegreeOrMicrosecond; // no conversion required here
 #else
-    // Convert aDegreeOrMicrosecond to target degree
-    if (aDegreeOrMicrosecond >= THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
-        tTargetDegree = MicrosecondsToDegree(aDegreeOrMicrosecond);
+// Convert aDegreeOrMicrosecond to target degree
+    if (aTargetDegreeOrMicrosecond >= THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
+        tTargetDegree = MicrosecondsToDegree(aTargetDegreeOrMicrosecond);
     }
 #endif
 
@@ -950,22 +1123,67 @@ bool ServoEasing::startEaseTo(int aDegreeOrMicrosecond, uint_fast16_t aDegreesPe
      */
     uint_fast16_t tMillisForCompleteMove = abs(tTargetDegree - tCurrentDegree) * MILLIS_IN_ONE_SECOND / aDegreesPerSecond;
 
-    // bouncing has double movement, so take double time
+// bouncing has double movement, so take double time
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
     if ((mEasingType & CALL_STYLE_MASK) == CALL_STYLE_BOUNCING_OUT_IN) {
         tMillisForCompleteMove *= 2;
     }
 #endif
 
-    return startEaseToD(aDegreeOrMicrosecond, tMillisForCompleteMove, aStartUpdateByInterrupt);
+    return startEaseToD(aTargetDegreeOrMicrosecond, tMillisForCompleteMove, aStartUpdateByInterrupt);
+}
+
+bool ServoEasing::startEaseTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt) {
+    /*
+     * Avoid division by 0 below
+     */
+    if (aDegreesPerSecond == 0) {
+#if defined(DEBUG)
+        Serial.println(F("Speed is 0 -> set to 1"));
+#endif
+        aDegreesPerSecond = 1;
+    }
+
+    /*
+     * Get / convert target degree for computation of duration
+     */
+    int tTargetDegree = aTargetDegreeOrMicrosecond;
+#if defined(DISABLE_MICROS_AS_DEGREE_PARAMETER)
+     tTargetDegree = aTargetDegreeOrMicrosecond; // no conversion required here
+#else
+// Convert aDegreeOrMicrosecond to target degree
+    if (aTargetDegreeOrMicrosecond >= THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
+        tTargetDegree = MicrosecondsToDegree(aTargetDegreeOrMicrosecond);
+    }
+#endif
+
+    int tCurrentDegree = MicrosecondsOrUnitsToDegree(mCurrentMicrosecondsOrUnits);
+
+    /*
+     * Compute the MillisForCompleteMove parameter for use of startEaseToD() function
+     */
+    uint_fast16_t tMillisForCompleteMove = abs(tTargetDegree - tCurrentDegree) * MILLIS_IN_ONE_SECOND / aDegreesPerSecond;
+
+// bouncing has double movement, so take double time
+#if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
+    if ((mEasingType & CALL_STYLE_MASK) == CALL_STYLE_BOUNCING_OUT_IN) {
+        tMillisForCompleteMove *= 2;
+    }
+#endif
+
+    return startEaseToD(aTargetDegreeOrMicrosecond, tMillisForCompleteMove, aStartUpdateByInterrupt);
 }
 
 /**
  * Sets easing parameter, but does not start
  * @return false if servo was still moving
  */
-bool ServoEasing::setEaseToD(int aDegree, uint_fast16_t aMillisForMove) {
-    return startEaseToD(aDegree, aMillisForMove, DO_NOT_START_UPDATE_BY_INTERRUPT);
+bool ServoEasing::setEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove) {
+    return startEaseToD(aTargetDegreeOrMicrosecond, aMillisForMove, DO_NOT_START_UPDATE_BY_INTERRUPT);
+}
+
+bool ServoEasing::setEaseToD(float aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove) {
+    return startEaseToD(aTargetDegreeOrMicrosecond, aMillisForMove, DO_NOT_START_UPDATE_BY_INTERRUPT);
 }
 
 /*
@@ -1000,7 +1218,7 @@ bool ServoEasing::startEaseToD(int aDegreeOrMicrosecond, uint_fast16_t aMillisFo
         // write the position also to ServoEasingNextPositionArray
         ServoEasingNextPositionArray[mServoIndex] = aDegreeOrMicrosecond;
         // No end position for dummy move. This forces mDeltaMicrosecondsOrUnits to zero, avoiding any movement
-        mEndMicrosecondsOrUnits = DegreeToMicrosecondsOrUnits(aDegreeOrMicrosecond);
+        mEndMicrosecondsOrUnits = DegreeOrMicrosecondToMicrosecondsOrUnits(aDegreeOrMicrosecond);
     }
     int tCurrentMicrosecondsOrUnits = mCurrentMicrosecondsOrUnits;
     mDeltaMicrosecondsOrUnits = mEndMicrosecondsOrUnits - tCurrentMicrosecondsOrUnits;
@@ -1026,6 +1244,59 @@ printDynamic(&Serial);
     bool tReturnValue = !mServoMoves;
 
 // Check after printDynamic() to see the values
+    mServoMoves = true;
+    if (aStartUpdateByInterrupt && !sInterruptsAreActive) {
+        enableServoEasingInterrupt();
+    }
+
+    return tReturnValue;
+}
+
+bool ServoEasing::startEaseToD(float aDegreeOrMicrosecond, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt) {
+    /*
+     * Check for valid initialization of servo.
+     */
+    if (mServoIndex == INVALID_SERVO) {
+#if defined(LOCAL_TRACE)
+            Serial.print(F("Error: detached servo"));
+    #endif
+        return true;
+    }
+
+#if defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
+        if (true) {
+    #else
+    if (mEasingType != EASE_DUMMY_MOVE) {
+#endif
+        // write the position also to ServoEasingNextPositionArray
+        ServoEasingNextPositionArray[mServoIndex] = aDegreeOrMicrosecond;
+        // No end position for dummy move. This forces mDeltaMicrosecondsOrUnits to zero, avoiding any movement
+        mEndMicrosecondsOrUnits = DegreeOrMicrosecondToMicrosecondsOrUnits(aDegreeOrMicrosecond);
+    }
+    int tCurrentMicrosecondsOrUnits = mCurrentMicrosecondsOrUnits;
+    mDeltaMicrosecondsOrUnits = mEndMicrosecondsOrUnits - tCurrentMicrosecondsOrUnits;
+
+    mMillisForCompleteMove = aMillisForMove;
+    mStartMicrosecondsOrUnits = tCurrentMicrosecondsOrUnits;
+
+#if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
+    if ((mEasingType & CALL_STYLE_MASK) == CALL_STYLE_BOUNCING_OUT_IN) {
+        // bouncing has same end position as start position
+        mEndMicrosecondsOrUnits = tCurrentMicrosecondsOrUnits;
+    }
+#endif
+
+    mMillisAtStartMove = millis();
+
+#if defined(LOCAL_TRACE)
+    printDynamic(&Serial, true);
+    #elif defined(DEBUG)
+    printDynamic(&Serial);
+    #endif
+
+    bool tReturnValue = !mServoMoves;
+
+    // Check after printDynamic() to see the values
     mServoMoves = true;
     if (aStartUpdateByInterrupt && !sInterruptsAreActive) {
         enableServoEasingInterrupt();
@@ -1068,7 +1339,7 @@ bool ServoEasing::update() {
     uint32_t tMillisSinceStart = millis() - mMillisAtStartMove;
     if (tMillisSinceStart >= mMillisForCompleteMove) {
         // end of time reached -> write end position and return true
-        writeMicrosecondsOrUnits(mEndMicrosecondsOrUnits);
+        _writeMicrosecondsOrUnits(mEndMicrosecondsOrUnits);
         mServoMoves = false;
         if(TargetPositionReachedHandler != NULL){
             // Call end callback function
@@ -1087,7 +1358,7 @@ bool ServoEasing::update() {
      * Write new position only if changed
      */
     if (tNewMicrosecondsOrUnits != mCurrentMicrosecondsOrUnits) {
-        writeMicrosecondsOrUnits(tNewMicrosecondsOrUnits);
+        _writeMicrosecondsOrUnits(tNewMicrosecondsOrUnits);
     }
     return false;
 }
@@ -1098,7 +1369,7 @@ bool ServoEasing::update() {
     if (!mServoMoves) {
 #  if defined(PRINT_FOR_SERIAL_PLOTTER)
         // call it always for serial plotter
-        writeMicrosecondsOrUnits(mCurrentMicrosecondsOrUnits);
+        _writeMicrosecondsOrUnits(mCurrentMicrosecondsOrUnits);
 #  endif
         return true;
     }
@@ -1106,7 +1377,7 @@ bool ServoEasing::update() {
     uint32_t tMillisSinceStart = millis() - mMillisAtStartMove;
     if (tMillisSinceStart >= mMillisForCompleteMove) {
         // end of time reached -> write end position and return true
-        writeMicrosecondsOrUnits(mEndMicrosecondsOrUnits);
+        _writeMicrosecondsOrUnits(mEndMicrosecondsOrUnits);
         mServoMoves = false;
         if (TargetPositionReachedHandler != NULL) {
             // Call end callback function
@@ -1187,11 +1458,11 @@ bool ServoEasing::update() {
         } else
 #endif
 #if defined(ENABLE_EASE_USER)
-            // check for degree values from -180 to 180 (tFactorOfMovementCompletion from 20 to 380)
+        // check for degree values from -180 to 180 (tFactorOfMovementCompletion from 20 to 380)
         if (tFactorOfMovementCompletion >= EASE_FUNCTION_DEGREE_THRESHOLD) {
             // Here we have called an easing function, which returns degree instead of the factor of completion (0.0 to 1.0)
-            tNewMicrosecondsOrUnits = DegreeToMicrosecondsOrUnits(
-                    tFactorOfMovementCompletion - EASE_FUNCTION_DEGREE_INDICATOR_OFFSET + 0.5);
+            tNewMicrosecondsOrUnits = DegreeOrMicrosecondToMicrosecondsOrUnits(
+                    (float) (tFactorOfMovementCompletion - EASE_FUNCTION_DEGREE_INDICATOR_OFFSET + 0.5));
         } else
 #endif
         {
@@ -1202,13 +1473,13 @@ bool ServoEasing::update() {
 
 #  if defined(PRINT_FOR_SERIAL_PLOTTER)
     // call it always for serial plotter
-    writeMicrosecondsOrUnits(tNewMicrosecondsOrUnits);
+    _writeMicrosecondsOrUnits(tNewMicrosecondsOrUnits);
 #  else
     /*
      * Write new position only if changed
      */
     if (tNewMicrosecondsOrUnits != mCurrentMicrosecondsOrUnits) {
-        writeMicrosecondsOrUnits(tNewMicrosecondsOrUnits);
+        _writeMicrosecondsOrUnits(tNewMicrosecondsOrUnits);
     }
 #  endif
     return false;
@@ -1262,7 +1533,7 @@ float ServoEasing::callEasingFunction(float aFactorOfTimeCompletion) {
         return EaseOutBounce(aFactorOfTimeCompletion);
 #  endif
 #  if defined(ENABLE_EASE_PRECISION)
-    case EASE_PRECISION:
+    case EASE_PRECISION_IN:
         return LinearWithQuadraticBounce(aFactorOfTimeCompletion);
 #  endif
     default:
@@ -2126,13 +2397,16 @@ float ServoEasing::ElasticEaseIn(float aFactorOfTimeCompletion) {
 
 #define OVERSHOOT_AMOUNT_MILLIS         50 // around 5 degree
 #define OVERSHOOT_AMOUNT_UNITS          10 // around 5 degree
+
 /*
- * Like linear, but if descending, add a 5 degree negative bounce in the last 20 % of the movement time.
+ * PRECISION is like linear, but if descending, adds a 5 degree negative bounce in the last 20 % of the movement time.
  * So the target position is always approached from below. This enables it to taken out the slack/backlash of any hardware moved by the servo.
+ *
  */
 float ServoEasing::LinearWithQuadraticBounce(float aFactorOfTimeCompletion) {
-    if (mDeltaMicrosecondsOrUnits > 0) {
-        // Use linear moving, we are approaching from below
+    if ((mEasingType == EASE_PRECISION_OUT && mDeltaMicrosecondsOrUnits >= 0)
+            || (mEasingType == EASE_PRECISION_IN && mDeltaMicrosecondsOrUnits < 0)) {
+        // Use linear moving for this direction.
         return aFactorOfTimeCompletion;
     } else {
         /*
@@ -2140,8 +2414,12 @@ float ServoEasing::LinearWithQuadraticBounce(float aFactorOfTimeCompletion) {
          * Use scaled linear moving the first 80 % of the movement, and add a quadratic bounce.
          */
         if (aFactorOfTimeCompletion < PART_OF_LINEAR_MOVEMENT) {
+            // The linear part, return scaled up float aFactorOfTimeCompletion
             return aFactorOfTimeCompletion * (1.0 / PART_OF_LINEAR_MOVEMENT);
         } else {
+            /*
+             * The bounce
+             */
             float tRemainingFactor;
             if (aFactorOfTimeCompletion < (1.0 - PART_OF_BOUNCE_MOVEMENT_HALF)) {
                 // Between 80 % and 90 % here. Starting part of the overshoot bounce
@@ -2166,8 +2444,19 @@ float ServoEasing::LinearWithQuadraticBounce(float aFactorOfTimeCompletion) {
                     - (OVERSHOOT_AMOUNT_UNITS * tRemainingFactor * tRemainingFactor));
 #else
             // return direct microseconds values
-            return mEndMicrosecondsOrUnits + OVERSHOOT_AMOUNT_MILLIS
-                    - (OVERSHOOT_AMOUNT_MILLIS * tRemainingFactor * tRemainingFactor);
+            if (mEasingType == EASE_PRECISION_OUT) {
+                /*
+                 * Positive bounce for movings from below
+                 */
+                return mEndMicrosecondsOrUnits + OVERSHOOT_AMOUNT_MILLIS
+                        - (OVERSHOOT_AMOUNT_MILLIS * tRemainingFactor * tRemainingFactor);
+            } else {
+                /*
+                 * Negative bounce for movings from above
+                 */
+                return mEndMicrosecondsOrUnits + (OVERSHOOT_AMOUNT_MILLIS * tRemainingFactor * tRemainingFactor)
+                        - OVERSHOOT_AMOUNT_MILLIS;
+            }
 #endif
         }
     }

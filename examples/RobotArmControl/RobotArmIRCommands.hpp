@@ -31,7 +31,7 @@
 #include "RobotArmServoConfiguration.h"
 #include "RobotArmServoControl.h"
 
-bool sInverseKinematicModeActive = true; // If active then easing type is switched to USER for test and automatic move
+bool sInverseKinematicModeForCombinedMovementsIsActive = true; // If active then easing type is switched to USER for test and automatic move
 
 uint8_t sActionType;
 
@@ -40,7 +40,7 @@ uint8_t sActionType;
  ******************************************/
 
 void __attribute__((weak)) doGoCenter() {
-    setAllServos(4, 0, 0, 0, CLAW_START_DEGREE);
+    setAllServos(4, 0, 0, 0, 0);
 }
 
 void __attribute__((weak)) doGoFolded() {
@@ -96,16 +96,19 @@ void __attribute__((weak)) doLiftDown() {
 }
 
 void __attribute__((weak)) doOpenClaw() {
-    if (sClawServoAngle > 2) {
-        sClawServoAngle -= 2;
+    if (sClawServoAngle < 90) {
+        sClawServoAngle += 2;
         ClawServo.easeTo(sClawServoAngle);
+        Serial.println(sClawServoAngle);
     }
 }
 
 void __attribute__((weak)) doCloseClaw() {
-    if (sClawServoAngle <= (CLAW_MAXIMUM_DEGREE - 2)) {
-        sClawServoAngle += 2;
+    if (sClawServoAngle >= 2) {
+        sClawServoAngle -= 2;
         ClawServo.easeTo(sClawServoAngle);
+        Serial.println(sClawServoAngle);
+
     }
 }
 
@@ -120,17 +123,17 @@ void __attribute__((weak)) doSwitchToManual() {
  * Switch mode between Inverse-Kinematic and normal easing
  */
 void __attribute__((weak)) doInverseKinematicOn() {
-    sInverseKinematicModeActive = true;
+    sInverseKinematicModeForCombinedMovementsIsActive = true;
 }
 
 void __attribute__((weak)) doInverseKinematicOff() {
-    sInverseKinematicModeActive = false;
+    sInverseKinematicModeForCombinedMovementsIsActive = false;
 }
 
 void __attribute__((weak)) doToggleInverseKinematic() {
 #if defined(ROBOT_ARM_HAS_IR_CONTROL)
     if (!IRDispatcher.IRReceivedData.isRepeat) {
-        sInverseKinematicModeActive = !sInverseKinematicModeActive;
+        sInverseKinematicModeForCombinedMovementsIsActive = !sInverseKinematicModeForCombinedMovementsIsActive;
     }
 #endif
 }
@@ -160,17 +163,18 @@ void __attribute__((weak)) doSwitchEasingType() {
 void __attribute__((weak)) doRobotArmTestMove() {
 //    testInverseAndForwardKinematic(); // just print outputs
 
-    if (sInverseKinematicModeActive) {
-        setEasingTypeForMultipleServos(3, EASE_USER_DIRECT); // do not change easing type for claw
+    if (sInverseKinematicModeForCombinedMovementsIsActive) {
+        setEasingTypeForMultipleServos(3, EASE_USER_DIRECT); // set to IK mode but do not change easing type for claw
     }
+
     Serial.print(F("Start test move: EasingType="));
     ServoEasing::printEasingType(&Serial, BasePivotServo.mEasingType); // print actual easing type of servo
     Serial.println();
 
 // init start position for first move
     sEndPosition.LeftRight = 0;
-    sEndPosition.BackFront = LIFT_ARM_LENGTH_MILLIMETER + CLAW_LENGTH_MILLIMETER; // 148;
-    sEndPosition.DownUp = HORIZONTAL_ARM_LENGTH_MILLIMETER; // 80
+    sEndPosition.BackFront = HORIZONTAL_NEUTRAL_MILLIMETER; // 148;
+    sEndPosition.DownUp = VERTICAL_NEUTRAL_MILLIMETER; // 80
 // go to start position
     goToPositionRelative(0, 0, 0);
 
@@ -181,23 +185,30 @@ void __attribute__((weak)) doRobotArmTestMove() {
 
     Serial.println(F("Go up, down"));
     goToPositionRelative(0, 0, 50);
-    goToPositionRelative(0, 0, -100);   // here only DownUp is moving if not IK
-    goToPositionRelative(0, 0, 50);
+    goToPosition(0, KEEP_POSITION, MINIMUM_HEIGHT_MILLIMETER + 5);   // here only DownUp is moving if not IK
+
+    Serial.println(F("Go bottom line"));
+    goToPosition(0, 120, KEEP_POSITION);
+    goToPosition(0, 195, KEEP_POSITION);
+    goToPosition(0, 120, KEEP_POSITION);
+
+    Serial.println(F("Go home"));
+    goToPosition(0, HORIZONTAL_NEUTRAL_MILLIMETER, VERTICAL_NEUTRAL_MILLIMETER);
 
     Serial.println(F("Go right, left"));
     goToPosition(100, KEEP_POSITION, KEEP_POSITION);
     goToPosition(-100, KEEP_POSITION, KEEP_POSITION); // here only LeftRight is moving if not IK
     goToPosition(0, KEEP_POSITION, KEEP_POSITION);
 
-    if (sInverseKinematicModeActive) {
+    if (sInverseKinematicModeForCombinedMovementsIsActive) {
         setEasingTypeForMultipleServos(3, sEasingType); // set back to non IK mode
     }
 }
 
 void __attribute__((weak)) doRobotArmAutoMove() {
-//    doSetToAutoModeForRobotArm();
-    if (sInverseKinematicModeActive) {
-        setEasingTypeForMultipleServos(3, EASE_USER_DIRECT); // do not change easing type for claw
+
+    if (sInverseKinematicModeForCombinedMovementsIsActive) {
+        setEasingTypeForMultipleServos(3, EASE_USER_DIRECT); // set to IK mode but do not change easing type for claw
     }
     Serial.print(F("Start auto move: EasingType="));
     ServoEasing::printEasingType(&Serial, BasePivotServo.mEasingType); // print actual easing type of servo
@@ -214,12 +225,12 @@ void __attribute__((weak)) doRobotArmAutoMove() {
     RETURN_IF_STOP;
 
     // Open claw
-    ClawServo.easeTo(CLAW_OPEN_DEGREE);
+    ClawServo.easeTo(45);
 
     // go down and close claw
-    goToPosition(KEEP_POSITION, KEEP_POSITION, MINIMUM_HEIGHT);
+    goToPosition(KEEP_POSITION, KEEP_POSITION, MINIMUM_HEIGHT_MILLIMETER);
     RETURN_IF_STOP;
-    ClawServo.easeTo(CLAW_CLOSE_DEGREE);
+    ClawServo.easeTo(0);
 
     // move up a bit
     goToPositionRelative(0, 0, 20);
@@ -229,19 +240,19 @@ void __attribute__((weak)) doRobotArmAutoMove() {
     goToPosition(120, KEEP_POSITION, 100); // left/right, back/front, up/down
     RETURN_IF_STOP;
 
-    ClawServo.easeTo(CLAW_OPEN_DEGREE);
+    ClawServo.easeTo(45);
 
     // turn left, go back and down
     goToPosition(-120, 0, 40);
     RETURN_IF_STOP;
 
-    ClawServo.easeTo(CLAW_CLOSE_DEGREE);
+    ClawServo.easeTo(0);
 
     // go back to start
     goToPosition(0, LIFT_ARM_LENGTH_MILLIMETER + CLAW_LENGTH_MILLIMETER, HORIZONTAL_ARM_LENGTH_MILLIMETER); // 0, 148, 80 left/right, back/front, up/down
-    DELAY_AND_RETURN_IF_STOP(2000);
+    DELAY_AND_RETURN_IF_STOP(200);
 
-    if (sInverseKinematicModeActive) {
+    if (sInverseKinematicModeForCombinedMovementsIsActive) {
         setEasingTypeForMultipleServos(3, sEasingType); // set back to non IK mode
     }
 }
@@ -252,24 +263,24 @@ void __attribute__((weak)) doRobotArmAutoMove() {
  * Decrease moving speed by 25%
  */
 void __attribute__((weak)) doIncreaseSpeed() {
-    sQuadrupedServoSpeed += sQuadrupedServoSpeed / 4;
-    if (sQuadrupedServoSpeed > 0xBF) {
-        sQuadrupedServoSpeed = 0xBF;
+    sRobotArmServoSpeed += sRobotArmServoSpeed / 4;
+    if (sRobotArmServoSpeed > 0xBF) {
+        sRobotArmServoSpeed = 0xBF;
     }
-    setSpeedForAllServos(sQuadrupedServoSpeed);
-    Serial.println(sQuadrupedServoSpeed);
+    setSpeedForAllServos(sRobotArmServoSpeed);
+    Serial.println(sRobotArmServoSpeed);
 }
 
 /*
  * Increase moving speed by 25%
  */
 void __attribute__((weak)) doDecreaseSpeed() {
-    sQuadrupedServoSpeed -= sQuadrupedServoSpeed / 4;
-    if (sQuadrupedServoSpeed < 4) {
-        sQuadrupedServoSpeed = 4;
+    sRobotArmServoSpeed -= sRobotArmServoSpeed / 4;
+    if (sRobotArmServoSpeed < 4) {
+        sRobotArmServoSpeed = 4;
     }
-    setSpeedForAllServos(sQuadrupedServoSpeed);
-    Serial.println(sQuadrupedServoSpeed);
+    setSpeedForAllServos(sRobotArmServoSpeed);
+    Serial.println(sRobotArmServoSpeed);
 }
 
 #endif // _ROBOT_ARM_IR_COMMANDS_HPP

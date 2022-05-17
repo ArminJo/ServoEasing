@@ -24,7 +24,7 @@
 #define ACTION_TYPE_STOP        0
 #define ACTION_TYPE_DRAW_TIME   1
 
-extern bool sInverseKinematicModeActive;
+extern bool sInverseKinematicModeForCombinedMovementsIsActive;
 extern uint8_t sActionType;
 
 void doRobotArmAutoMove();

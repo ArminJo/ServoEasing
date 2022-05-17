@@ -1,7 +1,7 @@
 /*
  * RobotArmKinematics.cpp
  *
- * Contains the kinematics functions for the robot arm
+ * Contains the kinematics functions for the meArm robot arm
  * See also: https://www.instructables.com/id/4-DOF-Mechanical-Arm-Robot-Controlled-by-Arduino
  *
  * Servo trims are chosen, so that 0°, 0°, 0° (left/right, back/front, up/down) results in the neutral position of the robot arm.
@@ -124,8 +124,7 @@ bool doInverseKinematics(struct ArmPosition *aPositionStruct) {
      * First doInverseKinematics the horizontal (X/Y) plane. Get LeftRightDegree and radius from X and Y.
      */
     cartesianToPolar(aPositionStruct->LeftRight, aPositionStruct->BackFront, tRadiusHorizontalMillimeter, tHorizontalAngleRadiant);
-    int tLeftRightDegree = tHorizontalAngleRadiant * RAD_TO_DEG; // tLeftRightDegree: 0-180 degree, 0 is right, 90 degree is neutral
-    aPositionStruct->LeftRightDegree = tLeftRightDegree - 90; // tLeftRightDegree: -90 to 90 degree, -90 is right, 0 degree is neutral, 90 is left
+    aPositionStruct->LeftRightDegree = (tHorizontalAngleRadiant * RAD_TO_DEG) - 90; // tLeftRightDegree: -90 to 90 degree, -90 is right, 0 degree is neutral, 90 is left
 
     /*
      * Now we have the base rotation for horizontal (X/Y) plane.
@@ -233,7 +232,7 @@ void polarToCartesian(float aRadius, float aAngleRadiant, float &aXValue, float 
  * always solvable :-)
  */
 void doForwardKinematics(struct ArmPosition *aPositionStruct) {
-    int tInputAngle;
+    float tInputAngle;
     float tHeightOfHorizontalArm, tHorizontalArmHorizontalShift, tLiftHorizontal, tLiftHeight, tInputAngleRad;
 
     // input angle: horizontal = 0 vertical = 90

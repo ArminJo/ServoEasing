@@ -91,7 +91,9 @@ EasyButton ButtonAtPin2(&changeEasingType);
 
 void handleManualControl();
 
-bool sManualActionHappened = false; // Disables auto move after initial timeout
+unsigned long sMillisOfLastManualAction = 0; // Disables auto move and attention after initial timeout
+unsigned long sMillisOfLastAutoMove = 0;
+
 bool sVCCTooLow = false;
 
 #define DEBUG_OUTPUT_ENABLE_PIN 12 // if low, enables debug output
@@ -134,31 +136,26 @@ void setup() {
     printVCCVoltageMillivolt(&Serial);
     Serial.println(F("Initialized"));
     delay(300);
+
 }
 
 void loop() {
 
     sDebugOutputIsEnabled = !digitalRead(DEBUG_OUTPUT_ENABLE_PIN); // enabled if LOW
 
-    // Reset mode to linear for all servos
-    if (sInverseKinematicModeActive) {
-        setEasingTypeForAllServos(EASE_LINEAR);
-        sEasingType = EASE_LINEAR;
-    }
-
     checkVCC();
 
 #if defined(ROBOT_ARM_HAS_RTC_CONTROL)
-#if defined(DEBUG)
+#  if defined(DEBUG)
     if (printRTCEveryPeriod(1)) {
         printRTC(DATE_FORMAT_EUROPEAN);
         printRTC(DATE_FORMAT_EUROPEAN_LONG);
         printRTC(DATE_FORMAT_AMERICAN);
         printRTC(DATE_FORMAT_AMERICAN_LONG);
     }
-#else
+#  else
     printRTCEveryPeriod(60, DATE_FORMAT_EUROPEAN_LONG);
-#endif
+#  endif
 
     // check for changed time and draw it
     if (sActionType == ACTION_TYPE_DRAW_TIME) {
@@ -175,21 +172,34 @@ void loop() {
 
     /*
      * Do auto move if timeout after boot was reached and no IR command was received, and no manual command was issued before
+     * Do it all 30 seconds
      */
-    if (sActionType != ACTION_TYPE_DRAW_TIME && IRDispatcher.IRReceivedData.MillisOfLastCode == 0 && !sManualActionHappened
-            && !sVCCTooLow && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
+    if (sActionType != ACTION_TYPE_DRAW_TIME && IRDispatcher.IRReceivedData.MillisOfLastCode == 0 && sMillisOfLastManualAction == 0
+            && !sVCCTooLow && ((millis() - sMillisOfLastAutoMove) > _TIMEOUT_MILLIS_BEFORE_SWITCH_TO_AUTO_MOVE)) {
+        sMillisOfLastAutoMove = millis();
         doRobotArmAutoMove();
+    }
+
+    /*
+     * Do attention if last user action was before more than 60 seconds
+     */
+    if (sActionType != ACTION_TYPE_DRAW_TIME
+            && ((millis() - IRDispatcher.IRReceivedData.MillisOfLastCode) > MILLIS_OF_INACTIVITY_BEFORE_ATTENTION)
+            && ((millis() - sMillisOfLastManualAction) > MILLIS_OF_INACTIVITY_BEFORE_ATTENTION)) {
+        sMillisOfLastManualAction = millis();
+        doRobotArmAttention();
     }
 
     /*
      * Enable manual control if no IR command was received
      */
     if (sActionType != ACTION_TYPE_DRAW_TIME && IRDispatcher.IRReceivedData.MillisOfLastCode == 0) {
+        IRDispatcher.requestToStopReceived = false; // Stop was processed :-)
         handleManualControl();
     }
 #else
     handleManualControl();
-#endif
+#endif // defined(ROBOT_ARM_HAS_IR_CONTROL)
 
 }
 
@@ -275,17 +285,29 @@ void changeEasingType(__attribute__((unused)) bool aButtonToggleState) {
     doSwitchEasingType();
 }
 
-void doSetToAutoModeForRobotArm() {
+void doEnableAutoModeForRobotArm() {
 #if defined(ROBOT_ARM_HAS_IR_CONTROL)
     IRDispatcher.IRReceivedData.MillisOfLastCode = 1;
 #endif
-    sManualActionHappened = false;
+    sMillisOfLastManualAction = 0;
+}
+
+/*
+ * open and close claw
+ */
+void doRobotArmAttention() {
+    ClawServo.easeTo(90, 120);
+    ClawServo.easeTo(0, 120);
+}
+
+float mapSpecial(int x, int in_min, int in_max, int out_min, int out_max) {
+    return ((float) ((long) (x - in_min) * (out_max - out_min)) / (in_max - in_min)) + out_min;
 }
 
 /*
  * Sets sManualActionHappened if potentiometers has once been operated
  */
-#define ANALOG_HYSTERESIS 10 // 1 degree at a 100 degree scale
+#define ANALOG_HYSTERESIS 4 // 0.4 degree at a 100 degree scale
 #define ANALOG_HYSTERESIS_FOR_MANUAL_ACTION 20
 void handleManualControl() {
     static bool isInitialized = false;
@@ -308,7 +330,7 @@ void handleManualControl() {
         bool tValueChanged = false; // do only one servo at a time
         bool tManualAction = false; // gets true if value changed more than ANALOG_HYSTERESIS_FOR_MANUAL_ACTION
 
-        int tTargetAngle = 0; // to avoid compiler warnings
+        float tTargetAngle = 0; // to avoid compiler warnings
 
 // reset manual action after the first move to manual start position
         if (!isInitialized) {
@@ -327,11 +349,11 @@ void handleManualControl() {
                 tManualAction = true;
             }
             sLastPivot = tPivot;
-            tTargetAngle = map(tPivot, 0, 1023, 100, -100);
-            moveOneServoAndCheckInputAndWait(SERVO_BASE_PIVOT, tTargetAngle);
+            tTargetAngle = mapSpecial(tPivot, 0, 1023, 100, -100);
+            moveOneServoAndCheckInputAndWait(SERVO_BASE_PIVOT, tTargetAngle, sRobotArmServoSpeed);
             if (sDebugOutputIsEnabled) {
                 Serial.print(F("BasePivotServo: micros="));
-                Serial.print(BasePivotServo.getEndMicrosecondsOrUnitsWithTrim());
+                Serial.print(BasePivotServo.getEndMicrosecondsOrUnits()); // we have an initial trim, this is transparent.
             }
         }
 
@@ -343,8 +365,8 @@ void handleManualControl() {
                 tManualAction = true;
             }
             sLastHorizontal = tHorizontal;
-            tTargetAngle = map(tHorizontal, 0, 1023, HORIZONTAL_MAXIMUM_DEGREE, HORIZONTAL_MINIMUM_DEGREE);
-            moveOneServoAndCheckInputAndWait(SERVO_HORIZONTAL, tTargetAngle);
+            tTargetAngle = mapSpecial(tHorizontal, 0, 1023, HORIZONTAL_MINIMUM_DEGREE, HORIZONTAL_MAXIMUM_DEGREE);
+            moveOneServoAndCheckInputAndWait(SERVO_HORIZONTAL, tTargetAngle, sRobotArmServoSpeed);
             if (sDebugOutputIsEnabled) {
                 Serial.print(F("HorizontalServo: micros="));
                 Serial.print(HorizontalServo.getEndMicrosecondsOrUnits());
@@ -359,8 +381,8 @@ void handleManualControl() {
                 tManualAction = true;
             }
             sLastLift = tLift;
-            tTargetAngle = map(tLift, 0, 1023, LIFT_MAXIMUM_DEGREE - 10, LIFT_MINIMUM_DEGREE +10);
-            moveOneServoAndCheckInputAndWait(SERVO_LIFT, tTargetAngle);
+            tTargetAngle = mapSpecial(tLift, 0, 1023, LIFT_MINIMUM_DEGREE - 10, LIFT_MAXIMUM_DEGREE + 10);
+            moveOneServoAndCheckInputAndWait(SERVO_LIFT, tTargetAngle, sRobotArmServoSpeed);
             if (sDebugOutputIsEnabled) {
                 Serial.print(F("LiftServo: micros="));
                 Serial.print(LiftServo.getEndMicrosecondsOrUnits());
@@ -375,8 +397,8 @@ void handleManualControl() {
                 tManualAction = true;
             }
             sLastClaw = tClaw;
-            tTargetAngle = map(tClaw, 0, 1023, 0, CLAW_CLOSE_DEGREE + 10);
-            moveOneServoAndCheckInputAndWait(SERVO_CLAW, tTargetAngle);
+            tTargetAngle = mapSpecial(tClaw, 0, 1023, -10, 190);
+            moveOneServoAndCheckInputAndWait(SERVO_CLAW, tTargetAngle, sRobotArmServoSpeed);
             if (sDebugOutputIsEnabled) {
                 Serial.print(F("ClawServo: micros="));
                 Serial.print(ClawServo.getEndMicrosecondsOrUnits());
@@ -385,13 +407,14 @@ void handleManualControl() {
 
         if (tValueChanged) {
             if (tManualAction) {
-                sManualActionHappened = true;
+                sMillisOfLastManualAction = millis();
             }
             if (sDebugOutputIsEnabled) {
                 Serial.print(F(" degree="));
                 Serial.print(tTargetAngle);
                 Serial.print(F(" | "));
             }
+            // Compute forward kinematics for printing
             sEndPosition.LeftRightDegree = ServoEasing::ServoEasingNextPositionArray[SERVO_BASE_PIVOT];
             sEndPosition.BackFrontDegree = ServoEasing::ServoEasingNextPositionArray[SERVO_HORIZONTAL];
             sEndPosition.DownUpDegree = ServoEasing::ServoEasingNextPositionArray[SERVO_LIFT];

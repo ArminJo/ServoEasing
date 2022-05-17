@@ -2,18 +2,19 @@
  *  SpeedTest.cpp
  *
  * This example gives you a feeling how fast your servo can move, what the end position values are and which refresh rate they accept.
- * It starts with setting the servo to 90 degree, to easily put your servos in a reference position.
+ * It starts with setting the servo to 90 degree, to easily put your servos to a reference position.
  * This example does not use the ServoEasing functions.
+ * Not for ESP8266 because it requires at least 2 analog inputs.
  *
- *  With the potentiometer at pin A0 choose the mode to test.
+ *  The potentiometer at pin A0 chooses the test mode.
  *  The modes 1 to 6 make a sweep with different intervals.
  *
- *  The interval/speed is determined by the other potentiometer at pin A1.
+ *  The interval/speed is determined by the second potentiometer.
  *  If the servo makes no breaks, but reaches 0 and 180 degree then you have specified the smallest delay / fastest speed for this stepping.
  *
  *  By using the lightweight servo library it is also possible to modify the servo refresh interval.
  *  With the potentiometer at pin A3 you can change the refresh interval of the servo pulse between 2.5 and 20 ms.
- *  The layout of pins for this potentiometer is chosen to be able to directly put this potentiometer at the breadboard without additional wiring.
+ *  The layout of pins for this potentiometers is chosen to be able to directly put this potentiometer at the breadboard without additional wiring.
  *
  * These are the fastest values for my SG90 servos at 5 volt (4.2 volt with servo active)
  *   180 degree 400 ms  -> 450 degree per second
@@ -28,7 +29,7 @@
  *    90 degree 220 ms
  *    45 degree 115 ms
  *
- *  Copyright (C) 2019  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2022  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.

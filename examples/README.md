@@ -40,7 +40,7 @@ If you activate the line `#define USE_PCA9685_SERVO_EXPANDER` you can run the On
 
 # [TwoServo](https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServo/TwoServo.ino)
 This example shows how to move 2 servos attached at pin 9 and 10 synchronized or independently using the LightweightServo library. This saves 640 bytes program memory compared to using Arduino Servo library.<br/>
-It operates the first servo from -90 to +90 degree using a using **setTrim(90)**.
+It operates the first servo from -90° to +90° using **attachWithTrim()**.
 
 # [ThreeServo examples](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServo/ThreeServo.ino)
 This example shows how to move 3 servos synchronized or independently. It demonstrates the use of `ServoEasingArray` and `ServoEasingNextPositionArray`.<br/>
@@ -49,7 +49,7 @@ WOKWI online simulation of the ThreeServo example.<br/>
 
 # [ConsecutiveEasingsWithCallback example](https://github.com/ArminJo/ServoEasing/blob/master/examples/ConsecutiveEasingsWithCallback/ConsecutiveEasingsWithCallback.ino)
 This example shows 1 linear and 7 non-linear easings in flavor IN_OUT for 1 servo, followed with flavors of IN, OUT and BOUNCING.<br/>
-Note, that Back and Elastic are not totally visible at your servo, since they use angels above 180 and below 0 degree in this example.<br/>
+Note, that Back and Elastic are not totally visible at your servo, since they use angels above 180° and below 0° in this example.<br/>
 This example uses a **callback handler** and **specification arrays** to generate the movement cycle.
 **Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` is enabled.<br/>
 ![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/NonlinearMovements.png)
@@ -64,6 +64,12 @@ This example shows asymmetric (end movement is different from start movement) no
 It includes a partially **user defined easing function**  `EaseQuadraticInQuarticOut()`.
 **Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` is enabled.<br/>
 ![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/AsymmetricEasing.png)
+
+# [PrecisionEasing example](https://github.com/ArminJo/ServoEasing/blob/master/examples/PrecisionEasing/PrecisionEasing.ino)
+This example shows `EASE_PRECISION_OUT` type moving up/out to 135° with a bounce and way back without a bounce. 
+Then it does this again with `EASE_PRECISION_IN`, doing a bounce on moving down/in to 45°.
+**Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` is enabled.<br/>
+![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/PrecisionEasing.png)
 
 # [ContinuousRotatingServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/ContinuousRotatingServo/ContinuousRotatingServo.ino)
 Example for using the servoEasing library to create speed ramps for a continuous rotating servo. This example rely on your servos stop value being **exacly 1500 microseconds**. If the stop value of your servo is NOT exactly 1500 microseconds, you must modify the `MICROSECONDS_FOR_ROTATING_SERVO_STOP` value in the library file *ServoEasing.h*.
@@ -111,10 +117,11 @@ You must activate the line `#define USE_PCA9685_SERVO_EXPANDER` to make the expa
 ## [EndPositionsTest example](https://github.com/ArminJo/ServoEasing/blob/master/examples/EndPositionsTest/EndPositionsTest.ino)
 This example helps you determine the right end values for your servo.<br/>
 These values are required for the `attach(int aPin, int aInitialDegree, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree)` function, if your servo does not comply to the standard values.
-E.g. some of my SG90 servos have a 0 degree period of 620 µs instead of the standard 544.<br/>
+E.g. some of my SG90 servos have a 0° period of 620 µs instead of the standard 544.<br/>
 This example does not use the ServoEasing functions.
 
 ## [SpeedTest example](https://github.com/ArminJo/ServoEasing/blob/master/examples/SpeedTest/SpeedTest.ino)
 This example gives you a feeling how fast your servo can move, what the end position values are and which refresh rate they accept.<br/>
+It starts with setting the servo to 90°, to easily put your servos to a reference position.<br/>
 This example does not use the ServoEasing functions.
-Not for ESP8266 because it requires 2 analog inputs.
+Not for ESP8266 because it requires at least 2 analog inputs.

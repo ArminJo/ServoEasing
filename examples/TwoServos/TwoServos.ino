@@ -84,7 +84,15 @@ void setup() {
      ***********************************************************/
     Serial.println(F("Attach servo at pin " STR(SERVO1_PIN)));
 #endif
-    Servo1.attach(SERVO1_PIN, START_DEGREE_VALUE, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
+    /*
+     * Operate Servo1 from -90 to +90 degree
+     * Instead of specifying a trim you can use:
+     *    Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, -90, 90);
+     */
+#if !defined(PRINT_FOR_SERIAL_PLOTTER)
+    Serial.println(F("Operate servo 1 from -90 to + 90 degree by using attachWithTrim()"));
+#endif
+    Servo1.attachWithTrim(SERVO1_PIN, 90, START_DEGREE_VALUE, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
 
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
     /*
@@ -103,16 +111,6 @@ void setup() {
     // Print legend for Plotter
     Serial.println("Servo1[us], Servo2[us]");
 #endif
-    /*
-     * Operate Servo1 from -90 to +90 degree
-     * Instead of specifying a trim you can use above:
-     *   if (Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, -90, 90) == INVALID_SERVO) {
-     */
-#if !defined(PRINT_FOR_SERIAL_PLOTTER)
-    Serial.println(F("Operate servo 1 from -90 to + 90 degree by using setTrim(90)"));
-#endif
-    Servo1.setTrim(90);
-
     setSpeedForAllServos(30);
 
     // Just wait for servos to reach position.

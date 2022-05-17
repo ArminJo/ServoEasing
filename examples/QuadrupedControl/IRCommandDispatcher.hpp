@@ -277,10 +277,11 @@ bool IRCommandDispatcher::delayAndCheckForStop(uint16_t aDelayMillis) {
 
 /*
  * Intended to be called from main loop
+ * @return true, if command was called
  */
-void IRCommandDispatcher::checkAndRunSuspendedBlockingCommands() {
+bool IRCommandDispatcher::checkAndRunSuspendedBlockingCommands() {
     /*
-     * search IR code or take last rejected command and call associated function
+     * Take last rejected command and call associated function
      */
     if (BlockingCommandToRunNext != COMMAND_INVALID) {
 
@@ -291,7 +292,9 @@ void IRCommandDispatcher::checkAndRunSuspendedBlockingCommands() {
         BlockingCommandToRunNext = COMMAND_INVALID;
         IRReceivedData.isRepeat = false;
         checkAndCallCommand(true);
+        return true;
     }
+    return false;
 }
 
 void IRCommandDispatcher::printIRCommandString(Print *aSerial) {

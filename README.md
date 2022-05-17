@@ -82,8 +82,8 @@ For instructions how to enable these alternatives, see [Compile options / macros
 ### All easing functions can be used in the following variants:
 All ease functions are called internally with the value: `PercentageOfCompletion / 100` resulting in values from 0 and 1.
 
-- In (start the function with 0 and go to 1)
-- Out (start the function with 1 and go to 0)
+- In (start the function with 0 and go to 1) for PRECISION, do a bounce if approching from above (go in to origin), else linear.
+- Out (start the function with 1 and go to 0) for PRECISION, do a bounce if approching from  below (go out from origin), else linear.
 - InOut (start the function with 0 go to 1 and back to 0)
 - Bouncing (start with OUT, then return with IN to start degree) e.g. Bouncing of the Sine function results in the upper (positive) half of the sine.
 
@@ -93,7 +93,7 @@ in an easing may be much smaller than the increment/decrement before,
 resulting in some small discontinuities between adjacent movements.<br/>
 ![Arduino Plotter Output for Linear->Quadratic->Cubic->Quartic->Sine-Circular->Back->Elastic](https://github.com/ArminJo/ServoEasing/blob/master/pictures/NonlinearMovements.png)
 
-# [API](https://github.com/ArminJo/ServoEasing/blob/master/src/ServoEasing.h#L328)
+# [API](https://github.com/ArminJo/ServoEasing/blob/master/src/ServoEasing.h#L390)
 
 # Usage
 See also [the examples here](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples).<br/>

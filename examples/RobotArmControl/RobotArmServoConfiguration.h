@@ -53,8 +53,11 @@
 #define CLAW_LENGTH_MILLIMETER              68 // Length from wrist to hand PLUS base center to shoulder
 #define ORIGIN_HEIGHT_OVER_GROUND_PLANE     68 // Height of Z=0 over ground
 #define CLAW_HEIGHT_OVER_GROUND_PLANE       18 // Height of claw position over ground if first parts of claw touches the ground
-#define MINIMUM_HEIGHT                      (CLAW_HEIGHT_OVER_GROUND_PLANE - ORIGIN_HEIGHT_OVER_GROUND_PLANE)
+#define MINIMUM_HEIGHT_MILLIMETER           (CLAW_HEIGHT_OVER_GROUND_PLANE - ORIGIN_HEIGHT_OVER_GROUND_PLANE) // -50
 #define FRONT_VALUE_FOR_GROUND             120 // Y value if X == 0 and claw is at its lowest position
+
+#define HORIZONTAL_NEUTRAL_MILLIMETER       LIFT_ARM_LENGTH_MILLIMETER + CLAW_LENGTH_MILLIMETER
+#define VERTICAL_NEUTRAL_MILLIMETER         HORIZONTAL_ARM_LENGTH_MILLIMETER
 
 // Index into (external) servo array. Order must be the same as of definitions in main.
 #define SERVO_BASE_PIVOT 0
@@ -69,56 +72,72 @@
  * In neutral position X=0, Y=LIFT_ARM_LENGTH_MILLIMETER + CLAW_LENGTH_MILLIMETER, Z=HORIZONTAL_ARM_LENGTH_MILLIMETER
  * Change this values to reflect your assembly
  */
-#if defined(ROBOT_ARM_2)
+#if defined(ROBOT_ARM_1)
 // Values for my MG90 clones. They differ from default values :-(
-#define PIVOT_ZERO_DEGREE_VALUE_MICROS         460 // 1120 per 90 degree
-#define PIVOT_AT_180_DEGREE_VALUE_MICROS      2620
-#define PIVOT_MAX_DEGREE_VALUE_MICROS         2480
-#define PIVOT_TRIM                              89 // trim to operate servo from -90 to +90 degree
+// operate pivot servo from -90° to +90°
+#define PIVOT_MICROS_AT_PLUS_70_DEGREE        2400 // Left the MG90 servos are not capable of full 180°
+#define PIVOT_MICROS_AT_MINUS_70_DEGREE        700 // Right
 
-// take default values here
-#define LIFT_ZERO_DEGREE_VALUE_MICROS          544
-#define LIFT_AT_180_DEGREE_VALUE_MICROS       2400
-#define LIFT_TRIM                              112 // trim to operate servo from -90 to +90 degree
-#define LIFT_MINIMUM_DEGREE                     30 // Has contact with bottom plate
-#define LIFT_MAXIMUM_DEGREE                   -150 // Servo arm is vertical
+// operate lift servo from 30° to -90°
+#define LIFT_MICROS_AT_0_NEUTRAL              1700 // 2. arm is horizontal forward
+#define LIFT_MICROS_AT_MINUS_90_DEGREE         630 // 2. arm is vertical down
+#define LIFT_MINIMUM_DEGREE                    -90 // 2. arm is vertical down
+#define LIFT_MAXIMUM_DEGREE                     30 // Mechanic has contact with bottom plate - not used yet
 
-#define HORIZONTAL_ZERO_DEGREE_VALUE_MICROS    544
-#define HORIZONTAL_AT_180_DEGREE_VALUE_MICROS 2400
-#define HORIZONTAL_TRIM                         62 // trim to operate servo from -90 to +90 degree
-#define HORIZONTAL_MINIMUM_DEGREE -HORIZONTAL_TRIM // Fold back position
-#define HORIZONTAL_MAXIMUM_DEGREE              100 // Horizontal forward position
+// operate horizontal servo from -50° to 90°
+#define HORIZONTAL_MICROS_AT_0_NEUTRAL        1170 // 1. arm is vertical up
+#define HORIZONTAL_MICROS_AT_90_DEGREE        2210 // 1. arm is vertical forward
+#define HORIZONTAL_MAXIMUM_DEGREE               90 // 1. arm is vertical forward
+#define HORIZONTAL_MINIMUM_DEGREE              -50 // Mechanic is folded
 
-#define CLAW_MAXIMUM_DEGREE                    120
+// operate claw servo from 0° to 180°
+#define CLAW_MICROS_AT_CLOSE                 1700
+#define CLAW_MICROS_AT_90_DEGREE             1000 // Value for 90" open claw (each side has 45°) my claw cannot open to 180°
 
-#define CLAW_START_DEGREE      CLAW_MAXIMUM_DEGREE
-#define CLAW_CLOSE_DEGREE      CLAW_MAXIMUM_DEGREE
-#define CLAW_OPEN_DEGREE      (CLAW_MAXIMUM_DEGREE - 30)
+#elif defined(ROBOT_ARM_2)
+// operate pivot servo from -90° to +90°
+#define PIVOT_MICROS_AT_PLUS_70_DEGREE        2400 // Left the MG90 servos are not capable of full 180°
+#define PIVOT_MICROS_AT_MINUS_70_DEGREE        700 // Right
+
+// operate lift servo from 30° to -90°
+#define LIFT_MICROS_AT_0_NEUTRAL              1700 // 2. arm is horizontal forward
+#define LIFT_MICROS_AT_MINUS_90_DEGREE         630 // 2. arm is vertical down
+#define LIFT_MINIMUM_DEGREE                    -90 // 2. arm is vertical down
+#define LIFT_MAXIMUM_DEGREE                     30 // Mechanic has contact with bottom plate - not used yet
+
+// operate horizontal servo from -50° to 90°
+#define HORIZONTAL_MICROS_AT_0_NEUTRAL        1170 // 1. arm is vertical up
+#define HORIZONTAL_MICROS_AT_90_DEGREE        2210 // 1. arm is vertical forward
+#define HORIZONTAL_MAXIMUM_DEGREE               90 // 1. arm is vertical forward
+#define HORIZONTAL_MINIMUM_DEGREE              -50 // Mechanic is folded
+
+// operate claw servo from 0° to 180°
+#define CLAW_MICROS_AT_CLOSE                 1700
+#define CLAW_MICROS_AT_90_DEGREE             1000 // Value for 90" open claw (each side has 45°) my claw cannot open to 180°
+
 #else
-#define PIVOT_ZERO_DEGREE_VALUE_MICROS         380
-#define PIVOT_AT_180_DEGREE_VALUE_MICROS      2360
-#define PIVOT_MAX_DEGREE_VALUE_MICROS         2570
-#define PIVOT_OFFSET                            90 // operate pivot servo from -90 to +90 degree
-#define PIVOT_TRIM                              -4
+/*
+ * Default uncalibrated value
+ */
+// operate pivot servo from -90° to +90°
+#define PIVOT_MICROS_AT_PLUS_70_DEGREE        2400 // Left the MG90 servos are not capable of full 180°
+#define PIVOT_MICROS_AT_MINUS_70_DEGREE        544 // Right
 
-#define LIFT_ZERO_DEGREE_VALUE_MICROS          380
-#define LIFT_AT_180_DEGREE_VALUE_MICROS       2300
-#define LIFT_TRIM                              122 // trim to operate servo from -90 to +90 degree
-#define LIFT_MINIMUM_DEGREE                    240 // Has contact with bottom plate
-#define LIFT_MAXIMUM_DEGREE                    -30 // Servo arm is vertical
+// operate lift servo from 30° to -90°
+#define LIFT_MICROS_AT_0_NEUTRAL              1800 // 2. arm is horizontal forward
+#define LIFT_MICROS_AT_MINUS_90_DEGREE         544 // 2. arm is vertical down
+#define LIFT_MINIMUM_DEGREE                    -90 // 2. arm is vertical down
+#define LIFT_MAXIMUM_DEGREE                     30 // Mechanic has contact with bottom plate - not used yet
 
-#define HORIZONTAL_ZERO_DEGREE_VALUE_MICROS    500
-#define HORIZONTAL_AT_180_DEGREE_VALUE_MICROS 2300
-#define HORIZONTAL_TRIM                         68 // trim to operate servo from -90 to +90 degree
-#define HORIZONTAL_MINIMUM_DEGREE -HORIZONTAL_TRIM // Fold back position
-#define HORIZONTAL_MAXIMUM_DEGREE              100 // Horizontal forward position
+// operate horizontal servo from -50° to 90°
+#define HORIZONTAL_MICROS_AT_0_NEUTRAL        1100 // 1. arm is vertical up
+#define HORIZONTAL_MICROS_AT_90_DEGREE        2400 // 1. arm is vertical forward
+#define HORIZONTAL_MAXIMUM_DEGREE               90 // 1. arm is vertical forward
+#define HORIZONTAL_MINIMUM_DEGREE              -50 // Mechanic is folded
 
-#define LIFT_MAX_ANGLE          160
-#define CLAW_MAXIMUM_DEGREE                     54
-
-#define CLAW_START_DEGREE      CLAW_MAXIMUM_DEGREE
-#define CLAW_CLOSE_DEGREE      CLAW_MAXIMUM_DEGREE
-#define CLAW_OPEN_DEGREE      (CLAW_MAXIMUM_DEGREE - 30)
+// operate claw servo from 0° to 180°
+#define CLAW_MICROS_AT_CLOSE                 1700
+#define CLAW_MICROS_AT_90_DEGREE             1000 // Value for 90" open claw (each side has 45°) my claw cannot open to 180°
 #endif
 
 #endif // _ROBOT_ARM_SERVO_CONFIGURATION_H

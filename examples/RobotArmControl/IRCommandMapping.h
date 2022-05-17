@@ -327,7 +327,7 @@ COMMAND_MOVE, IR_COMMAND_FLAG_BLOCKING, &doRobotArmAutoMove, move },
          */
         { COMMAND_INCREASE_SPEED, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doIncreaseSpeed, volPlus }, {
         COMMAND_DECREASE_SPEED, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doDecreaseSpeed, volMinus }, {
-        COMMAND_STOP, IR_COMMAND_FLAG_IS_STOP_COMMAND, &doSwitchToManual, manual },
+        COMMAND_STOP, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING | IR_COMMAND_FLAG_IS_STOP_COMMAND, &doSwitchToManual, manual },
 #if defined(COMMAND_IK_ON)
         { COMMAND_IK_ON, IR_COMMAND_FLAG_NON_BLOCKING, &doInverseKinematicOn, ik_on }, {
         COMMAND_IK_OFF, IR_COMMAND_FLAG_NON_BLOCKING, &doInverseKinematicOff, ik_off },

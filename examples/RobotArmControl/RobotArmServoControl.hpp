@@ -37,14 +37,14 @@ struct ArmPosition sPositionDelta;      // sEndPosition - sStartPosition - used 
 int sBodyPivotAngle = 0;
 int sHorizontalServoAngle = 0;
 int sLiftServoAngle = 0;
-int sClawServoAngle = CLAW_START_DEGREE;
+int sClawServoAngle = 0;
 
 /*
  * Servo movement
  */
 uint8_t sEasingType = EASE_LINEAR;
 float sLastPercentageOfCompletion;
-uint16_t sQuadrupedServoSpeed = 60; // in degree/second or millimeter/second for inverse kinematic
+uint16_t sRobotArmServoSpeed = 40; // in degree/second or millimeter/second for inverse kinematic
 
 // User functions for ServoEasing implementing inverse kinematics movement
 float moveInverseKinematic(float aPercentageOfCompletion, void *aUserDataPointer);
@@ -58,39 +58,40 @@ void setupRobotArmServos() {
      * Attach servos to Arduino Pins and set to start position. Must be done with write().
      * Set pivot servo first
      */
-    BasePivotServo.attach(PIVOT_SERVO_PIN, PIVOT_ZERO_DEGREE_VALUE_MICROS, PIVOT_AT_180_DEGREE_VALUE_MICROS);
-    BasePivotServo.setTrim(PIVOT_TRIM);
+    // Operate from 90° (left) to -90° (right), this is an initial trim
+    BasePivotServo.attach(PIVOT_SERVO_PIN, 0, PIVOT_MICROS_AT_MINUS_70_DEGREE, PIVOT_MICROS_AT_PLUS_70_DEGREE, -70, 70);
     BasePivotServo.write(0);
+    // Register function for smooth moving with inverse kinematics
     BasePivotServo.registerUserEaseInFunction(&moveInverseKinematic, &sCurrentPosition.LeftRightDegree);
+    Serial.print(F("Microseconds for pivot 0 degree="));
+    Serial.println((PIVOT_MICROS_AT_PLUS_70_DEGREE + PIVOT_MICROS_AT_MINUS_70_DEGREE) / 2);
 
     /*
      * Wait for pivot servo and then move horizontal one
      */
     delay(200);
-    HorizontalServo.attach(HORIZONTAL_SERVO_PIN, HORIZONTAL_TRIM, HORIZONTAL_ZERO_DEGREE_VALUE_MICROS,
-    HORIZONTAL_AT_180_DEGREE_VALUE_MICROS);
-    HorizontalServo.setTrim(HORIZONTAL_TRIM);
+    // Using attachWithTrim() with an explicit trim value is easier to understand here
+    HorizontalServo.attach(HORIZONTAL_SERVO_PIN, 0, HORIZONTAL_MICROS_AT_0_NEUTRAL, HORIZONTAL_MICROS_AT_90_DEGREE, 0, 90);
     HorizontalServo.registerUserEaseInFunction(&moveInverseKinematic, &sCurrentPosition.BackFrontDegree);
 
     /*
      * Wait for horizontal servo and then move lift and claw servos
      */
     delay(200);
-    LiftServo.attach(LIFT_SERVO_PIN, LIFT_TRIM, LIFT_ZERO_DEGREE_VALUE_MICROS, LIFT_AT_180_DEGREE_VALUE_MICROS);
-    LiftServo.setTrim(LIFT_TRIM);
-
-    ClawServo.attach(CLAW_SERVO_PIN, CLAW_START_DEGREE);
-
-    setSpeedForAllServos(sQuadrupedServoSpeed); // must be after attach
-
-    /*
-     * Register functions for smooth moving with inverse kinematics
-     */
+    // Using attachWithTrim() with an explicit trim value is easier to understand here
+    LiftServo.attach(LIFT_SERVO_PIN, 0, LIFT_MICROS_AT_MINUS_90_DEGREE, LIFT_MICROS_AT_0_NEUTRAL, -90, 0);
     LiftServo.registerUserEaseInFunction(&moveInverseKinematic, &sCurrentPosition.DownUpDegree);
 
-    Serial.println(
-            F(
-                    "Value for 0 degree=" STR(HORIZONTAL_ZERO_DEGREE_VALUE_MICROS) "us. Value for 180 degree=" STR(HORIZONTAL_AT_180_DEGREE_VALUE_MICROS) "us."));
+    /*
+     * Operate claw from 0° (close) to 90° (open), this is an initial trim
+     */
+    ClawServo.attach(CLAW_SERVO_PIN, 0, CLAW_MICROS_AT_90_DEGREE, CLAW_MICROS_AT_CLOSE, 90, 0);
+
+    setSpeedForAllServos(sRobotArmServoSpeed); // must be after attach
+
+//    Serial.println(
+//            F(
+//                    "Value for 0 degree=" STR(HORIZONTAL_ZERO_DEGREE_VALUE_MICROS) "us. Value for 180 degree=" STR(HORIZONTAL_AT_180_DEGREE_VALUE_MICROS) "us."));
 }
 
 /*
@@ -132,11 +133,11 @@ void setAllServosDAndWait(uint16_t aMillisForMove, uint8_t aNumberOfValues, ...)
  */
 void goToFolded() {
     Serial.println(F("Shutdown servos"));
-    setAllServos(4, 0, HORIZONTAL_MINIMUM_DEGREE, 0, CLAW_CLOSE_DEGREE);
+    setAllServos(4, 0, HORIZONTAL_MINIMUM_DEGREE, 0, 0);
 }
 
 void goToCenter() {
-    setAllServos(4, 0, 0, 0, CLAW_START_DEGREE);
+    setAllServos(4, 0, 0, 0, 0);
 }
 
 uint16_t getMaxDeltaMillimeter() {
@@ -155,14 +156,14 @@ uint16_t getMaxDeltaMillimeter() {
 
 /*
  * To keep it simple, just get max distance of all 3 dimensions, not the geometric distance
- * Interpret sQuadrupedServoSpeed as millimeter/second
+ * Interpret sRobotArmServoSpeed as millimeter/second
  */
 uint16_t getDurationMillisForMove() {
     uint16_t tMaxDeltaMillimeter = getMaxDeltaMillimeter(); // tMaxDeltaMillimeter can be greater than 256
-    uint16_t tMillisForMove = ((tMaxDeltaMillimeter * 125) / sQuadrupedServoSpeed) * 8; // *125 *8 to avoid temporary overflow at 16 bit arithmetic.
+    uint16_t tMillisForMove = ((tMaxDeltaMillimeter * 125) / sRobotArmServoSpeed) * 8; // *125 *8 to avoid temporary overflow at 16 bit arithmetic.
     if (sDebugOutputIsEnabled) {
         Serial.print(F("Speed="));
-        Serial.print(sQuadrupedServoSpeed);
+        Serial.print(sRobotArmServoSpeed);
         Serial.print(F(" max mm="));
         Serial.print(tMaxDeltaMillimeter);
         Serial.print(F(" millis="));
@@ -172,13 +173,13 @@ uint16_t getDurationMillisForMove() {
 }
 
 void openClaw() {
-    sClawServoAngle = CLAW_OPEN_DEGREE;
-    ClawServo.easeTo(CLAW_OPEN_DEGREE);
+    sClawServoAngle = 45;
+    ClawServo.easeTo(45);
 }
 
 void closeClaw() {
-    sClawServoAngle = CLAW_CLOSE_DEGREE;
-    ClawServo.easeTo(CLAW_CLOSE_DEGREE);
+    sClawServoAngle = 0;
+    ClawServo.easeTo(0);
 }
 
 /*
@@ -246,13 +247,12 @@ void computeNewCurrentAngles(float aPercentageOfCompletion) {
     sCurrentPosition.LeftRight = sStartPosition.LeftRight + (sPositionDelta.LeftRight * aPercentageOfCompletion);
     sCurrentPosition.BackFront = sStartPosition.BackFront + (sPositionDelta.BackFront * aPercentageOfCompletion);
     sCurrentPosition.DownUp = sStartPosition.DownUp + (sPositionDelta.DownUp * aPercentageOfCompletion);
+    doInverseKinematics(&sCurrentPosition);
 #if defined(LOCAL_TRACE)
-    if (!doInverseKinematics(&sCurrentPosition)) {
-        Serial.print("Current: ");
-        Serial.print(aPercentageOfCompletion);
-        Serial.print(" ");
-        printPositionShort(&sCurrentPosition);
-    }
+    Serial.print("Current: ");
+    Serial.print(aPercentageOfCompletion);
+    Serial.print(" ");
+    printPositionShort(&sCurrentPosition);
 #endif
 }
 
@@ -261,9 +261,7 @@ void computeNewCurrentAngles(float aPercentageOfCompletion) {
  */
 float moveInverseKinematic(float aPercentageOfCompletion, void *aUserDataPointer) {
     if (aPercentageOfCompletion - sLastPercentageOfCompletion > 0.005) {
-        /*
-         * Use a global variable, to do it only once for all 3 servos
-         */
+        // Use a global variable, to do computing only once for all 3 servos
         sLastPercentageOfCompletion = aPercentageOfCompletion;
         computeNewCurrentAngles(aPercentageOfCompletion);
     }
@@ -271,7 +269,7 @@ float moveInverseKinematic(float aPercentageOfCompletion, void *aUserDataPointer
 }
 
 /*
- * Only test computation, do not move arm!
+ * Only test computation and print, do not move arm!
  */
 void testInverseAndForwardKinematic() {
     /*
@@ -369,7 +367,7 @@ void testInverseAndForwardKinematic() {
      */
     sEndPosition.LeftRight = 0;
     sEndPosition.BackFront = LIFT_ARM_LENGTH_MILLIMETER + CLAW_LENGTH_MILLIMETER;
-    sEndPosition.DownUp = MINIMUM_HEIGHT;
+    sEndPosition.DownUp = MINIMUM_HEIGHT_MILLIMETER;
     doInverseKinematics(&sEndPosition);
     Serial.print(F("MINIMUM_HEIGHT IK="));
     printPosition(&sEndPosition);
@@ -380,11 +378,7 @@ void testInverseAndForwardKinematic() {
 
 }
 
-void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree) {
-    moveOneServoAndCheckInputAndWait(aServoIndex, aDegree, sQuadrupedServoSpeed);
-}
-
-void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree, uint16_t aDegreesPerSecond) {
+void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, float aDegree, uint16_t aDegreesPerSecond) {
     ServoEasing::ServoEasingArray[aServoIndex]->startEaseTo(aDegree, aDegreesPerSecond, false);
     do {
 #if defined(ROBOT_ARM_HAS_IR_CONTROL)

@@ -30,7 +30,7 @@ extern int sClawServoAngle;
 
 extern uint8_t sEasingType;
 extern float sLastPercentageOfCompletion;
-extern uint16_t sQuadrupedServoSpeed;      // in degree/second
+extern uint16_t sRobotArmServoSpeed;      // in degree/second
 
 void setupRobotArmServos();
 void goToFolded();
@@ -60,8 +60,7 @@ void testInverseAndForwardKinematic();
  */
 void synchronizeMoveAllServosAndCheckInputAndWait();
 void synchronizeMoveAllServosDAndCheckInputAndWait(uint16_t aMillisForMove);
-void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree);
-void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree, uint16_t aDegreesPerSecond);
+void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, float aDegree, uint16_t aDegreesPerSecond);
 void updateAndCheckInputAndWaitForAllServosToStop();
 
 #endif // _ROBOT_ARM_SERVO_CONTROL_H
