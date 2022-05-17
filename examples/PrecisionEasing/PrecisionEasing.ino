@@ -33,6 +33,7 @@
 //#define DISABLE_COMPLEX_FUNCTIONS     // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory.
 #define MAX_EASING_SERVOS 1
 //#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
+//#define DISABLE_MIN_AND_MAX_CONSTRAINTS    // Activating this disables constraints. Saves 4 bytes RAM per servo but strangely enough no program memory.
 //#define DEBUG                         // Activate this to generate lots of lovely debug output for this library.
 
 /*
@@ -51,7 +52,7 @@
 #define ENABLE_EASE_PRECISION
 //#define ENABLE_EASE_USER
 
-//#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output.
+//#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output from ServoEasing.hpp.
 #include "ServoEasing.hpp"
 
 #include "PinDefinitionsAndMore.h"
@@ -75,7 +76,7 @@ ServoEasing Servo1(PCA9685_DEFAULT_ADDRESS); // If you use more than one PCA9685
 ServoEasing Servo1;
 #endif
 
-#define START_DEGREE_VALUE  90 // The degree value written to the servo at time of attach.
+#define START_DEGREE_VALUE  45 // The degree value written to the servo at time of attach.
 void blinkLED();
 
 void setup() {
@@ -122,7 +123,7 @@ void setup() {
     Serial.println("PrecisionEasing[us]_Precision_out->Precision_in");
 #endif
 
-    Servo1.setSpeed(45);  // This speed is taken if no further speed argument is given.
+    Servo1.setSpeed(90);  // This speed is taken if no further speed argument is given.
 }
 
 void loop() {

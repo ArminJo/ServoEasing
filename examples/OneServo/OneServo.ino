@@ -33,6 +33,7 @@
 #define DISABLE_COMPLEX_FUNCTIONS     // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory.
 #define MAX_EASING_SERVOS 1
 //#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
+//#define DISABLE_MIN_AND_MAX_CONSTRAINTS    // Activating this disables constraints. Saves 4 bytes RAM per servo but strangely enough no program memory.
 //#define DEBUG                         // Activate this to generate lots of lovely debug output for this library.
 
 /*
@@ -51,7 +52,7 @@
 //#define ENABLE_EASE_PRECISION
 //#define ENABLE_EASE_USER
 
-//#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output.
+//#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output from ServoEasing.hpp.
 #include "ServoEasing.hpp"
 
 #include "PinDefinitionsAndMore.h"
@@ -134,10 +135,19 @@ void loop() {
 
     // Now move faster without any delay between the moves
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
-    Serial.println(F("Move to 180 degree with 30 degree per second using interrupts"));
-    Serial.flush(); // Just in case interrupts do not work
+    Serial.println(F("Move to 180 degree with 30 degree per second blocking with own loop"));
 #endif
     Servo1.startEaseTo(180, 30);
+    Servo1.startEaseTo(180, 30, DO_NOT_START_UPDATE_BY_INTERRUPT); // no interrupts here
+    do {
+        // First do the delay, then check for update, since we are likely called directly after start and there is nothing to move yet
+        delay(REFRESH_INTERVAL_MILLIS); // 20 ms
+#if MAX_EASING_SERVOS > 1
+    } while (!updateAllServos());
+#else
+    } while (!Servo1.update());
+#endif
+
 
     /*
      * Now you can run your program while the servo is moving.
@@ -151,6 +161,7 @@ void loop() {
 
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
     Serial.println(F("Move to 45 degree in one second using interrupts"));
+    Serial.flush(); // Just in case interrupts do not work
 #endif
     Servo1.startEaseToD(45, 1000);
 //    Servo1.startEaseToD((544 + ((2400 - 544) / 4)), 1000); // Alternatively you can specify the target as microsecond value

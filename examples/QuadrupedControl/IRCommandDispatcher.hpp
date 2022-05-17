@@ -38,11 +38,21 @@
 
 #include "IRCommandDispatcher.h"
 
-//#define INFO // activate this out to see serial info output
-//#define DEBUG // activate this out to see serial info output
-#if defined(DEBUG) && !defined(INFO)
-// Propagate level
-#define INFO
+/*
+ * Enable this to see information on each call.
+ * Since there should be no library which uses Serial, it should only be enabled for development purposes.
+ */
+#if defined(INFO)
+#define LOCAL_INFO
+#else
+//#define LOCAL_INFO // This enables info output only for this file
+#endif
+#if defined(DEBUG)
+#define LOCAL_DEBUG
+// Propagate debug level
+#define LOCAL_INFO
+#else
+//#define LOCAL_DEBUG // This enables debug output only for this file
 #endif
 
 IRCommandDispatcher IRDispatcher;
@@ -312,4 +322,10 @@ void IRCommandDispatcher::setRequestToStopReceived() {
     requestToStopReceived = true;
 }
 
+#if defined(LOCAL_DEBUG)
+#undef LOCAL_DEBUG
+#endif
+#if defined(LOCAL_INFO)
+#undef LOCAL_INFO
+#endif
 #endif // _IR_COMMAND_DISPATCHER_HPP

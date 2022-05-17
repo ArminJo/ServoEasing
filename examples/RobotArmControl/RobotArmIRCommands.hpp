@@ -184,8 +184,8 @@ void __attribute__((weak)) doRobotArmTestMove() {
     goToPositionRelative(0, 50, 0);
 
     Serial.println(F("Go up, down"));
-    goToPositionRelative(0, 0, 50);
-    goToPosition(0, KEEP_POSITION, MINIMUM_HEIGHT_MILLIMETER + 5);   // here only DownUp is moving if not IK
+    goToPositionRelative(0, 0, 80);
+    goToPosition(0, KEEP_POSITION, MINIMUM_HEIGHT_MILLIMETER + 5);
 
     Serial.println(F("Go bottom line"));
     goToPosition(0, 120, KEEP_POSITION);

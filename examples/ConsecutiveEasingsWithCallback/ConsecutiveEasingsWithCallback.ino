@@ -38,7 +38,7 @@
 //#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
 //#define DEBUG                         // Activate this to generate lots of lovely debug output for this library.
 
-//#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output.
+//#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output from ServoEasing.hpp.
 #include "ServoEasing.hpp"
 #include "PinDefinitionsAndMore.h"
 /*
@@ -63,6 +63,7 @@ ServoEasing Servo1;
 
 #define START_DEGREE_VALUE  0 // The degree value written to the servo at time of attach.
 //#define USE_MICROSECONDS      // Use microseconds instead degrees as parameter
+//#define USE_CONSTRAINTS       // Use constraints to limit the servo movements
 
 void blinkLED();
 void ServoTargetPositionReachedHandler(ServoEasing *aServoEasingInstance);
@@ -101,12 +102,22 @@ void setup() {
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
     // Legend for Arduino Serial plotter
     Serial.println(); // end of line of attach values
+#if defined(USE_CONSTRAINTS)
+    Serial.println(
+            F(
+                    "OneServo_Constraints_at_5_175[us]_Linear->Quadratic->Cubic->Quartic ->Sine-Circular->Back->Elastic ->QuadraticIn->CubicOut->CubicBounce->Dummy->Precision->Bounce"));
+#else
     Serial.println(
             F(
                     "OneServo[us]_Linear->Quadratic->Cubic->Quartic ->Sine-Circular->Back->Elastic ->QuadraticIn->CubicOut->CubicBounce->Dummy->Precision->Bounce"));
+#endif
     Servo1.setSpeed(125);  // This speed is taken if no further speed argument is given.
 #else
     Servo1.setSpeed(90);  // This speed is taken if no further speed argument is given.
+#endif
+
+#if defined(USE_CONSTRAINTS)
+    Servo1.setMinMaxConstraint(5, 175);
 #endif
 
     /*
@@ -142,7 +153,7 @@ void blinkLED() {
 #define NUMBER_OF_EASING_TYPES_TO_SHOW  14
 uint_fast8_t EasingTypesArray[NUMBER_OF_EASING_TYPES_TO_SHOW] = { EASE_LINEAR, EASE_QUADRATIC_IN_OUT, EASE_CUBIC_IN_OUT,
 EASE_QUARTIC_IN_OUT, EASE_SINE_IN_OUT, EASE_CIRCULAR_IN_OUT, EASE_BACK_IN_OUT, EASE_ELASTIC_IN_OUT, EASE_QUADRATIC_IN,
-EASE_CUBIC_OUT, EASE_CUBIC_BOUNCING, EASE_DUMMY_MOVE, EASE_PRECISION, EASE_BOUNCE_OUT };
+EASE_CUBIC_OUT, EASE_CUBIC_BOUNCING, EASE_DUMMY_MOVE, EASE_PRECISION_IN, EASE_BOUNCE_OUT };
 #if defined(USE_MICROSECONDS)
 int TargetDegreesArray[NUMBER_OF_EASING_TYPES_TO_SHOW] = { DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE,
 DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_90_DEGREE,

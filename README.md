@@ -59,6 +59,7 @@ For instructions how to enable these alternatives, see [Compile options / macros
 - **Callback at reaching target enables multiple movements independent of main loop**.
 - A **trim value** can be set for any servo. Its value is internally added to each requested position.
 - **Reverse operation** of servo is possible eg. if it is mounted head down.
+- **Constraints for minimum and maximum servo degree** can be specified. Trim and reverse are applied after constraint processing.
 - Allow to specify an arbitrary mapping between degrees and microseconds by `attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree)`.
 - **Servo speed** can be specified in **degree per second** or **milliseconds** for the complete move.
 - Degree values >= 400 is taken as microsecond values for the servo pulse.
@@ -92,6 +93,11 @@ Since the values are computed in a fixed 20 ms raster, the last degree increment
 in an easing may be much smaller than the increment/decrement before,
 resulting in some small discontinuities between adjacent movements.<br/>
 ![Arduino Plotter Output for Linear->Quadratic->Cubic->Quartic->Sine-Circular->Back->Elastic](https://github.com/ArminJo/ServoEasing/blob/master/pictures/NonlinearMovements.png)
+
+### Constraints
+To restrict servo movements to a fixed range, you can specify constraints with `setMinMaxConstraint(int aMinDegreeOrMicrosecond, int aMaxDegreeOrMicrosecond)`.<br/>
+Arduino Plotter Output with constraints at 5° and 175° activated.
+![Arduino Plotter Output with constraints at 5° and 175° activated](https://github.com/ArminJo/ServoEasing/blob/master/pictures/Constraints.png)
 
 # [API](https://github.com/ArminJo/ServoEasing/blob/master/src/ServoEasing.h#L390)
 
@@ -178,6 +184,7 @@ Modify them by enabling / disabling them, or change the values if applicable.
 | `DISABLE_COMPLEX_FUNCTIONS` | disabled | Disables the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory. |
 | `MAX_EASING_SERVOS` | 12, 16(for PCA9685) | Saves 4 byte RAM per servo. If this value is smaller than the amount of servos declared, attach() will return error and other library functions will not work as expected.<br/>Of course all *AllServos*() functions and isOneServoMoving() can't work correctly! |
 | `DISABLE_MICROS_AS_DEGREE_PARAMETER` | disabled | Disables passing also microsecond values as (target angle) parameter (see [OneServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino#L93)). Saves 128 bytes program memory. |
+| `DISABLE_MIN_AND_MAX_CONSTRAINTS` | disabled | Disables servo movement constraints. Saves 4 bytes RAM per servo but strangely enough no program memory. |
 | `PRINT_FOR_SERIAL_PLOTTER` | disabled | Generate serial output for Arduino Plotter (Ctrl-Shift-L). |
 | `DEBUG` | disabled | Generates lots of lovely debug output for this library. |
 | `USE_LEIGHTWEIGHT_SERVO_LIB` | disabled | Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple. See below. Saves up to 742 bytes program memory and 42 bytes RAM. |

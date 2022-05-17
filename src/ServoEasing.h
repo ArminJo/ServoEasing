@@ -250,14 +250,16 @@
  * The different easing functions:
  *
  * In order to reuse the IN functions for OUT and IN_OUT functions, the following call and result conversions are used internally.
- * 1. Using IN function direct: Call with PercentageOfCompletion/100 | 0.0 to 1.0. Result is from 0.0 to 1.0
- * 2. Using IN function to generate OUT function: Call with (1 - PercentageOfCompletion/100) | 1.0 to 0.0. Result = (1 - result)
+ * FactorOfMovementCompletion is multiplied with delta microseconds and added to StartPosition to get the current position.
+ *
+ * 1. Using IN function direct: Call with PercentageOfCompletion/100 | 0.0 to 1.0. FactorOfMovementCompletion is returnValue (from 0.0 to 1.0)
+ * 2. Using IN function to generate OUT function: Call with (1 - PercentageOfCompletion/100) | 1.0 to 0.0. FactorOfMovementCompletion = (1 - returnValue)
  * 3. Using IN function to generate IN_OUT function:
- *      In the first half, call with (2 * PercentageOfCompletion/100) | 0.0 to 1.0. Result = (0.5 * result)
- *      In the second half, call with (2 - (2 * PercentageOfCompletion/100)) | 1.0 to 0.0. Result = ( 1- (0.5 * result))
+ *      In the first half, call with (2 * PercentageOfCompletion/100) | 0.0 to 1.0. FactorOfMovementCompletion = (0.5 * returnValue)
+ *      In the second half, call with (2 - (2 * PercentageOfCompletion/100)) | 1.0 to 0.0. FactorOfMovementCompletion = ( 1- (0.5 * returnValue))
  * 4. Using IN function to generate bouncing_OUT_IN / mirrored_OUT function, which return to start point (like the upper half of a sine):
- *      In the first half, call with (1 - (2 * PercentageOfCompletion/100)) | 1.0 to 0.0. Result = (1 - result) -> call OUT function 2 times faster.
- *      In the second half, call with ((2 * PercentageOfCompletion/100) - 1) | 0.0 to 1.0. Result = (1- result) -> call OUT function 2 times faster and backwards.
+ *      In the first half, call with (1 - (2 * PercentageOfCompletion/100)) | 1.0 to 0.0. FactorOfMovementCompletion = (1 - returnValue) -> call OUT 2 times faster.
+ *      In the second half, call with ((2 * PercentageOfCompletion/100) - 1) | 0.0 to 1.0. FactorOfMovementCompletion = (1- returnValue) -> call OUT 2 times faster and backwards.
  *
  */
 // Offset to decide if the user function returns degrees instead of 0.0 to 1.0.
@@ -346,7 +348,8 @@
 #endif
 
 #if defined(ENABLE_EASE_PRECISION)
-#define EASE_PRECISION          0x0D
+#define EASE_PRECISION_IN       0x0D // Negative bounce for movings from above (go in to origin)
+#define EASE_PRECISION_OUT      0x4D // Positive bounce for movings from below (go out from origin)
 #endif
 
 // !!! Must be without comment and closed by @formatter:on !!!
@@ -367,7 +370,6 @@ extern const char easeTypeBounce[]     PROGMEM;
 #endif // !defined(DISABLE_COMPLEX_FUNCTIONS)
 // @formatter:on
 extern const char *const easeTypeStrings[] PROGMEM;
-
 
 // some PCA9685 specific constants
 #define PCA9685_GENERAL_CALL_ADDRESS 0x00
@@ -413,24 +415,36 @@ public:
     // main mapping functions for µs to PCA9685 Units (20000/4096 = 4.88 µs) and back
     int MicrosecondsToPCA9685Units(int aMicroseconds);
     int PCA9685UnitsToMicroseconds(int aPCA9685Units);
-#endif
+#endif // defined(USE_PCA9685_SERVO_EXPANDER)
+
     ServoEasing();
 
     uint8_t attach(int aPin);
     uint8_t attach(int aPin, int aInitialDegreeOrMicrosecond);
+    uint8_t attachWithTrim(int aPin, int aTrimDegreeOrMicrosecond, int aInitialDegreeOrMicrosecond);
     // Here no units accepted, only microseconds!
     uint8_t attach(int aPin, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree);
     uint8_t attach(int aPin, int aInitialDegreeOrMicrosecond, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree);
+    uint8_t attachWithTrim(int aPin, int aTrimDegreeOrMicrosecond, int aInitialDegreeOrMicrosecond,
+            int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree);
     uint8_t attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree,
             int aServoHighDegree);
     uint8_t attach(int aPin, int aInitialDegreeOrMicrosecond, int aMicrosecondsForServoLowDegree,
             int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree);
+    uint8_t attachWithTrim(int aPin, int aTrimDegreeOrMicrosecond, int aInitialDegreeOrMicrosecond,
+            int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree);
 
     void detach();
-    void setReverseOperation(bool aOperateServoReverse);  // You should call it before using setTrim
+    void setReverseOperation(bool aOperateServoReverse); // You should call it before using setTrim, or better use attach function with 6 parameters
 
-    void setTrim(int aTrimDegrees, bool aDoWrite = false);
-    void setTrimMicrosecondsOrUnits(int aTrimMicrosecondsOrUnits, bool aDoWrite = false);
+    void setTrim(int aTrimDegreeOrMicrosecond, bool aDoWrite = false);
+    void _setTrimMicrosecondsOrUnits(int aTrimMicrosecondsOrUnits, bool aDoWrite = false);
+
+#if !defined(DISABLE_MIN_AND_MAX_CONSTRAINTS)
+    void setMaxConstraint(int aMaxDegreeOrMicrosecond);
+    void setMinConstraint(int aMinDegreeOrMicrosecond);
+    void setMinMaxConstraint(int aMinDegreeOrMicrosecond, int aMaxDegreeOrMicrosecond);
+#endif
 
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
     void setEasingType(uint_fast8_t aEasingType);
@@ -439,21 +453,18 @@ public:
     float callEasingFunction(float aPercentageOfCompletion);            // used in update()
 
 #  if defined(ENABLE_EASE_USER)
-    void registerUserEaseInFunction(float (*aUserEaseInFunction)(float aPercentageOfCompletion, void * aUserDataPointer), void * aUserDataPointer = NULL);
-    void setUserDataPointer(void * aUserDataPointer);
+    void registerUserEaseInFunction(float (*aUserEaseInFunction)(float aPercentageOfCompletion, void *aUserDataPointer),
+            void *aUserDataPointer = NULL);
+    void setUserDataPointer(void *aUserDataPointer);
 #  endif
 #endif
 
     void write(int aTargetDegreeOrMicrosecond);     // Apply trim and reverse to the value and write it direct to the Servo library.
-    void writeMicrosecondsOrUnits(int aMicrosecondsOrUnits);
+    void _writeMicrosecondsOrUnits(int aMicrosecondsOrUnits);
 
-    void setSpeed(uint_fast16_t aDegreesPerSecond);                            // This speed is taken if no speed argument is given.
-    uint_fast16_t getSpeed();
     void easeTo(int aTargetDegreeOrMicrosecond);                                   // blocking move to new position using mLastSpeed
     void easeTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);  // blocking move to new position using speed
     void easeToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove);    // blocking move to new position using duration
-
-    bool noMovement(uint_fast16_t aMillisToWait);                                       // stay at the position for aMillisToWait
 
     bool setEaseTo(int aTargetDegreeOrMicrosecond);                                     // shortcut for startEaseTo(..,..,false)
     bool setEaseTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);    // shortcut for startEaseTo(..,..,false)
@@ -463,6 +474,28 @@ public:
     bool setEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);   // shortcut for startEaseToD(..,..,false)
     bool startEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt =
     START_UPDATE_BY_INTERRUPT);
+
+    // The float versions
+    void write(float aTargetDegreeOrMicrosecond);   // Apply trim and reverse to the value and write it direct to the Servo library.
+
+    void easeTo(float aTargetDegreeOrMicrosecond);                                 // blocking move to new position using mLastSpeed
+    void easeTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);  // blocking move to new position using speed
+    void easeToD(float aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove);    // blocking move to new position using duration
+
+    bool setEaseTo(float aTargetDegreeOrMicrosecond);                                     // shortcut for startEaseTo(..,..,false)
+    bool setEaseTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);    // shortcut for startEaseTo(..,..,false)
+    bool startEaseTo(float aTargetDegreeOrMicrosecond);                           // shortcut for startEaseTo(aDegree, mSpeed, true)
+    bool startEaseTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt =
+    START_UPDATE_BY_INTERRUPT);
+    bool setEaseToD(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);   // shortcut for startEaseToD(..,..,false)
+    bool startEaseToD(float aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt =
+    START_UPDATE_BY_INTERRUPT);
+
+    bool noMovement(uint_fast16_t aMillisToWait);                                       // stay at the position for aMillisToWait
+
+    void setSpeed(uint_fast16_t aDegreesPerSecond);                            // This speed is taken if no speed argument is given.
+    uint_fast16_t getSpeed();
+
     void stop();
     void continueWithInterrupts();
     void continueWithoutInterrupts();
@@ -481,7 +514,9 @@ public:
     int MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits);
     int MicrosecondsToDegree(int aMicroseconds);
     int MicrosecondsOrUnitsToMicroseconds(int aMicrosecondsOrUnits);
-    int DegreeToMicrosecondsOrUnits(int aDegreeOrMicroseconds);
+    int DegreeOrMicrosecondToMicrosecondsOrUnits(int aDegreeOrMicrosecond);
+    int DegreeOrMicrosecondToMicrosecondsOrUnits(float aDegreeOrMicrosecond);
+//    int DegreeToMicrosecondsOrUnits(float aDegree);
     int DegreeToMicrosecondsOrUnitsWithTrimAndReverse(int aDegree);
 
     void synchronizeServosAndStartInterrupt(bool doUpdateByInterrupt);
@@ -525,7 +560,7 @@ public:
      * Internally only microseconds (or units (= 4.88 µs) if using PCA9685 expander) and not degree are used to speed up things.
      * Other expander or libraries can therefore easily be added.
      */
-    volatile int mCurrentMicrosecondsOrUnits; // set by write() and writeMicrosecondsOrUnits(). Required as start for next move and to avoid unnecessary writes.
+    volatile int mCurrentMicrosecondsOrUnits; // set by write() and _writeMicrosecondsOrUnits(). Required as start for next move and to avoid unnecessary writes.
     int mStartMicrosecondsOrUnits;  // used with millisAtStartMove to compute currentMicrosecondsOrUnits
     int mEndMicrosecondsOrUnits;    // used once as last value just if movement was finished
     int mDeltaMicrosecondsOrUnits;   // end - start
@@ -538,8 +573,8 @@ public:
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
     uint8_t mEasingType; // EASE_LINEAR, EASE_QUADRATIC_IN_OUT, EASE_CUBIC_IN_OUT, EASE_QUARTIC_IN_OUT
 #  if defined(ENABLE_EASE_USER)
-    void * UserDataPointer;
-    float (*mUserEaseInFunction)(float aPercentageOfCompletion, void * aUserDataPointer);
+    void *UserDataPointer;
+    float (*mUserEaseInFunction)(float aPercentageOfCompletion, void *aUserDataPointer);
 #  endif
 #endif
 
@@ -567,7 +602,11 @@ public:
      * For this case better use the attach function with 5 parameter.
      */
     bool mOperateServoReverse; // true -> direction is reversed
-    int mTrimMicrosecondsOrUnits; // This value is always added to the degree/units/microseconds value requested
+#if !defined(DISABLE_MIN_AND_MAX_CONSTRAINTS)
+    int mMaxMicrosecondsOrUnits; // Max value checked at _writeMicrosecondsOrUnits(), before trim and reverse is applied
+    int mMinMicrosecondsOrUnits; // Min value checked at _writeMicrosecondsOrUnits(), before trim and reverse is applied
+#endif
+    int mTrimMicrosecondsOrUnits; // This value is always added by the function _writeMicrosecondsOrUnits() to the requested degree/units/microseconds value
 
     int mServo0DegreeMicrosecondsOrUnits;
     int mServo180DegreeMicrosecondsOrUnits;
@@ -589,7 +628,7 @@ public:
      */
     static uint_fast8_t sServoArrayMaxIndex; // maximum index of an attached servo in sServoArray[]
     static ServoEasing *ServoEasingArray[MAX_EASING_SERVOS];
-    static int ServoEasingNextPositionArray[MAX_EASING_SERVOS];
+    static float ServoEasingNextPositionArray[MAX_EASING_SERVOS];
     /*
      * Macros for backward compatibility
      */
@@ -660,15 +699,17 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
 /*
  * Version 3.0.0 - 05/2022
  * - Added target reached callback functionality, to enable multiple movements without loop control.
- * - Changed ENABLE_MICROS_AS_DEGREE_PARAMETER to DISABLE_MICROS_AS_DEGREE_PARAMETER thus enabling micros as parameter by default.
+ * - Changed `ENABLE_MICROS_AS_DEGREE_PARAMETER` to `DISABLE_MICROS_AS_DEGREE_PARAMETER` thus enabling micros as parameter by default.
  * - Fixed some bugs for micros as parameter.
  * - Changed constants for easing types.
  * - Additional parameter aUserDataPointer for user easing function.
- * - New easing type PRECISION.
+ * - New easing type `PRECISION`.
  * - New function `printEasingType()`.
  * - Easing functions are converted to static member functions now.
  * - Easing types can be disabled individually.
  * - Improved PCA9685 handling.
+ * - Changed default for parameter `doWrite` for `setTrim()` from `false` to `true`.
+ * - Add constraint functionality and `DISABLE_MIN_AND_MAX_CONSTRAINTS`.
  *
  * Version 2.4.1 - 02/2022
  * - RP2040 support added.

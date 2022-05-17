@@ -53,6 +53,23 @@
 #include "LightweightServo.hpp" // include sources of LightweightServo library
 #endif
 
+/*
+ * Enable this to see information on each call.
+ * Since there should be no library which uses Serial, it should only be enabled for development purposes.
+ */
+#if defined(DEBUG)
+#define LOCAL_DEBUG
+#else
+//#define LOCAL_DEBUG // This enables debug output only for this file
+#endif
+#if defined(TRACE)
+#define LOCAL_TRACE
+// Propagate debug level
+#define LOCAL_DEBUG
+#else
+//#define LOCAL_TRACE // This enables trace output only for this file
+#endif
+
 #if defined(ESP8266) || defined(ESP32)
 #include "Ticker.h" // for ServoEasingInterrupt functions
 Ticker Timer20ms;
@@ -118,23 +135,6 @@ bool handleServoTimerInterruptHelper(repeating_timer_t*) {
 #elif defined(TEENSYDUINO)
 // common for all Teensy
 IntervalTimer Timer20ms;
-#endif
-
-/*
- * Enable this to see information on each call.
- * Since there should be no library which uses Serial, it should only be enabled for development purposes.
- */
-#if defined(DEBUG)
-#define LOCAL_DEBUG
-#else
-//#define LOCAL_DEBUG // This enables debug output only for this file
-#endif
-#if defined(TRACE)
-#define LOCAL_TRACE
-// Propagate debug level
-#define LOCAL_DEBUG
-#else
-//#define LOCAL_TRACE // This enables trace output only for this file
 #endif
 
 volatile bool ServoEasing::sInterruptsAreActive = false; // true if interrupts are still active, i.e. at least one Servo is moving with interrupts.
@@ -272,7 +272,7 @@ void ServoEasing::I2CWriteByte(uint8_t aAddress, uint8_t aData) {
     mI2CClass->beginTransmission(mPCA9685I2CAddress);
     mI2CClass->write(aAddress);
     mI2CClass->write(aData);
-#  if defined(DEBUG)
+#  if defined(LOCAL_DEBUG)
     uint8_t tWireReturnCode = mI2CClass->endTransmission();
     if (tWireReturnCode != 0) {
         // I have seen this at my ESP32 module :-( - but it is no buffer overflow.
@@ -303,7 +303,7 @@ void ServoEasing::setPWM(uint16_t aPWMOffValueAsUnits) {
     mI2CClass->write((PCA9685_FIRST_PWM_REGISTER + 2) + 4 * mServoPin);
     mI2CClass->write(aPWMOffValueAsUnits);
     mI2CClass->write(aPWMOffValueAsUnits >> 8);
-#  if defined(DEBUG) && not defined(ESP32)
+#  if defined(LOCAL_DEBUG) && not defined(ESP32)
     // The ESP32 I2C interferes with the Ticker / Timer library used.
     // Even with 100 kHz clock we have some dropouts / NAK's because of sending address again instead of first data.
     uint8_t tWireReturnCode = mI2CClass->endTransmission();
@@ -339,7 +339,7 @@ void ServoEasing::setPWM(uint16_t aPWMOnStartValueAsUnits, uint16_t aPWMPulseDur
     mI2CClass->write(aPWMOnStartValueAsUnits >> 8);
     mI2CClass->write(aPWMOnStartValueAsUnits + aPWMPulseDurationAsUnits);
     mI2CClass->write((aPWMOnStartValueAsUnits + aPWMPulseDurationAsUnits) >> 8);
-#  if defined(DEBUG) && not defined(ESP32)
+#  if defined(LOCAL_DEBUG) && not defined(ESP32)
     // The ESP32 I2C interferes with the Ticker / Timer library used.
     // Even with 100 kHz clock we have some dropouts / NAK's because of sending address again instead of first data.
     uint8_t tWireReturnCode = mI2CClass->endTransmission();    // blocking call
@@ -398,6 +398,11 @@ ServoEasing::ServoEasing() // @suppress("Class members should be properly initia
 #  endif
 #endif
     TargetPositionReachedHandler = NULL;
+
+#if !defined(DISABLE_MIN_AND_MAX_CONSTRAINTS)
+    mMinMicrosecondsOrUnits = 0;
+    mMaxMicrosecondsOrUnits = 2 * DEFAULT_MICROSECONDS_FOR_180_DEGREE; // any big value is sufficient
+#endif
 
 #if defined(MEASURE_SERVO_EASING_INTERRUPT_TIMING)
     pinMode(TIMING_OUTPUT_PIN, OUTPUT);
@@ -670,6 +675,19 @@ void ServoEasing::_setTrimMicrosecondsOrUnits(int aTrimMicrosecondsOrUnits, bool
     }
 }
 
+#if !defined(DISABLE_MIN_AND_MAX_CONSTRAINTS)
+void ServoEasing::setMaxConstraint(int aMaxDegreeOrMicrosecond) {
+    mMaxMicrosecondsOrUnits = DegreeOrMicrosecondToMicrosecondsOrUnits(aMaxDegreeOrMicrosecond);
+}
+void ServoEasing::setMinConstraint(int aMinDegreeOrMicrosecond) {
+    mMinMicrosecondsOrUnits = DegreeOrMicrosecondToMicrosecondsOrUnits(aMinDegreeOrMicrosecond);
+}
+void ServoEasing::setMinMaxConstraint(int aMinDegreeOrMicrosecond, int aMaxDegreeOrMicrosecond) {
+    mMinMicrosecondsOrUnits = DegreeOrMicrosecondToMicrosecondsOrUnits(aMinDegreeOrMicrosecond);
+    mMaxMicrosecondsOrUnits = DegreeOrMicrosecondToMicrosecondsOrUnits(aMaxDegreeOrMicrosecond);
+}
+#endif
+
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
 void ServoEasing::setEasingType(uint_fast8_t aEasingType) {
     mEasingType = aEasingType;
@@ -746,7 +764,13 @@ void ServoEasing::_writeMicrosecondsOrUnits(int aMicrosecondsOrUnits) {
 #endif
         return;
     }
-
+#if !defined(DISABLE_MIN_AND_MAX_CONSTRAINTS)
+    if (aMicrosecondsOrUnits > mMaxMicrosecondsOrUnits) {
+        aMicrosecondsOrUnits = mMaxMicrosecondsOrUnits;
+    } else if (aMicrosecondsOrUnits < mMinMicrosecondsOrUnits) {
+        aMicrosecondsOrUnits = mMinMicrosecondsOrUnits;
+    }
+#endif
     mCurrentMicrosecondsOrUnits = aMicrosecondsOrUnits;
 
 #if defined(LOCAL_TRACE)
@@ -773,7 +797,7 @@ void ServoEasing::_writeMicrosecondsOrUnits(int aMicrosecondsOrUnits) {
 #endif
     }
 
-#if defined(PRINT_FOR_SERIAL_PLOTTER)
+#if defined(PRINT_FOR_SERIAL_PLOTTER) && !defined(LOCAL_TRACE)
     Serial.print(' ');
     Serial.print(aMicrosecondsOrUnits);
 #endif
@@ -805,7 +829,7 @@ void ServoEasing::_writeMicrosecondsOrUnits(int aMicrosecondsOrUnits) {
     Servo::writeMicroseconds(aMicrosecondsOrUnits); // requires 7 µs
 #endif
 
-#if defined(LOCAL_TRACE)
+#if defined(LOCAL_TRACE) && !defined(PRINT_FOR_SERIAL_PLOTTER)
     Serial.println();
 #endif
 }
@@ -1097,7 +1121,7 @@ bool ServoEasing::startEaseTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDeg
      * Avoid division by 0 below
      */
     if (aDegreesPerSecond == 0) {
-#if defined(DEBUG)
+#if defined(LOCAL_DEBUG)
         Serial.println(F("Speed is 0 -> set to 1"));
 #endif
         aDegreesPerSecond = 1;
@@ -1138,7 +1162,7 @@ bool ServoEasing::startEaseTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aD
      * Avoid division by 0 below
      */
     if (aDegreesPerSecond == 0) {
-#if defined(DEBUG)
+#if defined(LOCAL_DEBUG)
         Serial.println(F("Speed is 0 -> set to 1"));
 #endif
         aDegreesPerSecond = 1;
@@ -1236,8 +1260,8 @@ bool ServoEasing::startEaseToD(int aDegreeOrMicrosecond, uint_fast16_t aMillisFo
     mMillisAtStartMove = millis();
 
 #if defined(LOCAL_TRACE)
-printDynamic(&Serial, true);
-#elif defined(DEBUG)
+    printDynamic(&Serial, true);
+#elif defined(LOCAL_DEBUG)
 printDynamic(&Serial);
 #endif
 
@@ -1258,14 +1282,14 @@ bool ServoEasing::startEaseToD(float aDegreeOrMicrosecond, uint_fast16_t aMillis
      */
     if (mServoIndex == INVALID_SERVO) {
 #if defined(LOCAL_TRACE)
-            Serial.print(F("Error: detached servo"));
-    #endif
+        Serial.println(F("Error: detached servo"));
+#endif
         return true;
     }
 
 #if defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
         if (true) {
-    #else
+#else
     if (mEasingType != EASE_DUMMY_MOVE) {
 #endif
         // write the position also to ServoEasingNextPositionArray
@@ -1290,9 +1314,9 @@ bool ServoEasing::startEaseToD(float aDegreeOrMicrosecond, uint_fast16_t aMillis
 
 #if defined(LOCAL_TRACE)
     printDynamic(&Serial, true);
-    #elif defined(DEBUG)
+#elif defined(LOCAL_DEBUG)
     printDynamic(&Serial);
-    #endif
+#endif
 
     bool tReturnValue = !mServoMoves;
 
@@ -1409,36 +1433,43 @@ bool ServoEasing::update() {
         uint_fast8_t tCallStyle = mEasingType & CALL_STYLE_MASK; // Values are CALL_STYLE_DIRECT, CALL_STYLE_OUT, CALL_STYLE_IN_OUT, CALL_STYLE_BOUNCING_OUT_IN
 
         if (tCallStyle == CALL_STYLE_DIRECT) { // CALL_STYLE_IN
-            // Use IN function direct: Call with PercentageOfCompletion | 0.0 to 1.0. Result is from 0.0 to 1.0
+            // Use IN function direct: Call with PercentageOfCompletion | 0.0 to 1.0. FactorOfMovementCompletion is returnValue (from 0.0 to 1.0)
             tFactorOfMovementCompletion = callEasingFunction(tFactorOfTimeCompletion);
 
         } else if (tCallStyle == CALL_STYLE_OUT) {
-            // Use IN function to generate OUT function: Call with (1 - PercentageOfCompletion) | 1.0 to 0.0. Result = (1 - result)
+            // Use IN function to generate OUT function: Call with (1 - PercentageOfCompletion) | 1.0 to 0.0. FactorOfMovementCompletion = (1 - returnValue)
             tFactorOfMovementCompletion = 1.0 - (callEasingFunction(1.0 - tFactorOfTimeCompletion));
 
         } else {
             if (tFactorOfTimeCompletion <= 0.5) {
                 if (tCallStyle == CALL_STYLE_IN_OUT) {
-                    // In the first half, call with (2 * PercentageOfCompletion) | 0.0 to 1.0. Result = (0.5 * result)
+                    // In the first half, call with (2 * PercentageOfCompletion) | 0.0 to 1.0. FactorOfMovementCompletion = (0.5 * returnValue)
                     tFactorOfMovementCompletion = 0.5 * (callEasingFunction(2.0 * tFactorOfTimeCompletion));
                 }
                 if (tCallStyle == CALL_STYLE_BOUNCING_OUT_IN) {
-                    // In the first half, call with (1 - (2 * PercentageOfCompletion)) | 1.0 to 0.0. Result = (1 - result) -> call OUT function faster.
+                    // In the first half, call with (1 - (2 * PercentageOfCompletion)) | 1.0 to 0.0. FactorOfMovementCompletion = (1 - returnValue) -> call OUT 2 times faster.
                     tFactorOfMovementCompletion = 1.0 - (callEasingFunction(1.0 - (2.0 * tFactorOfTimeCompletion)));
                 }
             } else {
                 if (tCallStyle == CALL_STYLE_IN_OUT) {
-                    // In the second half, call with (2 - (2 * PercentageOfCompletion)) | 1.0 to 0.0. Result = ( 1- (0.5 * result))
+                    // In the second half, call with (2 - (2 * PercentageOfCompletion)) | 1.0 to 0.0. FactorOfMovementCompletion = ( 1- (0.5 * returnValue))
                     tFactorOfMovementCompletion = 1.0 - (0.5 * (callEasingFunction(2.0 - (2.0 * tFactorOfTimeCompletion))));
                 }
                 if (tCallStyle == CALL_STYLE_BOUNCING_OUT_IN) {
-                    // In the second half, call with ((2 * PercentageOfCompletion) - 1) | 0.0 to 1.0. Result = (1- result) -> call OUT function faster and backwards.
-                    tFactorOfMovementCompletion = 1.0 - (callEasingFunction((2.0 * tFactorOfTimeCompletion) - 1.0));
+                    // In the second half, call with ((2 * PercentageOfCompletion) - 1) | 0.0 to 1.0. FactorOfMovementCompletion = (1- returnValue) -> call OUT 2 times faster and backwards.
+                    tFactorOfMovementCompletion = 1.0 - callEasingFunction((2.0 * tFactorOfTimeCompletion) - 1.0);
                 }
             }
         }
 
-#if defined(ENABLE_EASE_USER) || defined(ENABLE_EASE_PRECISION)
+#if defined(LOCAL_TRACE)
+        Serial.print(F("FactorOfTimeCompletion="));
+        Serial.print(tFactorOfTimeCompletion);
+        Serial.print(F(" FactorOfMovementCompletion="));
+        Serial.println(tFactorOfMovementCompletion);
+#endif
+
+#if defined(ENABLE_EASE_USER) || defined(ENABLE_EASE_PRECISION) // Only these two types returns microseconds yet
         // Threshold of 400 corresponds to around -14 degree
         if (tFactorOfMovementCompletion >= EASE_FUNCTION_MICROSECONDS_INDICATOR_OFFSET) {
             // Here we have called an easing function, which returns microseconds or units instead of the factor of completion (0.0 to 1.0)
@@ -2310,12 +2341,12 @@ void synchronizeAllServosAndStartInterrupt(bool aStartUpdateByInterrupt) {
     }
 
 #if defined(LOCAL_TRACE)
-        Serial.print(F("Number of servos="));
-        Serial.print(ServoEasing::sServoArrayMaxIndex);
-        Serial.print(F(" MillisAtStartMove="));
-        Serial.print(tMillisAtStartMove);
-        Serial.print(F(" MaxMillisForCompleteMove="));
-        Serial.println(tMaxMillisForCompleteMove);
+    Serial.print(F("Number of servos="));
+    Serial.print(ServoEasing::sServoArrayMaxIndex);
+    Serial.print(F(" MillisAtStartMove="));
+    Serial.print(tMillisAtStartMove);
+    Serial.print(F(" MaxMillisForCompleteMove="));
+    Serial.println(tMaxMillisForCompleteMove);
 #endif
 
     /*
@@ -2334,6 +2365,7 @@ void synchronizeAllServosAndStartInterrupt(bool aStartUpdateByInterrupt) {
     }
 }
 
+#if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
 /*********************************************************
  * Included easing functions
  * Input is from 0.0 to 1.0 with 0.0 -> 0 % and 1.0 -> 100% completion of time between the two endpoints
@@ -2399,37 +2431,47 @@ float ServoEasing::ElasticEaseIn(float aFactorOfTimeCompletion) {
 #define OVERSHOOT_AMOUNT_UNITS          10 // around 5 degree
 
 /*
- * PRECISION is like linear, but if descending, adds a 5 degree negative bounce in the last 20 % of the movement time.
- * So the target position is always approached from below. This enables it to taken out the slack/backlash of any hardware moved by the servo.
- *
+ * PRECISION is like linear, but depending on style and direction, adds a 5 degree  bounce in the last 20 % of the movement time.
+ * So the target position is always approached from one side. This enables it to taken out the slack/backlash of any hardware moved by the servo.
+ * IN = Negative bounce for movings from above (go in to origin)
+ * OUT = Positive bounce for movings from below (go out from origin) we are called with 1.0 to 0.0
  */
 float ServoEasing::LinearWithQuadraticBounce(float aFactorOfTimeCompletion) {
-    if ((mEasingType == EASE_PRECISION_OUT && mDeltaMicrosecondsOrUnits >= 0)
-            || (mEasingType == EASE_PRECISION_IN && mDeltaMicrosecondsOrUnits < 0)) {
-        // Use linear moving for this direction.
+    if (((mEasingType & CALL_STYLE_OUT) && mDeltaMicrosecondsOrUnits < 0)
+            || ((mEasingType & CALL_STYLE_OUT) == 0 && mDeltaMicrosecondsOrUnits >= 0)) {
+        // Use linear moving for this direction/type combination.
         return aFactorOfTimeCompletion;
     } else {
+        if (mEasingType & CALL_STYLE_OUT) {
+            aFactorOfTimeCompletion = 1 - aFactorOfTimeCompletion; // reverse the reverse calling :-) so we have from 0.0 to 1.0
+        }
+
         /*
-         * We are approaching from above.
-         * Use scaled linear moving the first 80 % of the movement, and add a quadratic bounce.
+         * We are approaching from the direction, which requires a bounce.
+         * Use scaled linear moving the first 80 % of the movement, and add a quadratic bounce for the remaining 20%.
          */
         if (aFactorOfTimeCompletion < PART_OF_LINEAR_MOVEMENT) {
             // The linear part, return scaled up float aFactorOfTimeCompletion
-            return aFactorOfTimeCompletion * (1.0 / PART_OF_LINEAR_MOVEMENT);
+            aFactorOfTimeCompletion = aFactorOfTimeCompletion * (1.0 / PART_OF_LINEAR_MOVEMENT);
+            if (mEasingType & CALL_STYLE_OUT) {
+                return 1 - aFactorOfTimeCompletion; // must return reverse factor
+            }
+            return aFactorOfTimeCompletion; // for IN function, return plain factor
+
         } else {
             /*
-             * The bounce
+             * The bounce for the IN function (aFactorOfTimeCompletion from 0.8 to 1.0)
              */
             float tRemainingFactor;
             if (aFactorOfTimeCompletion < (1.0 - PART_OF_BOUNCE_MOVEMENT_HALF)) {
                 // Between 80 % and 90 % here. Starting part of the overshoot bounce
-                tRemainingFactor = aFactorOfTimeCompletion - PART_OF_LINEAR_MOVEMENT; // tRemainingFactor - 0.8 -> 0.0 to 0.1
-                tRemainingFactor = tRemainingFactor * (1 / PART_OF_BOUNCE_MOVEMENT_HALF); //tRemainingFactor is 0.0 to 1.0
-                tRemainingFactor = 1.0 - tRemainingFactor; //tRemainingFactor is 1.0 to 0.0 -> quadratic out
+                tRemainingFactor = aFactorOfTimeCompletion - PART_OF_LINEAR_MOVEMENT;    // tRemainingFactor - 0.8 -> 0.0 to 0.1
+                tRemainingFactor = tRemainingFactor * (1 / PART_OF_BOUNCE_MOVEMENT_HALF);   // tRemainingFactor is 0.0 to 1.0
+                tRemainingFactor = 1.0 - tRemainingFactor;                    // tRemainingFactor is 1.0 to 0.0 -> quadratic out
             } else {
                 // Between 90 % and 100 % here. Returning part of the overshoot bounce
                 tRemainingFactor = aFactorOfTimeCompletion - (1.0 - PART_OF_BOUNCE_MOVEMENT_HALF); // tRemainingFactor - 0.9 -> 0.0 to 0.1
-                tRemainingFactor = tRemainingFactor * (1 / PART_OF_BOUNCE_MOVEMENT_HALF); //tRemainingFactor is 0.0 to 1.0 -> quadratic in
+                tRemainingFactor = tRemainingFactor * (1 / PART_OF_BOUNCE_MOVEMENT_HALF); // tRemainingFactor is 0.0 to 1.0 -> quadratic in
             }
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 #  if defined(USE_SERVO_LIB)
@@ -2443,13 +2485,14 @@ float ServoEasing::LinearWithQuadraticBounce(float aFactorOfTimeCompletion) {
             return PCA9685UnitsToMicroseconds(mEndMicrosecondsOrUnits + OVERSHOOT_AMOUNT_UNITS
                     - (OVERSHOOT_AMOUNT_UNITS * tRemainingFactor * tRemainingFactor));
 #else
-            // return direct microseconds values
-            if (mEasingType == EASE_PRECISION_OUT) {
+            // return direct microseconds values for constant bump
+            if (mEasingType & CALL_STYLE_OUT) {
                 /*
                  * Positive bounce for movings from below
+                 * must compensate for processing at update by: tFactorOfMovementCompletion = 1.0 - (callEasingFunction(1.0 - tFactorOfTimeCompletion));
                  */
-                return mEndMicrosecondsOrUnits + OVERSHOOT_AMOUNT_MILLIS
-                        - (OVERSHOOT_AMOUNT_MILLIS * tRemainingFactor * tRemainingFactor);
+                return -(mEndMicrosecondsOrUnits + OVERSHOOT_AMOUNT_MILLIS - 1
+                        - (OVERSHOOT_AMOUNT_MILLIS * tRemainingFactor * tRemainingFactor));
             } else {
                 /*
                  * Negative bounce for movings from above
@@ -2483,6 +2526,7 @@ float ServoEasing::EaseOutBounce(float aFactorOfTimeCompletion) {
     }
     return tFactorOfMovementCompletion;
 }
+#endif // !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
 
 /************************************
  * Convenience I2C check function

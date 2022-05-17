@@ -85,7 +85,7 @@ void setupRobotArmServos() {
     /*
      * Operate claw from 0° (close) to 90° (open), this is an initial trim
      */
-    ClawServo.attach(CLAW_SERVO_PIN, 0, CLAW_MICROS_AT_90_DEGREE, CLAW_MICROS_AT_CLOSE, 90, 0);
+    ClawServo.attach(CLAW_SERVO_PIN, 0, CLAW_MICROS_AT_180_DEGREE, CLAW_MICROS_AT_CLOSE, 180, 0);
 
     setSpeedForAllServos(sRobotArmServoSpeed); // must be after attach
 
@@ -173,8 +173,8 @@ uint16_t getDurationMillisForMove() {
 }
 
 void openClaw() {
-    sClawServoAngle = 45;
-    ClawServo.easeTo(45);
+    sClawServoAngle = 90;
+    ClawServo.easeTo(90);
 }
 
 void closeClaw() {

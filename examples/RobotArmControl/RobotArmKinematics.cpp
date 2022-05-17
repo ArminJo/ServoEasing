@@ -32,8 +32,9 @@
 #include <Arduino.h>     // for PI etc.
 #include "RobotArmKinematics.h"
 
+#if __has_include("RobotArmServoConfiguration.h")
 #include "RobotArmServoConfiguration.h"
-#if !defined(HORIZONTAL_ARM_LENGTH_MILLIMETER) // defined in RobotArmServoConfiguration.h
+#else
 #define HORIZONTAL_ARM_LENGTH_MILLIMETER    80
 #define LIFT_ARM_LENGTH_MILLIMETER          80
 #define CLAW_LENGTH_MILLIMETER              68 // Length from wrist to hand PLUS base center to shoulder

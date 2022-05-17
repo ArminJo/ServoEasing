@@ -1,16 +1,30 @@
 /*
  * IRCommandMapping.h
  *
- * IR remote button codes, strings, and functions to call for RobotArmControl
+ * Contains IR remote button codes, strings, and functions to call for controlling a meArm 4DoF Robot
+ * with 4 servos using an IR Remote at pin A0.
+ * Supported IR remote are KEYES (the original mePed remote) and WM10 and ...
+ * Select the one you have below or define it in the including file.
  *
  *  Copyright (C) 2019-2022  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
- * Mapping for controlling a meArm 4DoF Robot with 4 servos using an IR Remote at pin A0
- * Supported IR remote are KEYES (the original mePed remote) and WM10 and ...
- * Select the one you have below or define it in the including file.
+ *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
+ *
+ *  ServoEasing is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program. If not, see <http://www.gnu.org/licenses/gpl.html>.
+ *
  */
-
 #ifndef _IR_COMMAND_MAPING_H
 #define _IR_COMMAND_MAPING_H
 
@@ -271,6 +285,8 @@
 #define COMMAND_EASE_TYPE   IR_3
 
 #define COMMAND_TEST        IR_100
+#define COMMAND_TIME_TEST   IR_1
+#define COMMAND_CLOCK       IR_7
 #endif
 
 // IR strings of functions for output
@@ -295,6 +311,8 @@ static const char ik_off[] PROGMEM ="IK off";
 static const char ik_toggle[] PROGMEM ="toggle IK";
 static const char type[] PROGMEM ="easing type";
 static const char test[] PROGMEM ="test";
+static const char timeTest[] PROGMEM ="time test";
+static const char clock[] PROGMEM ="clock";
 static const char unknown[] PROGMEM ="unknown";
 
 /*
@@ -305,23 +323,26 @@ struct IRToCommandMappingStruct IRMapping[] = { {
 /*
  * Commands, which must run exclusively and therefore must first stop other commands running.
  */
-COMMAND_FORWARD, IR_COMMAND_FLAG_BLOCKING, &doGoForward, forward }, {
-COMMAND_BACKWARD, IR_COMMAND_FLAG_BLOCKING, &doGoBack, back }, {
-COMMAND_RIGHT, IR_COMMAND_FLAG_BLOCKING, &doTurnRight, right }, {
-COMMAND_LEFT, IR_COMMAND_FLAG_BLOCKING, &doTurnLeft, left }, {
-COMMAND_UP, IR_COMMAND_FLAG_BLOCKING, &doLiftUp, up }, {
-COMMAND_DOWN, IR_COMMAND_FLAG_BLOCKING, &doLiftDown, down }, {
-COMMAND_OPEN, IR_COMMAND_FLAG_BLOCKING, &doOpenClaw, open }, {
-COMMAND_CLOSE, IR_COMMAND_FLAG_BLOCKING, &doCloseClaw, close }, {
+COMMAND_FORWARD, IR_COMMAND_FLAG_BLOCKING | IR_COMMAND_FLAG_REPEATABLE, &doGoForward, forward }, {
+COMMAND_BACKWARD, IR_COMMAND_FLAG_BLOCKING | IR_COMMAND_FLAG_REPEATABLE, &doGoBack, back }, {
+COMMAND_RIGHT, IR_COMMAND_FLAG_BLOCKING | IR_COMMAND_FLAG_REPEATABLE, &doTurnRight, right }, {
+COMMAND_LEFT, IR_COMMAND_FLAG_BLOCKING | IR_COMMAND_FLAG_REPEATABLE, &doTurnLeft, left }, {
+COMMAND_UP, IR_COMMAND_FLAG_BLOCKING | IR_COMMAND_FLAG_REPEATABLE, &doLiftUp, up }, {
+COMMAND_DOWN, IR_COMMAND_FLAG_BLOCKING | IR_COMMAND_FLAG_REPEATABLE, &doLiftDown, down }, {
+COMMAND_OPEN, IR_COMMAND_FLAG_BLOCKING | IR_COMMAND_FLAG_REPEATABLE, &doOpenClaw, open }, {
+COMMAND_CLOSE, IR_COMMAND_FLAG_BLOCKING | IR_COMMAND_FLAG_REPEATABLE, &doCloseClaw, close }, {
 COMMAND_CENTER, IR_COMMAND_FLAG_BLOCKING, &doGoCenter, center }, {
 COMMAND_FOLD, IR_COMMAND_FLAG_BLOCKING, &doGoFolded, fold }, {
 COMMAND_MOVE, IR_COMMAND_FLAG_BLOCKING, &doRobotArmAutoMove, move },
-#if defined(ROBOT_ARM_HAS_RTC_CONTROL)
-        { COMMAND_TEST, IR_COMMAND_FLAG_BLOCKING, &doStartClock, test },
-#else
-        { COMMAND_TEST, IR_COMMAND_FLAG_BLOCKING, &doRobotArmTestMove, test },
-
+{ COMMAND_TEST, IR_COMMAND_FLAG_BLOCKING, &doRobotArmTestMove, test },
+#if defined(COMMAND_TIME_TEST)
+{ COMMAND_TIME_TEST, IR_COMMAND_FLAG_BLOCKING, &doDrawTime, timeTest },
 #endif
+
+#if defined(ROBOT_ARM_HAS_RTC_CONTROL)
+        { COMMAND_CLOCK, IR_COMMAND_FLAG_BLOCKING, &doStartClock, clock },
+#endif
+
         /*
          * Commands, which can be executed always, since the are short. Like set directions etc.
          */

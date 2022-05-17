@@ -30,15 +30,16 @@
 #define INFO // enable some prints
 #define ROBOT_ARM_HAS_IR_CONTROL
 //#define ROBOT_ARM_HAS_RTC_CONTROL
-//#define ROBOT_ARM_2 // the transparent one
+//#define ROBOT_ARM_1 // My black one
+//#define ROBOT_ARM_2 // My transparent one
 
 #if defined(ROBOT_ARM_HAS_IR_CONTROL)
 #define USE_TINY_IR_RECEIVER // must be specified before including IRCommandDispatcher.hpp to define which IR library to use
 #define IR_INPUT_PIN  A0
 #if defined(ROBOT_ARM_2)
-#define USE_CAR_MP3_REMOTE // Transparent arm
+#define USE_MSI_REMOTE // Transparent arm
 #else
-#define USE_MSI_REMOTE // Black arm
+#define USE_CAR_MP3_REMOTE // Black arm
 #endif
 #include "IRCommandMapping.h" // must be included before IRCommandDispatcher.hpp to define IR_ADDRESS and IRMapping and string "unknown".
 #include "IRCommandDispatcher.hpp"
@@ -47,9 +48,10 @@
 #include "RobotArmServoControl.hpp" // includes ServoEasing.hpp
 
 #if defined(ROBOT_ARM_HAS_RTC_CONTROL)
-#include "RobotArmRTCControl.h"
-#include "ClockMovements.h"
+//#define GERMAN_NAMES_FOR_DATE
+#include "RobotArmRTCControl.hpp"
 #endif
+#include "ClockMovements.hpp"
 
 #include "RobotArmIRCommands.hpp"
 
@@ -296,6 +298,7 @@ void doEnableAutoModeForRobotArm() {
  * open and close claw
  */
 void doRobotArmAttention() {
+    Serial.println(F("Do attention"));
     ClawServo.easeTo(90, 120);
     ClawServo.easeTo(0, 120);
 }
@@ -308,7 +311,7 @@ float mapSpecial(int x, int in_min, int in_max, int out_min, int out_max) {
  * Sets sManualActionHappened if potentiometers has once been operated
  */
 #define ANALOG_HYSTERESIS 4 // 0.4 degree at a 100 degree scale
-#define ANALOG_HYSTERESIS_FOR_MANUAL_ACTION 20
+#define ANALOG_HYSTERESIS_FOR_MANUAL_ACTION 20 // is greater than ANALOG_HYSTERESIS to avoid false detection of manual control
 void handleManualControl() {
     static bool isInitialized = false;
 
@@ -351,10 +354,9 @@ void handleManualControl() {
             sLastPivot = tPivot;
             tTargetAngle = mapSpecial(tPivot, 0, 1023, 100, -100);
             moveOneServoAndCheckInputAndWait(SERVO_BASE_PIVOT, tTargetAngle, sRobotArmServoSpeed);
-            if (sDebugOutputIsEnabled) {
-                Serial.print(F("BasePivotServo: micros="));
-                Serial.print(BasePivotServo.getEndMicrosecondsOrUnits()); // we have an initial trim, this is transparent.
-            }
+
+            Serial.print(F("BasePivotServo: micros="));
+            Serial.print(BasePivotServo.getEndMicrosecondsOrUnits()); // we have an initial trim, this is transparent.
         }
 
         int tHorizontal = analogRead(HORIZONTAL_INPUT_PIN);
@@ -367,10 +369,9 @@ void handleManualControl() {
             sLastHorizontal = tHorizontal;
             tTargetAngle = mapSpecial(tHorizontal, 0, 1023, HORIZONTAL_MINIMUM_DEGREE, HORIZONTAL_MAXIMUM_DEGREE);
             moveOneServoAndCheckInputAndWait(SERVO_HORIZONTAL, tTargetAngle, sRobotArmServoSpeed);
-            if (sDebugOutputIsEnabled) {
-                Serial.print(F("HorizontalServo: micros="));
-                Serial.print(HorizontalServo.getEndMicrosecondsOrUnits());
-            }
+
+            Serial.print(F("HorizontalServo: micros="));
+            Serial.print(HorizontalServo.getEndMicrosecondsOrUnits());
         }
 
         int tLift = analogRead(LIFT_INPUT_PIN);
@@ -383,10 +384,9 @@ void handleManualControl() {
             sLastLift = tLift;
             tTargetAngle = mapSpecial(tLift, 0, 1023, LIFT_MINIMUM_DEGREE - 10, LIFT_MAXIMUM_DEGREE + 10);
             moveOneServoAndCheckInputAndWait(SERVO_LIFT, tTargetAngle, sRobotArmServoSpeed);
-            if (sDebugOutputIsEnabled) {
-                Serial.print(F("LiftServo: micros="));
-                Serial.print(LiftServo.getEndMicrosecondsOrUnits());
-            }
+
+            Serial.print(F("LiftServo: micros="));
+            Serial.print(LiftServo.getEndMicrosecondsOrUnits());
         }
 
         int tClaw = analogRead(CLAW_INPUT_PIN);
@@ -399,21 +399,18 @@ void handleManualControl() {
             sLastClaw = tClaw;
             tTargetAngle = mapSpecial(tClaw, 0, 1023, -10, 190);
             moveOneServoAndCheckInputAndWait(SERVO_CLAW, tTargetAngle, sRobotArmServoSpeed);
-            if (sDebugOutputIsEnabled) {
-                Serial.print(F("ClawServo: micros="));
-                Serial.print(ClawServo.getEndMicrosecondsOrUnits());
-            }
+
+            Serial.print(F("ClawServo: micros="));
+            Serial.print(ClawServo.getEndMicrosecondsOrUnits());
         }
 
         if (tValueChanged) {
             if (tManualAction) {
                 sMillisOfLastManualAction = millis();
             }
-            if (sDebugOutputIsEnabled) {
-                Serial.print(F(" degree="));
-                Serial.print(tTargetAngle);
-                Serial.print(F(" | "));
-            }
+            Serial.print(F(" degree="));
+            Serial.print(tTargetAngle);
+            Serial.print(F(" | "));
             // Compute forward kinematics for printing
             sEndPosition.LeftRightDegree = ServoEasing::ServoEasingNextPositionArray[SERVO_BASE_PIVOT];
             sEndPosition.BackFrontDegree = ServoEasing::ServoEasingNextPositionArray[SERVO_HORIZONTAL];

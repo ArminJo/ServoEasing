@@ -31,6 +31,7 @@
 //#define DISABLE_COMPLEX_FUNCTIONS     // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory.
 //#define MAX_EASING_SERVOS 3
 //#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
+//#define DISABLE_MIN_AND_MAX_CONSTRAINTS    // Activating this disables constraints. Saves 4 bytes RAM per servo but strangely enough no program memory.
 //#define DEBUG                         // Activate this to generate lots of lovely debug output for this library.
 
 /*
@@ -49,7 +50,7 @@
 //#define ENABLE_EASE_PRECISION
 #define ENABLE_EASE_USER
 
-//#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output.
+//#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output from ServoEasing.hpp.
 #include "ServoEasing.hpp"
 
 #include "PinDefinitionsAndMore.h"
@@ -151,12 +152,7 @@ void setup() {
     Servo1.setEasingType(EASE_USER_DIRECT);
     Servo1.registerUserEaseInFunction(EaseQuadraticInQuarticOut);
     Servo2.setEasingType(EASE_ELASTIC_OUT);
-#if !defined(KEEP_LIBRARY_SMALL)
     Servo3.setEasingType(EASE_BOUNCE_OUT);
-#else
-    Servo3.setEasingType(EASE_USER_DIRECT);
-    Servo3.registerUserEaseInOutFunction(EaseOutBounce);
-#endif
 
     delay(500);
 
