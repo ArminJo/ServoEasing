@@ -164,10 +164,17 @@ DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_
 int TargetDegreesArray[NUMBER_OF_EASING_TYPES_TO_SHOW] = { 90, 180, 90, 0, 90, 180, 90, 0, 90, 180, 180, 90, 90, 0 };
 #endif
 
+/*
+ * !!!This function is called in ISR context!!!
+ * This means, that interrupts are disabled and delay() is not working, only delayMicroseconds() work.
+ * All variables, that are set here and read by the main loop, must be declared as "volatile" otherwise race condition may appear.
+ * All variables read here and set by the main loop, while this call can happen / is enabled,
+ * must we written with a noInterrupts(), interrupts() guard.
+ */
 void ServoTargetPositionReachedHandler(ServoEasing *aServoEasingInstance) {
     static uint_fast8_t sStep = 0;
 
-#if !defined(PRINT_FOR_SERIAL_PLOTTER)
+    #if !defined(PRINT_FOR_SERIAL_PLOTTER)
     static bool sDoDelay = false;
     if (sDoDelay) {
         sDoDelay = false;
@@ -179,7 +186,7 @@ void ServoTargetPositionReachedHandler(ServoEasing *aServoEasingInstance) {
     uint_fast8_t tEasingType = EasingTypesArray[sStep];
 
     Servo1.setEasingType(tEasingType);
-    Servo1.startEaseTo(tTargetDegree);
+    Servo1.startEaseTo(tTargetDegree); // easeTo() uses delay() and will not work here.
     sStep++;
     if (sStep >= NUMBER_OF_EASING_TYPES_TO_SHOW) {
         sStep = 0; // do it forever

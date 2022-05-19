@@ -27,7 +27,15 @@
 #define VERSION_SERVO_EASING "3.0.0"
 #define VERSION_SERVO_EASING_MAJOR 3
 #define VERSION_SERVO_EASING_MINOR 0
+#define VERSION_SERVO_EASING_PATCH 0
 // The change log is at the bottom of the file
+
+/*
+ * Macro to convert 3 version parts into an integer
+ * To be used in preprocessor comparisons, such as #if VERSION_SERVO_EASING_HEX >= VERSION_HEX_VALUE(3, 7, 0)
+ */
+#define VERSION_HEX_VALUE(major, minor, patch) ((major << 16) | (minor << 8) | (patch))
+#define VERSION_SERVO_EASING_HEX  VERSION_HEX_VALUE(VERSION_SERVO_EASING_MAJOR, VERSION_SERVO_EASING_MINOR, VERSION_SERVO_EASING_PATCH)
 
 #define MILLIS_IN_ONE_SECOND 1000L
 
@@ -466,12 +474,12 @@ public:
     void easeTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);  // blocking move to new position using speed
     void easeToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove);    // blocking move to new position using duration
 
-    bool setEaseTo(int aTargetDegreeOrMicrosecond);                                     // shortcut for startEaseTo(..,..,false)
-    bool setEaseTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);    // shortcut for startEaseTo(..,..,false)
-    bool startEaseTo(int aTargetDegreeOrMicrosecond);                             // shortcut for startEaseTo(aDegree, mSpeed, true)
+    bool setEaseTo(int aTargetDegreeOrMicrosecond);                                     // shortcut for startEaseTo(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
+    bool setEaseTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);    // shortcut for startEaseTo(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
+    bool startEaseTo(int aTargetDegreeOrMicrosecond);                             // shortcut for startEaseTo(aDegree, mSpeed, START_UPDATE_BY_INTERRUPT)
     bool startEaseTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt =
     START_UPDATE_BY_INTERRUPT);
-    bool setEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);   // shortcut for startEaseToD(..,..,false)
+    bool setEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);   // shortcut for startEaseToD(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
     bool startEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt =
     START_UPDATE_BY_INTERRUPT);
 
@@ -482,12 +490,12 @@ public:
     void easeTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);  // blocking move to new position using speed
     void easeToD(float aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove);    // blocking move to new position using duration
 
-    bool setEaseTo(float aTargetDegreeOrMicrosecond);                                     // shortcut for startEaseTo(..,..,false)
-    bool setEaseTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);    // shortcut for startEaseTo(..,..,false)
-    bool startEaseTo(float aTargetDegreeOrMicrosecond);                           // shortcut for startEaseTo(aDegree, mSpeed, true)
+    bool setEaseTo(float aTargetDegreeOrMicrosecond);                                     // shortcut for startEaseTo(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
+    bool setEaseTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);    // shortcut for startEaseTo(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
+    bool startEaseTo(float aTargetDegreeOrMicrosecond);                           // shortcut for startEaseTo(aDegree, mSpeed, START_UPDATE_BY_INTERRUPT)
     bool startEaseTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt =
     START_UPDATE_BY_INTERRUPT);
-    bool setEaseToD(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);   // shortcut for startEaseToD(..,..,false)
+    bool setEaseToD(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);   // shortcut for startEaseToD(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
     bool startEaseToD(float aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt =
     START_UPDATE_BY_INTERRUPT);
 
@@ -657,11 +665,6 @@ void setEaseToForAllServosSynchronizeAndStartInterrupt();
 void setEaseToForAllServosSynchronizeAndStartInterrupt(uint_fast16_t aDegreesPerSecond);
 void synchronizeAndEaseToArrayPositions();
 void synchronizeAndEaseToArrayPositions(uint_fast16_t aDegreesPerSecond);
-
-void printArrayPositions(Print *aSerial);
-bool isOneServoMoving();
-void stopAllServos();
-bool updateAllServos();
 void synchronizeAllServosAndStartInterrupt(bool aStartUpdateByInterrupt = START_UPDATE_BY_INTERRUPT);
 
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
@@ -673,6 +676,11 @@ void setEasingTypeForMultipleServos(uint_fast8_t aNumberOfServos, uint_fast8_t a
 void updateAndWaitForAllServosToStop();
 bool delayAndUpdateAndWaitForAllServosToStop(unsigned long aMillisDelay, bool aTerminateDelayIfAllServosStopped = false);
 void synchronizeAllServosStartAndWaitForAllServosToStop();
+
+void printArrayPositions(Print *aSerial);
+bool isOneServoMoving();
+void stopAllServos();
+bool updateAllServos();
 
 void enableServoEasingInterrupt();
 #if defined(__AVR_ATmega328P__)

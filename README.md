@@ -21,10 +21,12 @@ Available as [Arduino library "ServoEasing"](https://www.arduinolibraries.info/l
 - [List of easing functions](https://github.com/ArminJo/ServoEasing#list-of-easing-functions)
 - [API](https://github.com/ArminJo/ServoEasing#api)
 - [Usage](https://github.com/ArminJo/ServoEasing#usage)
+- [Multiple servo handling](https://github.com/ArminJo/ServoEasing#multiple-servo-handling)
 - [Comparison between Quadratic, Cubic and Sine easings.](https://github.com/ArminJo/ServoEasing#comparison-between-quadratic-cubic-and-sine-easings)
 - [Useful resources](https://github.com/ArminJo/ServoEasing#useful-resources)
 - [Resolution of servo positioning](https://github.com/ArminJo/ServoEasing#resolution-of-servo-positioning)
 - [Speed of servo positioning](https://github.com/ArminJo/ServoEasing#speed-of-servo-positioning)
+- [Why *.hpp files instead of *.cpp files](https://github.com/ArminJo/ServoEasing#why-hpp-files-instead-of-cpp-files)
 - [Using the new *.hpp files / how to avoid `multiple definitions` linker errors](https://github.com/ArminJo/ServoEasing#using-the-new-hpp-files--how-to-avoid-multiple-definitions-linker-errors)
 - [Compile options / macros for this library](https://github.com/ArminJo/ServoEasing#compile-options--macros-for-this-library)
 - [Using PCA9685 16-Channel Servo Expander](https://github.com/ArminJo/ServoEasing#using-pca9685-16-channel-servo-expander)
@@ -49,7 +51,7 @@ The expander in turn requires the Arduino Wire library or a [compatible one](htt
 For **ESP32** you need to install the Arduino ESP32Servo library.<br/>
 <br/>
 If you require only one or two servos, you may want to use the included [LightweightServo library](https://github.com/ArminJo/LightweightServo) (only for **AVR**), instead of the Arduino Servo library.
-The LightweightServo library uses the internal Timer1 with no software overhead and therefore has no problems with **servo jitterring** or interrupt blocking libraries like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
+The LightweightServo library uses the internal Timer1 with no software overhead and therefore has no problems with **servo jittering** or interrupt blocking libraries like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
 For instructions how to enable these alternatives, see [Compile options / macros](https://github.com/ArminJo/ServoEasing#compile-options--macros-for-this-library).
 
 # Features
@@ -58,11 +60,12 @@ For instructions how to enable these alternatives, see [Compile options / macros
 - **Non blocking** movements are enabled by using **startEaseTo\* functions** by reusing the interrupts of the servo timer Timer1 or using a dedicated timer on other platforms. This function is not available for all platforms.
 - **Callback at reaching target enables multiple movements independent of main loop**.
 - A **trim value** can be set for any servo. Its value is internally added to each requested position.
-- **Reverse operation** of servo is possible eg. if it is mounted head down.
+- **Reverse operation** of servo is possible e.g. if it is mounted head down.
 - **Constraints for minimum and maximum servo degree** can be specified. Trim and reverse are applied after constraint processing.
 - Allow to specify an arbitrary mapping between degrees and microseconds by `attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree)`.
 - **Servo speed** can be specified in **degree per second** or **milliseconds** for the complete move.
 - Degree values >= 400 is taken as microsecond values for the servo pulse.
+- **Multiple servo handling** by *ForAllServos() functions like `setDegreeForAllServos(3, 135, 135, 135)`.
 - All ServoEasing objects are accessible by using the [`ServoEasing::ServoEasingArray[]`](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServos/ThreeServos.ino#L104).
 
 # List of easing functions:
@@ -83,8 +86,8 @@ For instructions how to enable these alternatives, see [Compile options / macros
 ### All easing functions can be used in the following variants:
 All ease functions are called internally with the value: `PercentageOfCompletion / 100` resulting in values from 0 and 1.
 
-- In (start the function with 0 and go to 1) for PRECISION, do a bounce if approching from above (go in to origin), else linear.
-- Out (start the function with 1 and go to 0) for PRECISION, do a bounce if approching from  below (go out from origin), else linear.
+- In (start the function with 0 and go to 1) for PRECISION, do a bounce if approaching from above (go in to origin), else linear.
+- Out (start the function with 1 and go to 0) for PRECISION, do a bounce if approaching from  below (go out from origin), else linear.
 - InOut (start the function with 0 go to 1 and back to 0)
 - Bouncing (start with OUT, then return with IN to start degree) e.g. Bouncing of the Sine function results in the upper (positive) half of the sine.
 
@@ -121,6 +124,10 @@ Just call `myServo.startEaseTo()` instead of `myServo.write()` and you are done.
 - Do not forget to **initially set the start position** for the Servo, since the library has **no knowledge about your servos initial position** and therefore starts at **0 degree** at the first move, which may be undesirable.<br/>
   Setting the start position of the servo can be done as the second parameter to `myServo.attach(int aPin, int aInitialDegree)` or by calling `myServo.write(int aDegree)`,
 - And do not forget to **initially set the moving speed** (as degrees per second) with `myServo.setSpeed()` or as **second parameter** to startEaseTo() or easeTo(). Otherwise the Servo will start with the speed of 5 degrees per second, to indicate that speed was not set.<br/>
+
+# Multiple servo handling
+You can handle multiple servos simultaneously by [special functions](https://github.com/ArminJo/ServoEasing/blob/master/src/ServoEasing.h#L641) like
+ `writeAllServos()`, `setSpeedForAllServos()`, `setDegreeForAllServos()`, `setEaseToDForAllServos()`, `synchronizeAndEaseToArrayPositions()`, `updateAndWaitForAllServosToStop()` and much more.
 
 # Comparison between Quadratic, Cubic and Sine easings.
 **Arduino Serial Plotter** result of the SymmetricEasing example.
@@ -161,6 +168,19 @@ Values for the MG90Sservos servos at 5 volt (4.2 volt with servo active).
 | 180 | 330 ms | 540 degree per second |
 | 90 | 220 ms  | 410 degree per second |
 | 45 | 115 ms  | 390 degree per second |
+
+# Why *.hpp files instead of *.cpp files?
+**Every *.cpp file is compiled separately** by a call of the compiler only compiling this file. These calls are managed by the IDE / make system.
+In the Arduino IDE they are issued when you click on *Verify* or *Upload*.<br/>
+The problem is: **How to set [compile options](#compile-options--macros-for-this-library) for all *.cpp files, especially for libraries used?**<br/>
+IDE's like [Sloeber](https://github.com/ArminJo/ServoEasing#modifying-compile-options--macros-with-sloeber-ide) or [PlatformIO](https://github.com/ArminJo/ServoEasing#modifying-compile-options--macros-with-platformio) support this by allowing to set this options per project.
+They in turn add these options to each compiler call e.g. `-DTRACE`.<br/>
+But Arduino lacks this feature. So the **workaround** is not to compile all sources separately, but to concatenate them to one huge source file by including them in your source.
+This is done by e.g. `#include "ServoEasing.hpp"`.<br/>
+But why not `#include "ServoEasing.cpp"`? Try it and you will see tons of errors, because each function of the *.cpp file is compiled twice,
+first by compiling the huge file and second by compiling the *.cpp file separately, like described above.
+So the extension *cpp* is not longer possible, and one solution is, to use *hpp* as extension, to show that it is an included *.cpp file.
+Every other extension e.g. *cinclude* would do, but *hpp* seems to be common sense.
 
 # Using the new *.hpp files / how to avoid `multiple definitions` linker errors
 **In order to support [compile options](#compile-options--macros-for-this-library) more easily**, the line `#include <ServoEasing.h>`
