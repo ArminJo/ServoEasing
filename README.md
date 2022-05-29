@@ -51,7 +51,7 @@ The expander in turn requires the Arduino Wire library or a [compatible one](htt
 For **ESP32** you need to install the Arduino ESP32Servo library.<br/>
 <br/>
 If you require only one or two servos, you may want to use the included [LightweightServo library](https://github.com/ArminJo/LightweightServo) (only for **AVR**), instead of the Arduino Servo library.
-The LightweightServo library uses the internal Timer1 with no software overhead and therefore has no problems with **servo jittering** or interrupt blocking libraries like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
+The LightweightServo library uses the internal Timer1 with no software overhead and therefore has no problems with **servo twitching** or interrupt blocking libraries like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
 For instructions how to enable these alternatives, see [Compile options / macros](https://github.com/ArminJo/ServoEasing#compile-options--macros-for-this-library).
 
 # Features
@@ -170,16 +170,17 @@ Values for the MG90Sservos servos at 5 volt (4.2 volt with servo active).
 | 45 | 115 ms  | 390 degree per second |
 
 # Why *.hpp files instead of *.cpp files?
-**Every *.cpp file is compiled separately** by a call of the compiler only compiling this file. These calls are managed by the IDE / make system.
-In the Arduino IDE they are issued when you click on *Verify* or *Upload*.<br/>
-The problem is: **How to set [compile options](#compile-options--macros-for-this-library) for all *.cpp files, especially for libraries used?**<br/>
-IDE's like [Sloeber](https://github.com/ArminJo/ServoEasing#modifying-compile-options--macros-with-sloeber-ide) or [PlatformIO](https://github.com/ArminJo/ServoEasing#modifying-compile-options--macros-with-platformio) support this by allowing to set this options per project.
-They in turn add these options to each compiler call e.g. `-DTRACE`.<br/>
+**Every \*.cpp file is compiled separately** by a call of the compiler exclusively for this cpp file. These calls are managed by the IDE / make system.
+In the Arduino IDE the calls are executed when you click on *Verify* or *Upload*.<br/>
+And now our problem with Arduino is: **How to set [compile options](#compile-options--macros-for-this-library) for all *.cpp files, especially for libraries used?**<br/>
+IDE's like [Sloeber](https://github.com/ArminJo/ServoEasing#modifying-compile-options--macros-with-sloeber-ide) or [PlatformIO](https://github.com/ArminJo/ServoEasing#modifying-compile-options--macros-with-platformio) support this by allowing to specify a set of options per project.
+They add these options at each compiler call e.g. `-DTRACE`.<br/>
 But Arduino lacks this feature. So the **workaround** is not to compile all sources separately, but to concatenate them to one huge source file by including them in your source.
 This is done by e.g. `#include "ServoEasing.hpp"`.<br/>
-But why not `#include "ServoEasing.cpp"`? Try it and you will see tons of errors, because each function of the *.cpp file is compiled twice,
+But why not `#include "ServoEasing.cpp"`?<br/>
+Try it and you will see tons of errors, because each function of the *.cpp file is now compiled twice,
 first by compiling the huge file and second by compiling the *.cpp file separately, like described above.
-So the extension *cpp* is not longer possible, and one solution is, to use *hpp* as extension, to show that it is an included *.cpp file.
+So using the extension *cpp* is not longer possible, and one solution is to use *hpp* as extension, to show that it is an included *.cpp file.
 Every other extension e.g. *cinclude* would do, but *hpp* seems to be common sense.
 
 # Using the new *.hpp files / how to avoid `multiple definitions` linker errors
@@ -299,10 +300,19 @@ If you see strange behavior, you can open the library file *ServoEasing.h* and a
 This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
 
 # Revision History
-### Version 2.5.0
-- Changed ENABLE_MICROS_AS_DEGREE_PARAMETER to DISABLE_MICROS_AS_DEGREE_PARAMETER thus enabling micros as parameter by default.
+### Version 3.0.0
+- Added target reached callback functionality, to enable multiple movements without loop control.
+- Changed `ENABLE_MICROS_AS_DEGREE_PARAMETER` to `DISABLE_MICROS_AS_DEGREE_PARAMETER` thus enabling micros as parameter by default.
 - Fixed some bugs for micros as parameter.
-- Improved PCA9685 handling.
+- Changed constants for easing types.
+- Additional parameter aUserDataPointer for user easing function.
+- New easing type `PRECISION`.
+- New function `printEasingType()`.
+- Easing functions are converted to static member functions now.
+- Easing types can be disabled individually.
+- Improved PCA9685 handling / support for SoftI2CMaster.
+- Changed default for parameter `doWrite` for `setTrim()` from `false` to `true`.
+- Added min and max constraints for servo write() and `DISABLE_MIN_AND_MAX_CONSTRAINTS`.
 
 ### Version 2.4.1
 - RP2040 support.
