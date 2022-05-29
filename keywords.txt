@@ -17,6 +17,9 @@ getEasingType	KEYWORD2
 setReverseOperation	KEYWORD2
 setTrim	KEYWORD2
 setTrimMicrosecondsOrUnits	KEYWORD2
+setMaxConstraint	KEYWORD2
+setMinConstraint	KEYWORD2
+setMinMaxConstraint	KEYWORD2
 write	KEYWORD2
 writeMicrosecondsOrUnits	KEYWORD2
 setSpeed	KEYWORD2

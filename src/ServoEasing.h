@@ -32,7 +32,7 @@
 
 /*
  * Macro to convert 3 version parts into an integer
- * To be used in preprocessor comparisons, such as #if VERSION_SERVO_EASING_HEX >= VERSION_HEX_VALUE(3, 7, 0)
+ * To be used in preprocessor comparisons, such as #if VERSION_SERVO_EASING_HEX >= VERSION_HEX_VALUE(3, 0, 0)
  */
 #define VERSION_HEX_VALUE(major, minor, patch) ((major << 16) | (minor << 8) | (patch))
 #define VERSION_SERVO_EASING_HEX  VERSION_HEX_VALUE(VERSION_SERVO_EASING_MAJOR, VERSION_SERVO_EASING_MINOR, VERSION_SERVO_EASING_PATCH)
@@ -715,9 +715,9 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
  * - New function `printEasingType()`.
  * - Easing functions are converted to static member functions now.
  * - Easing types can be disabled individually.
- * - Improved PCA9685 handling.
+ * - Improved PCA9685 handling / support for SoftI2CMaster.
  * - Changed default for parameter `doWrite` for `setTrim()` from `false` to `true`.
- * - Add constraint functionality and `DISABLE_MIN_AND_MAX_CONSTRAINTS`.
+ * - Added min and max constraints for servo write() and `DISABLE_MIN_AND_MAX_CONSTRAINTS`.
  *
  * Version 2.4.1 - 02/2022
  * - RP2040 support added.

@@ -51,7 +51,7 @@ The expander in turn requires the Arduino Wire library or a [compatible one](htt
 For **ESP32** you need to install the Arduino ESP32Servo library.<br/>
 <br/>
 If you require only one or two servos, you may want to use the included [LightweightServo library](https://github.com/ArminJo/LightweightServo) (only for **AVR**), instead of the Arduino Servo library.
-The LightweightServo library uses the internal Timer1 with no software overhead and therefore has no problems with **servo jittering** or interrupt blocking libraries like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
+The LightweightServo library uses the internal Timer1 with no software overhead and therefore has no problems with **servo twitching** or interrupt blocking libraries like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
 For instructions how to enable these alternatives, see [Compile options / macros](https://github.com/ArminJo/ServoEasing#compile-options--macros-for-this-library).
 
 # Features
@@ -99,8 +99,8 @@ resulting in some small discontinuities between adjacent movements.<br/>
 
 ### Constraints
 To restrict servo movements to a fixed range, you can specify constraints with `setMinMaxConstraint(int aMinDegreeOrMicrosecond, int aMaxDegreeOrMicrosecond)`.<br/>
-Arduino Plotter Output with constraints at 5° and 175° activated.
-![Arduino Plotter Output with constraints at 5° and 175° activated](https://github.com/ArminJo/ServoEasing/blob/master/pictures/Constraints.png)
+Arduino Plotter Output with constraints at 5 degree and 175 degree activated.
+![Arduino Plotter Output with constraints at 5 degree and 175 degree activated](https://github.com/ArminJo/ServoEasing/blob/master/pictures/Constraints.png)
 
 # [API](https://github.com/ArminJo/ServoEasing/blob/master/src/ServoEasing.h#L390)
 
@@ -139,15 +139,14 @@ You can handle multiple servos simultaneously by [special functions](https://git
 - [C functions on Github](https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c)
 - [Interactive cubic-bezier](http://cubic-bezier.com)
 - Servo signal gif from https://workshop.pglu.ch/arduino-servo/
-![Servo signal gif from https://workshop.pglu.ch/arduino-servo/](pictures/ServoFunktion_workshop.pglu.ch.gif)
-
+[![Servo signal gif from https://workshop.pglu.ch/arduino-servo/](pictures/ServoFunktion_workshop.pglu.ch.gif)](https://workshop.pglu.ch/arduino-servo/)
 
 # Resolution of servo positioning
-- The standard range of 544 to 2400 µs per 180 degree results in an timing of around **10 µs per degree**.
-- The **Arduino Servo library on AVR** uses an prescaler of 8 at 16 MHz clock resulting in a resolution of **0.5 µs**.
-- The **PCA9685 expander** has a resolution of **4.88 µs** per step (@ 20 ms interval) resulting in a resolution of **0.5 degree**.
-Digital Servos have a **deadband of approximately 5 µs / 0.5 degree** which means, that you will see a **stuttering movement** if the moving speed is slow.
-If you control them with a PCA9685 expander it may get worse, since one step of 4.88 µs can be within the deadband, so it takes 2 steps to move the servo from its current position.
+- The standard range of 544 to 2400 Âµs per 180 degree results in an timing of around **10 Âµs per degree**.
+- The **Arduino Servo library on AVR** uses an prescaler of 8 at 16 MHz clock resulting in a resolution of **0.5 Âµs**.
+- The **PCA9685 expander** has a resolution of **4.88 Âµs** per step (@ 20 ms interval) resulting in a resolution of **0.5 degree**.
+Digital Servos have a **deadband of approximately 5 Âµs / 0.5 degree** which means, that you will see a **stuttering movement** if the moving speed is slow.
+If you control them with a PCA9685 expander it may get worse, since one step of 4.88 Âµs can be within the deadband, so it takes 2 steps to move the servo from its current position.
 
 # Speed of servo positioning
 These values are measured with the [SpeedTest example](https://github.com/ArminJo/ServoEasing/blob/master/examples/SpeedTest/SpeedTest.ino).
@@ -170,16 +169,17 @@ Values for the MG90Sservos servos at 5 volt (4.2 volt with servo active).
 | 45 | 115 ms  | 390 degree per second |
 
 # Why *.hpp files instead of *.cpp files?
-**Every *.cpp file is compiled separately** by a call of the compiler only compiling this file. These calls are managed by the IDE / make system.
-In the Arduino IDE they are issued when you click on *Verify* or *Upload*.<br/>
-The problem is: **How to set [compile options](#compile-options--macros-for-this-library) for all *.cpp files, especially for libraries used?**<br/>
-IDE's like [Sloeber](https://github.com/ArminJo/ServoEasing#modifying-compile-options--macros-with-sloeber-ide) or [PlatformIO](https://github.com/ArminJo/ServoEasing#modifying-compile-options--macros-with-platformio) support this by allowing to set this options per project.
-They in turn add these options to each compiler call e.g. `-DTRACE`.<br/>
+**Every \*.cpp file is compiled separately** by a call of the compiler exclusively for this cpp file. These calls are managed by the IDE / make system.
+In the Arduino IDE the calls are executed when you click on *Verify* or *Upload*.<br/>
+And now our problem with Arduino is: **How to set [compile options](#compile-options--macros-for-this-library) for all *.cpp files, especially for libraries used?**<br/>
+IDE's like [Sloeber](https://github.com/ArminJo/ServoEasing#modifying-compile-options--macros-with-sloeber-ide) or [PlatformIO](https://github.com/ArminJo/ServoEasing#modifying-compile-options--macros-with-platformio) support this by allowing to specify a set of options per project.
+They add these options at each compiler call e.g. `-DTRACE`.<br/>
 But Arduino lacks this feature. So the **workaround** is not to compile all sources separately, but to concatenate them to one huge source file by including them in your source.
 This is done by e.g. `#include "ServoEasing.hpp"`.<br/>
-But why not `#include "ServoEasing.cpp"`? Try it and you will see tons of errors, because each function of the *.cpp file is compiled twice,
+But why not `#include "ServoEasing.cpp"`?<br/>
+Try it and you will see tons of errors, because each function of the *.cpp file is now compiled twice,
 first by compiling the huge file and second by compiling the *.cpp file separately, like described above.
-So the extension *cpp* is not longer possible, and one solution is, to use *hpp* as extension, to show that it is an included *.cpp file.
+So using the extension *cpp* is not longer possible, and one solution is to use *hpp* as extension, to show that it is an included *.cpp file.
 Every other extension e.g. *cinclude* would do, but *hpp* seems to be common sense.
 
 # Using the new *.hpp files / how to avoid `multiple definitions` linker errors
@@ -236,7 +236,7 @@ which should not be a problem since you normally attach all servos in `setup()`.
 
 On the **ESP32 the I2C library is only capable to run at 100 kHz**, because it interferes with the Ticker / Timer library used.
 Even with 100 kHz clock we have some dropouts / NAK's because of sending address again instead of first data.<br/>
-Since the raw transmission time of 32 Servo positions is 17.4 µs @ 100 kHz, not more than 2 expander boards can be connected to one I2C bus on an ESP32 board, if all servos should move simultaneously.<br/>
+Since the raw transmission time of 32 Servo positions is 17.4 Âµs @ 100 kHz, not more than 2 expander boards can be connected to one I2C bus on an ESP32 board, if all servos should move simultaneously.<br/>
 If you do not use any timer in your program you can increase speed up to 800 kHz. Maybe you have to attach 2x2k2 Ohm pullup resistors to the I2C lines to have it working reliably.
 
 # Using the included [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for AVR
@@ -257,7 +257,7 @@ Converting a 10 pin double row pin header with 21 mm pin length to a breadboard 
 ![Top view](https://github.com/ArminJo/ServoEasing/blob/master/pictures/ServoAdapterTop.jpg)
 
 # Internals
-The API accepts only degree (except for write() and writeMicrosecondsOrUnits()) but internally only microseconds (or units (= 4.88 µs) if using PCA9685 expander) and not degree are used to speed up things. Other expander or servo libraries can therefore easily be used.<br/>
+The API accepts only degree (except for write() and writeMicrosecondsOrUnits()) but internally only microseconds (or units (= 4.88 Âµs) if using PCA9685 expander) and not degree are used to speed up things. Other expander or servo libraries can therefore easily be used.<br/>
 
 # Supported Arduino architectures
 **Every Arduino architecture with a Servo library** will work without any modifications in blocking mode.<br/>
@@ -266,7 +266,7 @@ Interrupt based movement (movement without calling `update()` manually in a loop
 **avr, megaavr, sam, samd, esp8266, esp32, stm32, STM32F1 and apollo3.**
 
 # Timer usage for interrupt based movement
-On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking easing functions its unused **Channel B** is used to generate an interrupt 100 µs before the end of the 20 ms Arduino Servo refresh period. This interrupt then updates all servo values for the next refresh period.
+On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking easing functions its unused **Channel B** is used to generate an interrupt 100 Âµs before the end of the 20 ms Arduino Servo refresh period. This interrupt then updates all servo values for the next refresh period.
 | Platform | Timer | Library providing the timer |
 |---|---|---|
 | avr | Timer1 | Servo.h |
@@ -299,10 +299,19 @@ If you see strange behavior, you can open the library file *ServoEasing.h* and a
 This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
 
 # Revision History
-### Version 2.5.0
-- Changed ENABLE_MICROS_AS_DEGREE_PARAMETER to DISABLE_MICROS_AS_DEGREE_PARAMETER thus enabling micros as parameter by default.
+### Version 3.0.0
+- Added target reached callback functionality, to enable multiple movements without loop control.
+- Changed `ENABLE_MICROS_AS_DEGREE_PARAMETER` to `DISABLE_MICROS_AS_DEGREE_PARAMETER` thus enabling micros as parameter by default.
 - Fixed some bugs for micros as parameter.
-- Improved PCA9685 handling.
+- Changed constants for easing types.
+- Additional parameter aUserDataPointer for user easing function.
+- New easing type `PRECISION`.
+- New function `printEasingType()`.
+- Easing functions are converted to static member functions now.
+- Easing types can be disabled individually.
+- Improved PCA9685 handling / support for SoftI2CMaster.
+- Changed default for parameter `doWrite` for `setTrim()` from `false` to `true`.
+- Added min and max constraints for servo write() and `DISABLE_MIN_AND_MAX_CONSTRAINTS`.
 
 ### Version 2.4.1
 - RP2040 support.
