@@ -838,4 +838,3 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
 #endif
 
 #endif // _SERVO_EASING_H
-#pragma once

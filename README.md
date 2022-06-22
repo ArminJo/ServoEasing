@@ -57,16 +57,18 @@ For instructions how to enable these alternatives, see [Compile options / macros
 # Features
 - **Linear** and 9 other ease movements are provided.
 - All servos can move **synchronized** or **independently**.
-- **Non blocking** movements are enabled by using **startEaseTo\* functions** by reusing the interrupts of the servo timer Timer1 or using a dedicated timer on other platforms. This function is not available for all platforms.
-- **Callback at reaching target enables multiple movements independent of main loop**.
+- **Non blocking** movements are implemented by the **startEaseTo\* functions** by using a timer. This functions are not available for all platforms.
+- Degree values >= 400 is taken as microsecond values for the servo pulse to allow fine-grained control.
+- **Float angels** are supported to allow **fine-grained servo control** comparable to using microseconds.
+- **User-specified callback function at "servo arrived" enables movement control independent of main loop**.
 - A **trim value** can be set for any servo. Its value is internally added to each requested position.
 - **Reverse operation** of servo is possible e.g. if it is mounted head down.
 - **Constraints for minimum and maximum servo degree** can be specified. Trim and reverse are applied after constraint processing.
 - Allow to specify an arbitrary mapping between degrees and microseconds by `attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree)`.
 - **Servo speed** can be specified in **degree per second** or **milliseconds** for the complete move.
-- Degree values >= 400 is taken as microsecond values for the servo pulse.
 - **Multiple servo handling** by *ForAllServos() functions like `setDegreeForAllServos(3, 135, 135, 135)`.
 - All ServoEasing objects are accessible by using the [`ServoEasing::ServoEasingArray[]`](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServos/ThreeServos.ino#L104).
+- Easy implementation of a **move list** - see [ConsecutiveEasingsWithCallback example](https://github.com/ArminJo/ServoEasing/blob/master/examples/ConsecutiveEasingsWithCallback/ConsecutiveEasingsWithCallback.ino#L150).
 
 # List of easing functions:
 - Linear
@@ -103,6 +105,7 @@ Arduino Plotter Output with constraints at 5 degree and 175 degree activated.
 ![Arduino Plotter Output with constraints at 5 degree and 175 degree activated](https://github.com/ArminJo/ServoEasing/blob/master/pictures/Constraints.png)
 
 # [API](https://github.com/ArminJo/ServoEasing/blob/master/src/ServoEasing.h#L390)
+For floating point constants, use the notation of 123.456f with **trailing f** (for a floating point constant) to avoid compiler errors.
 
 # Usage
 See also [the examples here](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples).<br/>
@@ -245,9 +248,7 @@ Up to 2 servos are supported by this library and they must be physically attache
 To enable it, activate the line `#define USE_LEIGHTWEIGHT_SERVO_LIB` before the line `#include "LightweightServo.hpp"` [like it is done in the TwoServos example](https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServos/TwoServos.ino#L31).<br/>
 If you do not use the Arduino IDE, take care that Arduino Servo library sources are not compiled / included in the project.
 
-# Description of examples
-All examples are documented [here](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples)<br/>
-Examples with up to 2 Servos can be used without modifications with the [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for AVR by by activating the line `#define USE_LEIGHTWEIGHT_SERVO_LIB` (see above).
+# Description of [examples](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples)
 
 # [Servo utilities](https://github.com/ArminJo/ServoEasing/tree/master/examples#servo-utilities)
 

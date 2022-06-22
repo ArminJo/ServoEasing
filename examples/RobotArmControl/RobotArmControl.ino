@@ -51,6 +51,7 @@
 //#define GERMAN_NAMES_FOR_DATE
 #include "RobotArmRTCControl.hpp"
 #endif
+#define LOCAL_INFO // This enables info output only for ClockMovements
 #include "ClockMovements.hpp"
 
 #include "RobotArmIRCommands.hpp"

@@ -28,4 +28,3 @@ void doCalibration();
 
 
 #endif // _QUADRUPED_HELPER_H
-#pragma once

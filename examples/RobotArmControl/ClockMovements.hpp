@@ -32,10 +32,10 @@
 #include "ClockMovements.h"
 #include "RobotArmServoControl.h"
 
-#if defined(INFO)
+#if defined(INFO) && !defined(LOCAL_INFO)
 #define LOCAL_INFO
 #else
-#define LOCAL_INFO // This enables info output only for this file
+//#define LOCAL_INFO // This enables info output only for this file
 #endif
 #if defined(LOCAL_INFO)
 #define CLOCK_INFO_PRINT(...)    Serial.print(__VA_ARGS__)

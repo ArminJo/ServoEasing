@@ -134,8 +134,8 @@ void loop() {
     Serial.println(F("Move to 0/90 degree with 30 degree per second blocking"));
 #endif
     setSpeedForAllServos(30);
-    Servo1.setEaseTo(0);
-    Servo2.setEaseTo(90);
+    Servo1.setEaseTo(0.0f); // Use x.y with trailing f (to specify a floating point constant) to avoid compiler errors.
+    Servo2.setEaseTo(90.0f);
     synchronizeAllServosStartAndWaitForAllServosToStop();
 
     /*
@@ -144,7 +144,7 @@ void loop() {
 #if defined(INFO)
     Serial.println(F("Move to 90/10 degree with up to 60 degree per second using interrupts"));
 #endif
-    Servo1.setEaseTo(90, 60);
+    Servo1.setEaseTo(90.0f, 60);
     /*
      * An alternative method to synchronize and start
      * Synchronize by simply using the same duration
@@ -171,8 +171,8 @@ void loop() {
      * Another method to specify moves
      * Use the ServoEasingNextPositionArray and then call the appropriate function
      */
-    ServoEasing::ServoEasingNextPositionArray[0] = 0;
-    ServoEasing::ServoEasingNextPositionArray[1] = 90;
+    ServoEasing::ServoEasingNextPositionArray[0] = 0.0f;
+    ServoEasing::ServoEasingNextPositionArray[1] = 90.0f;
     setEaseToForAllServosSynchronizeAndStartInterrupt(90);
 
     // Must call yield here for the ESP boards, since we have no delay called
@@ -189,8 +189,8 @@ void loop() {
 #if defined(INFO)
     Serial.println(F("Move independently to -90/0 degree with 60/80 degree per second using interrupts"));
 #endif
-    Servo1.setEaseTo(-90, 60);
-    Servo2.startEaseTo(0, 80); // This start interrupt for all servos
+    Servo1.setEaseTo(-90.0f, 60);
+    Servo2.startEaseTo(0.0f, 80); // This start interrupt for all servos
     // blink until both servos stop
     while (ServoEasing::areInterruptsActive()) {
         blinkLED();

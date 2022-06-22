@@ -392,4 +392,3 @@ void __attribute__ ((weak)) handleINT1Interrupt();
  */
 
 #endif // _EASY_BUTTON_AT_INT01_H
-#pragma once

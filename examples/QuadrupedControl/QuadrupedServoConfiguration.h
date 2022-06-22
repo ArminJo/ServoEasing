@@ -79,4 +79,3 @@
 #define TROT_MOVE_ANGLE 30
 
 #endif // _QUADRUPED_SERVO_CONFIGURATION_H
-#pragma once

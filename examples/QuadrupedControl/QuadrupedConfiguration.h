@@ -104,4 +104,3 @@ extern Servo USServo;
 bool delayAndCheckForLowVoltageAndStop(uint16_t aDelayMillis);
 
 #endif // _QUADRUPED_CONFIGURATION_H
-#pragma once

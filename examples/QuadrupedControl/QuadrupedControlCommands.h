@@ -51,4 +51,3 @@ void doIncreaseHeight();
 void doDecreaseHeight();
 
 #endif // _QUADRUPED_CONTROL_COMMANDS_H
-#pragma once

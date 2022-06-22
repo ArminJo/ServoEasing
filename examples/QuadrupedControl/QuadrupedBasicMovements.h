@@ -54,4 +54,3 @@ void moveTrot(uint8_t aNumberOfTrots = 0);      // 0 -> 256 trots
 void moveCreep(uint8_t aNumberOfCreeps = 0);    // 0 -> 256 creeps
 
 #endif // _QUADRUPED_BASIC_MOVEMENTS_H
-#pragma once

@@ -105,4 +105,3 @@ public:
 extern IRCommandDispatcher IRDispatcher;
 
 #endif // _IR_COMMAND_DISPATCHER_H
-#pragma once

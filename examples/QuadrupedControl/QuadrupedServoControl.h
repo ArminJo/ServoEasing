@@ -94,4 +94,3 @@ void eepromReadAndSetServoTrim();
 void eepromWriteServoTrim();
 
 #endif // _QUADRUPED_SERVO_CONTROL_H
-#pragma once

@@ -148,7 +148,7 @@ ServoEasing *ServoEasing::ServoEasingArray[MAX_EASING_SERVOS];
 /*
  * Used exclusively for *ForAllServos() functions. Is updated by write() or startEaseToD() function, to keep it synchronized.
  * Can contain degree values or microseconds but not units.
- * Use int since we want to support negative degree values (with trim)
+ * Use float since we want to support higher precision for degrees.
  */
 float ServoEasing::ServoEasingNextPositionArray[MAX_EASING_SERVOS];
 
@@ -1170,6 +1170,7 @@ bool ServoEasing::startEaseTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aD
 
     /*
      * Get / convert target degree for computation of duration
+     * Do this as integer computation, with "less" precision
      */
     int tTargetDegree = aTargetDegreeOrMicrosecond;
 #if defined(DISABLE_MICROS_AS_DEGREE_PARAMETER)
@@ -1786,7 +1787,7 @@ bool ServoEasing::areInterruptsActive() {
 /*
  * Update all servos from list and check if all servos have stopped.
  * Defined weak in order to be able to overwrite it, e.g. for synchronizing with NeoPixel updates,
- * which otherwise leads to servo jitter. See QuadrupedNeoPixel.cpp of QuadrupedControl example.
+ * which otherwise leads to servo twitching. See QuadrupedNeoPixel.cpp of QuadrupedControl example.
  * We have 100 us before the next servo period starts.
  */
 #if defined(STM32F1xx) && STM32_CORE_VERSION_MAJOR == 1 &&  STM32_CORE_VERSION_MINOR <= 8 // for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
@@ -2431,7 +2432,7 @@ float ServoEasing::ElasticEaseIn(float aFactorOfTimeCompletion) {
 #define OVERSHOOT_AMOUNT_UNITS          10 // around 5 degree
 
 /*
- * PRECISION is like linear, but depending on style and direction, adds a 5 degree  bounce in the last 20 % of the movement time.
+ * PRECISION (LinearWithQuadraticBounce) is like linear, but adds a 5 degree bounce in the last 20 % of the movement time at one direction.
  * So the target position is always approached from one side. This enables it to taken out the slack/backlash of any hardware moved by the servo.
  * IN = Negative bounce for movings from above (go in to origin)
  * OUT = Positive bounce for movings from below (go out from origin) we are called with 1.0 to 0.0

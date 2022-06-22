@@ -74,4 +74,3 @@ int MicrosecondsToDegreeLightweightServo(int aMicroseconds);
  */
 
 #endif // _LIGHTWEIGHT_SERVO_H
-#pragma once

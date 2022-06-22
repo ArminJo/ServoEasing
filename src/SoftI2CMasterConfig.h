@@ -67,5 +67,3 @@
 #define I2C_FASTMODE 1
 
 #endif // _SOFT_I2C_MASTER_CONFIG_H
-#pragma once
-

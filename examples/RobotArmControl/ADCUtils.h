@@ -143,4 +143,3 @@ float getTemperature(void);
 #endif // defined(ADATE)
 #endif //  defined(__AVR__)
 #endif // _ADC_UTILS_H
-#pragma once

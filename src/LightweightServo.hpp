@@ -29,8 +29,6 @@
 #ifndef _LIGHTWEIGHT_SERVO_HPP
 #define _LIGHTWEIGHT_SERVO_HPP
 
-#include <Arduino.h>
-
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__)
 #include "LightweightServo.h"
 

@@ -479,4 +479,3 @@ COMMAND_STOP, IR_COMMAND_FLAG_IS_STOP_COMMAND, &doStop, stop }
         };
 
 #endif // _IR_COMMAND_MAPPING_H
-#pragma once

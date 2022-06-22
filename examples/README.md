@@ -35,12 +35,14 @@ This example shows the usage of a callback function for multiple moves independe
 
 # [OneServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino)
 This example moves one Servo with different speeds and using blocking and interrupt commands. The internal LED blinks when using interrupt based commands.
-## PCA9685_Expander example
+
+## [PCA9685_Expander example](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino#L28)
 If you activate the line `#define USE_PCA9685_SERVO_EXPANDER` you can run the OneServo example on a PCA9685 expander board.
 
 # [TwoServo](https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServo/TwoServo.ino)
 This example shows how to move 2 servos attached at pin 9 and 10 synchronized or independently using the LightweightServo library. This saves 640 bytes program memory compared to using Arduino Servo library.<br/>
-It operates the first servo from -90° to +90° using **attachWithTrim()**.
+In this example target degrees are specified as **floating point values**.<br/>
+It operates the first servo from -90.0° to +90.0° using **attachWithTrim()**.
 
 # [ThreeServo examples](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServo/ThreeServo.ino)
 This example shows how to move 3 servos synchronized or independently. It demonstrates the use of `ServoEasingArray` and `ServoEasingNextPositionArray`.<br/>
@@ -100,7 +102,6 @@ Combination of OneServo example and PCA9685_Expander example. Move one servo att
 # [PCA9685_ExpanderFor32Servos example](https://github.com/ArminJo/ServoEasing/blob/master/examples/PCA9685_ExpanderFor32Servos/PCA9685_ExpanderFor32Servos.ino)
 Program to show the usage of 2 PCA9685 expander boards with 32 servos.
 On the ESP32, the I2C library interferes with the 29 millisecond timer and therefore can only run at 100000 Hz or lower.<br/>
-You must activate the line `#define USE_PCA9685_SERVO_EXPANDER` to make the expander example work.
 
 ### YouTube Video
 [![Servos 16-19 and 28-31 in action](https://i.ytimg.com/vi/XMVh3IT5BgU/hqdefault.jpg)](https://youtu.be/XMVh3IT5BgU)

@@ -66,4 +66,3 @@ extern volatile unsigned long sUSPulseMicros;
 extern uint8_t sHCSR04Mode;
 
 #endif // _HCSR04_H
-#pragma once
