@@ -55,6 +55,7 @@ jobs:
           - megaTinyCore:megaavr:atxy7:chip=3217,clock=16internal
           - arduino:sam:arduino_due_x
           - arduino:samd:arduino_zero_native
+#          - adafruit:samd:adafruit_metro_m4:cache=on,speed=120,opt=small,maxqspi=50,usbstack=arduino,debug=off
           - arduino:mbed:nano33ble
           - arduino:mbed_rp2040:pico
           - rp2040:rp2040:arduino_nano_connect
@@ -95,6 +96,11 @@ jobs:
 
           - arduino-boards-fqbn: arduino:samd:arduino_zero_native
             sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl
+
+# Error in default samd/Servo.cpp:44:60 - volatile struct TC_STATUS_Type::<unnamed> has no member named SYNCBUSY
+#          - arduino-boards-fqbn: adafruit:samd:adafruit_metro_m4:cache=on,speed=120,opt=small,maxqspi=50,usbstack=arduino,debug=off
+#            platform-url: https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
+#            sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl
 
           - arduino-boards-fqbn: arduino:mbed:nano33ble
             arduino-platform: arduino:mbed@1.3.2 # the 2.0.0 is incompatible with Servo library

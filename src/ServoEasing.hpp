@@ -252,14 +252,14 @@ void ServoEasing::PCA9685Reset() {
 
 /*
  * Set expander to 20 ms period for 4096-part cycle and wait 2 milliseconds
- * This results in a resolution of 4.88 µs per step.
+ * This results in a resolution of 4.88 us per step.
  */
 void ServoEasing::PCA9685Init() {
     // Set expander to 20 ms period
     I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_MODE_1_SLEEP)); // go to sleep
     I2CWriteByte(PCA9685_PRESCALE_REGISTER, PCA9685_PRESCALER_FOR_20_MS); // set the prescaler
     I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_MODE_1_AUTOINCREMENT)); // reset sleep and enable auto increment
-    delay(2); // > 500 µs according to datasheet
+    delay(2); // > 500 us according to datasheet
 }
 
 void ServoEasing::I2CWriteByte(uint8_t aAddress, uint8_t aData) {
@@ -286,7 +286,7 @@ void ServoEasing::I2CWriteByte(uint8_t aAddress, uint8_t aData) {
 
 /**
  * @param aPWMValueAsUnits - The point in the 4096-part cycle, where the output goes OFF (LOW). On is fixed at 0.
- * Useful values are from 111 (111.411 = 544 µs) to 491 (491.52 = 2400 µs)
+ * Useful values are from 111 (111.411 = 544 us) to 491 (491.52 = 2400 us)
  * This results in an resolution of approximately 0.5 degree.
  * 4096 means output is signal fully off
  */
@@ -320,7 +320,7 @@ void ServoEasing::setPWM(uint16_t aPWMOffValueAsUnits) {
 /**
  * Here you can specify an on/start value for the pulse in order not to start all pulses at the same time.
  * Is used by _writeMicrosecondsOrUnits() with onValue as mServoPin * 235
- * Requires 550 µs to send data => 8.8 ms for 16 Servos, 17.6 ms for 32 servos. => more than 2 expander boards
+ * Requires 550 us to send data => 8.8 ms for 16 Servos, 17.6 ms for 32 servos. => more than 2 expander boards
  * cannot be connected to one I2C bus, if all servos must be able to move simultaneously.
  */
 void ServoEasing::setPWM(uint16_t aPWMOnStartValueAsUnits, uint16_t aPWMPulseDurationAsUnits) {
@@ -815,7 +815,7 @@ void ServoEasing::_writeMicrosecondsOrUnits(int aMicrosecondsOrUnits) {
     if (mServoIsConnectedToExpander) {
         setPWM(mServoPin * ((4096 - (DEFAULT_PCA9685_UNITS_FOR_180_DEGREE + 100)) / 15), aMicrosecondsOrUnits); // mServoPin * 233
     } else {
-        Servo::writeMicroseconds(aMicrosecondsOrUnits); // requires 7 µs
+        Servo::writeMicroseconds(aMicrosecondsOrUnits); // requires 7 us
     }
 #  else
     /*
@@ -826,7 +826,7 @@ void ServoEasing::_writeMicrosecondsOrUnits(int aMicrosecondsOrUnits) {
 #  endif
 
 #else
-    Servo::writeMicroseconds(aMicrosecondsOrUnits); // requires 7 µs
+    Servo::writeMicroseconds(aMicrosecondsOrUnits); // requires 7 us
 #endif
 
 #if defined(LOCAL_TRACE) && !defined(PRINT_FOR_SERIAL_PLOTTER)
@@ -906,7 +906,7 @@ int ServoEasing::MicrosecondsOrUnitsToMicroseconds(int aMicrosecondsOrUnits) {
 }
 
 /**
- * We have around 10 µs per degree
+ * We have around 10 us per degree
  * We do not convert values >= 400.
  * Used to convert (external) provided degree values to internal microseconds
  */
@@ -1375,7 +1375,7 @@ bool ServoEasing::update() {
     /*
      * Use faster non float arithmetic
      * Linear movement: new position is: start position + total delta * (millis_done / millis_total aka "percentage of completion")
-     * 40 µs to compute
+     * 40 us to compute
      */
     int_fast16_t tNewMicrosecondsOrUnits = mStartMicrosecondsOrUnits
     + ((mDeltaMicrosecondsOrUnits * (int32_t) tMillisSinceStart) / mMillisForCompleteMove);
@@ -1416,7 +1416,7 @@ bool ServoEasing::update() {
         /*
          * Use faster non float arithmetic
          * Linear movement: new position is: start position + total delta * (millis_done / millis_total aka "percentage of completion")
-         * 40 µs to compute
+         * 40 us to compute
          * Cast to int32 required for mMillisForCompleteMove for 32 bit platforms, otherwise we divide signed by unsigned. Thanks to drifkind.
          */
         tNewMicrosecondsOrUnits = mStartMicrosecondsOrUnits
@@ -1813,7 +1813,7 @@ __attribute__((weak)) void handleServoTimerInterrupt()
 // @formatter:off
 /*
  * Timer1 is used for the Arduino Servo library.
- * To have non blocking easing functions its unused channel B is used to generate an interrupt 100 µs before the end of the 20 ms Arduino Servo refresh period.
+ * To have non blocking easing functions its unused channel B is used to generate an interrupt 100 us before the end of the 20 ms Arduino Servo refresh period.
  * This interrupt then updates all servo values for the next refresh period.
  * First interrupt is triggered not directly, but after 20 ms, since we are often called here at the time of the last interrupt of the preceding servo move.
  */
@@ -1829,7 +1829,7 @@ void enableServoEasingInterrupt() {
 
     TIFR5 |= _BV(OCF5B);     // clear any pending interrupts;
     TIMSK5 |= _BV(OCIE5B);// enable the output compare B interrupt
-    OCR5B = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL_MICROS) / 8) - 100;// update values 100 µs before the new servo period starts
+    OCR5B = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL_MICROS) / 8) - 100;// update values 100 us before the new servo period starts
 
 #  elif defined(__AVR_ATmega4809__) || defined(__AVR_ATtiny3217__) // Uno WiFi Rev 2, Nano Every, Tiny Core 32 Dev Board
     // For MegaTinyCore:
@@ -1866,7 +1866,7 @@ void enableServoEasingInterrupt() {
      */
     TCCR1B |= _BV(ICNC1);
 #    if !defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-    // Generate interrupt 100 µs before a new servo period starts
+    // Generate interrupt 100 us before a new servo period starts
     OCR1B = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL_MICROS) / 8) - 100;
 #    endif
 
@@ -1913,6 +1913,32 @@ void enableServoEasingInterrupt() {
 
 #elif defined(ARDUINO_ARCH_SAMD)
     // Servo uses timer 4 and we use timer 5. therefore we cannot change clock source to 32 kHz.
+#  if defined(__SAMD51__)
+    // SAMD51 Code provided by Lutz
+    /**
+     * Adafruit M4 code (cores/arduino/startup.c) configures these clock generators:
+     * GCLK0 = F_CPU
+     * GCLK2 = 100 MHz
+     * GCLK1 = 48 MHz // This Clock is present in SAMD21 and SAMD51
+     * GCLK4 = 12 MHz
+     * GCLK3 = XOSC32K
+     */
+    // Enable the TC bus clock, use clock generator 1
+    GCLK->PCHCTRL[TC5_GCLK_ID].reg = GCLK_PCHCTRL_GEN_GCLK1_Val | (1 << GCLK_PCHCTRL_CHEN_Pos);
+    while (GCLK->SYNCBUSY.reg > 0); // Sync GCLK for TC5
+
+    TC5->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE; // Disable the Timer
+    while (TC5->COUNT16.STATUS.reg & TC_SYNCBUSY_STATUS); // Sync TC5 Timer
+
+    // SAMD51 has F_CPU = 120000000 Hz but we must use GCLK1 with 48000000 Hz.
+    TC5->COUNT16.CC[0].reg = (uint16_t) (((48000000/64) / REFRESH_FREQUENCY) - 1);  // (750 kHz / sampleRate - 1);
+    /*
+     * Set timer counter mode to 16 bits, set mode as match frequency, prescaler is DIV64 => 750 kHz clock, start counter
+     */
+    TC5->COUNT16.CTRLA.reg |= TC_CTRLA_MODE_COUNT16| TC_WAVE_WAVEGEN_MFRQ |TC_CTRLA_PRESCALER_DIV64 | TC_CTRLA_ENABLE;
+//    while (TC5->COUNT16.STATUS.bit.SYNCBUSY == 1);                                // The next commands do an implicit wait :-)
+
+#  else
     // Enable GCLK for TCC2 and TC5 (timer counter input clock)
     GCLK->CLKCTRL.reg = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID(GCM_TC4_TC5)); // GCLK1=32kHz,  GCLK0=48MHz
 //    while (GCLK->STATUS.bit.SYNCBUSY) // not required to wait
@@ -1923,22 +1949,21 @@ void enableServoEasingInterrupt() {
     // 14.3.2.2 When write-synchronization is ongoing for a register, any subsequent write attempts to this register will be discarded, and an error will be reported.
     // 14.3.1.4 It is also possible to perform the next read/write operation and wait,
     // as this next operation will be started once the previous write/read operation is synchronized and/or complete. ???
-    while (TC5->COUNT16.STATUS.bit.SYNCBUSY == 1); // wait for sync
+    while (TC5->COUNT16.STATUS.bit.SYNCBUSY == 1); // wait for sync to ensure that we can write again to COUNT16.CTRLA.reg
     // Reset TCx
     TC5->COUNT16.CTRLA.reg = TC_CTRLA_SWRST;
-    // When writing a ‘1’ to the CTRLA.SWRST bit it will immediately read as ‘1’.
+    // When writing a '1' to the CTRLA.SWRST bit it will immediately read as '1'.
     // CTRL.SWRST will be cleared by hardware when the peripheral has been reset.
     while (TC5->COUNT16.CTRLA.bit.SWRST)
         ;
-
     /*
      * Set timer counter mode to 16 bits, set mode as match frequency, prescaler is DIV64 => 750 kHz clock, start counter
      */
     TC5->COUNT16.CTRLA.reg |= TC_CTRLA_MODE_COUNT16| TC_CTRLA_WAVEGEN_MFRQ | TC_CTRLA_PRESCALER_DIV64 | TC_CTRLA_ENABLE;
     TC5->COUNT16.CC[0].reg = (uint16_t) (((F_CPU/64) / REFRESH_FREQUENCY) - 1);     // (750 kHz / sampleRate - 1);
-//    while (TC5->COUNT16.STATUS.bit.SYNCBUSY == 1)                                 // The next commands do an implicit wait :-)
-//        ;
+//    while (TC5->COUNT16.STATUS.bit.SYNCBUSY == 1);                                // The next commands do an implicit wait :-)
 
+#  endif // defined(__SAMD51__)
     // Configure interrupt request
     NVIC_DisableIRQ(TC5_IRQn);
     NVIC_ClearPendingIRQ(TC5_IRQn);
@@ -1984,7 +2009,7 @@ void enableServoEasingInterrupt() {
  * To have more time for overwritten interrupt routine to handle its task.
  */
 void setTimer1InterruptMarginMicros(uint16_t aInterruptMarginMicros){
-    // Generate interrupt aInterruptMarginMicros µs before a new servo period starts
+    // Generate interrupt aInterruptMarginMicros us before a new servo period starts
     OCR1B = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL_MICROS) / 8) - aInterruptMarginMicros;
 }
 #endif
@@ -2022,7 +2047,11 @@ void disableServoEasingInterrupt() {
 
 #elif defined(ARDUINO_ARCH_SAMD)
     TC5->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE;
+#  if defined(__SAMD51__)
+    while (TC5->COUNT16.STATUS.reg & TC_SYNCBUSY_STATUS); //wait until TC5 is done syncing
+#  else
     while (TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY); //wait until TC5 is done syncing
+#  endif
 
 #elif defined(ARDUINO_ARCH_MBED) // Arduino Nano 33 BLE + Sparkfun Apollo3
     Timer20ms.detach();
@@ -2041,8 +2070,8 @@ void disableServoEasingInterrupt() {
 
 // @formatter:on
 /*
- * 60 µs for single servo + 160 µs per servo if using I2C e.g.for PCA9685 expander at 400 kHz or + 100 at 800 kHz
- * 20 µs for last interrupt
+ * 60 us for single servo + 160 us per servo if using I2C e.g.for PCA9685 expander at 400 kHz or + 100 at 800 kHz
+ * 20 us for last interrupt
  * The first servo pulse starts just after this interrupt routine has finished
  */
 #if defined(__AVR__)

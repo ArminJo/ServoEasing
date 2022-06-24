@@ -178,15 +178,15 @@ void ServoTargetPositionReachedHandler(ServoEasing *aServoEasingInstance) {
     static bool sDoDelay = false;
     if (sDoDelay) {
         sDoDelay = false;
-        Servo1.noMovement(500);
+        aServoEasingInstance->noMovement(500); // Servo1
     } else {
         sDoDelay = true;
 #endif
     int tTargetDegree = TargetDegreesArray[sStep];
     uint_fast8_t tEasingType = EasingTypesArray[sStep];
 
-    Servo1.setEasingType(tEasingType);
-    Servo1.startEaseTo(tTargetDegree); // easeTo() uses delay() and will not work here.
+    aServoEasingInstance->setEasingType(tEasingType); // Sevo1
+    aServoEasingInstance->startEaseTo(tTargetDegree); // easeTo() uses delay() and will not work here.
     sStep++;
     if (sStep >= NUMBER_OF_EASING_TYPES_TO_SHOW) {
         sStep = 0; // do it forever
@@ -194,7 +194,7 @@ void ServoTargetPositionReachedHandler(ServoEasing *aServoEasingInstance) {
 
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
         Serial.print(F("Move "));
-        Servo1.printEasingType(&Serial, tEasingType);
+        ServoEasing::printEasingType(&Serial, tEasingType);
         Serial.print(F(" to "));
         Serial.print(tTargetDegree);
 #  if defined(USE_MICROSECONDS)
@@ -204,6 +204,6 @@ void ServoTargetPositionReachedHandler(ServoEasing *aServoEasingInstance) {
 #  endif
     }
 #endif
-//    Servo1.print(&Serial, false);
+//    aServoEasingInstance->print(&Serial, false);
 }
 

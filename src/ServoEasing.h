@@ -46,7 +46,7 @@
 
 /*
  * USE_PCA9685_SERVO_EXPANDER is for use with e.g. the Adafruit PCA9685 16-Channel Servo Driver board.
- * It has a resolution of 4096 per 20 ms => 4.88 µs per step/unit.
+ * It has a resolution of 4096 per 20 ms => 4.88 us per step/unit.
  * One PCA9685 has 16 outputs. You must modify MAX_EASING_SERVOS below, if you have more than one PCA9685 attached!
  * Use of PCA9685 normally disables use of regular servo library. You can force using of regular servo library by defining USE_SERVO_LIB
  * All internal values *MicrosecondsOrUnits now contains no more microseconds but PCA9685 units!!!
@@ -207,11 +207,11 @@
 #define DEFAULT_MICROSECONDS_FOR_180_DEGREE  2400
 
 // Approximately 2 units per degree
-#define DEFAULT_PCA9685_UNITS_FOR_0_DEGREE    111 // 111.411 = 544 µs
+#define DEFAULT_PCA9685_UNITS_FOR_0_DEGREE    111 // 111.411 = 544 us
 #define DEFAULT_PCA9685_UNITS_FOR_45_DEGREE  (111 + ((491 - 111) / 4)) // 206
 #define DEFAULT_PCA9685_UNITS_FOR_90_DEGREE  (111 + ((491 - 111) / 2)) // 301 = 1472 us
 #define DEFAULT_PCA9685_UNITS_FOR_135_DEGREE (491 - ((491 - 111) / 4)) // 369
-#define DEFAULT_PCA9685_UNITS_FOR_180_DEGREE  491 // 491.52 = 2400 µs
+#define DEFAULT_PCA9685_UNITS_FOR_180_DEGREE  491 // 491.52 = 2400 us
 
 /*
  * Definitions for continuous rotating servo - Values are taken from the Parallax Continuous Rotation Servo manual
@@ -420,7 +420,7 @@ public:
     void I2CWriteByte(uint8_t aAddress, uint8_t aData);
     void setPWM(uint16_t aPWMOffValueAsUnits);
     void setPWM(uint16_t aPWMOnStartValueAsUnits, uint16_t aPWMPulseDurationAsUnits);
-    // main mapping functions for µs to PCA9685 Units (20000/4096 = 4.88 µs) and back
+    // main mapping functions for us to PCA9685 Units (20000/4096 = 4.88 us) and back
     int MicrosecondsToPCA9685Units(int aMicroseconds);
     int PCA9685UnitsToMicroseconds(int aPCA9685Units);
 #endif // defined(USE_PCA9685_SERVO_EXPANDER)
@@ -565,12 +565,12 @@ public:
     static bool areInterruptsActive(); // The recommended test if at least one servo is moving yet.
 
     /*
-     * Internally only microseconds (or units (= 4.88 µs) if using PCA9685 expander) and not degree are used to speed up things.
+     * Internally only microseconds (or units (= 4.88 us) if using PCA9685 expander) and not degree are used to speed up things.
      * Other expander or libraries can therefore easily be added.
      */
     volatile int mCurrentMicrosecondsOrUnits; // set by write() and _writeMicrosecondsOrUnits(). Required as start for next move and to avoid unnecessary writes.
-    int mStartMicrosecondsOrUnits;  // used with millisAtStartMove to compute currentMicrosecondsOrUnits
-    int mEndMicrosecondsOrUnits;    // used once as last value just if movement was finished
+    int mStartMicrosecondsOrUnits;  // Only used with millisAtStartMove to compute currentMicrosecondsOrUnits in update()
+    int mEndMicrosecondsOrUnits;    // Only used once as last value if movement was finished to provide exact end position.
     int mDeltaMicrosecondsOrUnits;   // end - start
 
     /*
@@ -705,6 +705,9 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
 #endif
 
 /*
+ * Version 3.0.1 - 07/2022
+ * - SAMD51 support by Lutz Aumüller.
+ *
  * Version 3.0.0 - 05/2022
  * - Added target reached callback functionality, to enable multiple movements without loop control.
  * - Changed `ENABLE_MICROS_AS_DEGREE_PARAMETER` to `DISABLE_MICROS_AS_DEGREE_PARAMETER` thus enabling micros as parameter by default.

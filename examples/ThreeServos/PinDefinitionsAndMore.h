@@ -115,7 +115,7 @@
 #define LED_BUILTIN PB1
 #endif
 // On the Zero and others we switch explicitly to SerialUSB
-#if defined(ARDUINO_ARCH_SAMD)
+#if defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ADAFRUIT)
 #define Serial SerialUSB
 // The Chinese SAMD21 M0-Mini clone has no led connected, if you connect it, it is on pin 24 like on the original board.
 // Attention! D2 and D4 are swapped on these boards

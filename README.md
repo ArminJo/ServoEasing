@@ -300,6 +300,9 @@ If you see strange behavior, you can open the library file *ServoEasing.h* and a
 This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
 
 # Revision History
+### Version 3.0.1
+- SAMD51 support by Lutz Aumüller.
+
 ### Version 3.0.0
 - Added target reached callback functionality, to enable multiple movements without loop control.
 - Changed `ENABLE_MICROS_AS_DEGREE_PARAMETER` to `DISABLE_MICROS_AS_DEGREE_PARAMETER` thus enabling micros as parameter by default.
