@@ -177,13 +177,6 @@
 //#define PROVIDE_ONLY_LINEAR_MOVEMENT
 #endif
 
-// Enable this if you want to measure timing by toggling pin12 on an arduino
-//#define MEASURE_SERVO_EASING_INTERRUPT_TIMING
-#if defined(MEASURE_SERVO_EASING_INTERRUPT_TIMING)
-#include "digitalWriteFast.h"
-#define TIMING_OUTPUT_PIN 12
-#endif
-
 /*
  * If you do not require passing microsecond values as parameter instead of degree values. This saves 128 bytes program memory.
  */

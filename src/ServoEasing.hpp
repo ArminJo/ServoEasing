@@ -70,6 +70,13 @@
 //#define LOCAL_TRACE // This enables trace output only for this file
 #endif
 
+// Enable this if you want to measure timing by toggling pin12 on an arduino
+//#define MEASURE_SERVO_EASING_INTERRUPT_TIMING
+#if defined(MEASURE_SERVO_EASING_INTERRUPT_TIMING)
+#include "digitalWriteFast.h"
+#define TIMING_OUTPUT_PIN 12
+#endif
+
 #if defined(ESP8266) || defined(ESP32)
 #include "Ticker.h" // for ServoEasingInterrupt functions
 Ticker Timer20ms;
@@ -195,7 +202,7 @@ ServoEasing::ServoEasing(uint8_t aPCA9685I2CAddress) // @suppress("Class members
 #else
 ServoEasing::ServoEasing(uint8_t aPCA9685I2CAddress, TwoWire *aI2CClass) // @suppress("Class members should be properly initialized")
 #endif
-{
+        {
     mPCA9685I2CAddress = aPCA9685I2CAddress;
 #if !defined(USE_SOFT_I2C_MASTER)
     mI2CClass = aI2CClass;
@@ -931,7 +938,7 @@ int ServoEasing::DegreeOrMicrosecondToMicrosecondsOrUnits(int aDegreeOrMicroseco
         // aDegreeOrMicrosecond = map(aDegreeOrMicrosecond, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
         // return ((4096L * aDegreeOrMicrosecond) / REFRESH_INTERVAL_MICROS);
         return ((int32_t) (aDegreeOrMicrosecond * (int32_t) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))
-                / (((180L * REFRESH_INTERVAL_MICROS) + 2048) / 4096L)) /* / 879 */ + mServo0DegreeMicrosecondsOrUnits;  // return units here
+                / (((180L * REFRESH_INTERVAL_MICROS) + 2048) / 4096L)) /* / 879 */+ mServo0DegreeMicrosecondsOrUnits; // return units here
 #  else
         return ((int32_t) (aDegreeOrMicrosecond * (int32_t) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))
                 / 180) + mServo0DegreeMicrosecondsOrUnits; // return microseconds here
@@ -971,7 +978,7 @@ int ServoEasing::DegreeOrMicrosecondToMicrosecondsOrUnits(float aDegreeOrMicrose
         // aDegreeOrMicrosecond = map(aDegreeOrMicrosecond, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
         // return ((4096L * aDegreeOrMicrosecond) / REFRESH_INTERVAL_MICROS);
         return ((int32_t) (aDegreeOrMicrosecond * (float) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))
-                / (((180L * REFRESH_INTERVAL_MICROS) + 2048) / 4096L)) /* / 879 */ + mServo0DegreeMicrosecondsOrUnits;  // return units here
+                / (((180L * REFRESH_INTERVAL_MICROS) + 2048) / 4096L)) /* / 879 */+ mServo0DegreeMicrosecondsOrUnits; // return units here
 #  else
         return ((int32_t) (aDegreeOrMicrosecond * ((float) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))))
                 / 180 + mServo0DegreeMicrosecondsOrUnits; // return microseconds here
@@ -2512,8 +2519,9 @@ float ServoEasing::LinearWithQuadraticBounce(float aFactorOfTimeCompletion) {
             }
 #  endif
             // return converted units values to be correctly detected by EASE_FUNCTION_MICROSECONDS_INDICATOR_OFFSET
-            return PCA9685UnitsToMicroseconds(mEndMicrosecondsOrUnits + OVERSHOOT_AMOUNT_UNITS
-                    - (OVERSHOOT_AMOUNT_UNITS * tRemainingFactor * tRemainingFactor));
+            return PCA9685UnitsToMicroseconds(
+                    mEndMicrosecondsOrUnits + OVERSHOOT_AMOUNT_UNITS
+                            - (OVERSHOOT_AMOUNT_UNITS * tRemainingFactor * tRemainingFactor));
 #else
             // return direct microseconds values for constant bump
             if (mEasingType & CALL_STYLE_OUT) {
@@ -2574,7 +2582,7 @@ bool ServoEasing::InitializeAndCheckI2CConnection(Print *aSerial) // Print inste
 #else
 bool ServoEasing::InitializeAndCheckI2CConnection(Stream *aSerial) // Print has no flush()
 #endif
-{
+        {
 #if !defined(USE_SOFT_I2C_MASTER)
     // Initialize wire before checkI2CConnection()
     I2CInit();
@@ -2640,7 +2648,7 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial) // Print has no fl
     aSerial->println(aI2CAddress, HEX);
 #endif // defined(USE_SOFT_I2C_MASTER)
 
-    if(tRetValue) {
+    if (tRetValue) {
         aSerial->println(F("PCA9685 expander not connected"));
     }
     return tRetValue;

@@ -290,14 +290,17 @@ To add a new platform, the following steps have to be performed:
 2. You need a **20ms interrupt source** providing the functions enableServoEasingInterrupt() and (optional) disableServoEasingInterrupt(). Extend these functions with code for the new platform. Place includes and timer definitions at top of *ServoEasing.hpp*.
 3. If your interrupt source requires an ISR (Interrupt Service Routine) place it after disableServoEasingInterrupt() where all the other ISR are located.
 4. To test the new platform, you may want to enable **TRACE output** by activating the line `#define TRACE` in *ServoEasing.hpp*
-and enabling **interrupt timing feedback** by activating the line `#define MEASURE_SERVO_EASING_INTERRUPT_TIMING` in *ServoEasing.h*.
+and enabling **interrupt timing feedback** by activating the line `#define MEASURE_SERVO_EASING_INTERRUPT_TIMING` in *ServoEasing.hpp*.
 5. If it works for you, please issue a Pull Request, to share your efforts with the community.
 
 Good luck!
 
 # Troubleshooting
-If you see strange behavior, you can open the library file *ServoEasing.h* and activate the line `#define TRACE` or `#define DEBUG`.
+If you see strange behavior, you can open the library file *ServoEasing.hpp* and activate the line `#define TRACE` or `#define DEBUG`.
 This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
+
+### Error "undefined reference"
+If you see errors like this `Simple.ino:57: undefined reference to `ServoEasing::attach(int, int)'`, you included *ServoEasing.h* instead of *ServoEasing.hpp*.
 
 # Revision History
 ### Version 3.0.1
