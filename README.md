@@ -208,6 +208,7 @@ Modify them by enabling / disabling them, or change the values if applicable.
 | `MAX_EASING_SERVOS` | 12, 16(for PCA9685) | Saves 4 byte RAM per servo. If this value is smaller than the amount of servos declared, attach() will return error and other library functions will not work as expected.<br/>Of course all *AllServos*() functions and isOneServoMoving() can't work correctly! |
 | `DISABLE_MICROS_AS_DEGREE_PARAMETER` | disabled | Disables passing also microsecond values as (target angle) parameter (see [OneServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino#L93)). Saves 128 bytes program memory. |
 | `DISABLE_MIN_AND_MAX_CONSTRAINTS` | disabled | Disables servo movement constraints. Saves 4 bytes RAM per servo but strangely enough no program memory. |
+| `DISABLE_CONTINUE_AFTER_STOP` | disabled | Disables continue at the stop position. Saves 4 bytes RAM per servo. |
 | `PRINT_FOR_SERIAL_PLOTTER` | disabled | Generate serial output for Arduino Plotter (Ctrl-Shift-L). |
 | `DEBUG` | disabled | Generates lots of lovely debug output for this library. |
 | `USE_LEIGHTWEIGHT_SERVO_LIB` | disabled | Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple. See below. Saves up to 742 bytes program memory and 42 bytes RAM. |
@@ -300,7 +301,7 @@ If you see strange behavior, you can open the library file *ServoEasing.hpp* and
 This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
 
 ### Error "undefined reference"
-If you see errors like this `Simple.ino:57: undefined reference to `ServoEasing::attach(int, int)'`, you included *ServoEasing.h* instead of *ServoEasing.hpp*.
+If you see errors like this `Simple.ino:57: undefined reference to ServoEasing::attach(int, int)`, you included *ServoEasing.h* instead of *ServoEasing.hpp*.
 
 # Revision History
 ### Version 3.0.1

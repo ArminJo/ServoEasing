@@ -45,12 +45,13 @@
 #define MAX_EASING_SERVOS 32
 //#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
 //#define DISABLE_MIN_AND_MAX_CONSTRAINTS    // Activating this disables constraints. Saves 4 bytes RAM per servo but strangely enough no program memory.
-//#define DEBUG                         // Activate this to generate lots of lovely debug output for this library.
+//#define DISABLE_CONTINUE_AFTER_STOP        // Activating this disables continue at the stop position. Saves 4 bytes RAM per servo.
+//#define DEBUG                              // Activate this to generate lots of lovely debug output for this library.
 
-//#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output from ServoEasing.hpp.
+//#define PRINT_FOR_SERIAL_PLOTTER           // Activate this to generate the Arduino plotter output from ServoEasing.hpp.
 #include "ServoEasing.hpp"
-
 #include "PinDefinitionsAndMore.h"
+
 /*
  * Pin mapping table for different platforms - used by all examples
  *
@@ -64,7 +65,7 @@
  * APOLLO3            11          12          13          A3
  * RP2040             6|GPIO18     7|GPIO19    8|GPIO20
  */
-#define INFO // to see serial output of loop
+//#define LOCAL_DEBUG
 
 //#define USE_ONLY_ONE_EXPANDER // Activate this to reuse this example for one expander at PCA9685_DEFAULT_ADDRESS
 
@@ -123,7 +124,7 @@ void setup() {
      *************************************************/
     writeAllServos(0);
 
-#if defined(DEBUG)
+#if defined(LOCAL_DEBUG)
     for (uint_fast8_t i = 0; i <= ServoEasing::sServoArrayMaxIndex; ++i) {
         ServoEasing::ServoEasingArray[i]->print(&Serial);
     }
@@ -138,14 +139,17 @@ void setup() {
 }
 
 void loop() {
-#if defined(INFO)
     Serial.print(F("Move all to 180 degree with 20 degree per second with "));
     Serial.print((180 * (1000L / 20)) / (ServoEasing::sServoArrayMaxIndex + 1));
     Serial.println(F(" ms delay"));
-#endif
     setSpeedForAllServos(20);  // This speed is taken if no further speed argument is given.
     for (uint_fast8_t i = 0; i <= ServoEasing::sServoArrayMaxIndex; ++i) {
         ServoEasing::ServoEasingArray[i]->startEaseTo(180);
+#if defined(LOCAL_DEBUG)
+        Serial.print(F("Start i="));
+        Serial.println(i);
+        ServoEasing::ServoEasingArray[i]->print(&Serial);
+#endif
         /*
          * Choose delay so that the last servo starts when the first is about to end
          */
@@ -154,12 +158,10 @@ void loop() {
     delay(1000);
 
     // Now move back
-#if defined(INFO)
     Serial.println(F("Move all back to 0 degree with 20 degree per second"));
-#endif
     for (uint_fast8_t i = 0; i <= ServoEasing::sServoArrayMaxIndex; ++i) {
         ServoEasing::ServoEasingArray[i]->startEaseTo(0);
-#if defined(DEBUG)
+#if defined(LOCAL_DEBUG)
         Serial.print(F("Start i="));
         Serial.println(i);
 #endif

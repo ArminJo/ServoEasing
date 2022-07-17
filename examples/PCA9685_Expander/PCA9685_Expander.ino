@@ -1,5 +1,8 @@
 /*
- * OneServo.cpp
+ * PCA9685_Expander.cpp / OneServo.cpp
+ *
+ * This example is exact the OneServo example but with #define USE_PCA9685_SERVO_EXPANDER enabled to figure out that there is almost no difference between using the PCA9685 expander or the default Arduino Servo interface.
+ * The PCA9685 library was successfully tested with 3 expander boards :-)
  *
  *  Shows smooth linear movement from one servo position to another.
  *
@@ -25,7 +28,7 @@
 #include <Arduino.h>
 
 // Must specify this before the include of "ServoEasing.hpp"
-//#define USE_PCA9685_SERVO_EXPANDER    // Activate this to enables the use of the PCA9685 I2C expander chip/board.
+#define USE_PCA9685_SERVO_EXPANDER    // Activate this to enables the use of the PCA9685 I2C expander chip/board.
 //#define USE_SOFT_I2C_MASTER           // Saves 1756 bytes program memory and 218 bytes RAM compared with Arduino Wire
 //#define USE_SERVO_LIB                 // Activate this to force additional using of regular servo library.
 //#define USE_LEIGHTWEIGHT_SERVO_LIB    // Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
@@ -34,10 +37,7 @@
 #define MAX_EASING_SERVOS 1
 //#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
 //#define DISABLE_MIN_AND_MAX_CONSTRAINTS    // Activating this disables constraints. Saves 4 bytes RAM per servo but strangely enough no program memory.
-//#define DISABLE_CONTINUE_AFTER_STOP        // Activating this disables continue at the stop position. Saves 4 bytes RAM per servo.
-//#define DEBUG                              // Activate this to generate lots of lovely debug output for this library.
-
-//#define PRINT_FOR_SERIAL_PLOTTER           // Activate this to generate the Arduino plotter output from ServoEasing.hpp.
+//#define DEBUG                         // Activate this to generate lots of lovely debug output for this library.
 
 /*
  * Specify which easings types should be available.
@@ -55,9 +55,10 @@
 //#define ENABLE_EASE_PRECISION
 //#define ENABLE_EASE_USER
 
+//#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output from ServoEasing.hpp.
 #include "ServoEasing.hpp"
-#include "PinDefinitionsAndMore.h"
 
+#include "PinDefinitionsAndMore.h"
 /*
  * Pin mapping table for different platforms - used by all examples
  *
@@ -232,11 +233,10 @@ void loop() {
      * Demonstrate stop and continue in the middle of a movement
      */
     Servo1.stop();
-#if !defined(DISABLE_CONTINUE_AFTER_STOP)
     delay(1000);
     // continue movement using interrupts
     Servo1.continueWithInterrupts();
-#endif
+
     delay(3000); // wait extra 2 seconds
 }
 

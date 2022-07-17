@@ -390,6 +390,9 @@ extern const char *const easeTypeStrings[] PROGMEM;
 #define START_UPDATE_BY_INTERRUPT           true
 #define DO_NOT_START_UPDATE_BY_INTERRUPT    false
 
+/*
+ * Size is 46 bytes RAM per servo
+ */
 class ServoEasing
 #if !defined(_DO_NOT_USE_SERVO_LIB)
         : public Servo
@@ -498,8 +501,10 @@ public:
     uint_fast16_t getSpeed();
 
     void stop();
+#if !defined(DISABLE_CONTINUE_AFTER_STOP)
     void continueWithInterrupts();
     void continueWithoutInterrupts();
+#endif
     bool update();
 
     void setTargetPositionReachedHandler(void (*aTargetPositionReachedHandler)(ServoEasing*));
@@ -596,6 +601,9 @@ public:
 
     uint32_t mMillisAtStartMove;
     uint_fast16_t mMillisForCompleteMove;
+#if !defined(DISABLE_CONTINUE_AFTER_STOP)
+    uint32_t mMillisAtStopMove;
+#endif
 
     /*
      * Reverse means, that values for 180 and 0 degrees are swapped by: aValue = mServo180DegreeMicrosecondsOrUnits - (aValue - mServo0DegreeMicrosecondsOrUnits)
@@ -700,6 +708,9 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
 /*
  * Version 3.0.1 - 07/2022
  * - SAMD51 support by Lutz Aumüller.
+ * - Added support to continue at the stop position and `DISABLE_CONTINUE_AFTER_STOP`.
+ * - Fixed initializing and conversion bug for PCA9685 expander introduced in 3.0.0.
+ * - Feather Huzzah support with the help of Danner Claflin.
  *
  * Version 3.0.0 - 05/2022
  * - Added target reached callback functionality, to enable multiple movements without loop control.

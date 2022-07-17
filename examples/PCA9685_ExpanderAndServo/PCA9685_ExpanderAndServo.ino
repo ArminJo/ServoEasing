@@ -46,12 +46,13 @@
 //#define MAX_EASING_SERVOS 16
 //#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
 //#define DISABLE_MIN_AND_MAX_CONSTRAINTS    // Activating this disables constraints. Saves 4 bytes RAM per servo but strangely enough no program memory.
-//#define DEBUG                         // Activate this to generate lots of lovely debug output for this library.
+//#define DISABLE_CONTINUE_AFTER_STOP        // Activating this disables continue at the stop position. Saves 4 bytes RAM per servo.
+//#define DEBUG                              // Activate this to generate lots of lovely debug output for this library.
 
-//#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output from ServoEasing.hpp.
+//#define PRINT_FOR_SERIAL_PLOTTER           // Activate this to generate the Arduino plotter output from ServoEasing.hpp.
 #include "ServoEasing.hpp"
-
 #include "PinDefinitionsAndMore.h"
+
 /*
  * Pin mapping table for different platforms - used by all examples
  *
@@ -71,7 +72,6 @@
  * This example is the OneServo example with only few modifications in setup to figure out that there is almost no difference between using the PCA9685 expander or the default Arduino Servo interface.
  * The PCA9685 library was successfully tested with 3 expander boards :-)
  */
-#define SERVO1_PCA9685_PIN  9
 
 // for ESP32 LED_BUILTIN is defined as static const uint8_t LED_BUILTIN = 2;
 #if !defined(LED_BUILTIN) && !defined(ESP32)
@@ -110,14 +110,14 @@ void setup() {
             blinkLED();
         }
     } else {
-        Serial.println(F("Attach servo to port " STR(SERVO1_PCA9685_PIN) " of PCA9685 expander"));
+        Serial.println(F("Attach servo to port 1 of PCA9685 expander"));
         /************************************************************
          * Attach servo to pin and set servos to start position.
          * This is the position where the movement starts.
          *
          * Attach the expander servos first
          ***********************************************************/
-        if (Servo1AtPCA9685.attach(SERVO1_PCA9685_PIN, START_DEGREE_VALUE) == INVALID_SERVO) {
+        if (Servo1AtPCA9685.attach(1, START_DEGREE_VALUE) == INVALID_SERVO) {
             Serial.println(
                     F("Error attaching servo - maybe MAX_EASING_SERVOS=" STR(MAX_EASING_SERVOS) " is to small to hold all servos"));
             while (true) {

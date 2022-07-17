@@ -35,16 +35,13 @@
 //#define MAX_EASING_SERVOS 2
 //#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
 //#define DISABLE_MIN_AND_MAX_CONSTRAINTS    // Activating this disables constraints. Saves 4 bytes RAM per servo but strangely enough no program memory.
-//#define DEBUG                         // Activate this to generate lots of lovely debug output for this library.
+//#define DISABLE_CONTINUE_AFTER_STOP        // Activating this disables continue at the stop position. Saves 4 bytes RAM per servo.
+//#define DEBUG                              // Activate this to generate lots of lovely debug output for this library.
 
-//#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output from ServoEasing.hpp.
+//#define PRINT_FOR_SERIAL_PLOTTER           // Activate this to generate the Arduino plotter output from ServoEasing.hpp.
 #include "ServoEasing.hpp"
-
-#if !defined(PRINT_FOR_SERIAL_PLOTTER)
-#define INFO // to see serial text output for loop
-#endif
-
 #include "PinDefinitionsAndMore.h"
+
 /*
  * Pin mapping table for different platforms - used by all examples
  *
@@ -130,7 +127,7 @@ void loop() {
     /*
      * Move both servos blocking
      */
-#if defined(INFO)
+#if !defined(PRINT_FOR_SERIAL_PLOTTER)
     Serial.println(F("Move to 0/90 degree with 30 degree per second blocking"));
 #endif
     setSpeedForAllServos(30);
@@ -141,7 +138,7 @@ void loop() {
     /*
      * Now continue faster.
      */
-#if defined(INFO)
+#if !defined(PRINT_FOR_SERIAL_PLOTTER)
     Serial.println(F("Move to 90/10 degree with up to 60 degree per second using interrupts"));
 #endif
     Servo1.setEaseTo(90.0f, 60);
@@ -149,7 +146,7 @@ void loop() {
      * An alternative method to synchronize and start
      * Synchronize by simply using the same duration
      */
-    Servo2.startEaseToD(10, Servo1.mMillisForCompleteMove); // This start interrupt for all servos
+    Servo2.startEaseToD(10, Servo1.mMillisForCompleteMove); // This starts interrupt for all servos
     /*
      * Now you can run your program while the servos are moving.
      * Just let the LED blink until servos stop.
@@ -163,7 +160,7 @@ void loop() {
      *  The first servo moves with the specified speed.
      *  The second will be synchronized to slower speed (longer duration, than specified) because it has to move only 80 degree.
      */
-#if defined(INFO)
+#if !defined(PRINT_FOR_SERIAL_PLOTTER)
     Serial.println(F("Move to 0/90 degree with up to 90 degree per second using interrupts. Use cubic easing for first servo."));
 #endif
     Servo1.setEasingType(EASE_CUBIC_IN_OUT);
@@ -186,7 +183,7 @@ void loop() {
     /*
      * Move both servos independently
      */
-#if defined(INFO)
+#if !defined(PRINT_FOR_SERIAL_PLOTTER)
     Serial.println(F("Move independently to -90/0 degree with 60/80 degree per second using interrupts"));
 #endif
     Servo1.setEaseTo(-90.0f, 60);

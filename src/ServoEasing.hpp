@@ -223,6 +223,12 @@ ServoEasing::ServoEasing(uint8_t aPCA9685I2CAddress, TwoWire *aI2CClass) // @sup
     mUserEaseInFunction = NULL;
 #  endif
 #endif
+    TargetPositionReachedHandler = NULL;
+
+#if !defined(DISABLE_MIN_AND_MAX_CONSTRAINTS)
+    mMinMicrosecondsOrUnits = 0;
+    mMaxMicrosecondsOrUnits = 2 * DEFAULT_MICROSECONDS_FOR_180_DEGREE; // any big value is sufficient
+#endif
 
 #if defined(MEASURE_SERVO_EASING_INTERRUPT_TIMING)
     pinMode(TIMING_OUTPUT_PIN, OUTPUT);
@@ -805,7 +811,7 @@ void ServoEasing::_writeMicrosecondsOrUnits(int aMicrosecondsOrUnits) {
     }
 
 #if defined(PRINT_FOR_SERIAL_PLOTTER) && !defined(LOCAL_TRACE)
-    Serial.print(' ');
+    Serial.print(' '); // leading separator to separate multiple servo values
     Serial.print(aMicrosecondsOrUnits);
 #endif
 
@@ -837,7 +843,7 @@ void ServoEasing::_writeMicrosecondsOrUnits(int aMicrosecondsOrUnits) {
 #endif
 
 #if defined(LOCAL_TRACE) && !defined(PRINT_FOR_SERIAL_PLOTTER)
-    Serial.println();
+    Serial.println(); // no newline here, if serial plotter output is requested
 #endif
 }
 
@@ -922,13 +928,13 @@ int ServoEasing::DegreeOrMicrosecondToMicrosecondsOrUnits(int aDegreeOrMicroseco
 #if defined(DISABLE_MICROS_AS_DEGREE_PARAMETER)
 #  if defined(USE_PCA9685_SERVO_EXPANDER)
     return ((int32_t) (aDegreeOrMicrosecond * (int32_t) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))
-            / (((180L * REFRESH_INTERVAL_MICROS) + 2048) / 4096L)) /* / 879 */ + mServo0DegreeMicrosecondsOrUnits;  // return units here
+            / 180L) + mServo0DegreeMicrosecondsOrUnits;  // return units here
 #  else
     // return map(aDegreeOrMicrosecond, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
     return ((int32_t) (aDegreeOrMicrosecond * (int32_t) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))
             / 180) + mServo0DegreeMicrosecondsOrUnits; // return microseconds here
 #  endif
-#else
+#else // defined(DISABLE_MICROS_AS_DEGREE_PARAMETER)
     if (aDegreeOrMicrosecond < THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
         /*
          * Here aDegreeOrMicrosecond contains degree
@@ -938,7 +944,7 @@ int ServoEasing::DegreeOrMicrosecondToMicrosecondsOrUnits(int aDegreeOrMicroseco
         // aDegreeOrMicrosecond = map(aDegreeOrMicrosecond, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
         // return ((4096L * aDegreeOrMicrosecond) / REFRESH_INTERVAL_MICROS);
         return ((int32_t) (aDegreeOrMicrosecond * (int32_t) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))
-                / (((180L * REFRESH_INTERVAL_MICROS) + 2048) / 4096L)) /* / 879 */+ mServo0DegreeMicrosecondsOrUnits; // return units here
+                / 180L) + mServo0DegreeMicrosecondsOrUnits; // return units here
 #  else
         return ((int32_t) (aDegreeOrMicrosecond * (int32_t) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))
                 / 180) + mServo0DegreeMicrosecondsOrUnits; // return microseconds here
@@ -1046,7 +1052,7 @@ void ServoEasing::easeTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesP
         // First do the delay, then check for update, since we are likely called directly after start and there is nothing to move yet
         delay(REFRESH_INTERVAL_MILLIS); // 20 ms
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
-    } while (!updateAllServos());
+    } while (!updateAllServos()); // Update all servos in order to always create a complete plotter data set
 #else
     } while (!update());
 #endif
@@ -1246,10 +1252,10 @@ bool ServoEasing::startEaseToD(int aDegreeOrMicrosecond, uint_fast16_t aMillisFo
     if (true) {
 #else
     if (mEasingType != EASE_DUMMY_MOVE) {
+        // No end position for dummy move. This forces mDeltaMicrosecondsOrUnits to zero, avoiding any movement
 #endif
         // write the position also to ServoEasingNextPositionArray
         ServoEasingNextPositionArray[mServoIndex] = aDegreeOrMicrosecond;
-        // No end position for dummy move. This forces mDeltaMicrosecondsOrUnits to zero, avoiding any movement
         mEndMicrosecondsOrUnits = DegreeOrMicrosecondToMicrosecondsOrUnits(aDegreeOrMicrosecond);
     }
     int tCurrentMicrosecondsOrUnits = mCurrentMicrosecondsOrUnits;
@@ -1337,22 +1343,32 @@ bool ServoEasing::startEaseToD(float aDegreeOrMicrosecond, uint_fast16_t aMillis
     return tReturnValue;
 }
 
+/*
+ * This stops the servo at any position.
+ */
 void ServoEasing::stop() {
     mServoMoves = false;
+#if !defined(DISABLE_CONTINUE_AFTER_STOP)
+    mMillisAtStopMove = millis();
+#endif
     if (!isOneServoMoving()) {
         // disable interrupt only if all servos stopped. This enables independent movements of servos with one interrupt handler.
         disableServoEasingInterrupt();
     }
 }
 
+#if !defined(DISABLE_CONTINUE_AFTER_STOP)
 void ServoEasing::continueWithInterrupts() {
+    mMillisAtStartMove += millis() - mMillisAtStopMove; // adjust the start time in order to continue the position of the stop() command.
     mServoMoves = true;
     enableServoEasingInterrupt();
 }
 
 void ServoEasing::continueWithoutInterrupts() {
+    mMillisAtStartMove += millis() - mMillisAtStopMove; // adjust the start time in order to continue the position of the stop() command.
     mServoMoves = true;
 }
+#endif
 
 void ServoEasing::setTargetPositionReachedHandler(void (*aTargetPositionReachedHandler)(ServoEasing*)) {
     TargetPositionReachedHandler = aTargetPositionReachedHandler;
@@ -1400,7 +1416,7 @@ bool ServoEasing::update() {
 
     if (!mServoMoves) {
 #  if defined(PRINT_FOR_SERIAL_PLOTTER)
-        // call it always for serial plotter
+        // call it always for serial plotter to output one servo value
         _writeMicrosecondsOrUnits(mCurrentMicrosecondsOrUnits);
 #  endif
         return true;
@@ -2317,8 +2333,7 @@ bool updateAllServos() {
         }
     }
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
-// End of one data set
-    Serial.println();
+    Serial.println(); // End of one complete data set
 #endif
     return tAllServosStopped;
 }

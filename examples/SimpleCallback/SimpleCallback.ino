@@ -34,10 +34,13 @@
 #define MAX_EASING_SERVOS 1
 //#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
 //#define DISABLE_MIN_AND_MAX_CONSTRAINTS    // Activating this disables constraints. Saves 4 bytes RAM per servo but strangely enough no program memory.
-//#define DEBUG                         // Activate this to generate lots of lovely debug output for this library.
+//#define DISABLE_CONTINUE_AFTER_STOP        // Activating this disables continue at the stop position. Saves 4 bytes RAM per servo.
+//#define DEBUG                              // Activate this to generate lots of lovely debug output for this library.
 
+//#define PRINT_FOR_SERIAL_PLOTTER           // Activate this to generate the Arduino plotter output from ServoEasing.hpp.
 #include "ServoEasing.hpp"
 #include "PinDefinitionsAndMore.h"
+
 /*
  * Pin mapping table for different platforms - used by all examples
  *
