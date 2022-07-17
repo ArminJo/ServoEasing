@@ -24,10 +24,10 @@
 #ifndef _SERVO_EASING_H
 #define _SERVO_EASING_H
 
-#define VERSION_SERVO_EASING "3.0.0"
+#define VERSION_SERVO_EASING "3.0.1"
 #define VERSION_SERVO_EASING_MAJOR 3
 #define VERSION_SERVO_EASING_MINOR 0
-#define VERSION_SERVO_EASING_PATCH 0
+#define VERSION_SERVO_EASING_PATCH 1
 // The change log is at the bottom of the file
 
 /*
@@ -502,8 +502,8 @@ public:
 
     void stop();
 #if !defined(DISABLE_CONTINUE_AFTER_STOP)
-    void continueWithInterrupts();
-    void continueWithoutInterrupts();
+    void resumeWithInterrupts();
+    void resumeWithoutInterrupts();
 #endif
     bool update();
 
@@ -708,7 +708,7 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
 /*
  * Version 3.0.1 - 07/2022
  * - SAMD51 support by Lutz Aumüller.
- * - Added support to continue at the stop position and `DISABLE_CONTINUE_AFTER_STOP`.
+ * - Added support to resume at the stop position and `DISABLE_CONTINUE_AFTER_STOP`.
  * - Fixed initializing and conversion bug for PCA9685 expander introduced in 3.0.0.
  * - Feather Huzzah support with the help of Danner Claflin.
  *

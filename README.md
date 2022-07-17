@@ -306,6 +306,9 @@ If you see errors like this `Simple.ino:57: undefined reference to ServoEasing::
 # Revision History
 ### Version 3.0.1
 - SAMD51 support by Lutz Aumüller.
+- Added support to resume at the stop position and `DISABLE_CONTINUE_AFTER_STOP`.
+- Fixed initializing and conversion bug for PCA9685 expander introduced in 3.0.0.
+- Feather Huzzah support with the help of Danner Claflin.
 
 ### Version 3.0.0
 - Added target reached callback functionality, to enable multiple movements without loop control.

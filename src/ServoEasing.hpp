@@ -1358,13 +1358,13 @@ void ServoEasing::stop() {
 }
 
 #if !defined(DISABLE_CONTINUE_AFTER_STOP)
-void ServoEasing::continueWithInterrupts() {
+void ServoEasing::resumeWithInterrupts() {
     mMillisAtStartMove += millis() - mMillisAtStopMove; // adjust the start time in order to continue the position of the stop() command.
     mServoMoves = true;
     enableServoEasingInterrupt();
 }
 
-void ServoEasing::continueWithoutInterrupts() {
+void ServoEasing::resumeWithoutInterrupts() {
     mMillisAtStartMove += millis() - mMillisAtStopMove; // adjust the start time in order to continue the position of the stop() command.
     mServoMoves = true;
 }

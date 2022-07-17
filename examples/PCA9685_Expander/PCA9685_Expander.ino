@@ -234,8 +234,8 @@ void loop() {
      */
     Servo1.stop();
     delay(1000);
-    // continue movement using interrupts
-    Servo1.continueWithInterrupts();
+    // resume movement using interrupts
+    Servo1.resumeWithInterrupts();
 
     delay(3000); // wait extra 2 seconds
 }
