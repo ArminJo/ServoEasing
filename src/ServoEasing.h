@@ -48,15 +48,18 @@
  * USE_PCA9685_SERVO_EXPANDER is for use with e.g. the Adafruit PCA9685 16-Channel Servo Driver board.
  * It has a resolution of 4096 per 20 ms => 4.88 us per step/unit.
  * One PCA9685 has 16 outputs. You must modify MAX_EASING_SERVOS below, if you have more than one PCA9685 attached!
- * Use of PCA9685 normally disables use of regular servo library. You can force using of regular servo library by defining USE_SERVO_LIB
  * All internal values *MicrosecondsOrUnits now contains no more microseconds but PCA9685 units!!!
  */
-#if defined(USE_PCA9685_SERVO_EXPANDER) && !defined(USE_SERVO_LIB)
-#define _DO_NOT_USE_SERVO_LIB
-#endif
+//#define USE_PCA9685_SERVO_EXPANDER
+/*
+ * Use of PCA9685 normally disables use of regular servo library to save programming space and RAM.
+ * You can force additional using of regular servo library by defining USE_SERVO_LIB.
+ * Therefore it is only required if USE_PCA9685_SERVO_EXPANDER is defined.
+ */
+//#define USE_SERVO_LIB
 
 /*
- * If you have only one or two servos and an ATmega328, then you can save program memory by defining symbol `USE_LEIGHTWEIGHT_SERVO_LIB`.
+ * If you have only one or two servos at pin 9 and/or 10 and an ATmega328, then you can save program memory by defining symbol `USE_LEIGHTWEIGHT_SERVO_LIB`.
  * This saves 742 bytes program memory and 42 bytes RAM.
  * Using Lightweight Servo library (or PCA9685 servo expander) makes the servo pulse generating immune
  * to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
@@ -69,24 +72,15 @@
 #error USE_LEIGHTWEIGHT_SERVO_LIB can only be activated for the Atmega328 CPU
 #endif
 
-#if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-#define _DO_NOT_USE_SERVO_LIB
-#endif
-
-
-#if ( defined(ESP8266) || defined(ESP32) || defined(__STM32F1__)) && defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-#error No Lightweight Servo Library available (and required) for ESP boards
-#endif
-
-#if defined(USE_PCA9685_SERVO_EXPANDER) && defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-#error Please define only one of the symbols USE_PCA9685_SERVO_EXPANDER or USE_LEIGHTWEIGHT_SERVO_LIB
-#endif
 
 #if !( defined(__AVR__) || defined(ESP8266) || defined(ESP32) || defined(STM32F1xx) || defined(__STM32F1__) || defined(__SAM3X8E__) || defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_APOLLO3) || defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_RP2040) || defined(TEENSYDUINO))
 #warning No periodic timer support existent (or known) for this platform. Only blocking functions and simple example will run!
 #endif
 
-#if !defined(_DO_NOT_USE_SERVO_LIB)
+/*
+ * Include of the appropriate Servo.h file
+ */
+#if !defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_SERVO_LIB)
 #  if defined(ESP32)
 // This does not work in Arduino IDE for step "Generating function prototypes..."
 //#    if ! __has_include("ESP32Servo.h")
@@ -97,21 +91,23 @@
 #  elif defined(MEGATINYCORE)
 #   include <Servo_megaTinyCore.h>
 
-#  else
+#  else // defined(ESP32)
+#    if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#  include "LightweightServo.h"
+#      if !defined(MAX_EASING_SERVOS)
+#    define MAX_EASING_SERVOS 2 // default value for UNO etc.
+#      endif
+#    else
 #   include <Servo.h>
+#    endif // !defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 #  endif // defined(ESP32)
-#endif // !defined(_DO_NOT_USE_SERVO_LIB)
+#endif // defined(USE_SERVO_LIB)
 
 #if defined(ARDUINO_ARCH_MBED) // Arduino Nano 33 BLE
 #include "mbed.h"
 #endif
 
-#if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-#  include "LightweightServo.h"
-#  if !defined(MAX_EASING_SERVOS)
-#    define MAX_EASING_SERVOS 2 // default value for UNO etc.
-#  endif
-#endif // !defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 #  if !defined(MAX_EASING_SERVOS)
@@ -394,7 +390,7 @@ extern const char *const easeTypeStrings[] PROGMEM;
  * Size is 46 bytes RAM per servo
  */
 class ServoEasing
-#if !defined(_DO_NOT_USE_SERVO_LIB)
+#if (!defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_SERVO_LIB)) && !defined(USE_LEIGHTWEIGHT_SERVO_LIB)
         : public Servo
 #endif
 {
@@ -501,10 +497,8 @@ public:
     uint_fast16_t getSpeed();
 
     void stop();
-#if !defined(DISABLE_CONTINUE_AFTER_STOP)
     void resumeWithInterrupts();
     void resumeWithoutInterrupts();
-#endif
     bool update();
 
     void setTargetPositionReachedHandler(void (*aTargetPositionReachedHandler)(ServoEasing*));
@@ -588,7 +582,8 @@ public:
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 #  if defined(USE_SERVO_LIB)
-    bool mServoIsConnectedToExpander; // to distinguish between different servo drivers
+    // Here we can have both types of servo connections
+    bool mServoIsConnectedToExpander; // to distinguish between different using microseconds or PWM units and appropriate write functions
 #  endif
     uint8_t mPCA9685I2CAddress;
 #  if !defined(USE_SOFT_I2C_MASTER)
@@ -617,6 +612,10 @@ public:
 #endif
     int mTrimMicrosecondsOrUnits; // This value is always added by the function _writeMicrosecondsOrUnits() to the requested degree/units/microseconds value
 
+    /*
+     * Values contain always microseconds except for servos connected to a PCA9685 expander, where they contain PWM units.
+     * Values are set exclusively by attach(), and here it is determined if they contain microseconds or PWM units.
+     */
     int mServo0DegreeMicrosecondsOrUnits;
     int mServo180DegreeMicrosecondsOrUnits;
 
@@ -681,6 +680,8 @@ void synchronizeAllServosStartAndWaitForAllServosToStop();
 void printArrayPositions(Print *aSerial);
 bool isOneServoMoving();
 void stopAllServos();
+void resumeWithInterruptsAllServos();
+void resumeWithoutInterruptsAllServos();
 bool updateAllServos();
 
 void enableServoEasingInterrupt();
@@ -709,7 +710,7 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
  * Version 3.0.1 - 07/2022
  * - SAMD51 support by Lutz Aumüller.
  * - Added support to resume at the stop position and `DISABLE_CONTINUE_AFTER_STOP`.
- * - Fixed initializing and conversion bug for PCA9685 expander introduced in 3.0.0.
+ * - Fixed some bugs for PCA9685 expander introduced in 3.0.0.
  * - Feather Huzzah support with the help of Danner Claflin.
  *
  * Version 3.0.0 - 05/2022

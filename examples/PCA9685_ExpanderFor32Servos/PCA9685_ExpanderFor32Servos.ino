@@ -39,7 +39,7 @@
 // Must specify this before the include of "ServoEasing.hpp"
 #define USE_PCA9685_SERVO_EXPANDER    // Activate this to enables the use of the PCA9685 I2C expander chip/board.
 //#define USE_SOFT_I2C_MASTER           // Saves 1756 bytes program memory and 218 bytes RAM compared with Arduino Wire
-//#define USE_SERVO_LIB                 // Activate this to force additional using of regular servo library.
+//#define USE_SERVO_LIB                 // If USE_PCA9685_SERVO_EXPANDER is defined, activate this to force additional using of regular servo library.
 //#define PROVIDE_ONLY_LINEAR_MOVEMENT  // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes program memory.
 //#define DISABLE_COMPLEX_FUNCTIONS     // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory.
 #define MAX_EASING_SERVOS 32

@@ -390,7 +390,7 @@ int ServoEasing::PCA9685UnitsToMicroseconds(int aPCA9685Units) {
 
 // Constructor without I2C address
 ServoEasing::ServoEasing() // @suppress("Class members should be properly initialized")
-#if !defined(_DO_NOT_USE_SERVO_LIB)
+#if (!defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_SERVO_LIB)) && !defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 :
         Servo()
 #endif
@@ -401,7 +401,7 @@ ServoEasing::ServoEasing() // @suppress("Class members should be properly initia
     mServoMoves = false;
     mOperateServoReverse = false;
 
-#if defined(USE_SERVO_LIB)
+#if defined(USE_PCA9685_SERVO_EXPANDER) && defined(USE_SERVO_LIB)
     mServoIsConnectedToExpander = false;
 #endif
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
@@ -519,17 +519,21 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 #  if defined(USE_SERVO_LIB)
     if (mServoIsConnectedToExpander) {
+        // set units
         mServo0DegreeMicrosecondsOrUnits = MicrosecondsToPCA9685Units(tMicrosecondsForServo0Degree);
         mServo180DegreeMicrosecondsOrUnits = MicrosecondsToPCA9685Units(tMicrosecondsForServo180Degree);
     } else {
+        // set microseconds
         mServo0DegreeMicrosecondsOrUnits = tMicrosecondsForServo0Degree;
         mServo180DegreeMicrosecondsOrUnits = tMicrosecondsForServo180Degree;
     }
 #  else
+    // set units
     mServo0DegreeMicrosecondsOrUnits = MicrosecondsToPCA9685Units(tMicrosecondsForServo0Degree);
     mServo180DegreeMicrosecondsOrUnits = MicrosecondsToPCA9685Units(tMicrosecondsForServo180Degree);
 #  endif
 #else
+    // set microseconds
     mServo0DegreeMicrosecondsOrUnits = tMicrosecondsForServo0Degree;
     mServo180DegreeMicrosecondsOrUnits = tMicrosecondsForServo180Degree;
 #endif
@@ -586,29 +590,36 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
     PCA9685Init(); // initialize at every attach is simpler but initializing once for every board would be sufficient.
     return tReturnValue;
 #  endif
-#elif defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-    if(aPin != 9 && aPin != 10) {
-        return false;
-    }
-    return aPin;
 #endif // defined(USE_PCA9685_SERVO_EXPANDER)
 
-#if !defined(_DO_NOT_USE_SERVO_LIB)
+#if !defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_SERVO_LIB)
+    /*
+     * Here servo is NOT connected to expander
+     */
+    mCurrentMicrosecondsOrUnits = DEFAULT_PULSE_WIDTH; // The start value if we forget the initial write()
 // This error value has priority over the regular return value from Servo::attach()
     if (tReturnValue == INVALID_SERVO) {
         return tReturnValue;
     }
-    mCurrentMicrosecondsOrUnits = DEFAULT_PULSE_WIDTH;
+
+#  if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+    if(aPin != 9 && aPin != 10) {
+        return false;
+    }
+    return aPin;
+#  else
     /*
+     * Use standard arduino servo library
      * Call attach() of the underlying Servo library
      */
-#  if defined(ARDUINO_ARCH_APOLLO3)
+#    if defined(ARDUINO_ARCH_APOLLO3)
     Servo::attach(aPin, tMicrosecondsForServo0Degree, tMicrosecondsForServo180Degree);
     return aPin; // Sparkfun apollo3 Servo library has no return value for attach :-(
-#  else
+#    else
     return Servo::attach(aPin, tMicrosecondsForServo0Degree, tMicrosecondsForServo180Degree);
-#  endif
-#endif //!defined(_DO_NOT_USE_SERVO_LIB)
+#    endif // defined(ARDUINO_ARCH_APOLLO3)
+#  endif // defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#endif // defined(USE_SERVO_LIB)
 }
 
 void ServoEasing::detach() {
@@ -624,16 +635,23 @@ void ServoEasing::detach() {
         if (mServoIsConnectedToExpander) {
             setPWM(0); // set signal fully off
         } else {
-            Servo::detach();
+#    if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+        deinitLightweightServoPin9_10(mServoPin == 9, mServoPin == 10); // disable output and change to input
+#    else
+        Servo::detach();
+#    endif
         }
 #  else
         setPWM(0); // set signal fully off
-#  endif
-#elif defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-        deinitLightweightServoPin9_10(mServoPin == 9, mServoPin == 10); // disable output and change to input
+#  endif // defined(USE_SERVO_LIB)
+
 #else
+#  if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+        deinitLightweightServoPin9_10(mServoPin == 9, mServoPin == 10); // disable output and change to input
+#  else
         Servo::detach();
-#endif
+#  endif
+#endif // defined(USE_PCA9685_SERVO_EXPANDER)
     }
     mServoMoves = false; // safety net to enable right update handling if accidentally called
     mServoIndex = INVALID_SERVO;
@@ -815,10 +833,7 @@ void ServoEasing::_writeMicrosecondsOrUnits(int aMicrosecondsOrUnits) {
     Serial.print(aMicrosecondsOrUnits);
 #endif
 
-#if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-    writeMicrosecondsLightweightServo(aMicrosecondsOrUnits, (mServoPin == 9));
-
-#elif defined(USE_PCA9685_SERVO_EXPANDER)
+#if defined(USE_PCA9685_SERVO_EXPANDER)
 #  if defined(LOCAL_TRACE)
     // For each pin show PWM on value used below
     Serial.print(F(" s="));
@@ -828,7 +843,11 @@ void ServoEasing::_writeMicrosecondsOrUnits(int aMicrosecondsOrUnits) {
     if (mServoIsConnectedToExpander) {
         setPWM(mServoPin * ((4096 - (DEFAULT_PCA9685_UNITS_FOR_180_DEGREE + 100)) / 15), aMicrosecondsOrUnits); // mServoPin * 233
     } else {
+#    if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+        writeMicrosecondsLightweightServo(aMicrosecondsOrUnits, (mServoPin == 9));
+#    else
         Servo::writeMicroseconds(aMicrosecondsOrUnits); // requires 7 us
+#    endif
     }
 #  else
     /*
@@ -839,7 +858,11 @@ void ServoEasing::_writeMicrosecondsOrUnits(int aMicrosecondsOrUnits) {
 #  endif
 
 #else
+#  if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+    writeMicrosecondsLightweightServo(aMicrosecondsOrUnits, (mServoPin == 9));
+#  else
     Servo::writeMicroseconds(aMicrosecondsOrUnits); // requires 7 us
+#  endif
 #endif
 
 #if defined(LOCAL_TRACE) && !defined(PRINT_FOR_SERIAL_PLOTTER)
@@ -920,36 +943,22 @@ int ServoEasing::MicrosecondsOrUnitsToMicroseconds(int aMicrosecondsOrUnits) {
 
 /**
  * We have around 10 us per degree
- * We do not convert values >= 400.
  * Used to convert (external) provided degree values to internal microseconds
+ * For degree parameter, return map(aDegreeOrMicrosecond, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
  */
 int ServoEasing::DegreeOrMicrosecondToMicrosecondsOrUnits(int aDegreeOrMicrosecond) {
-// For microseconds and PCA9685 units:
 #if defined(DISABLE_MICROS_AS_DEGREE_PARAMETER)
-#  if defined(USE_PCA9685_SERVO_EXPANDER)
     return ((int32_t) (aDegreeOrMicrosecond * (int32_t) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))
-            / 180L) + mServo0DegreeMicrosecondsOrUnits;  // return units here
-#  else
-    // return map(aDegreeOrMicrosecond, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
-    return ((int32_t) (aDegreeOrMicrosecond * (int32_t) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))
-            / 180) + mServo0DegreeMicrosecondsOrUnits; // return microseconds here
-#  endif
+            / 180) + mServo0DegreeMicrosecondsOrUnits;
 #else // defined(DISABLE_MICROS_AS_DEGREE_PARAMETER)
     if (aDegreeOrMicrosecond < THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
         /*
          * Here aDegreeOrMicrosecond contains degree
          */
-        // return map(aDegreeOrMicrosecond, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
-#  if defined(USE_PCA9685_SERVO_EXPANDER)
-        // aDegreeOrMicrosecond = map(aDegreeOrMicrosecond, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
-        // return ((4096L * aDegreeOrMicrosecond) / REFRESH_INTERVAL_MICROS);
+//        return map(aDegreeOrMicrosecond, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
+        // This saves 20 bytes program space and is faster :-)
         return ((int32_t) (aDegreeOrMicrosecond * (int32_t) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))
-                / 180L) + mServo0DegreeMicrosecondsOrUnits; // return units here
-#  else
-        return ((int32_t) (aDegreeOrMicrosecond * (int32_t) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))
-                / 180) + mServo0DegreeMicrosecondsOrUnits; // return microseconds here
-#endif
-
+                / 180L) + mServo0DegreeMicrosecondsOrUnits;
     } else {
         /*
          * Here aDegreeOrMicrosecond contains microseconds
@@ -966,29 +975,15 @@ int ServoEasing::DegreeOrMicrosecondToMicrosecondsOrUnits(int aDegreeOrMicroseco
 int ServoEasing::DegreeOrMicrosecondToMicrosecondsOrUnits(float aDegreeOrMicrosecond) {
 // For microseconds and PCA9685 units:
 #if defined(DISABLE_MICROS_AS_DEGREE_PARAMETER)
-#  if defined(USE_PCA9685_SERVO_EXPANDER)
-    return ((int32_t) (aDegreeOrMicrosecond * (float) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))
-            / (((180L * REFRESH_INTERVAL_MICROS) + 2048) / 4096L)) /* / 879 */ + mServo0DegreeMicrosecondsOrUnits;  // return units here
-#  else
-    // return map(aDegreeOrMicrosecond, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
     return ((int32_t) (aDegreeOrMicrosecond * ((float) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))))
             / 180 + mServo0DegreeMicrosecondsOrUnits; // return microseconds here
-#  endif
 #else
     if (aDegreeOrMicrosecond < THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
         /*
          * Here aDegreeOrMicrosecond contains degree
          */
-        // return map(aDegreeOrMicrosecond, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
-#  if defined(USE_PCA9685_SERVO_EXPANDER)
-        // aDegreeOrMicrosecond = map(aDegreeOrMicrosecond, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
-        // return ((4096L * aDegreeOrMicrosecond) / REFRESH_INTERVAL_MICROS);
-        return ((int32_t) (aDegreeOrMicrosecond * (float) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))
-                / (((180L * REFRESH_INTERVAL_MICROS) + 2048) / 4096L)) /* / 879 */+ mServo0DegreeMicrosecondsOrUnits; // return units here
-#  else
         return ((int32_t) (aDegreeOrMicrosecond * ((float) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))))
                 / 180 + mServo0DegreeMicrosecondsOrUnits; // return microseconds here
-#endif
 
     } else {
         /*
@@ -1002,24 +997,6 @@ int ServoEasing::DegreeOrMicrosecondToMicrosecondsOrUnits(float aDegreeOrMicrose
     }
 #endif // defined(DISABLE_MICROS_AS_DEGREE_PARAMETER)
 }
-
-///**
-// * Floating point version for better resolution
-// */
-//int ServoEasing::DegreeToMicrosecondsOrUnits(float aDegree) {
-//#if defined(USE_PCA9685_SERVO_EXPANDER)
-//#  if defined(USE_SERVO_LIB)
-//    if (mServoIsConnectedToExpander) {
-//        return map(aDegree, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits); // we must return microseconds here
-//    }
-//#  endif
-//    return MicrosecondsToPCA9685Units(aDegreeOrMicrosecond); // return units here
-//#else
-////    return map(aDegree, 0, 180, mServo0DegreeMicrosecondsOrUnits, mServo180DegreeMicrosecondsOrUnits);
-//    return ((int32_t) (aDegree * ((float) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits)))) / 180
-//            + mServo0DegreeMicrosecondsOrUnits;
-//#endif
-//}
 
 /**
  * Mainly for testing, since trim and reverse are applied at each write.
@@ -1357,18 +1334,20 @@ void ServoEasing::stop() {
     }
 }
 
-#if !defined(DISABLE_CONTINUE_AFTER_STOP)
 void ServoEasing::resumeWithInterrupts() {
+#if !defined(DISABLE_CONTINUE_AFTER_STOP)
     mMillisAtStartMove += millis() - mMillisAtStopMove; // adjust the start time in order to continue the position of the stop() command.
+#endif
     mServoMoves = true;
     enableServoEasingInterrupt();
 }
 
 void ServoEasing::resumeWithoutInterrupts() {
+#if !defined(DISABLE_CONTINUE_AFTER_STOP)
     mMillisAtStartMove += millis() - mMillisAtStopMove; // adjust the start time in order to continue the position of the stop() command.
+#endif
     mServoMoves = true;
 }
-#endif
 
 void ServoEasing::setTargetPositionReachedHandler(void (*aTargetPositionReachedHandler)(ServoEasing*)) {
     TargetPositionReachedHandler = aTargetPositionReachedHandler;
@@ -1874,7 +1853,7 @@ void enableServoEasingInterrupt() {
      * before a new servo period starts. This leaves the first servo signals undisturbed.
      */
 #    if defined(USE_PCA9685_SERVO_EXPANDER) && !defined(USE_SERVO_LIB)
-//    // set timer 1 to 20 ms, since the servo library does not do this for us
+//    // set timer 1 to 20 ms, since the servo library or lightweight_servo library does not do this for us
     TCCR1A = _BV(WGM11);     // FastPWM Mode mode TOP (20 ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
     TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);     // set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
     ICR1 = (F_CPU / 8) / REFRESH_FREQUENCY; // 40000 - set period to 50 Hz / 20 ms
@@ -2317,7 +2296,25 @@ void stopAllServos() {
     void disableServoEasingInterrupt();
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
         if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
-            ServoEasing::ServoEasingArray[tServoIndex]->mServoMoves = false;
+            ServoEasing::ServoEasingArray[tServoIndex]->stop();
+        }
+    }
+}
+
+void resumeWithInterruptsAllServos() {
+    void disableServoEasingInterrupt();
+    for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+            ServoEasing::ServoEasingArray[tServoIndex]->resumeWithInterrupts();
+        }
+    }
+}
+
+void resumeWithoutInterruptsAllServos() {
+    void disableServoEasingInterrupt();
+    for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+            ServoEasing::ServoEasingArray[tServoIndex]->resumeWithoutInterrupts();
         }
     }
 }
@@ -2487,6 +2484,7 @@ float ServoEasing::ElasticEaseIn(float aFactorOfTimeCompletion) {
  * So the target position is always approached from one side. This enables it to taken out the slack/backlash of any hardware moved by the servo.
  * IN = Negative bounce for movings from above (go in to origin)
  * OUT = Positive bounce for movings from below (go out from origin) we are called with 1.0 to 0.0
+ * @return For non bounce phase of movement, return float value. For bouncing phase, return microseconds or units.
  */
 float ServoEasing::LinearWithQuadraticBounce(float aFactorOfTimeCompletion) {
     if (((mEasingType & CALL_STYLE_OUT) && mDeltaMicrosecondsOrUnits < 0)
@@ -2525,35 +2523,36 @@ float ServoEasing::LinearWithQuadraticBounce(float aFactorOfTimeCompletion) {
                 tRemainingFactor = aFactorOfTimeCompletion - (1.0 - PART_OF_BOUNCE_MOVEMENT_HALF); // tRemainingFactor - 0.9 -> 0.0 to 0.1
                 tRemainingFactor = tRemainingFactor * (1 / PART_OF_BOUNCE_MOVEMENT_HALF); // tRemainingFactor is 0.0 to 1.0 -> quadratic in
             }
+
+            uint_fast8_t tBumpMicrosecondsOrUnits = OVERSHOOT_AMOUNT_MILLIS;
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 #  if defined(USE_SERVO_LIB)
-            if (!mServoIsConnectedToExpander) {
-                // not connected to PCA9685 here, return direct microseconds values
-                return mEndMicrosecondsOrUnits + OVERSHOOT_AMOUNT_MILLIS
-                        - (OVERSHOOT_AMOUNT_MILLIS * tRemainingFactor * tRemainingFactor);
+            if (mServoIsConnectedToExpander) {
+                tBumpMicrosecondsOrUnits = OVERSHOOT_AMOUNT_UNITS;
+            } else {
+                tBumpMicrosecondsOrUnits = OVERSHOOT_AMOUNT_MILLIS;
             }
+#  else
+            tBumpMicrosecondsOrUnits = OVERSHOOT_AMOUNT_UNITS;
 #  endif
-            // return converted units values to be correctly detected by EASE_FUNCTION_MICROSECONDS_INDICATOR_OFFSET
-            return PCA9685UnitsToMicroseconds(
-                    mEndMicrosecondsOrUnits + OVERSHOOT_AMOUNT_UNITS
-                            - (OVERSHOOT_AMOUNT_UNITS * tRemainingFactor * tRemainingFactor));
 #else
-            // return direct microseconds values for constant bump
+            tBumpMicrosecondsOrUnits = OVERSHOOT_AMOUNT_MILLIS;
+#endif
+            // return direct microseconds or units values for constant bump
             if (mEasingType & CALL_STYLE_OUT) {
                 /*
                  * Positive bounce for movings from below
                  * must compensate for processing at update by: tFactorOfMovementCompletion = 1.0 - (callEasingFunction(1.0 - tFactorOfTimeCompletion));
                  */
-                return -(mEndMicrosecondsOrUnits + OVERSHOOT_AMOUNT_MILLIS - 1
-                        - (OVERSHOOT_AMOUNT_MILLIS * tRemainingFactor * tRemainingFactor));
+                return -(mEndMicrosecondsOrUnits + tBumpMicrosecondsOrUnits - 1
+                        - (tBumpMicrosecondsOrUnits * tRemainingFactor * tRemainingFactor));
             } else {
                 /*
                  * Negative bounce for movings from above
                  */
-                return mEndMicrosecondsOrUnits + (OVERSHOOT_AMOUNT_MILLIS * tRemainingFactor * tRemainingFactor)
-                        - OVERSHOOT_AMOUNT_MILLIS;
+                return mEndMicrosecondsOrUnits + (tBumpMicrosecondsOrUnits * tRemainingFactor * tRemainingFactor)
+                        - tBumpMicrosecondsOrUnits;
             }
-#endif
         }
     }
 }

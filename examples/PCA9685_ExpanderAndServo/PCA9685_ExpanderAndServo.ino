@@ -40,7 +40,7 @@
 // Must specify this before the include of "ServoEasing.hpp"
 #define USE_PCA9685_SERVO_EXPANDER    // Activate this to enables the use of the PCA9685 I2C expander chip/board.
 //#define USE_SOFT_I2C_MASTER           // Saves 1756 bytes program memory and 218 bytes RAM compared with Arduino Wire
-#define USE_SERVO_LIB                 // Activate this to force additional using of regular servo library.
+#define USE_SERVO_LIB                 // If USE_PCA9685_SERVO_EXPANDER is defined, activate this to force additional using of regular servo library.
 //#define PROVIDE_ONLY_LINEAR_MOVEMENT  // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes program memory.
 //#define DISABLE_COMPLEX_FUNCTIONS     // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory.
 //#define MAX_EASING_SERVOS 16
@@ -110,14 +110,14 @@ void setup() {
             blinkLED();
         }
     } else {
-        Serial.println(F("Attach servo to port 1 of PCA9685 expander"));
+        Serial.println(F("Attach servo to port 0 of PCA9685 expander"));
         /************************************************************
          * Attach servo to pin and set servos to start position.
          * This is the position where the movement starts.
          *
          * Attach the expander servos first
          ***********************************************************/
-        if (Servo1AtPCA9685.attach(1, START_DEGREE_VALUE) == INVALID_SERVO) {
+        if (Servo1AtPCA9685.attach(0, START_DEGREE_VALUE) == INVALID_SERVO) {
             Serial.println(
                     F("Error attaching servo - maybe MAX_EASING_SERVOS=" STR(MAX_EASING_SERVOS) " is to small to hold all servos"));
             while (true) {
@@ -128,7 +128,7 @@ void setup() {
 
     // Attach servo to pin and set servos to start position.
     Serial.println(F("Attach servo at pin " STR(SERVO1_PIN)));
-    if (Servo1.attach(SERVO1_PIN) == INVALID_SERVO) {
+    if (Servo1.attach(SERVO1_PIN, START_DEGREE_VALUE) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
     }
 
@@ -184,6 +184,7 @@ void loop() {
 
 #if defined(INFO)
     Serial.println(F("Move to 45/135 degree and back to 135/45 degree nonlinear in one second each using interrupts"));
+    Serial.println(F("Move both servos in opposite directions"));
 #endif
     Servo1.setEasingType(EASE_CUBIC_IN_OUT);
     Servo1AtPCA9685.setEasingType(EASE_CUBIC_IN_OUT);
