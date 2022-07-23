@@ -425,6 +425,7 @@ ServoEasing::ServoEasing() // @suppress("Class members should be properly initia
 /*
  * Specify the microseconds values for 0 and 180 degree for the servo.
  * The values can be determined by the EndPositionsTest example.
+ * @param   aPin    Pin number or port number of PCA9685 [0-15]
  *
  * If USE_LEIGHTWEIGHT_SERVO_LIB is enabled:
  *      Return 0/false if not pin 9 or 10 else return aPin
@@ -622,6 +623,10 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
 #endif // defined(USE_SERVO_LIB)
 }
 
+/*
+ * Mark a detached servo in the array by setting the object pointer to NULL
+ * The next attach() then uses this NULL pointer position and thus gets the index of the former detached one.
+ */
 void ServoEasing::detach() {
     if (mServoIndex != INVALID_SERVO) {
         ServoEasingArray[mServoIndex] = NULL;
@@ -1587,13 +1592,13 @@ bool ServoEasing::isMoving() {
 /*
  * Call yield here (actually only for ESP8266), so the user do not need to care for it in long running loops.
  * yield() will only allow higher priority tasks to run.
- * This call is dangerous for ESP32, since the timer is detached AFTER mServoMoves is set to false in handleServoTimerInterrupt(),
- * and one core may check mServoMoves and started a new move with initializing the timer, and then the timer gets detached by handleServoTimerInterrupt()
+ * yield() is dangerous for ESP32, since the timer is detached AFTER mServoMoves is set to false in handleServoTimerInterrupt().
+ * Then one core may check mServoMoves and start a new move with initializing the timer, and then the timer gets detached by handleServoTimerInterrupt()
  * which leads to an error: CORRUPT HEAP: Bad head at ...
  */
 bool ServoEasing::isMovingAndCallYield() {
 #if defined(ESP8266)
-    yield(); // Not required for ESP32, since our code is running on CPU1 and using yield seems to disturb the I2C interface
+    yield(); // Dangerous and not required for ESP32, since our code is running on CPU1 and using yield seems to disturb the I2C interface
 #endif
     return mServoMoves;
 }
@@ -1788,27 +1793,29 @@ bool ServoEasing::areInterruptsActive() {
 
 /*
  * Update all servos from list and check if all servos have stopped.
- * Defined weak in order to be able to overwrite it, e.g. for synchronizing with NeoPixel updates,
+ * Defined weak and guarded by an macro in order to be able to overwrite it, e.g. for synchronizing with NeoPixel updates,
  * which otherwise leads to servo twitching. See QuadrupedNeoPixel.cpp of QuadrupedControl example.
  * We have 100 us before the next servo period starts.
  */
-#if defined(STM32F1xx) && STM32_CORE_VERSION_MAJOR == 1 &&  STM32_CORE_VERSION_MINOR <= 8 // for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
+#if !defined(ENABLE_EXTERNAL_SERVO_TIMER_HANDLER)
+#  if defined(STM32F1xx) && STM32_CORE_VERSION_MAJOR == 1 &&  STM32_CORE_VERSION_MINOR <= 8 // for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
 __attribute__((weak)) void handleServoTimerInterrupt(HardwareTimer *aDummy __attribute__((unused))) // changed in stm32duino 1.9 - 5/2020
 #else
 __attribute__((weak)) void handleServoTimerInterrupt()
-#endif
-{
-#if defined(USE_PCA9685_SERVO_EXPANDER)
-// Otherwise it will hang forever in I2C transfer
-#  if !defined(ARDUINO_ARCH_MBED)
-    interrupts();
 #  endif
-#endif
+{
+#  if defined(USE_PCA9685_SERVO_EXPANDER)
+// Otherwise it will hang forever in I2C transfer
+#    if !defined(ARDUINO_ARCH_MBED)
+    interrupts();
+#    endif
+#  endif
     if (updateAllServos()) {
         // disable interrupt only if all servos stopped. This enables independent movements of servos with this interrupt handler.
         disableServoEasingInterrupt();
     }
 }
+#endif // !defined(ENABLE_EXTERNAL_SERVO_TIMER_HANDLER)
 
 // The eclipse formatter has problems with // comments in undefined code blocks
 // !!! Must be without comment and closed by @formatter:on
@@ -1862,7 +1869,7 @@ void enableServoEasingInterrupt() {
     TIFR1 |= _BV(OCF1B);    // clear any pending interrupts;
     TIMSK1 |= _BV(OCIE1B);    // enable the output compare B interrupt
     /*
-     * Misuse the Input Capture Noise Canceler Bit as a flag, that signals that interrupts for ServoEasing are enabled again.
+     * Misuse the "Input Capture Noise Canceler Bit" as a flag, that signals that interrupts for ServoEasing are enabled again.
      * It is required if disableServoEasingInterrupt() is suppressed e.g. by an overwritten handleServoTimerInterrupt() function
      * because the servo interrupt is used to synchronize e.g. NeoPixel updates.
      */
@@ -2293,16 +2300,19 @@ bool isOneServoMoving() {
 }
 
 void stopAllServos() {
-    void disableServoEasingInterrupt();
+    unsigned long tMillis= millis();
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
         if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
-            ServoEasing::ServoEasingArray[tServoIndex]->stop();
+            ServoEasing::ServoEasingArray[tServoIndex]->mServoMoves = false;
+#if !defined(DISABLE_CONTINUE_AFTER_STOP)
+            ServoEasing::ServoEasingArray[tServoIndex]->mMillisAtStopMove = tMillis;
+#endif
         }
     }
+    disableServoEasingInterrupt();
 }
 
 void resumeWithInterruptsAllServos() {
-    void disableServoEasingInterrupt();
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
         if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
             ServoEasing::ServoEasingArray[tServoIndex]->resumeWithInterrupts();
@@ -2311,7 +2321,6 @@ void resumeWithInterruptsAllServos() {
 }
 
 void resumeWithoutInterruptsAllServos() {
-    void disableServoEasingInterrupt();
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
         if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
             ServoEasing::ServoEasingArray[tServoIndex]->resumeWithoutInterrupts();

@@ -28,6 +28,7 @@
 
 #include <Arduino.h>
 
+#include "QuadrupedBasicMovements.h"
 #include "QuadrupedControlCommands.h"
 #include "QuadrupedServoControl.hpp"
 #include "QuadrupedBasicMovements.hpp"
@@ -342,6 +343,17 @@ void __attribute__((weak)) doQuadrupedAutoMove() {
  *************************/
 void __attribute__((weak)) doStop() {
     sCurrentlyRunningAction = ACTION_TYPE_STOP;
+}
+
+void __attribute__((weak)) doPauseResume() {
+    if(sCurrentlyRunningAction == ACTION_TYPE_PAUSE) {
+        resumeWithoutInterruptsAllServos();
+        sCurrentlyRunningAction = sLastRunningAction; // restore also action
+    } else {
+        stopAllServos();
+        sLastRunningAction = sCurrentlyRunningAction;
+        sCurrentlyRunningAction = ACTION_TYPE_PAUSE;
+    }
 }
 
 void __attribute__((weak)) doSetDirectionForward() {

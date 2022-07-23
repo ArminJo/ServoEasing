@@ -315,10 +315,10 @@
 #define IR_REC          0x15
 #define IR_PAUSE        0x1A
 
-#define IR_UP           0x16
-#define IR_DOWN         0x17
-#define IR_RIGHT        0x18
-#define IR_LEFT         0x19
+#define IR_UP           0x16 // Play
+#define IR_DOWN         0x17 // Stop
+#define IR_RIGHT        0x18 // FastForward
+#define IR_LEFT         0x19 // Fast Backward
 
 #define IR_ENTER        0x45
 #define IR_INDEX        0x14
@@ -347,6 +347,7 @@
 
 #define COMMAND_CENTER      IR_ENTER
 #define COMMAND_STOP        IR_ON_OFF
+#define COMMAND_PAUSE_RESUME IR_PAUSE
 #define COMMAND_CALIBRATE   IR_REC
 #define COMMAND_DANCE       IR_1
 #define COMMAND_WAVE        IR_3
@@ -423,6 +424,7 @@ static const char ultrasonicServoRight[] PROGMEM ="US servo right";
 static const char ultrasonicServoScan[] PROGMEM ="US servo scan";
 static const char unknown[] PROGMEM ="unknown";
 static const char wave[] PROGMEM ="wave";
+static const char pauseResume[] PROGMEM ="pause/resume";
 
 /*
  * Main mapping array of commands to C functions and command strings
@@ -449,13 +451,17 @@ COMMAND_BACKWARD, IR_COMMAND_FLAG_BLOCKING, &doSetDirectionBack, dirBack }, {
 COMMAND_RIGHT, IR_COMMAND_FLAG_BLOCKING, &doSetDirectionRight, dirRight }, {
 COMMAND_LEFT, IR_COMMAND_FLAG_BLOCKING, &doSetDirectionLeft, dirLeft }, {
 /*
- * Commands, which can be executed always, since the are short and repeats are allowed
+ * Commands, which can be executed always, since they are short and repeats are allowed
  */
 COMMAND_INCREASE_SPEED, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doIncreaseSpeed, speedIncrease }, {
 COMMAND_DECREASE_SPEED, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doDecreaseSpeed, speedDecrease }, {
 COMMAND_INCREASE_HEIGHT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doIncreaseHeight, heighIncrease }, {
 COMMAND_DECREASE_HEIGHT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doDecreaseHeight, heighDecrease }, {
+#if defined(HAS_ADDITIONAL_REMOTE_COMMANDS)
 COMMAND_STOP, IR_COMMAND_FLAG_IS_STOP_COMMAND, &doStop, stop }
+#else
+COMMAND_STOP, IR_COMMAND_FLAG_NON_BLOCKING, &doPauseResume, pauseResume }
+#endif
 
 #if defined(HAS_ADDITIONAL_REMOTE_COMMANDS)
         /*
@@ -467,6 +473,7 @@ COMMAND_STOP, IR_COMMAND_FLAG_IS_STOP_COMMAND, &doStop, stop }
         COMMAND_US_SCAN, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doUSScan, ultrasonicServoScan }
 #endif
         , {
+        COMMAND_PAUSE_RESUME, IR_COMMAND_FLAG_NON_BLOCKING, &doPauseResume, pauseResume }, {
         COMMAND_PATTERN_1, IR_COMMAND_FLAG_NON_BLOCKING, &doPattern1, pattern }, {
         COMMAND_PATTERN_2, IR_COMMAND_FLAG_NON_BLOCKING, &doPattern2, pattern }, {
         COMMAND_PATTERN_3, IR_COMMAND_FLAG_NON_BLOCKING, &doPatternStripes, pattern }, {

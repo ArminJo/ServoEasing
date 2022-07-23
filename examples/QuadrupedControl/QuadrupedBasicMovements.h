@@ -40,8 +40,9 @@ extern volatile uint8_t sMovingDirection;
 #define ACTION_TYPE_DANCE   8
 #define ACTION_TYPE_TEST    9
 #define ACTION_TYPE_AUTO_MOVE   10
+#define ACTION_TYPE_PAUSE   11
 extern uint8_t sCurrentlyRunningAction; // A change on this action type triggers the generation of new neopatterns
-extern uint8_t sLastActionTypeForNeopatternsDisplay; // do determine changes of sCurrentlyRunningAction
+extern uint8_t sLastRunningAction; // do determine changes of sCurrentlyRunningAction
 
 /*
  * Movements

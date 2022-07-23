@@ -77,16 +77,16 @@
 
 #if defined(QUADRUPED_HAS_US_DISTANCE)
 #include "HCSR04.h"
-
 #define PIN_TRIGGER_OUT     A3
 #define PIN_ECHO_IN         A4
-#define PIN_US_SERVO        13
-
 #define MILLIS_BETWEEN_MEASUREMENTS 200 // 5 per second
-#  if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
+#endif
+
+#if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
 #include "QuadrupedServoControl.h"
+#define PIN_US_SERVO        13
+#define NO_LED_FEEDBACK_CODE // Disable IR LED feedback because servo is at the same pin. Must be included before IRCommandDispatcher.hpp
 extern Servo USServo;
-#  endif
 #endif
 
 #if defined(QUADRUPED_HAS_NEOPIXEL)

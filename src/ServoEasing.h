@@ -72,6 +72,15 @@
 #error USE_LEIGHTWEIGHT_SERVO_LIB can only be activated for the Atmega328 CPU
 #endif
 
+/*
+ * If defined, the void handleServoTimerInterrupt() function must be provided by an external program.
+ * This enables the reuse of the Servo timer interrupt e.g. for synchronizing with NeoPixel updates,
+ * which otherwise leads to servo twitching. See QuadrupedNeoPixel.cpp of QuadrupedControl example.
+ */
+//#define ENABLE_EXTERNAL_SERVO_TIMER_HANDLER
+#if defined(ENABLE_EXTERNAL_SERVO_TIMER_HANDLER)
+__attribute__((weak)) extern void handleServoTimerInterrupt();
+#endif
 
 #if !( defined(__AVR__) || defined(ESP8266) || defined(ESP32) || defined(STM32F1xx) || defined(__STM32F1__) || defined(__SAM3X8E__) || defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_APOLLO3) || defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_RP2040) || defined(TEENSYDUINO))
 #warning No periodic timer support existent (or known) for this platform. Only blocking functions and simple example will run!
@@ -590,7 +599,7 @@ public:
     TwoWire *mI2CClass;
 #  endif
 #endif
-    uint8_t mServoPin; // pin number or NO_SERVO_ATTACHED_PIN_NUMBER - at least required for Lightweight Servo Library
+    uint8_t mServoPin; // pin number / port number of PCA9685 [0-15] or NO_SERVO_ATTACHED_PIN_NUMBER - at least required for Lightweight Servo Library
 
     uint8_t mServoIndex; // Index in sServoArray or INVALID_SERVO if error while attach() or if detached
 
@@ -712,6 +721,7 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
  * - Added support to resume at the stop position and `DISABLE_CONTINUE_AFTER_STOP`.
  * - Fixed some bugs for PCA9685 expander introduced in 3.0.0.
  * - Feather Huzzah support with the help of Danner Claflin.
+ * - Added `ENABLE_EXTERNAL_SERVO_TIMER_HANDLER` macro.
  *
  * Version 3.0.0 - 05/2022
  * - Added target reached callback functionality, to enable multiple movements without loop control.

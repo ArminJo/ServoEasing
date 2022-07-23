@@ -35,7 +35,7 @@
 volatile uint8_t sMovingDirection = MOVE_DIRECTION_FORWARD;
 
 uint8_t sCurrentlyRunningAction; // A change on this action type triggers the generation of new NeoPatterns
-uint8_t sLastActionTypeForNeopatternsDisplay; // do determine changes of sCurrentlyRunningAction
+uint8_t sLastRunningAction; // do determine changes of sCurrentlyRunningAction
 
 /*
  * Gait variations

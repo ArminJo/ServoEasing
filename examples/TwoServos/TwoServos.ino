@@ -79,6 +79,7 @@ void setup() {
      *
      * The order of the attach() determine the position
      * of the Servos in internal ServoEasing::ServoEasingArray[]
+     * and ServoEasing::ServoEasingNextPositionArray[]
      ***********************************************************/
     Serial.println(F("Attach servo at pin " STR(SERVO1_PIN)));
 #endif

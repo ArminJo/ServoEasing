@@ -36,27 +36,25 @@
 
 #include "QuadrupedConfiguration.h"
 
+#include "QuadrupedHelper.h"    // for checkForLowVoltage() and playShutdownMelody()
+
 #if defined(QUADRUPED_HAS_IR_CONTROL)
 // Include the header only IRCommandDispatcher library in the main program
-#include "IRCommandMapping.h" // Must be included before IRCommandDispatcher.hpp to define IR_ADDRESS and IRMapping and string "unknown".
-#include "IRCommandDispatcher.h"
+#include "IRCommandMapping.h"   // Must be included before IRCommandDispatcher.hpp to define IR_ADDRESS and IRMapping and string "unknown".
 #include "IRCommandDispatcher.hpp"
 #define QUADRUPED_MOVEMENT_BREAK_FLAG (IRDispatcher.requestToStopReceived)
 #endif
 
-#include "QuadrupedBasicMovements.h" // This helps the Eclipse indexer
+#define ENABLE_EXTERNAL_SERVO_TIMER_HANDLER // Evaluated by ServoEasing.hpp
 #include "QuadrupedControlCommands.hpp" // Commands can also be used e.g. in loop().
 #if defined(QUADRUPED_HAS_NEOPIXEL)
 #include "QuadrupedNeoPixel.hpp"
 #endif
 
-#include "QuadrupedHelper.h"
-
 #include "ADCUtils.hpp" // for getVCCVoltageMillivoltSimple() and printVCCVoltageMillivolt()
 
-#if defined(QUADRUPED_HAS_US_DISTANCE) && defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
+#if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
 Servo USServo; // Servo for US sensor use Servo library direct, we do nor require easings here ( and we have only 8 Servo easings allocated)
-#define NO_LED_FEEDBACK_CODE // Disable IR LED feedback because servo is at the same pin. Must be included before IRCommandDispatcher.hpp
 #endif
 
 #if defined(QUADRUPED_ENABLE_RTTTL)
@@ -87,7 +85,7 @@ void setup() {
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
-    initializeAllQuadrupedServos(90);
+    initializeAllQuadrupedServos(90); // 90 degree per second
     delay(2000);
 
     // Just for pre setting channel and reference
@@ -139,7 +137,14 @@ void loop() {
      * US distance sensor handling
      */
 #if defined(QUADRUPED_HAS_US_DISTANCE)
-    handleUSSensor(); // currently only distance display on front bar
+#  if defined(QUADRUPED_ENABLE_RTTTL)
+    if(!isPlayRtttlRunning()) {
+        // handleUSSensor() also disturbs the melody
+#  endif
+        handleUSSensor(); // currently only distance display on front bar
+#  if defined(QUADRUPED_ENABLE_RTTTL)
+    }
+#  endif
 #endif
 
     /*

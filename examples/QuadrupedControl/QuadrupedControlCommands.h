@@ -41,6 +41,7 @@ void doTest();
  * Instant command functions
  */
 void doStop();
+void doPauseResume();
 void doSetDirectionForward();
 void doSetDirectionBack();
 void doSetDirectionRight();

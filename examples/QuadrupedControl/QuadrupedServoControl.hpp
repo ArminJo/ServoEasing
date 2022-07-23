@@ -399,7 +399,7 @@ void updateAndCheckInputAndWaitForAllServosToStop() {
         if (delayAndCheckForLowVoltageAndStop(REFRESH_INTERVAL_MILLIS)) { // 20 ms - REFRESH_INTERVAL is in Microseconds
             return;
         }
-    } while (!updateAllServos());
+    } while (!updateAllServos() || sCurrentlyRunningAction == ACTION_TYPE_PAUSE); // sCurrentlyRunningAction = ACTION_TYPE_PAUSE -> supports pause / resume
 }
 
 void synchronizeMoveAllServosAndCheckInputAndWait() {
