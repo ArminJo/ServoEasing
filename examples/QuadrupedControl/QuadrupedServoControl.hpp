@@ -51,11 +51,12 @@ uint8_t sBodyHeight;            // normalized body height from 0 (low) to 255 (h
 uint8_t sBodyHeightPercent;     // normalized body height from 0% (low) to 100% (high), only used for printing
 
 // Arrays of trim angles stored in EEPROM
-EEMEM int8_t sServoTrimAnglesEEPROM[NUMBER_OF_SERVOS]; // The one which resides in EEPROM and IR read out at startup - filled by eepromWriteServoTrim
-int8_t sServoTrimAngles[NUMBER_OF_SERVOS]; // RAM copy for easy setting trim angles by remote, filled by eepromReadServoTrim
+EEMEM int8_t sServoTrimAnglesEEPROM[NUMBER_OF_LEG_SERVOS]; // The one which resides in EEPROM and IR read out at startup - filled by eepromWriteServoTrim
+int8_t sServoTrimAngles[NUMBER_OF_LEG_SERVOS]; // RAM copy for easy setting trim angles by remote, filled by eepromReadServoTrim
 
 void attachAllQuadrupedServos() {
     // Attach servos to Arduino Pins in exact this order!
+    // do not use initial position here, since using resetServosTo90Degree() is smaller
     frontLeftPivotServo.attach(FRONT_LEFT_PIVOT_SERVO_PIN);
     frontLeftLiftServo.attach(FRONT_LEFT_PIVOT_SERVO_PIN + 1);
     backLeftPivotServo.attach(FRONT_LEFT_PIVOT_SERVO_PIN + 2);
@@ -68,6 +69,10 @@ void attachAllQuadrupedServos() {
     // Invert direction for back left and front right lift servos. This is, because I mounted the right and left lift servos symmetrical.
     backLeftLiftServo.setReverseOperation(true);
     frontRightLiftServo.setReverseOperation(true);
+
+#if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
+    USServo.attach(PIN_US_SERVO);
+#endif
 }
 
 /*
@@ -93,12 +98,17 @@ void shutdownServos() {
 #if defined(INFO)
     Serial.println(F("Shutdown servos"));
 #endif
+    auto tOriginalRequestedBodyHeightAngle = sRequestedBodyHeightAngle;
     sRequestedBodyHeightAngle = LIFT_HIGHEST_ANGLE;
     centerServos();
+    sRequestedBodyHeightAngle = tOriginalRequestedBodyHeightAngle;
 }
 
 void centerServos() {
     uint8_t tRequestedBodyHeightAngle = sRequestedBodyHeightAngle; // sRequestedBodyHeightAngle is volatile
+#if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
+    ServoEasing::ServoEasingNextPositionArray[INDEX_OF_US_DISTANCE_SERVO] = 90;
+#endif
     setAllServos(90, 90, 90, 90, tRequestedBodyHeightAngle, tRequestedBodyHeightAngle, tRequestedBodyHeightAngle,
             tRequestedBodyHeightAngle);
 }
@@ -117,7 +127,7 @@ void printQuadrupedServoSpeed() {
 }
 
 void printAndSetTrimAngles() {
-    for (uint_fast8_t i = 0; i < NUMBER_OF_SERVOS; ++i) {
+    for (uint_fast8_t i = 0; i < NUMBER_OF_LEG_SERVOS; ++i) {
 #if defined(INFO)
         Serial.print(F("ServoTrimAngle["));
         Serial.print(i);
@@ -141,23 +151,23 @@ void eepromReadAndSetServoTrim() {
 #if defined(INFO)
     Serial.println(F("eepromReadAndSetServoTrim()"));
 #endif
-    eeprom_read_block((void*) &sServoTrimAngles, &sServoTrimAnglesEEPROM, NUMBER_OF_SERVOS);
+    eeprom_read_block((void*) &sServoTrimAngles, &sServoTrimAnglesEEPROM, NUMBER_OF_LEG_SERVOS);
     printAndSetTrimAngles();
 }
 
 void eepromWriteServoTrim() {
-    eeprom_write_block((void*) &sServoTrimAngles, &sServoTrimAnglesEEPROM, NUMBER_OF_SERVOS);
+    eeprom_write_block((void*) &sServoTrimAngles, &sServoTrimAnglesEEPROM, NUMBER_OF_LEG_SERVOS);
     printAndSetTrimAngles();
 }
 
 void setEasingTypeToLinear() {
-    for (uint_fast8_t tServoIndex = 0; tServoIndex < NUMBER_OF_SERVOS; ++tServoIndex) {
+    for (uint_fast8_t tServoIndex = 0; tServoIndex < NUMBER_OF_LEG_SERVOS; ++tServoIndex) {
         ServoEasing::ServoEasingArray[tServoIndex]->setEasingType(EASE_LINEAR);
     }
 }
 
 void setEasingTypeForMoving() {
-    for (int tServoIndex = 0; tServoIndex < NUMBER_OF_SERVOS; ++tServoIndex) {
+    for (int tServoIndex = 0; tServoIndex < NUMBER_OF_LEG_SERVOS; ++tServoIndex) {
         ServoEasing::ServoEasingArray[tServoIndex]->setEasingType(EASE_LINEAR);
         tServoIndex++;
         ServoEasing::ServoEasingArray[tServoIndex]->setEasingType(EASE_QUADRATIC_BOUNCING);
@@ -172,7 +182,6 @@ void setEasingTypeForMoving() {
  * Direction left increases index by 1 and right by 3.
  * Mirroring swaps left and right (XOR with 0x06) and invert all angles.
  */
-
 uint8_t getMirrorXorMask(uint8_t aDirection) {
 // XOR the index with this value to get the mirrored index
     if (aDirection & MOVE_DIRECTION_SIDE_MASK) {
@@ -181,7 +190,6 @@ uint8_t getMirrorXorMask(uint8_t aDirection) {
         return 0x6;
     }
 }
-
 void transformAndSetAllServos(int aFrontLeftPivot, int aBackLeftPivot, int aBackRightPivot, int aFrontRightPivot,
         int aFrontLeftLift, int aBackLeftLift, int aBackRightLift, int aFrontRightLift, uint8_t aDirection, bool doMirror,
         bool aDoMove) {
@@ -196,28 +204,28 @@ void transformAndSetAllServos(int aFrontLeftPivot, int aBackLeftPivot, int aBack
     }
 
     uint8_t tEffectivePivotServoIndex;
-    tEffectivePivotServoIndex = ((FRONT_LEFT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
+    tEffectivePivotServoIndex = ((FRONT_LEFT_PIVOT + tIndexToAdd) % NUMBER_OF_LEG_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
         aFrontLeftPivot = 180 - aFrontLeftPivot;
     }
     ServoEasing::ServoEasingNextPositionArray[tEffectivePivotServoIndex] = aFrontLeftPivot;
     ServoEasing::ServoEasingNextPositionArray[tEffectivePivotServoIndex + LIFT_SERVO_OFFSET] = aFrontLeftLift;
 
-    tEffectivePivotServoIndex = ((BACK_LEFT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
+    tEffectivePivotServoIndex = ((BACK_LEFT_PIVOT + tIndexToAdd) % NUMBER_OF_LEG_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
         aBackLeftPivot = 180 - aBackLeftPivot;
     }
     ServoEasing::ServoEasingNextPositionArray[tEffectivePivotServoIndex] = aBackLeftPivot;
     ServoEasing::ServoEasingNextPositionArray[tEffectivePivotServoIndex + LIFT_SERVO_OFFSET] = aBackLeftLift;
 
-    tEffectivePivotServoIndex = ((BACK_RIGHT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
+    tEffectivePivotServoIndex = ((BACK_RIGHT_PIVOT + tIndexToAdd) % NUMBER_OF_LEG_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
         aBackRightPivot = 180 - aBackRightPivot;
     }
     ServoEasing::ServoEasingNextPositionArray[tEffectivePivotServoIndex] = aBackRightPivot;
     ServoEasing::ServoEasingNextPositionArray[tEffectivePivotServoIndex + LIFT_SERVO_OFFSET] = aBackRightLift;
 
-    tEffectivePivotServoIndex = ((FRONT_RIGHT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
+    tEffectivePivotServoIndex = ((FRONT_RIGHT_PIVOT + tIndexToAdd) % NUMBER_OF_LEG_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
         aFrontRightPivot = 180 - aFrontRightPivot;
     }
@@ -245,25 +253,25 @@ void transformAndSetPivotServos(int aFrontLeftPivot, int aBackLeftPivot, int aBa
     }
 
     uint8_t tEffectivePivotServoIndex;
-    tEffectivePivotServoIndex = ((FRONT_LEFT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
+    tEffectivePivotServoIndex = ((FRONT_LEFT_PIVOT + tIndexToAdd) % NUMBER_OF_LEG_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
         aFrontLeftPivot = 180 - aFrontLeftPivot;
     }
     ServoEasing::ServoEasingNextPositionArray[tEffectivePivotServoIndex] = aFrontLeftPivot;
 
-    tEffectivePivotServoIndex = ((BACK_LEFT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
+    tEffectivePivotServoIndex = ((BACK_LEFT_PIVOT + tIndexToAdd) % NUMBER_OF_LEG_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
         aBackLeftPivot = 180 - aBackLeftPivot;
     }
     ServoEasing::ServoEasingNextPositionArray[tEffectivePivotServoIndex] = aBackLeftPivot;
 
-    tEffectivePivotServoIndex = ((BACK_RIGHT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
+    tEffectivePivotServoIndex = ((BACK_RIGHT_PIVOT + tIndexToAdd) % NUMBER_OF_LEG_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
         aBackRightPivot = 180 - aBackRightPivot;
     }
     ServoEasing::ServoEasingNextPositionArray[tEffectivePivotServoIndex] = aBackRightPivot;
 
-    tEffectivePivotServoIndex = ((FRONT_RIGHT_PIVOT + tIndexToAdd) % NUMBER_OF_SERVOS) ^ tXorToGetMirroredIndex;
+    tEffectivePivotServoIndex = ((FRONT_RIGHT_PIVOT + tIndexToAdd) % NUMBER_OF_LEG_SERVOS) ^ tXorToGetMirroredIndex;
     if (doInvert) {
         aFrontRightPivot = 180 - aFrontRightPivot;
     }
@@ -280,9 +288,9 @@ void transformAndSetPivotServos(int aFrontLeftPivot, int aBackLeftPivot, int aBa
 uint8_t transformOneServoIndex(uint8_t aServoIndexToTransform, uint8_t aDirection, bool doMirror) {
     if (doMirror) {
         // XOR the index with this value in order to get the mirrored index
-        return ((aServoIndexToTransform + (aDirection * SERVOS_PER_LEG)) % NUMBER_OF_SERVOS) ^ getMirrorXorMask(aDirection);
+        return ((aServoIndexToTransform + (aDirection * SERVOS_PER_LEG)) % NUMBER_OF_LEG_SERVOS) ^ getMirrorXorMask(aDirection);
     }
-    return ((aServoIndexToTransform + (aDirection * SERVOS_PER_LEG)) % NUMBER_OF_SERVOS);
+    return ((aServoIndexToTransform + (aDirection * SERVOS_PER_LEG)) % NUMBER_OF_LEG_SERVOS);
 }
 
 void testTransform() {
@@ -345,7 +353,7 @@ void setLiftServos(int aFrontLeftLift, int aBackLeftLift, int aBackRightLift, in
 void setLiftServosToBodyHeight() {
     // Set values direct, since we expect only a change of 2 degree
     // We write value to every second servo from the array :-)
-    for (uint_fast8_t tServoIndex = LIFT_SERVO_OFFSET; tServoIndex < NUMBER_OF_SERVOS; tServoIndex += SERVOS_PER_LEG) {
+    for (uint_fast8_t tServoIndex = LIFT_SERVO_OFFSET; tServoIndex < NUMBER_OF_LEG_SERVOS; tServoIndex += SERVOS_PER_LEG) {
         ServoEasing::ServoEasingArray[tServoIndex]->write(sRequestedBodyHeightAngle);
     }
 }
@@ -404,7 +412,7 @@ void updateAndCheckInputAndWaitForAllServosToStop() {
 
 void synchronizeMoveAllServosAndCheckInputAndWait() {
     setEaseToForAllServos();
-    synchronizeAllServosAndStartInterrupt(false);
+    synchronizeAllServosAndStartInterrupt(false); // do not start interrupt
     updateAndCheckInputAndWaitForAllServosToStop();
 }
 

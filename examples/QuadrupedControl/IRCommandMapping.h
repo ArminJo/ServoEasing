@@ -19,7 +19,9 @@
 #include "IRCommandDispatcher.h" // IR_COMMAND_FLAG_BLOCKING etc. are defined here
 #include "QuadrupedControlCommands.h" // contains the command definitions used in the mapping table below
 #include "QuadrupedHelper.h"    // for additional commands
+#if defined(QUADRUPED_HAS_NEOPIXEL)
 #include "QuadrupedNeoPixel.h"  // for additional commands
+#endif
 
 /*
  * !!! Choose your remote !!!
@@ -470,7 +472,7 @@ COMMAND_STOP, IR_COMMAND_FLAG_NON_BLOCKING, &doPauseResume, pauseResume }
 #if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
         , { COMMAND_US_RIGHT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doUSRight, ultrasonicServoRight }, {
         COMMAND_US_LEFT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doUSLeft, ultrasonicServoLeft }, {
-        COMMAND_US_SCAN, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doUSScan, ultrasonicServoScan }
+        COMMAND_US_SCAN, IR_COMMAND_FLAG_NON_BLOCKING, &doUSScan, ultrasonicServoScan }
 #endif
         , {
         COMMAND_PAUSE_RESUME, IR_COMMAND_FLAG_NON_BLOCKING, &doPauseResume, pauseResume }, {

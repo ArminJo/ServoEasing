@@ -10,6 +10,7 @@
 #ifndef _QUADRUPED_HELPER_H
 #define _QUADRUPED_HELPER_H
 
+void checkForLowVoltageAndShutdown();
 bool checkForLowVoltage();
 void playShutdownMelody();
 void doBeep();
@@ -24,7 +25,13 @@ void doUSLeft();
 void doUSScan();
 #endif
 
+#  if defined(QUADRUPED_ENABLE_RTTTL)
+void doRandomMelody();
+#endif
+
 void doCalibration();
 
+extern bool isShutDown;
+extern bool doShutDown;
 
 #endif // _QUADRUPED_HELPER_H

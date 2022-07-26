@@ -40,12 +40,19 @@
  ******************************************/
 void __attribute__((weak)) doTest() {
     // to be overwritten by user function
+    sCurrentlyRunningAction = ACTION_TYPE_TEST;
+#if defined(QUADRUPED_ENABLE_RTTTL)
+    doRandomMelody();
+#else
+    sCurrentlyRunningAction = ACTION_TYPE_STOP;
+#endif
 }
 
 /*
  * Center, lean left and right lean all 4 directions and twist a random angle. Ends with a wave.
  */
 void __attribute__((weak)) doDance() {
+    sCurrentlyRunningAction = ACTION_TYPE_DANCE;
 #if defined(INFO)
     Serial.print(F("Dance"));
     printQuadrupedServoSpeed();
@@ -87,6 +94,7 @@ void __attribute__((weak)) doDance() {
     doWave();
     QUADRUPED_RETURN_IF_STOP;
     centerServos();
+    sCurrentlyRunningAction = ACTION_TYPE_STOP;
 }
 
 void __attribute__((weak)) doWave() {
@@ -99,7 +107,8 @@ void __attribute__((weak)) doWave() {
 
     uint8_t tRequestedBodyHeightAngle = sRequestedBodyHeightAngle; // sRequestedBodyHeightAngle is volatile
     // move front left and back right leg 10 degree forward to avoid falling to front if lifting the front right leg
-    setAllServos(80, 90, 100, 90, tRequestedBodyHeightAngle, tRequestedBodyHeightAngle, tRequestedBodyHeightAngle, tRequestedBodyHeightAngle);
+    setAllServos(80, 90, 100, 90, tRequestedBodyHeightAngle, tRequestedBodyHeightAngle, tRequestedBodyHeightAngle,
+            tRequestedBodyHeightAngle);
     QUADRUPED_RETURN_IF_STOP;
 
     // move all legs up, except front left -> front right lifts from the ground
@@ -245,10 +254,6 @@ void __attribute__((weak)) doCreepForward() {
  */
 void __attribute__((weak)) doAttention() {
     sCurrentlyRunningAction = ACTION_TYPE_ATTENTION;
-
-#if defined(INFO)
-    Serial.println(F("Move to get attention"));
-#endif
     // Move down and up and back to starting height
     setLiftServos(LIFT_HIGHEST_ANGLE);
     QUADRUPED_RETURN_IF_STOP;
@@ -289,10 +294,10 @@ void __attribute__((weak)) doQuadrupedAutoMove() {
     // creep left fast
     sMovingDirection = MOVE_DIRECTION_LEFT;
     moveCreep(4);
-
     delayAndCheckForLowVoltageAndStop(2000);
     QUADRUPED_RETURN_IF_STOP;
 
+    // Dance
     setQuadrupedServoSpeed(200);
     doDance();
     QUADRUPED_RETURN_IF_STOP;
@@ -313,22 +318,23 @@ void __attribute__((weak)) doQuadrupedAutoMove() {
     // trot back
     sMovingDirection = MOVE_DIRECTION_BACKWARD;
     moveTrot(8);
-
     delayAndCheckForLowVoltageAndStop(2000);
     QUADRUPED_RETURN_IF_STOP;
 
     // trot right
     sMovingDirection = MOVE_DIRECTION_RIGHT;
     moveTrot(8);
-
     delayAndCheckForLowVoltageAndStop(2000);
     QUADRUPED_RETURN_IF_STOP;
 
-    // turn right
+    // turn left
     centerServos();
-    sMovingDirection = MOVE_DIRECTION_RIGHT;
+    sMovingDirection = MOVE_DIRECTION_LEFT;
     moveTurn(12);
     QUADRUPED_RETURN_IF_STOP;
+
+    // center
+    centerServos();
 
     // restore speed
     setQuadrupedServoSpeed(tOriginalSpeed);
@@ -342,17 +348,28 @@ void __attribute__((weak)) doQuadrupedAutoMove() {
  * Instant Commands
  *************************/
 void __attribute__((weak)) doStop() {
-    sCurrentlyRunningAction = ACTION_TYPE_STOP;
+    sCurrentlyRunningAction = ACTION_TYPE_STOP; // this also stops NeoPatterns
 }
 
 void __attribute__((weak)) doPauseResume() {
-    if(sCurrentlyRunningAction == ACTION_TYPE_PAUSE) {
-        resumeWithoutInterruptsAllServos();
-        sCurrentlyRunningAction = sLastRunningAction; // restore also action
-    } else {
-        stopAllServos();
-        sLastRunningAction = sCurrentlyRunningAction;
-        sCurrentlyRunningAction = ACTION_TYPE_PAUSE;
+    if (sCurrentlyRunningAction != ACTION_TYPE_STOP) {
+        if (sCurrentlyRunningAction == ACTION_TYPE_PAUSE) {
+#if defined(INFO)
+        Serial.print(F("Resume with action="));
+        Serial.println(sLastRunningAction);
+#endif
+            sCurrentlyRunningAction = sLastRunningAction; // restore also action
+            resumeWithoutInterruptsAllServos();
+//        resumeWithInterruptsAllServos();  // start the interrupts for NeoPatterns if disabled.
+        } else {
+#if defined(INFO)
+        Serial.println(F("Pause"));
+#endif
+            pauseAllServos(); // this does not stop the interrupts for NeoPatterns.
+//        disableServoEasingInterrupt(); // stop the interrupts for NeoPatterns.
+            sLastRunningAction = sCurrentlyRunningAction;
+            sCurrentlyRunningAction = ACTION_TYPE_PAUSE;
+        }
     }
 }
 
@@ -381,8 +398,8 @@ void __attribute__((weak)) doSetDirectionRight() {
  */
 void __attribute__((weak)) doIncreaseSpeed() {
     sQuadrupedServoSpeed += sQuadrupedServoSpeed / 4;
-    if (sQuadrupedServoSpeed > 400) {
-        sQuadrupedServoSpeed = 400;
+    if (sQuadrupedServoSpeed > SERVO_MAX_SPEED) {
+        sQuadrupedServoSpeed = SERVO_MAX_SPEED;
     }
     setSpeedForAllServos(sQuadrupedServoSpeed);
 #if defined(INFO)
@@ -394,11 +411,9 @@ void __attribute__((weak)) doIncreaseSpeed() {
  * Decrease moving speed by 25%
  */
 void __attribute__((weak)) doDecreaseSpeed() {
-    if (sQuadrupedServoSpeed > 2) {
-        sQuadrupedServoSpeed -= sQuadrupedServoSpeed / 4;
-        if (sQuadrupedServoSpeed < 4) {
-            sQuadrupedServoSpeed = 4;
-        }
+    sQuadrupedServoSpeed -= sQuadrupedServoSpeed / 4;
+    if (sQuadrupedServoSpeed < SERVO_MIN_SPEED) {
+        sQuadrupedServoSpeed = SERVO_MIN_SPEED;
     }
     setSpeedForAllServos(sQuadrupedServoSpeed);
 #if defined(INFO)

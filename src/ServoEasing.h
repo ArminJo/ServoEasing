@@ -506,6 +506,7 @@ public:
     uint_fast16_t getSpeed();
 
     void stop();
+    void pause();
     void resumeWithInterrupts();
     void resumeWithoutInterrupts();
     bool update();
@@ -605,7 +606,8 @@ public:
 
     uint32_t mMillisAtStartMove;
     uint_fast16_t mMillisForCompleteMove;
-#if !defined(DISABLE_CONTINUE_AFTER_STOP)
+#if !defined(DISABLE_PAUSE_RESUME)
+    bool mServoIsPaused;
     uint32_t mMillisAtStopMove;
 #endif
 
@@ -718,7 +720,7 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
 /*
  * Version 3.0.1 - 07/2022
  * - SAMD51 support by Lutz Aumüller.
- * - Added support to resume at the stop position and `DISABLE_CONTINUE_AFTER_STOP`.
+ * - Added support to pause and resume and `DISABLE_PAUSE_RESUME`.
  * - Fixed some bugs for PCA9685 expander introduced in 3.0.0.
  * - Feather Huzzah support with the help of Danner Claflin.
  * - Added `ENABLE_EXTERNAL_SERVO_TIMER_HANDLER` macro.

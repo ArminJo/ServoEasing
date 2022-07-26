@@ -10,6 +10,9 @@
 #ifndef _QUADRUPED_CONTROL_COMMANDS_H
 #define _QUADRUPED_CONTROL_COMMANDS_H
 
+#define SERVO_MIN_SPEED       4 // degree per seconds
+#define SERVO_MAX_SPEED     400 // degree per seconds
+
 // The code for the called command is available in variable sCurrentIRCode
 // All functions have the prefix __attribute__((weak)) in order to enable easy overwriting with own functions.
 

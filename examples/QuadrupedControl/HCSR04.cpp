@@ -152,7 +152,7 @@ unsigned int getCentimeterFromUSMicroSeconds(unsigned int aDistanceMicros) {
 }
 
 /**
- * @param aTimeoutMicros timeout of 5825 micros is equivalent to 1 meter, default timeout of 20000 micro seconds is 3.43 meter
+ * @param aTimeoutMicros timeout of 5825 micros is equivalent to 1 meter, 10000 is 1.71 m, default timeout of 20000 micro seconds is 3.43 meter
  * @return  Distance in centimeter @20 degree celsius (time in us/58.25)
  *          0 / DISTANCE_TIMEOUT_RESULT if timeout or pins are not initialized
  */

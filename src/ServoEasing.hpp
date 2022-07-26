@@ -399,6 +399,9 @@ ServoEasing::ServoEasing() // @suppress("Class members should be properly initia
     mTrimMicrosecondsOrUnits = 0;
     mSpeed = START_EASE_TO_SPEED;
     mServoMoves = false;
+#if !defined(DISABLE_PAUSE_RESUME)
+    mServoIsPaused = false;
+#endif
     mOperateServoReverse = false;
 
 #if defined(USE_PCA9685_SERVO_EXPANDER) && defined(USE_SERVO_LIB)
@@ -1258,13 +1261,15 @@ bool ServoEasing::startEaseToD(int aDegreeOrMicrosecond, uint_fast16_t aMillisFo
 #if defined(LOCAL_TRACE)
     printDynamic(&Serial, true);
 #elif defined(LOCAL_DEBUG)
-printDynamic(&Serial);
+    printDynamic(&Serial);
 #endif
 
     bool tReturnValue = !mServoMoves;
 
-// Check after printDynamic() to see the values
     mServoMoves = true;
+#if !defined(DISABLE_PAUSE_RESUME)
+    mServoIsPaused = false;
+#endif
     if (aStartUpdateByInterrupt && !sInterruptsAreActive) {
         enableServoEasingInterrupt();
     }
@@ -1318,6 +1323,9 @@ bool ServoEasing::startEaseToD(float aDegreeOrMicrosecond, uint_fast16_t aMillis
 
     // Check after printDynamic() to see the values
     mServoMoves = true;
+#if !defined(DISABLE_PAUSE_RESUME)
+    mServoIsPaused = false;
+#endif
     if (aStartUpdateByInterrupt && !sInterruptsAreActive) {
         enableServoEasingInterrupt();
     }
@@ -1330,28 +1338,34 @@ bool ServoEasing::startEaseToD(float aDegreeOrMicrosecond, uint_fast16_t aMillis
  */
 void ServoEasing::stop() {
     mServoMoves = false;
-#if !defined(DISABLE_CONTINUE_AFTER_STOP)
-    mMillisAtStopMove = millis();
-#endif
+#if !defined(ENABLE_EXTERNAL_SERVO_TIMER_HANDLER)
     if (!isOneServoMoving()) {
         // disable interrupt only if all servos stopped. This enables independent movements of servos with one interrupt handler.
-        disableServoEasingInterrupt();
+        disableServoEasingInterrupt(); // For external handler, this must also be able to be managed externally
     }
+#endif
+}
+
+void ServoEasing::pause() {
+#if !defined(DISABLE_PAUSE_RESUME)
+    mMillisAtStopMove = millis();
+    mServoIsPaused = true;
+#endif
 }
 
 void ServoEasing::resumeWithInterrupts() {
-#if !defined(DISABLE_CONTINUE_AFTER_STOP)
+#if !defined(DISABLE_PAUSE_RESUME)
     mMillisAtStartMove += millis() - mMillisAtStopMove; // adjust the start time in order to continue the position of the stop() command.
+    mServoIsPaused = false;
 #endif
-    mServoMoves = true;
     enableServoEasingInterrupt();
 }
 
 void ServoEasing::resumeWithoutInterrupts() {
-#if !defined(DISABLE_CONTINUE_AFTER_STOP)
+#if !defined(DISABLE_PAUSE_RESUME)
     mMillisAtStartMove += millis() - mMillisAtStopMove; // adjust the start time in order to continue the position of the stop() command.
+    mServoIsPaused = false;
 #endif
-    mServoMoves = true;
 }
 
 void ServoEasing::setTargetPositionReachedHandler(void (*aTargetPositionReachedHandler)(ServoEasing*)) {
@@ -1405,6 +1419,12 @@ bool ServoEasing::update() {
 #  endif
         return true;
     }
+
+#if !defined(DISABLE_PAUSE_RESUME)
+    if(mServoIsPaused) {
+        return false; // do not really move but still request next update
+    }
+#endif
 
     uint32_t tMillisSinceStart = millis() - mMillisAtStartMove;
     if (tMillisSinceStart >= mMillisForCompleteMove) {
@@ -1793,15 +1813,15 @@ bool ServoEasing::areInterruptsActive() {
 
 /*
  * Update all servos from list and check if all servos have stopped.
- * Defined weak and guarded by an macro in order to be able to overwrite it, e.g. for synchronizing with NeoPixel updates,
+ * Guarded by an macro in order to be able to overwrite it, e.g. for synchronizing with NeoPixel updates,
  * which otherwise leads to servo twitching. See QuadrupedNeoPixel.cpp of QuadrupedControl example.
  * We have 100 us before the next servo period starts.
  */
 #if !defined(ENABLE_EXTERNAL_SERVO_TIMER_HANDLER)
 #  if defined(STM32F1xx) && STM32_CORE_VERSION_MAJOR == 1 &&  STM32_CORE_VERSION_MINOR <= 8 // for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
-__attribute__((weak)) void handleServoTimerInterrupt(HardwareTimer *aDummy __attribute__((unused))) // changed in stm32duino 1.9 - 5/2020
+void handleServoTimerInterrupt(HardwareTimer *aDummy __attribute__((unused))) // changed in stm32duino 1.9 - 5/2020
 #else
-__attribute__((weak)) void handleServoTimerInterrupt()
+void handleServoTimerInterrupt()
 #  endif
 {
 #  if defined(USE_PCA9685_SERVO_EXPANDER)
@@ -1867,7 +1887,7 @@ void enableServoEasingInterrupt() {
 #    endif
 
     TIFR1 |= _BV(OCF1B);    // clear any pending interrupts;
-    TIMSK1 |= _BV(OCIE1B);    // enable the output compare B interrupt
+    TIMSK1 |= _BV(OCIE1B);    // enable the output compare B interrupt used by ServoEasing
     /*
      * Misuse the "Input Capture Noise Canceler Bit" as a flag, that signals that interrupts for ServoEasing are enabled again.
      * It is required if disableServoEasingInterrupt() is suppressed e.g. by an overwritten handleServoTimerInterrupt() function
@@ -1962,9 +1982,7 @@ void enableServoEasingInterrupt() {
     // Reset TCx
     TC5->COUNT16.CTRLA.reg = TC_CTRLA_SWRST;
     // When writing a '1' to the CTRLA.SWRST bit it will immediately read as '1'.
-    // CTRL.SWRST will be cleared by hardware when the peripheral has been reset.
-    while (TC5->COUNT16.CTRLA.bit.SWRST)
-        ;
+    while (TC5->COUNT16.CTRLA.bit.SWRST); // CTRL.SWRST will be cleared by hardware when the peripheral has been reset.
     /*
      * Set timer counter mode to 16 bits, set mode as match frequency, prescaler is DIV64 => 750 kHz clock, start counter
      */
@@ -2300,16 +2318,27 @@ bool isOneServoMoving() {
 }
 
 void stopAllServos() {
-    unsigned long tMillis= millis();
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
         if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
             ServoEasing::ServoEasingArray[tServoIndex]->mServoMoves = false;
-#if !defined(DISABLE_CONTINUE_AFTER_STOP)
-            ServoEasing::ServoEasingArray[tServoIndex]->mMillisAtStopMove = tMillis;
-#endif
         }
     }
-    disableServoEasingInterrupt();
+#if !defined(ENABLE_EXTERNAL_SERVO_TIMER_HANDLER)
+    disableServoEasingInterrupt(); // For external handler, this must also be able to be managed externally
+#endif
+}
+
+
+void pauseAllServos() {
+#if !defined(DISABLE_PAUSE_RESUME)
+    unsigned long tMillis= millis();
+    for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+            ServoEasing::ServoEasingArray[tServoIndex]->mServoIsPaused = true;
+            ServoEasing::ServoEasingArray[tServoIndex]->mMillisAtStopMove = tMillis;
+        }
+    }
+#endif
 }
 
 void resumeWithInterruptsAllServos() {

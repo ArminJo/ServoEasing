@@ -25,6 +25,7 @@
 #include <Arduino.h>
 
 #include "QuadrupedConfiguration.h"
+#include "QuadrupedHelper.h"
 #include "ADCUtils.h" // for getVCCVoltageMillivoltSimple()
 #include "QuadrupedBasicMovements.h" // for sCurrentlyRunningAction
 
@@ -39,13 +40,16 @@
 
 #if defined(QUADRUPED_HAS_IR_CONTROL)
 #include "IRCommandDispatcher.h"
-#include "QuadrupedServoControl.h"
 #endif
+#include "QuadrupedServoControl.h"
 
 #if !defined(STR_HELPER)
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 #endif
+
+bool isShutDown = false;
+bool doShutDown = false;
 
 void playShutdownMelody() {
 #if defined(QUADRUPED_ENABLE_RTTTL)
@@ -62,6 +66,60 @@ void playShutdownMelody() {
 }
 
 /*
+ * Called exclusively by main loop
+ */
+void checkForLowVoltageAndShutdown() {
+    // Reset shutdown and enable new check, if a new command is running
+    if (sCurrentlyRunningAction != ACTION_TYPE_STOP) {
+        isShutDown = false;
+    }
+    if (doShutDown || (!isShutDown && checkForLowVoltage())) {
+#if defined(QUADRUPED_HAS_NEOPIXEL)
+        doWipeOutPatterns(); // to save power
+#endif
+#if defined(QUADRUPED_HAS_IR_CONTROL)
+        IRDispatcher.setRequestToStopReceived(false); // This enables shutdown move and new moves
+#endif
+        shutdownServos();
+        playShutdownMelody();
+        doShutDown = false; // shutdown done
+        isShutDown = true; // do it only once until next command arrives
+    }
+}
+
+/*
+ * Special delay function for the quadruped control.
+ * It checks for low voltage and returns prematurely if requestToStopReceived is set
+ * @return  true - if stop received
+ */
+bool delayAndCheckForLowVoltageAndStop(uint16_t aDelayMillis) {
+    isShutDown = false; // here we are in a (new) command and can enable a shutdown
+
+// check voltage only once per delay
+    if (!doShutDown && checkForLowVoltage()) { // !doShutDown enables shutdownServos() to run
+        // Voltage is low here
+#if defined(QUADRUPED_HAS_IR_CONTROL)
+        IRDispatcher.setRequestToStopReceived(); // This in turn stops any movement -> do not forget to reset it before next movement!
+#endif
+        doShutDown = true;
+        sCurrentlyRunningAction = ACTION_TYPE_STOP; // required for QUADRUPED_RETURN_IF_STOP
+        return true;
+#if defined(QUADRUPED_HAS_IR_CONTROL)
+    } else {
+        // Voltage is OK here :-)
+        if (IRDispatcher.delayAndCheckForStop(aDelayMillis)) {
+            Serial.println(F("Stop requested"));
+            sCurrentlyRunningAction = ACTION_TYPE_STOP;
+            return true;
+        }
+#else
+        delay(aDelayMillis);
+#endif
+    }
+    return false;
+}
+
+/*
  * Stop servos if voltage gets low
  * @return  true - if voltage too low
  */
@@ -70,6 +128,7 @@ bool checkForLowVoltage() {
     if (tVCC > VCC_STOP_THRESHOLD_MILLIVOLT) {
         return false; // signal voltage is OK
     }
+
     /*
      * Low voltage here
      */
@@ -85,10 +144,10 @@ bool checkForLowVoltage() {
  */
 void handleUSSensor() {
     static uint32_t sLastMeasurementMillis;
-    static uint16_t sLastDistance;
+    static uint8_t sLastDistance;
     if (millis() - sLastMeasurementMillis > MILLIS_BETWEEN_MEASUREMENTS) {
         sLastMeasurementMillis = millis();
-        uint16_t tDistance = getUSDistanceAsCentimeter();
+        uint8_t tDistance = getUSDistanceAsCentimeter(10000);
         if (tDistance != 0 && sLastDistance != tDistance) {
             sLastDistance = tDistance;
 #  if defined(INFO)
@@ -100,17 +159,24 @@ void handleUSSensor() {
             // Show distance bar if no other pattern is active
             if (FrontNeoPixelBar.ActivePattern == PATTERN_NONE) {
                 /*
-                 * The first 6 pixel represent a distance of each 5 cm
-                 * The 7. pixel is active if distance is > 50 centimeter
-                 * The 8. pixel is active if distance is > 1 meter
+                 * The first 3 pixel represent a distance of each 5 cm
+                 * The 4. pixel is active if distance is >= 20 cm and < 30 cm
+                 * The 7. pixel is active if distance is >= 80 cm and < 120 cm
+                 * The 8. pixel is active if distance is >= 1.2 meter
                  */
                 uint8_t tBarLength;
-                if (tDistance > 100) {
-                    tBarLength = 8;
-                } else if (tDistance > 50) {
+                if (tDistance < 20) {
+                    tBarLength = tDistance / 5;
+                } else if (tDistance < 30) {
+                    tBarLength = 4;
+                } else if (tDistance < 50) {
+                    tBarLength = 5;
+                } else if (tDistance < 80) {
+                    tBarLength = 6;
+                } else if (tDistance < 120) {
                     tBarLength = 7;
                 } else {
-                    tBarLength = tDistance / 5;
+                    tBarLength = 8;
                 }
                 FrontNeoPixelBar.drawBarFromColorArray(tBarLength, sBarBackgroundColorArrayForDistance);
                 showPatternSynchronizedWithServos();
@@ -123,23 +189,31 @@ void handleUSSensor() {
 
 #if defined(QUADRUPED_HAS_IR_CONTROL)
 #  if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
-#define SERVO_INCREMENT     10
+#define SERVO_INCREMENT     5
 void doUSRight() {
-    if (!IRDispatcher.IRReceivedData.isRepeat && USServo.read() >= SERVO_INCREMENT) {
-        USServo.write(USServo.read() - SERVO_INCREMENT);
+    int tServoPosition = ServoEasing::ServoEasingNextPositionArray[INDEX_OF_US_DISTANCE_SERVO];
+    if (tServoPosition >= SERVO_INCREMENT) {
+        USServo.write(tServoPosition - SERVO_INCREMENT);
     }
 }
 void doUSLeft() {
-    if (!IRDispatcher.IRReceivedData.isRepeat && USServo.read() <= (180 - SERVO_INCREMENT)) {
-        USServo.write(USServo.read() + SERVO_INCREMENT);
+    int tServoPosition = ServoEasing::ServoEasingNextPositionArray[INDEX_OF_US_DISTANCE_SERVO];
+    if (tServoPosition <= (180 - SERVO_INCREMENT)) {
+        USServo.write(tServoPosition + SERVO_INCREMENT);
     }
 }
 void doUSScan() {
-    if (!IRDispatcher.IRReceivedData.isRepeat) {
-        USServo.write(90);
-    }
+    USServo.write(90);
 }
 #  endif
+
+#if defined(QUADRUPED_ENABLE_RTTTL)
+void doRandomMelody() {
+    startPlayRandomRtttlFromArrayPGMAndPrintName(PIN_BUZZER, RTTTLMelodiesSmall,
+    ARRAY_SIZE_MELODIES_SMALL, &Serial, NULL);
+    sAtLeastOnePatternsIsActive = false; // disable any pattern, which disturbs the melody
+}
+#endif
 
 #  if !defined(USE_USER_DEFINED_MOVEMENTS)
 // Disable doCalibration() also for user defined movements, since just testing the remote may lead to accidental wrong calibration
@@ -210,7 +284,7 @@ void doCalibration() {
             ServoEasing::ServoEasingArray[tPivotServoIndex]->easeTo(90, 100);
             tPivotServoIndex += SERVOS_PER_LEG;
             eepromWriteServoTrim();
-            if (tPivotServoIndex >= NUMBER_OF_SERVOS) {
+            if (tPivotServoIndex >= NUMBER_OF_LEG_SERVOS) {
                 tGotExitCommand = true;
             } else {
                 signalLeg(tPivotServoIndex);
@@ -243,31 +317,6 @@ void doCalibration() {
 }
 #  endif // !defined(USE_USER_DEFINED_MOVEMENTS)
 #endif // defined(QUADRUPED_HAS_IR_CONTROL)
-
-/*
- * Special delay function for the quadruped control.
- * It checks for low voltage and returns prematurely if requestToStopReceived is set
- * @return  true - if stop received
- */
-bool delayAndCheckForLowVoltageAndStop(uint16_t aDelayMillis) {
-// check voltage only once per delay
-    if (checkForLowVoltage()) {
-#if defined(QUADRUPED_HAS_IR_CONTROL)
-        sCurrentlyRunningAction = ACTION_TYPE_STOP;
-#endif
-        return true;
-#if defined(QUADRUPED_HAS_IR_CONTROL)
-    } else {
-        // Voltage is OK here :-)
-        if (IRDispatcher.delayAndCheckForStop(aDelayMillis)) {
-            Serial.println(F("Stop requested"));
-            sCurrentlyRunningAction = ACTION_TYPE_STOP;
-            return true;
-        }
-#endif
-    }
-    return false;
-}
 
 void doBeep() {
     tone(PIN_BUZZER, 2000, 200);

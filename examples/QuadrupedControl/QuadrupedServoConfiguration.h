@@ -12,17 +12,17 @@
  * Leg layout geometry
  */
 #define NUMBER_OF_LEGS 4
-#define NUMBER_OF_SERVOS 8
+#define NUMBER_OF_LEG_SERVOS 8
 // Pins where servos are attached. The other servos are attached to the next pins (pins 6 to 12).
 #define FRONT_LEFT_PIVOT_SERVO_PIN 5
-#define SERVOS_PER_LEG (NUMBER_OF_SERVOS / NUMBER_OF_LEGS)
+#define SERVOS_PER_LEG (NUMBER_OF_LEG_SERVOS / NUMBER_OF_LEGS)
 #define DIAGONAL_SERVO_OFFSET (2 * SERVOS_PER_LEG)
 #define PIVOT_SERVO_OFFSET 0 // Pivot servo index in leg
 #define LIFT_SERVO_OFFSET 1 // Lift servo number is 1 more than base/pivot servo number
 
 #define FRONT_LEFT 0
 // Index into (external) servo array. Order must be the same as of definitions in main.
-#define FRONT_LEFT_PIVOT 0
+#define FRONT_LEFT_PIVOT 0 // at FRONT_LEFT_PIVOT_SERVO_PIN
 #define FRONT_LEFT_LEG (FRONT_LEFT_PIVOT / SERVOS_PER_LEG)
 #define FRONT_LEFT_LIFT 1
 
@@ -77,5 +77,12 @@
 #define TROT_BASE_ANGLE_FL_BR 135
 #define TROT_BASE_ANGLE_BL_FR 45
 #define TROT_MOVE_ANGLE 30
+
+#if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
+#define INDEX_OF_US_DISTANCE_SERVO  NUMBER_OF_LEG_SERVOS
+#define NUMBER_OF_SERVOS (NUMBER_OF_LEG_SERVOS + 1)
+#else
+#define NUMBER_OF_SERVOS NUMBER_OF_LEG_SERVOS
+#endif
 
 #endif // _QUADRUPED_SERVO_CONFIGURATION_H

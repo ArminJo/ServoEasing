@@ -14,9 +14,6 @@
 
 extern volatile uint8_t sMovingDirection;
 
-#if ! defined(QUADRUPED_MOVEMENT_BREAK_FLAG)
-#define QUADRUPED_MOVEMENT_BREAK_FLAG false
-#endif
 #if ! defined(QUADRUPED_BREAK_IF_STOP)
 #define QUADRUPED_BREAK_IF_STOP     if (QUADRUPED_MOVEMENT_BREAK_FLAG) break
 #endif

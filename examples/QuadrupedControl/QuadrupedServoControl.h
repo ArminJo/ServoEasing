@@ -11,15 +11,17 @@
 #include "QuadrupedServoConfiguration.h"
 
 // Must specify this before the include of "ServoEasing.hpp"
-//#define USE_PCA9685_SERVO_EXPANDER // Activate this to enables the use of the PCA9685 I2C expander chip/board.
-//#define USE_SERVO_LIB // Activate this to force additional using of regular servo library.
-//#define PROVIDE_ONLY_LINEAR_MOVEMENT // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes FLASH.
-#define DISABLE_COMPLEX_FUNCTIONS // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC and BOUNCE easings. Saves up to 1850 bytes FLASH.
-#define MAX_EASING_SERVOS 8
-//#define ENABLE_MICROS_AS_DEGREE_PARAMETER // Activate this to enable also microsecond values as (target angle) parameter. Requires additional 128 Bytes FLASH.
-//#define DEBUG // Activate this to generate lots of lovely debug output for this library.
+//#define USE_PCA9685_SERVO_EXPANDER    // Activate this to enables the use of the PCA9685 I2C expander chip/board.
+//#define USE_SERVO_LIB                 // If USE_PCA9685_SERVO_EXPANDER is defined, activate this to force additional using of regular servo library.
+//#define PROVIDE_ONLY_LINEAR_MOVEMENT  // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes program memory.
+#define DISABLE_COMPLEX_FUNCTIONS     // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory.
+#define MAX_EASING_SERVOS   NUMBER_OF_SERVOS // 8 or 9 if QUADRUPED_HAS_US_DISTANCE_SERVO
+//#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
+//#define DISABLE_MIN_AND_MAX_CONSTRAINTS    // Activating this disables constraints. Saves 4 bytes RAM per servo but strangely enough no program memory.
+//#define DISABLE_PAUSE_RESUME               // Activating this disables pause and resume functions. Saves 5 bytes RAM per servo.
+//#define DEBUG                              // Activate this to generate lots of lovely debug output for this library.
 
-//#define PRINT_FOR_SERIAL_PLOTTER // Activate this to generate the Arduino plotter output#include "ServoEasing.hpp"    // include ServoEasing library source code
+//#define PRINT_FOR_SERIAL_PLOTTER      // Activate this to generate the Arduino plotter output#include "ServoEasing.hpp"    // include ServoEasing library source code
 
 #define SUPPRESS_HPP_WARNING
 #include "ServoEasing.h"
@@ -35,7 +37,6 @@ extern ServoEasing frontRightPivotServo;    // 6 - Front Right Pivot Servo
 extern ServoEasing frontRightLiftServo;     // 7 - Front Right Lift Servo
 
 extern uint16_t sQuadrupedServoSpeed;       // In degree/second, default is 90
-extern uint8_t sActualBodyHeightAngle;      // The actual angle of the servos
 extern volatile uint8_t sRequestedBodyHeightAngle;   // From LIFT_MIN_ANGLE to LIFT_MAX_ANGLE, default is 60 !!! The bigger the angle, the lower the body !!!
 extern uint8_t sBodyHeight;                 // normalized body height from 0 (low) to 255 (high)
 extern uint8_t sBodyHeightPercent;          // normalized body height from 0% (low) to 100% (high)

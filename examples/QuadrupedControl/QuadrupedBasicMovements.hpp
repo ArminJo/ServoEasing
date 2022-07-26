@@ -35,7 +35,7 @@
 volatile uint8_t sMovingDirection = MOVE_DIRECTION_FORWARD;
 
 uint8_t sCurrentlyRunningAction; // A change on this action type triggers the generation of new NeoPatterns
-uint8_t sLastRunningAction; // do determine changes of sCurrentlyRunningAction
+uint8_t sLastRunningAction; // do enable pause / resume
 
 /*
  * Gait variations
@@ -127,7 +127,7 @@ void moveTurn(uint8_t aNumberOfBasicTurns) {
 }
 
 /*
- * One basicTurn() call turns the body by approximately 12 degree
+ * One basicTurn() call turns the body by approximately 12 degree => 30 basicTurns per 360 degree
  * The aLiftLegIndex is lifted up and moved by 120 degree in body turn direction
  * All other legs are moved by 40 degree against the body turn direction
  *
@@ -161,14 +161,13 @@ void basicTurn(uint8_t aLiftLegIndex, bool aTurnLeft) {
 
     int_fast8_t tTurnLegServoIndex = tLiftLegServoIndex + SERVOS_PER_LEG; // get servo index of next leg
     // write new positions for the other 3 pivot servos
-    uint8_t tRequestedBodyHeightAngle = sRequestedBodyHeightAngle; // sRequestedBodyHeightAngle is volatile (and code is smaller)
-    for (uint_fast8_t i = 0; i < NUMBER_OF_LEGS - 1; ++i) {
-        tTurnLegServoIndex %= NUMBER_OF_SERVOS;
-        ServoEasing::ServoEasingNextPositionArray[tTurnLegServoIndex] =
-                ServoEasing::ServoEasingNextPositionArray[tTurnLegServoIndex] + tForwardAngle;
+    uint8_t tRequestedBodyHeightAngle = sRequestedBodyHeightAngle; // reduces code size because sRequestedBodyHeightAngle is volatile
+    for (uint_fast8_t i = 0; i < (NUMBER_OF_LEGS - 1); ++i) {
+        tTurnLegServoIndex %= NUMBER_OF_LEG_SERVOS;
+        ServoEasing::ServoEasingNextPositionArray[tTurnLegServoIndex] += tForwardAngle;
         // (re)set lift value for this leg
         ServoEasing::ServoEasingNextPositionArray[tTurnLegServoIndex + LIFT_SERVO_OFFSET] = tRequestedBodyHeightAngle;
-        tLiftLegServoIndex += SERVOS_PER_LEG;  // get servo of next leg
+        tTurnLegServoIndex += SERVOS_PER_LEG;  // get servo of next leg
     }
 //    printArrayPositions(&Serial);
     /*
@@ -229,13 +228,24 @@ void basicHalfCreep(uint8_t aDirection, bool doMirror) {
 // 1. Move front right leg up, forward and down
     Serial.println(F("1. move front leg"));
 #endif
-    uint8_t tRequestedBodyHeightAngle = sRequestedBodyHeightAngle; // sRequestedBodyHeightAngle is volatile
+#if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
+    if (aDirection ==  MOVE_DIRECTION_FORWARD) {
+        // only for movement forward
+        if(doMirror) {
+            ServoEasing::ServoEasingNextPositionArray[INDEX_OF_US_DISTANCE_SERVO] = 45;
+        } else {
+            ServoEasing::ServoEasingNextPositionArray[INDEX_OF_US_DISTANCE_SERVO] = 135;
+        }
+    }
+#endif
+
+    uint8_t tRequestedBodyHeightAngle = sRequestedBodyHeightAngle;  // sRequestedBodyHeightAngle is volatile (and code is smaller)
     transformAndSetAllServos(180 - Y_POSITION_OPEN_ANGLE, Y_POSITION_OPEN_ANGLE, 180 - Y_POSITION_CLOSE_ANGLE,
     Y_POSITION_FRONT_ANGLE, tRequestedBodyHeightAngle, tRequestedBodyHeightAngle, tRequestedBodyHeightAngle, LIFT_HIGHEST_ANGLE,
             aDirection, doMirror);
     QUADRUPED_RETURN_IF_STOP;
 
-    tRequestedBodyHeightAngle = sRequestedBodyHeightAngle;
+    tRequestedBodyHeightAngle = sRequestedBodyHeightAngle; // sRequestedBodyHeightAngle maybe changed by remote
 
 // 2. Move body forward by CREEP_BODY_MOVE_ANGLE
 #if defined(INFO)
@@ -246,7 +256,7 @@ void basicHalfCreep(uint8_t aDirection, bool doMirror) {
             tRequestedBodyHeightAngle, tRequestedBodyHeightAngle, aDirection, doMirror);
     QUADRUPED_RETURN_IF_STOP;
 
-    tRequestedBodyHeightAngle = sRequestedBodyHeightAngle;
+    tRequestedBodyHeightAngle = sRequestedBodyHeightAngle; // sRequestedBodyHeightAngle maybe changed by remote
 
 // 3. Move back right leg up, forward and down
 #if defined(INFO)
@@ -316,7 +326,7 @@ void basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
         tIndexDelta = SERVOS_PER_LEG;
     }
 // Back left
-    tIndex = (tIndex + tIndexDelta) % NUMBER_OF_SERVOS;
+    tIndex = (tIndex + tIndexDelta) % NUMBER_OF_LEG_SERVOS;
     if (aMoveMirrored) {
         ServoEasing::ServoEasingNextPositionArray[tIndex] = Y_POSITION_OPEN_ANGLE;
     } else {
@@ -324,7 +334,7 @@ void basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
     }
 
 // Back right
-    tIndex = (tIndex + tIndexDelta) % NUMBER_OF_SERVOS;
+    tIndex = (tIndex + tIndexDelta) % NUMBER_OF_LEG_SERVOS;
     if (aMoveMirrored) {
         ServoEasing::ServoEasingNextPositionArray[tIndex] = 180 - CREEP_BODY_MOVE_ANGLE;
     } else {
@@ -332,7 +342,7 @@ void basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
     }
 
 // Front right
-    tIndex = (tIndex + tIndexDelta) % NUMBER_OF_SERVOS;
+    tIndex = (tIndex + tIndexDelta) % NUMBER_OF_LEG_SERVOS;
     if (aMoveMirrored) {
         ServoEasing::ServoEasingNextPositionArray[tIndex] = Y_POSITION_CLOSE_ANGLE;
     } else {
@@ -346,7 +356,7 @@ void basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
     Serial.println(F("3. move back leg to close position"));
 #endif
 // Move to Y position with right legs together / 120, 60, 180, 0
-    uint8_t tDiagonalIndex = (tLeftLegPivotServoIndex + DIAGONAL_SERVO_OFFSET) % NUMBER_OF_SERVOS;
+    uint8_t tDiagonalIndex = (tLeftLegPivotServoIndex + DIAGONAL_SERVO_OFFSET) % NUMBER_OF_LEG_SERVOS;
     moveOneServoAndCheckInputAndWait(tDiagonalIndex + LIFT_SERVO_OFFSET, LIFT_HIGHEST_ANGLE);
     QUADRUPED_RETURN_IF_STOP;
 

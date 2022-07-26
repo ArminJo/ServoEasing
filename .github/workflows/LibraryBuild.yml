@@ -71,7 +71,7 @@ jobs:
         include:
           - arduino-boards-fqbn: arduino:avr:uno
             build-properties: # the flags were put in compiler.cpp.extra_flags
-              OneServo: -DUSE_PCA9685_SERVO_EXPANDER -DDISABLE_CONTINUE_AFTER_STOP
+              OneServo: -DUSE_PCA9685_SERVO_EXPANDER -DDISABLE_PAUSE_RESUME
               SymmetricEasing: -DDISABLE_COMPLEX_FUNCTIONS -DDEBUG
               AsymmetricEasing: -DTRACE
               Simple: -DPRINT_FOR_SERIAL_PLOTTER
