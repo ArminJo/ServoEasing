@@ -25,19 +25,20 @@ extern volatile uint8_t sMovingDirection;
  * Action type definitions
  * Currently used for NeoPatterns display
  */
-#define ACTION_TYPE_STOP    0
-#define ACTION_TYPE_CREEP   1
-#define ACTION_TYPE_TROT    2
-#define ACTION_TYPE_TURN    3
-#define ACTION_TYPE_TWIST   4
+#define ACTION_TYPE_STOP        0
+#define ACTION_TYPE_CREEP       1
+#define ACTION_TYPE_TROT        2
+#define ACTION_TYPE_TURN        3
+#define ACTION_TYPE_TWIST       4
 #define ACTION_TYPE_ATTENTION   5
-#define ACTION_TYPE_LEAN    6
-#define ACTION_TYPE_WAVE    7
+#define ACTION_TYPE_LEAN        6
+#define ACTION_TYPE_WAVE        7
 // only used by UserCommands.cpp
-#define ACTION_TYPE_DANCE   8
-#define ACTION_TYPE_TEST    9
-#define ACTION_TYPE_AUTO_MOVE   10
-#define ACTION_TYPE_PAUSE   11
+#define ACTION_TYPE_DANCE       8
+#define ACTION_TYPE_TEST        9
+#define ACTION_TYPE_MELODY     10
+#define ACTION_TYPE_AUTO_MOVE  11
+#define ACTION_TYPE_PAUSE      12
 extern uint8_t sCurrentlyRunningAction; // A change on this action type triggers the generation of new neopatterns
 extern uint8_t sLastRunningAction; // do determine changes of sCurrentlyRunningAction
 

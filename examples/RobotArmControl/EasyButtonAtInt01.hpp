@@ -184,6 +184,32 @@ init(false); // 2. button
 }
 #endif // NO_BUTTON_RELEASE_CALLBACK
 
+#if defined(USE_ATTACH_INTERRUPT) || defined(USE_ATTACH_INTERRUPT_DIRECT)
+#  if defined(USE_ATTACH_INTERRUPT)
+
+#  else
+
+#  endif
+
+#else
+
+#  if defined(USE_INT0)
+
+
+#  elif defined(USE_INT1)
+
+
+#  elif defined(USE_PCIE) // For ATtiny85 etc.
+
+
+#  elif defined(USE_PCINT0)
+
+#  elif defined(USE_PCINT1)
+
+#  elif defined(USE_PCINT2)
+
+#  endif
+#endif // defined(USE_ATTACH_INTERRUPT)
 /*
  * Sets pin mode to INPUT_PULLUP if not defined(BUTTON_IS_ACTIVE_HIGH) and enables INT0 Interrupt on any logical change.
  */

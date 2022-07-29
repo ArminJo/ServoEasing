@@ -42,9 +42,9 @@ void __attribute__((weak)) doTest() {
     // to be overwritten by user function
     sCurrentlyRunningAction = ACTION_TYPE_TEST;
 #if defined(QUADRUPED_ENABLE_RTTTL)
-    doRandomMelody();
+    doRandomMelody(); // Use melody as sample test
 #else
-    sCurrentlyRunningAction = ACTION_TYPE_STOP;
+    sCurrentlyRunningAction = ACTION_TYPE_STOP; // action = stop ends the melody
 #endif
 }
 

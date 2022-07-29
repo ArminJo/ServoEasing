@@ -1421,7 +1421,7 @@ bool ServoEasing::update() {
     }
 
 #if !defined(DISABLE_PAUSE_RESUME)
-    if(mServoIsPaused) {
+    if (mServoIsPaused) {
         return false; // do not really move but still request next update
     }
 #endif
@@ -1664,7 +1664,7 @@ void ServoEasing::printEasingType(Print *aSerial, uint_fast8_t aEasingType) {
     const char *tEaseTypeStringPtr = (char*) pgm_read_word(&easeTypeStrings[aEasingType & EASE_TYPE_MASK]);
     aSerial->print((__FlashStringHelper*) (tEaseTypeStringPtr));
 #  else
-   aSerial->print(easeTypeStrings[aEasingType]);
+    aSerial->print(easeTypeStrings[aEasingType]);
 #  endif
     uint_fast8_t tEasingTypeCallStyle = aEasingType & CALL_STYLE_MASK;
     if (tEasingTypeCallStyle == CALL_STYLE_IN) {
@@ -1942,8 +1942,10 @@ void enableServoEasingInterrupt() {
 
 #elif defined(ARDUINO_ARCH_SAMD)
     // Servo uses timer 4 and we use timer 5. therefore we cannot change clock source to 32 kHz.
+
+    TcCount16 *TC = (TcCount16*) TC5;
 #  if defined(__SAMD51__)
-    // SAMD51 Code provided by Lutz
+    // SAMD51 Code initially provided by Lutz
     /**
      * Adafruit M4 code (cores/arduino/startup.c) configures these clock generators:
      * GCLK0 = F_CPU
@@ -1952,45 +1954,52 @@ void enableServoEasingInterrupt() {
      * GCLK4 = 12 MHz
      * GCLK3 = XOSC32K
      */
-    // Enable the TC bus clock, use clock generator 1
-    GCLK->PCHCTRL[TC5_GCLK_ID].reg = GCLK_PCHCTRL_GEN_GCLK1_Val | (1 << GCLK_PCHCTRL_CHEN_Pos);
+    // Enable the TC5 clock, use generic clock generator 0 (F_CPU) for TC5
+    GCLK->PCHCTRL[TC5_GCLK_ID].reg = GCLK_PCHCTRL_GEN_GCLK0_Val | (1 << GCLK_PCHCTRL_CHEN_Pos);
     while (GCLK->SYNCBUSY.reg > 0); // Sync GCLK for TC5
 
-    TC5->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE; // Disable the Timer
-    while (TC5->COUNT16.STATUS.reg & TC_SYNCBUSY_STATUS); // Sync TC5 Timer
+    // The TC should be disabled before the TC is reset in order to avoid undefined behavior.
+    TC->CTRLA.reg &= ~TC_CTRLA_ENABLE; // Disable the Timer
+    while (TC->SYNCBUSY.bit.ENABLE); // Wait for disabled
+    // Reset TCx
+    TC->CTRLA.reg = TC_CTRLA_SWRST;
+    // When writing a '1' to the CTRLA.SWRST bit it will immediately read as '1'.
+    while (TC->SYNCBUSY.bit.SWRST); // CTRL.SWRST will be cleared by hardware when the peripheral has been reset.
 
-    // SAMD51 has F_CPU = 120000000 Hz but we must use GCLK1 with 48000000 Hz.
-    TC5->COUNT16.CC[0].reg = (uint16_t) (((48000000/64) / REFRESH_FREQUENCY) - 1);  // (750 kHz / sampleRate - 1);
+    // SAMD51 has F_CPU = 120 MHz
+    TC->CC[0].reg = ((F_CPU / (256 * REFRESH_FREQUENCY)) - 1);  //  (9375 - 1) at 120 MHz and 256 prescaler. With prescaler 64 we get 37500-1.
     /*
-     * Set timer counter mode to 16 bits, set mode as match frequency, prescaler is DIV64 => 750 kHz clock, start counter
+     * Set timer counter mode to 16 bits, set mode as match frequency, prescaler is DIV256, start counter
      */
-    TC5->COUNT16.CTRLA.reg |= TC_CTRLA_MODE_COUNT16| TC_WAVE_WAVEGEN_MFRQ |TC_CTRLA_PRESCALER_DIV64 | TC_CTRLA_ENABLE;
-//    while (TC5->COUNT16.STATUS.bit.SYNCBUSY == 1);                                // The next commands do an implicit wait :-)
+    TC->CTRLA.reg |= TC_CTRLA_MODE_COUNT16 | TC_WAVE_WAVEGEN_MFRQ | TC_CTRLA_PRESCALER_DIV256 | TC_CTRLA_ENABLE;
+//    while (TC->STATUS.bit.SYNCBUSY == 1);                                // The next commands do an implicit wait :-)
 
 #  else
-    // Enable GCLK for TCC2 and TC5 (timer counter input clock)
-    GCLK->CLKCTRL.reg = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID(GCM_TC4_TC5)); // GCLK1=32kHz,  GCLK0=48MHz
+    // Enable GCLK and select GCLK0 (F_CPU) as clock for TC4 and TC5
+    GCLK->CLKCTRL.reg = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID(GCM_TC4_TC5)); // GCLK0 is F_CPU | 48 MHz
 //    while (GCLK->STATUS.bit.SYNCBUSY) // not required to wait
 //        ;
 
     // The TC should be disabled before the TC is reset in order to avoid undefined behavior.
-    TC5->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE;
+    TC->CTRLA.reg &= ~TC_CTRLA_ENABLE;
     // 14.3.2.2 When write-synchronization is ongoing for a register, any subsequent write attempts to this register will be discarded, and an error will be reported.
     // 14.3.1.4 It is also possible to perform the next read/write operation and wait,
     // as this next operation will be started once the previous write/read operation is synchronized and/or complete. ???
-    while (TC5->COUNT16.STATUS.bit.SYNCBUSY == 1); // wait for sync to ensure that we can write again to COUNT16.CTRLA.reg
+    while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync to ensure that we can write again to COUNT16.CTRLA.reg
     // Reset TCx
-    TC5->COUNT16.CTRLA.reg = TC_CTRLA_SWRST;
+    TC->CTRLA.reg = TC_CTRLA_SWRST;
     // When writing a '1' to the CTRLA.SWRST bit it will immediately read as '1'.
-    while (TC5->COUNT16.CTRLA.bit.SWRST); // CTRL.SWRST will be cleared by hardware when the peripheral has been reset.
+    while (TC->CTRLA.bit.SWRST); // CTRL.SWRST will be cleared by hardware when the peripheral has been reset.
+
+    TC->CC[0].reg = ((F_CPU  / (64 * REFRESH_FREQUENCY)) - 1);    // (15000 - 1) at 48 Mhz and 64 prescaler.
     /*
      * Set timer counter mode to 16 bits, set mode as match frequency, prescaler is DIV64 => 750 kHz clock, start counter
      */
-    TC5->COUNT16.CTRLA.reg |= TC_CTRLA_MODE_COUNT16| TC_CTRLA_WAVEGEN_MFRQ | TC_CTRLA_PRESCALER_DIV64 | TC_CTRLA_ENABLE;
-    TC5->COUNT16.CC[0].reg = (uint16_t) (((F_CPU/64) / REFRESH_FREQUENCY) - 1);     // (750 kHz / sampleRate - 1);
-//    while (TC5->COUNT16.STATUS.bit.SYNCBUSY == 1);                                // The next commands do an implicit wait :-)
+    TC->CTRLA.reg |= TC_CTRLA_MODE_COUNT16| TC_CTRLA_WAVEGEN_MFRQ | TC_CTRLA_PRESCALER_DIV64 | TC_CTRLA_ENABLE;
+//    while (TC->STATUS.bit.SYNCBUSY == 1);                                // The next commands do an implicit wait :-)
 
 #  endif // defined(__SAMD51__)
+    // Common SAMD here
     // Configure interrupt request
     NVIC_DisableIRQ(TC5_IRQn);
     NVIC_ClearPendingIRQ(TC5_IRQn);
@@ -1998,8 +2007,8 @@ void enableServoEasingInterrupt() {
     NVIC_EnableIRQ(TC5_IRQn);
 
     // Enable the TC5 interrupt request
-    TC5->COUNT16.INTENSET.bit.MC0 = 1;
-//    while (TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY) // Not required to wait at end of function
+    TC->INTENSET.bit.MC0 = 1;
+//    while (TC->STATUS.reg & TC_STATUS_SYNCBUSY) // Not required to wait at end of function
 //        ; // wait until TC5 is done syncing
 
 //#elif defined(ARDUINO_ARCH_APOLLO3)
@@ -2328,10 +2337,9 @@ void stopAllServos() {
 #endif
 }
 
-
 void pauseAllServos() {
 #if !defined(DISABLE_PAUSE_RESUME)
-    unsigned long tMillis= millis();
+    unsigned long tMillis = millis();
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
         if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
             ServoEasing::ServoEasingArray[tServoIndex]->mServoIsPaused = true;

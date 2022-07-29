@@ -209,6 +209,7 @@ void doUSScan() {
 
 #if defined(QUADRUPED_ENABLE_RTTTL)
 void doRandomMelody() {
+    sCurrentlyRunningAction = ACTION_TYPE_MELODY;
     startPlayRandomRtttlFromArrayPGMAndPrintName(PIN_BUZZER, RTTTLMelodiesSmall,
     ARRAY_SIZE_MELODIES_SMALL, &Serial, NULL);
     sAtLeastOnePatternsIsActive = false; // disable any pattern, which disturbs the melody

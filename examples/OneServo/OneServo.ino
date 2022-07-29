@@ -237,7 +237,15 @@ void loop() {
     // resume movement using interrupts
     Servo1.resumeWithInterrupts();
 #endif
-    delay(3000); // wait extra 2 seconds
+    while (Servo1.isMoving()); // wait for servo to stop
+
+    Servo1.detach();
+    /*
+     * After detach the servo is "not powered" for 5 seconds, i.e. no servo signal is generated.
+     * This allows you to easily move the servo manually.
+     */
+    delay(5000); // wait 5 seconds
+    Servo1.attach(SERVO1_PIN, 0);
 }
 
 void blinkLED() {

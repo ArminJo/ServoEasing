@@ -94,6 +94,28 @@
 #define SPEED_IN_PIN A0
 #define MODE_ANALOG_INPUT_PIN A1
 
+#elif defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_SAM)
+#define SERVO1_PIN  5
+#define SERVO2_PIN  6
+#define SERVO3_PIN  7
+#define SPEED_IN_PIN A1 // A0 is DAC output
+#define MODE_ANALOG_INPUT_PIN A2
+
+#if !defined(ARDUINO_SAMD_ADAFRUIT)
+// On the Zero and others we switch explicitly to SerialUSB
+#define Serial SerialUSB
+#endif
+
+// Definitions for the Chinese SAMD21 M0-Mini clone, which has no led connected to D13/PA17.
+// Attention!!! D2 and D4 are swapped on these boards!!!
+// If you connect the LED, it is on pin 24/PB11. In this case activate the next two lines.
+//#undef LED_BUILTIN
+//#define LED_BUILTIN 24 // PB11
+// As an alternative you can choose pin 25, it is the RX-LED pin (PB03), but active low.In this case activate the next 3 lines.
+//#undef LED_BUILTIN
+//#define LED_BUILTIN 25 // PB03
+//#define FEEDBACK_LED_IS_ACTIVE_LOW // The RX LED on the M0-Mini is active LOW
+
 #else
 #warning Board / CPU is not detected using pre-processor symbols -> using default values, which may not fit. Please extend PinDefinitionsAndMore.h.
 // Default valued for unidentified boards
@@ -113,12 +135,4 @@
 // for ESP32 LED_BUILTIN is defined as: static const uint8_t LED_BUILTIN 2
 #if !defined(LED_BUILTIN) && !defined(ESP32)
 #define LED_BUILTIN PB1
-#endif
-// On the Zero and others we switch explicitly to SerialUSB
-#if defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ADAFRUIT)
-#define Serial SerialUSB
-// The Chinese SAMD21 M0-Mini clone has no led connected, if you connect it, it is on pin 24 like on the original board.
-// Attention! D2 and D4 are swapped on these boards
-//#undef LED_BUILTIN
-//#define LED_BUILTIN 25 // Or choose pin 25, it is the RX pin, but active low.
 #endif

@@ -73,10 +73,6 @@
 #if !defined(LED_BUILTIN) && !defined(ESP32)
 #define LED_BUILTIN PB1
 #endif
-// On the Zero and others we switch explicitly to SerialUSB
-#if defined(ARDUINO_ARCH_SAMD)
-#define Serial SerialUSB
-#endif
 
 #define FIRST_PCA9685_EXPANDER_ADDRESS  PCA9685_DEFAULT_ADDRESS
 #if !defined(USE_ONLY_ONE_EXPANDER)
