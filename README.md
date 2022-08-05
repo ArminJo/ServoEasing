@@ -1,7 +1,7 @@
 # [ServoEasing](https://github.com/ArminJo/ServoEasing) - move your servo more natural
 A library for smooth servo movements. It uses the standard Arduino Servo library and therefore has its restrictions regarding pins and platform support.
 
-### [Version 3.0.1](https://github.com/ArminJo/ServoEasing/archive/master.zip) - work in progress
+### [Version 3.1.1](https://github.com/ArminJo/ServoEasing/archive/master.zip) - work in progress
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
@@ -325,11 +325,12 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 If you see errors like this `Simple.ino:57: undefined reference to ServoEasing::attach(int, int)`, you included *ServoEasing.h* instead of *ServoEasing.hpp*.
 
 # Revision History
-### Version 3.0.1
+### Version 3.1.0
 - SAMD51 support by Lutz Aumüller.
 - Added support to pause and resume and `DISABLE_PAUSE_RESUME`.
 - Fixed some bugs for PCA9685 expander introduced in 3.0.0.
 - Feather Huzzah support with the help of Danner Claflin.
+- Added `ENABLE_EXTERNAL_SERVO_TIMER_HANDLER` macro.
 
 ### Version 3.0.0
 - Added target reached callback functionality, to enable multiple movements without loop control.

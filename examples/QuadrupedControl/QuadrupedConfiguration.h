@@ -90,6 +90,8 @@ extern ServoEasing USServo;
 #endif
 
 #if defined(QUADRUPED_HAS_NEOPIXEL)
+// Must be defined here, since we still have *.cpp sources
+#define DO_NOT_SUPPORT_BRIGHTNESS
 #define DO_NOT_SUPPORT_RGBW // saves up to 428 bytes additional program memory for the AllPatternsOnMultiDevices() example.
 
 // patterns always used if Neopixel are enabled

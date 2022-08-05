@@ -63,10 +63,14 @@
 #define QUADRUPED_MOVEMENT_BREAK_FLAG (doShutDown)
 #endif
 
+#define USE_NO_RTX_EXTENSIONS // Disables RTX format definitions `'s'` (style) and `'l'` (loop). Saves up to 332 bytes program memory
 #define ENABLE_EXTERNAL_SERVO_TIMER_HANDLER // Evaluated by ServoEasing.hpp
 #include "QuadrupedControlCommands.hpp" // In turn includes ServoEasing. Commands can also be used e.g. in loop().
 #if defined(QUADRUPED_HAS_NEOPIXEL)
 #include "QuadrupedNeoPixel.hpp"
+#endif
+#if defined(QUADRUPED_ENABLE_RTTTL)
+#include <PlayRtttl.hpp>
 #endif
 
 #include "ADCUtils.hpp" // for getVCCVoltageMillivoltSimple() and printVCCVoltageMillivolt()
@@ -75,9 +79,6 @@
 ServoEasing USServo;
 #endif
 
-#if defined(QUADRUPED_ENABLE_RTTTL)
-#include <PlayRtttl.hpp>
-#endif
 
 //#define INFO // activate this to see serial info output
 

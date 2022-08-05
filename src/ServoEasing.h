@@ -24,10 +24,10 @@
 #ifndef _SERVO_EASING_H
 #define _SERVO_EASING_H
 
-#define VERSION_SERVO_EASING "3.0.1"
+#define VERSION_SERVO_EASING "3.1.0"
 #define VERSION_SERVO_EASING_MAJOR 3
-#define VERSION_SERVO_EASING_MINOR 0
-#define VERSION_SERVO_EASING_PATCH 1
+#define VERSION_SERVO_EASING_MINOR 1
+#define VERSION_SERVO_EASING_PATCH 0
 // The change log is at the bottom of the file
 
 /*
@@ -718,7 +718,7 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
 #endif
 
 /*
- * Version 3.0.1 - 07/2022
+ * Version 3.1.0 - 08/2022
  * - SAMD51 support by Lutz Aumüller.
  * - Added support to pause and resume and `DISABLE_PAUSE_RESUME`.
  * - Fixed some bugs for PCA9685 expander introduced in 3.0.0.
