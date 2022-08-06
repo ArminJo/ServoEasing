@@ -1,16 +1,35 @@
-# [ServoEasing](https://github.com/ArminJo/ServoEasing) - move your servo more natural
-A library for smooth servo movements. It uses the standard Arduino Servo library and therefore has its restrictions regarding pins and platform support.
+<div align = center>
+
+# [ServoEasing](https://github.com/ArminJo/ServoEasing)
+A library for smooth servo movements.<br/>
+It uses the standard Arduino Servo library and therefore has its restrictions regarding pins and platform support.
 
 ### [Version 3.1.1](https://github.com/ArminJo/ServoEasing/archive/master.zip) - work in progress
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Installation instructions](https://www.ardu-badge.com/badge/ServoEasing.svg?)](https://www.ardu-badge.com/ServoEasing)
-[![Commits since latest](https://img.shields.io/github/commits-since/ArminJo/ServoEasing/latest)](https://github.com/ArminJo/ServoEasing/commits/master)
-[![Build Status](https://github.com/ArminJo/ServoEasing/workflows/LibraryBuild/badge.svg)](https://github.com/ArminJo/ServoEasing/actions)
-![Hit Counter](https://visitor-badge.laobi.icu/badge?page_id=ArminJo_ServoEasing)
+[![Badge License: GPLv3](https://img.shields.io/badge/License-GPLv3-brightgreen.svg)](https://www.gnu.org/licenses/gpl-3.0)
+ &nbsp; &nbsp; 
+[![Badge Version](https://img.shields.io/github/v/release/ArminJo/ServoEasing?include_prereleases&color=yellow&logo=DocuSign&logoColor=white)](https://github.com/ServoEasing/ServoEasing/releases/latest)
+ &nbsp; &nbsp; 
+[![Badge Commits since latest](https://img.shields.io/github/commits-since/ArminJo/ServoEasing/latest?color=yellow)](https://github.com/ArminJo/ServoEasing/commits/master)
+ &nbsp; &nbsp; 
+[![Badge Build Status](https://github.com/ArminJo/ServoEasing/workflows/LibraryBuild/badge.svg)](https://github.com/ArminJo/ServoEasing/actions)
+ &nbsp; &nbsp; 
+![Badge Hit Counter](https://visitor-badge.laobi.icu/badge?page_id=ArminJo_ServoEasing)
+<br/>
+<br/>
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
 
 Available as [Arduino library "ServoEasing"](https://www.arduinolibraries.info/libraries/servo-easing).
+
+[![Button Install](https://img.shields.io/badge/Install-brightgreen?logoColor=white&logo=GitBook)](https://www.ardu-badge.com/ServoEasing)
+ &nbsp; &nbsp; 
+[![Button API](https://img.shields.io/badge/API-yellow?logoColor=white&logo=OpenStreetMap)](https://arminjo.github.io/ServoEasing/classServoEasing.html)
+ &nbsp; &nbsp; 
+[![Button Changelog](https://img.shields.io/badge/Changelog-blue?logoColor=white&logo=AzureArtifacts)](https://github.com/ArminJo/ServoEasing#revision-history)
+
+</div>
+
+<br/>
 
 #### YouTube video of ServoEasing in action
 
@@ -27,13 +46,14 @@ Available as [Arduino library "ServoEasing"](https://www.arduinolibraries.info/l
 - [Useful resources](https://github.com/ArminJo/ServoEasing#useful-resources)
 - [Resolution of servo positioning](https://github.com/ArminJo/ServoEasing#resolution-of-servo-positioning)
 - [Speed of servo positioning](https://github.com/ArminJo/ServoEasing#speed-of-servo-positioning)
-- [Why *.hpp files instead of *.cpp files](https://github.com/ArminJo/ServoEasing#why-hpp-files-instead-of-cpp-files)
-- [Using the new *.hpp files / how to avoid `multiple definitions` linker errors](https://github.com/ArminJo/ServoEasing#using-the-new-hpp-files--how-to-avoid-multiple-definitions-linker-errors)
+- [Why *.hpp instead of *.cpp](https://github.com/ArminJo/ServoEasing#why-hpp-instead-of-cpp)
+- [Using the new *.hpp files](https://github.com/ArminJo/ServoEasing#using-the-new-hpp-files)
 - [Compile options / macros for this library](https://github.com/ArminJo/ServoEasing#compile-options--macros-for-this-library)
 - [Using PCA9685 16-Channel Servo Expander](https://github.com/ArminJo/ServoEasing#using-pca9685-16-channel-servo-expander)
 - [Using the included Lightweight Servo library for ATmega328](https://github.com/ArminJo/ServoEasing#using-the-included-lightweight-servo-library-for-atmega328)
 - [Handling multiple servos with the internal ServoEasingArray](https://github.com/ArminJo/ServoEasing#handling-multiple-servos-with-the-internal-servoeasingarray)
 - [Description of examples](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples)
+- [WOKWI online examples](https://github.com/ArminJo/ServoEasing#wokwi-online-examples)
 - [Servo utilities](https://github.com/ArminJo/ServoEasing/tree/master/examples#servo-utilities)
 - [Building breadboard servo adapter](https://github.com/ArminJo/ServoEasing#building-breadboard-servo-adapter)
 - [Internals](https://github.com/ArminJo/ServoEasing#internals)
@@ -45,6 +65,8 @@ Available as [Arduino library "ServoEasing"](https://www.arduinolibraries.info/l
 - [CI](https://github.com/ArminJo/ServoEasing#ci)
 - [Requests for modifications / extensions](https://github.com/ArminJo/ServoEasing#requests-for-modifications--extensions)
 
+<br/>
+
 # Servo easing library for Arduino
 Its purpose is to interpolate the movement between two servo positions set by software.<br/>
 If your servo control data is e.g. generated by an joystick or other *"slow"* changing inputs and therefore does not change suddenly or does not jump, **you most likely do not need this library!**, you may consider to use a **digital low pass** or **[simple EMA filters](https://github.com/ArminJo/Arduino-Utils#simpleemafilterscpp)** to smooth your values used to control the servos.<br/>
@@ -55,6 +77,8 @@ For **ESP32** you need to install the Arduino ESP32Servo library.<br/>
 If you require only one or two servos, you may want to use the included [LightweightServo library](https://github.com/ArminJo/LightweightServo) (only for **AVR**), instead of the Arduino Servo library.
 The LightweightServo library uses the internal Timer1 with no software overhead and therefore has no problems with **servo twitching** or interrupt blocking libraries like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
 For instructions how to enable these alternatives, see [Compile options / macros](https://github.com/ArminJo/ServoEasing#compile-options--macros-for-this-library).
+
+<br/>
 
 # Features
 - **Linear** and 9 other ease movements are provided.
@@ -73,19 +97,15 @@ For instructions how to enable these alternatives, see [Compile options / macros
 - All ServoEasing objects are accessible by using the [`ServoEasing::ServoEasingArray[]`](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServos/ThreeServos.ino#L104).
 - Easy implementation of a **move list** - see [ConsecutiveEasingsWithCallback example](https://github.com/ArminJo/ServoEasing/blob/master/examples/ConsecutiveEasingsWithCallback/ConsecutiveEasingsWithCallback.ino#L150).
 
-# List of easing functions:
-- Linear
-- Quadratic
-- Cubic
-- Quartic
-- Sine
-- Circular
-- Back
-- Elastic
-- Bounce
-- User defined
-- Dummy - It is used for delays in callback handler
-- Precision - Like linear, but if descending, add a 5 degree negative bounce in the last 20 % of the movement time. So the target position is always approached from below. This enables it to taken out the slack/backlash of any hardware moved by the servo.
+# List of easing functions
+` Linear ` &nbsp; &nbsp; ` Quadratic ` &nbsp; &nbsp; ` Cubic ` &nbsp; &nbsp; ` Quartic `
+
+` Sine ` &nbsp; &nbsp; ` Circular ` &nbsp; &nbsp; ` Back ` &nbsp; &nbsp; ` Elastic ` &nbsp; &nbsp; ` Bounce `
+
+` Precision ` &nbsp; &nbsp; ` Dummy ` &nbsp; &nbsp; ` User defined `
+
+- **Precision** is like linear, but if descending, add a 5 degree negative bounce in the last 20 % of the movement time. So the target position is always approached from below. This enables it to taken out the slack/backlash of any hardware moved by the servo.
+- **Dummy** is used for delays in callback handler.
 
 
 ### All easing functions can be used in the following variants:
@@ -106,6 +126,8 @@ resulting in some small discontinuities between adjacent movements.<br/>
 To restrict servo movements to a fixed range, you can specify constraints with `setMinMaxConstraint(int aMinDegreeOrMicrosecond, int aMaxDegreeOrMicrosecond)`.<br/>
 Arduino Plotter Output with constraints at 5 degree and 175 degree activated.
 ![Arduino Plotter Output with constraints at 5 degree and 175 degree activated](https://github.com/ArminJo/ServoEasing/blob/master/pictures/Constraints.png)
+
+<br/>
 
 # API
 For floating point constants, use the notation of 123.456f with **trailing f** (for a floating point constant) to avoid compiler errors.
@@ -132,13 +154,19 @@ Just call `myServo.startEaseTo()` instead of `myServo.write()` and you are done.
   Setting the start position of the servo can be done as the second parameter to `myServo.attach(int aPin, int aInitialDegree)` or by calling `myServo.write(int aDegree)`,
 - And do not forget to **initially set the moving speed** (as degrees per second) with `myServo.setSpeed()` or as **second parameter** to startEaseTo() or easeTo(). Otherwise the Servo will start with the speed of 5 degrees per second, to indicate that speed was not set.<br/>
 
+<br/>
+
 # Multiple servo handling
 You can handle multiple servos simultaneously by [special functions](https://github.com/ArminJo/ServoEasing/blob/master/src/ServoEasing.h#L641) like
  `writeAllServos()`, `setSpeedForAllServos()`, `setDegreeForAllServos()`, `setEaseToDForAllServos()`, `synchronizeAndEaseToArrayPositions()`, `updateAndWaitForAllServosToStop()` and much more.
 
+<br/>
+
 # Comparison between Quadratic, Cubic and Sine easings.
 **Arduino Serial Plotter** result of the SymmetricEasing example.
 ![Arduino plot](pictures/ComparisonQuadraticCubicSine.png)
+
+<br/>
 
 # Useful resources
 - [Easings Cheat Sheet](https://easings.net/)
@@ -147,6 +175,8 @@ You can handle multiple servos simultaneously by [special functions](https://git
 - [Interactive cubic-bezier](http://cubic-bezier.com)
 - Servo signal gif from https://workshop.pglu.ch/arduino-servo/
 [![Servo signal gif from https://workshop.pglu.ch/arduino-servo/](pictures/ServoFunktion_workshop.pglu.ch.gif)](https://workshop.pglu.ch/arduino-servo/)
+
+<br/>
 
 # Resolution of servo positioning
 - The standard range of 544 to 2400 µs per 180 degree results in an timing of around **10 µs per degree**.
@@ -175,7 +205,9 @@ Values for the MG90Sservos servos at 5 volt (4.2 volt with servo active).
 | 90 | 220 ms  | 410 degree per second |
 | 45 | 115 ms  | 390 degree per second |
 
-# Why *.hpp files instead of *.cpp files?
+<br/>
+
+# Why *.hpp instead of *.cpp?
 **Every \*.cpp file is compiled separately** by a call of the compiler exclusively for this cpp file. These calls are managed by the IDE / make system.
 In the Arduino IDE the calls are executed when you click on *Verify* or *Upload*.<br/>
 And now our problem with Arduino is: **How to set [compile options](#compile-options--macros-for-this-library) for all *.cpp files, especially for libraries used?**<br/>
@@ -190,17 +222,25 @@ first by compiling the huge file and second by compiling the *.cpp file separate
 So using the extension *cpp* is not longer possible, and one solution is to use *hpp* as extension, to show that it is an included *.cpp file.
 Every other extension e.g. *cinclude* would do, but *hpp* seems to be common sense.
 
-# Using the new *.hpp files / how to avoid `multiple definitions` linker errors
-**In order to support [compile options](#compile-options--macros-for-this-library) more easily**, the line `#include <ServoEasing.h>`
-must be changed to `#include <ServoEasing.hpp>`, but only in your **main program (aka *.ino file with setup() and loop())**, like it is done in the examples.<br/>
-In **all other files** you must use `#include <ServoEasing.h>`, otherwise you will get tons of **"multiple definition"** errors.
-Take care that all macros you define in your main program before `#include <ServoEasing.hpp>`,
-e.g. `MAX_EASING_SERVOS`, `REFRESH_INTERVAL` and `USE_PCA9685_SERVO_EXPANDER` should also be specified before the *ServoEasing.h* include,
-otherwise they are set to default values in *ServoEasing.h* or the include may otherwise not work as expected!
+# Using the new *.hpp files
+In order to support [compile options](#compile-options--macros-for-this-library) more easily,
+the line `#include <ServoEasing.h>` must be changed to  `#include <ServoEasing.hpp>` in your main program (aka *.ino file with setup() and loop()).
+
+In **all other files** you must use `#include <ServoEasing.h>`, to **prevent `multiple definitions` linker errors**:
+
+If you forget to include *ServoEasing.hpp*, you will see errors like `Simple.ino:57: undefined reference to ServoEasing::attach(int, int)`.
+
+Ensure that all macros in your main program are defined before any `#include <ServoEasing.hpp>`.<br/>
+The following macros will definitely be overridden with default values otherwise:
+- `MAX_EASING_SERVOS`
+- `REFRESH_INTERVAL`
+- `USE_PCA9685_SERVO_EXPANDER`
+
+<br/>
 
 # Compile options / macros for this library
 To customize the library to different requirements, there are some compile options / macros available.<br/>
-These macros must be defined in your program before the line `#include <ServoEasing.hpp>` to take effect.<br/>
+These macros must be defined in your program **before** the line `#include <ServoEasing.hpp>` to take effect.<br/>
 Modify them by enabling / disabling them, or change the values if applicable.
 
 | Name | Default value | Description |
@@ -218,19 +258,7 @@ Modify them by enabling / disabling them, or change the values if applicable.
 | `DEBUG` | disabled | Generates lots of lovely debug output for this library. |
 | `USE_LEIGHTWEIGHT_SERVO_LIB` | disabled | Available only for ATmega328. Supports only servos at pin 9 and 10. Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple. See [below](https://github.com/ArminJo/ServoEasing#using-the-included-lightweight-servo-library-for-atmega328). Saves up to 742 bytes program memory and 42 bytes RAM. |
 
-### Changing include (*.h) files with Arduino IDE
-First, use *Sketch > Show Sketch Folder (Ctrl+K)*.<br/>
-If you have not yet saved the example as your own sketch, then you are instantly in the right library folder.<br/>
-Otherwise you have to navigate to the parallel `libraries` folder and select the library you want to access.<br/>
-In both cases the library source and include files are located in the libraries `src` directory.<br/>
-The modification must be renewed for each new library version!
-
-### Modifying compile options / macros with PlatformIO
-If you are using PlatformIO, you can define the macros in the *[platformio.ini](https://docs.platformio.org/en/latest/projectconf/section_env_build.html)* file with `build_flags = -D MACRO_NAME` or `build_flags = -D MACRO_NAME=macroValue`.
-
-### Modifying compile options / macros with Sloeber IDE
-If you are using [Sloeber](https://eclipse.baeyens.it) as your IDE, you can easily define global symbols with *Properties > Arduino > CompileOptions*.<br/>
-![Sloeber settings](https://github.com/Arduino-IRremote/Arduino-IRremote/blob/master/pictures/SloeberDefineSymbols.png)
+<br/>
 
 # Using PCA9685 16-Channel Servo Expander
 Using the expander makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
@@ -251,11 +279,15 @@ Even with 100 kHz clock we have some dropouts / NAK's because of sending address
 Since the raw transmission time of 32 Servo positions is 17.4 µs @ 100 kHz, not more than 2 expander boards can be connected to one I2C bus on an ESP32 board, if all servos should move simultaneously.<br/>
 If you do not use any timer in your program you can increase speed up to 800 kHz. Maybe you have to attach 2x2k2 Ohm pullup resistors to the I2C lines to have it working reliably.
 
+<br/>
+
 # Using the included [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for ATmega328
 Using the **Lightweight Servo Library** reduces sketch size and makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
 Up to 2 servos are supported by this library and they must be physically attached to pin 9 and/or 10 of the Arduino board.<br/>
 To enable it, activate the line `#define USE_LEIGHTWEIGHT_SERVO_LIB` before the line `#include "LightweightServo.hpp"` [like it is done in the TwoServos example](https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServos/TwoServos.ino#L31).<br/>
 If you do not use the Arduino IDE, take care that Arduino Servo library sources are not compiled / included in the project.
+
+<br/>
 
 # Handling multiple servos with the internal ServoEasingArray
 The ServoEasing library provides two arrays to ease the handling of multiple servos.
@@ -272,23 +304,40 @@ The [Quadruped example](https://github.com/ArminJo/ServoEasing/blob/master/examp
 
 If you **detach** a servo and then attach another one, the latter will get the index of the former detached one.
 
+<br/>
+
 # Description of [examples](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples)
 
+<br/>
+
+# WOKWI online examples
+- [ThreeServos] (https://wokwi.com/projects/299552195816194570).
+
+<br/>
+
 # [Servo utilities](https://github.com/ArminJo/ServoEasing/tree/master/examples#servo-utilities)
+
+<br/>
 
 # Building breadboard servo adapter
 Converting a 10 pin double row pin header with 21 mm pin length to a breadboard servo adapter.
 ![Side view](https://github.com/ArminJo/ServoEasing/blob/master/pictures/ServoAdapter.jpg)
 ![Top view](https://github.com/ArminJo/ServoEasing/blob/master/pictures/ServoAdapterTop.jpg)
 
+<br/>
+
 # Internals
 The API accepts only degree (except for write() and writeMicrosecondsOrUnits()) but internally only microseconds (or units (= 4.88 µs) if using PCA9685 expander) and not degree are used to speed up things. Other expander or servo libraries can therefore easily be used.<br/>
+
+<br/>
 
 # Supported Arduino architectures
 **Every Arduino architecture with a Servo library** will work without any modifications in blocking mode.<br/>
 Non blocking behavior can always be achieved manually by calling `update()` in a loop - see last movement in [Simple example](examples/Simple/Simple.ino).<br/>
 Interrupt based movement (movement without calling `update()` manually in a loop) is supported for the following Arduino architectures:<br/>
 **avr, megaavr, sam, samd, esp8266, esp32, stm32, STM32F1 and apollo3.**
+
+<br/>
 
 # Timer usage for interrupt based movement
 On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking easing functions its unused **Channel B** is used to generate an interrupt 100 µs before the end of the 20 ms Arduino Servo refresh period. This interrupt then updates all servo values for the next refresh period.
@@ -307,6 +356,8 @@ On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking ea
 | Mbed | mbed::Ticker | Ticker.h |
 | [RP2040 / Pi Pico](https://github.com/earlephilhower/arduino-pico | [default alarm pool](https://raspberrypi.github.io/pico-sdk-doxygen/group__repeating__timer.html) | time.h |
 
+<br/>
+
 # Adding a new platform / board
 If timer support is available for a platform the library can be ported by adding code for the Timer20ms like is was done for ESP and STM.<br/>
 To add a new platform, the following steps have to be performed:
@@ -319,12 +370,13 @@ and enabling **interrupt timing feedback** by activating the line `#define MEASU
 
 Good luck!
 
+<br/>
+
 # Troubleshooting
 If you see strange behavior, you can open the library file *ServoEasing.hpp* and activate the line `#define TRACE` or `#define DEBUG`.
 This will print internal information visible in the Arduino *Serial Monitor* which may help finding the reason for it.
 
-### Error "undefined reference"
-If you see errors like this `Simple.ino:57: undefined reference to ServoEasing::attach(int, int)`, you included *ServoEasing.h* instead of *ServoEasing.hpp*.
+<br/>
 
 # Revision History
 ### Version 3.1.0

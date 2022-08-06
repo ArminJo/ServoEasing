@@ -28,7 +28,7 @@
 #include "RobotArmControl.h"
 
 #define INFO // enable some prints
-#define ROBOT_ARM_HAS_IR_CONTROL
+//#define ROBOT_ARM_HAS_IR_CONTROL
 //#define ROBOT_ARM_HAS_RTC_CONTROL
 //#define ROBOT_ARM_1 // My black one
 //#define ROBOT_ARM_2 // My transparent one

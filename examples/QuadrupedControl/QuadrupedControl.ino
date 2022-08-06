@@ -79,7 +79,6 @@
 ServoEasing USServo;
 #endif
 
-
 //#define INFO // activate this to see serial info output
 
 /*

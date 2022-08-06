@@ -27,7 +27,6 @@
 
 #include <Arduino.h>
 #include "RobotArmIRCommands.h"
-#include "IRCommandDispatcher.h"
 
 #include "ClockMovements.h"
 #include "RobotArmServoControl.h"
@@ -135,14 +134,18 @@ void checkTimeAndDraw(uRTCLib *aRTC_DS3231) {
     if (millis() - sLastMillisOfRTCCheck >= 5000 || sDrawTimeJustStarted) {
         if (sDrawTimeJustStarted) {
             doGetPenSpecial();
+#if defined(ROBOT_ARM_HAS_IR_CONTROL)
         } else if (IRDispatcher.IRReceivedData.MillisOfLastCode != 0) {
             // stop time drawing mode, but not at the first call
             sActionType = ACTION_TYPE_STOP;
             doStorePen();
             return;
+#endif
         }
+#if defined(ROBOT_ARM_HAS_IR_CONTROL)
         // clear flag in order to detect next IR command which stops time drawing mode
         IRDispatcher.IRReceivedData.MillisOfLastCode = 0;
+#endif
 
         sLastMillisOfRTCCheck = millis();
         aRTC_DS3231->refresh();
@@ -175,7 +178,9 @@ void doStartClock() {
     sDrawTimeJustStarted = true;
 #endif
     sActionType = ACTION_TYPE_DRAW_TIME;
+#if defined(ROBOT_ARM_HAS_IR_CONTROL)
     IRDispatcher.IRReceivedData.MillisOfLastCode = 0;
+#endif
 }
 
 void doSetModeForClockMovement() {

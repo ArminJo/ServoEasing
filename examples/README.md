@@ -26,7 +26,8 @@ YouTube video of SymmetricEasing and AsymmetricEasing example
 - [Servo utilities](#servo-utilities)
   * [EndPositionsTest example](#endpositionstest-example)
   * [SpeedTest example example](#speedtest-example)
-  
+- [WOKWI online examples](#wokwi-online-examples)
+
 # [Simple example](https://github.com/ArminJo/ServoEasing/blob/master/examples/Simple/Simple.ino)
 This example does not use interrupts and should therefore run on any platform where the Arduino Servo library is available.<br/>
 
@@ -113,7 +114,6 @@ On the ESP32, the I2C library interferes with the 29 millisecond timer and there
 | ![mePed V2 with PCA9685 expander](https://github.com/ArminJo/ServoEasing/blob/master/pictures/mePedWithPCA9685.jpg) | ![mePed V2 with PCA9685 expander](https://github.com/ArminJo/ServoEasing/blob/master/pictures/mePed_topWithPCA9685.jpg) |
 
 
-
 # Servo utilities
 
 ## [EndPositionsTest example](https://github.com/ArminJo/ServoEasing/blob/master/examples/EndPositionsTest/EndPositionsTest.ino)
@@ -127,3 +127,6 @@ This example gives you a feeling how fast your servo can move, what the end posi
 It starts with setting the servo to 90°, to easily put your servos to a reference position.<br/>
 This example does not use the ServoEasing functions.
 Not for ESP8266 because it requires at least 2 analog inputs.
+
+# WOKWI online examples
+- [ThreeServos](https://wokwi.com/projects/299552195816194570).
