@@ -361,19 +361,21 @@ __attribute__((weak)) extern void handleServoTimerInterrupt();
 // !!! Must be without comment and closed by @formatter:on !!!
 // @formatter:off
 extern const char easeTypeLinear[]     PROGMEM;
+#if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
 extern const char easeTypeQuadratic[]  PROGMEM;
 extern const char easeTypeCubic[]      PROGMEM;
 extern const char easeTypeQuartic[]    PROGMEM;
 extern const char easeTypePrecision[]  PROGMEM;
 extern const char easeTypeUser[]       PROGMEM;
 extern const char easeTypeDummy[]      PROGMEM;
-#if !defined(DISABLE_COMPLEX_FUNCTIONS)
+#  if !defined(DISABLE_COMPLEX_FUNCTIONS)
 extern const char easeTypeSine[]       PROGMEM;
 extern const char easeTypeCircular[]   PROGMEM;
 extern const char easeTypeBack[]       PROGMEM;
 extern const char easeTypeElastic[]    PROGMEM;
 extern const char easeTypeBounce[]     PROGMEM;
-#endif // !defined(DISABLE_COMPLEX_FUNCTIONS)
+#  endif // !defined(DISABLE_COMPLEX_FUNCTIONS)
+#endif // !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
 // @formatter:on
 extern const char *const easeTypeStrings[] PROGMEM;
 
@@ -469,7 +471,7 @@ public:
 #endif
 
     void write(int aTargetDegreeOrMicrosecond);     // Apply trim and reverse to the value and write it direct to the Servo library.
-    void _writeMicrosecondsOrUnits(int aMicrosecondsOrUnits);
+    void _writeMicrosecondsOrUnits(int aTargetDegreeOrMicrosecond);
 
     void easeTo(int aTargetDegreeOrMicrosecond);                                   // blocking move to new position using mLastSpeed
     void easeTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);  // blocking move to new position using speed
@@ -566,19 +568,19 @@ public:
      */
     static bool areInterruptsActive(); // The recommended test if at least one servo is moving yet.
 
-    /*
+    /**
      * Internally only microseconds (or units (= 4.88 us) if using PCA9685 expander) and not degree are used to speed up things.
      * Other expander or libraries can therefore easily be added.
      */
-    volatile int mCurrentMicrosecondsOrUnits; // set by write() and _writeMicrosecondsOrUnits(). Required as start for next move and to avoid unnecessary writes.
-    int mStartMicrosecondsOrUnits;  // Only used with millisAtStartMove to compute currentMicrosecondsOrUnits in update()
-    int mEndMicrosecondsOrUnits;    // Only used once as last value if movement was finished to provide exact end position.
-    int mDeltaMicrosecondsOrUnits;   // end - start
+    volatile int mCurrentMicrosecondsOrUnits; ///< set by write() and _writeMicrosecondsOrUnits(). Required as start for next move and to avoid unnecessary writes.
+    int mStartMicrosecondsOrUnits;  ///< Only used with millisAtStartMove to compute currentMicrosecondsOrUnits in update()
+    int mEndMicrosecondsOrUnits;    ///< Only used once as last value if movement was finished to provide exact end position.
+    int mDeltaMicrosecondsOrUnits;  ///< end - start
 
-    /*
+    /**
      * max speed is 450 degree/sec for SG90 and 540 degree/second for MG90 servos -> see speedTest.cpp
      */
-    uint_fast16_t mSpeed; // in DegreesPerSecond - only set by setSpeed(int16_t aSpeed);
+    uint_fast16_t mSpeed; ///< in DegreesPerSecond - only set by setSpeed(int16_t aSpeed);
 
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
     uint8_t mEasingType; // EASE_LINEAR, EASE_QUADRATIC_IN_OUT, EASE_CUBIC_IN_OUT, EASE_QUARTIC_IN_OUT
@@ -600,9 +602,9 @@ public:
     TwoWire *mI2CClass;
 #  endif
 #endif
-    uint8_t mServoPin; // pin number / port number of PCA9685 [0-15] or NO_SERVO_ATTACHED_PIN_NUMBER - at least required for Lightweight Servo Library
+    uint8_t mServoPin; ///< pin number / port number of PCA9685 [0-15] or NO_SERVO_ATTACHED_PIN_NUMBER - at least required for Lightweight Servo Library
 
-    uint8_t mServoIndex; // Index in sServoArray or INVALID_SERVO if error while attach() or if detached
+    uint8_t mServoIndex; ///< Index in sServoArray or INVALID_SERVO if error while attach() or if detached
 
     uint32_t mMillisAtStartMove;
     uint_fast16_t mMillisForCompleteMove;
@@ -611,41 +613,41 @@ public:
     uint32_t mMillisAtStopMove;
 #endif
 
-    /*
+    /**
      * Reverse means, that values for 180 and 0 degrees are swapped by: aValue = mServo180DegreeMicrosecondsOrUnits - (aValue - mServo0DegreeMicrosecondsOrUnits)
      * Be careful, if you specify different end values, it may not behave, as you expect.
      * For this case better use the attach function with 5 parameter.
      */
-    bool mOperateServoReverse; // true -> direction is reversed
+    bool mOperateServoReverse; ///< true -> direction is reversed
 #if !defined(DISABLE_MIN_AND_MAX_CONSTRAINTS)
-    int mMaxMicrosecondsOrUnits; // Max value checked at _writeMicrosecondsOrUnits(), before trim and reverse is applied
-    int mMinMicrosecondsOrUnits; // Min value checked at _writeMicrosecondsOrUnits(), before trim and reverse is applied
+    int mMaxMicrosecondsOrUnits; ///< Max value checked at _writeMicrosecondsOrUnits(), before trim and reverse is applied
+    int mMinMicrosecondsOrUnits; ///< Min value checked at _writeMicrosecondsOrUnits(), before trim and reverse is applied
 #endif
-    int mTrimMicrosecondsOrUnits; // This value is always added by the function _writeMicrosecondsOrUnits() to the requested degree/units/microseconds value
+    int mTrimMicrosecondsOrUnits; ///< This value is always added by the function _writeMicrosecondsOrUnits() to the requested degree/units/microseconds value
 
-    /*
+    /**
      * Values contain always microseconds except for servos connected to a PCA9685 expander, where they contain PWM units.
      * Values are set exclusively by attach(), and here it is determined if they contain microseconds or PWM units.
      */
     int mServo0DegreeMicrosecondsOrUnits;
     int mServo180DegreeMicrosecondsOrUnits;
 
-    void (*TargetPositionReachedHandler)(ServoEasing*);  // Is called any time when target servo position is reached
+    void (*TargetPositionReachedHandler)(ServoEasing*);  ///< Is called any time when target servo position is reached
 
-    /*
+    /**
      * It is required for ESP32, where the timer interrupt routine does not block the loop. Maybe it runs on another CPU?
      * The interrupt routine first sets the mServoMoves flag to false and then disables the timer.
      * But on a ESP32 polling the flag and then starting next movement and enabling timer happens BEFORE the timer is disabled.
      * And this crashes the kernel in esp_timer_delete, which will lead to a reboot.
      */
-    static volatile bool sInterruptsAreActive; // true if interrupts are still active, i.e. at least one Servo is moving with interrupts.
-    /*
-     * Array of all servos to enable synchronized movings
+    static volatile bool sInterruptsAreActive; ///< true if interrupts are still active, i.e. at least one Servo is moving with interrupts.
+    /**
+     * Two arrays of all servos to enable synchronized movings
      * Servos are inserted in the order, in which they are attached
      * I use an fixed array and not a list, since accessing an array is much easier and faster.
      * Using an dynamic array may be possible, but in this case we must first malloc(), then memcpy() and then free(), which leads to heap fragmentation.
      */
-    static uint_fast8_t sServoArrayMaxIndex; // maximum index of an attached servo in sServoArray[]
+    static uint_fast8_t sServoArrayMaxIndex; ///< maximum index of an attached servo in sServoArray[]
     static ServoEasing *ServoEasingArray[MAX_EASING_SERVOS];
     static float ServoEasingNextPositionArray[MAX_EASING_SERVOS];
     /*

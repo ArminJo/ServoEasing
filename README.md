@@ -107,8 +107,9 @@ To restrict servo movements to a fixed range, you can specify constraints with `
 Arduino Plotter Output with constraints at 5 degree and 175 degree activated.
 ![Arduino Plotter Output with constraints at 5 degree and 175 degree activated](https://github.com/ArminJo/ServoEasing/blob/master/pictures/Constraints.png)
 
-# [API](https://github.com/ArminJo/ServoEasing/blob/master/src/ServoEasing.h#L390)
+# API
 For floating point constants, use the notation of 123.456f with **trailing f** (for a floating point constant) to avoid compiler errors.
+A Doxygen documentation of the sources is available [here](https://arminjo.github.io/ServoEasing/classServoEasing.html).
 
 # Usage
 See also [the examples here](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples).<br/>
@@ -181,7 +182,8 @@ And now our problem with Arduino is: **How to set [compile options](#compile-opt
 IDE's like [Sloeber](https://github.com/ArminJo/ServoEasing#modifying-compile-options--macros-with-sloeber-ide) or [PlatformIO](https://github.com/ArminJo/ServoEasing#modifying-compile-options--macros-with-platformio) support this by allowing to specify a set of options per project.
 They add these options at each compiler call e.g. `-DTRACE`.<br/>
 But Arduino lacks this feature. So the **workaround** is not to compile all sources separately, but to concatenate them to one huge source file by including them in your source.
-This is done by e.g. `#include "ServoEasing.hpp"`.<br/>
+This is done by e.g. `#include "ServoEasing.hpp"`.
+<br/>
 But why not `#include "ServoEasing.cpp"`?<br/>
 Try it and you will see tons of errors, because each function of the *.cpp file is now compiled twice,
 first by compiling the huge file and second by compiling the *.cpp file separately, like described above.
@@ -209,7 +211,7 @@ Modify them by enabling / disabling them, or change the values if applicable.
 | `PROVIDE_ONLY_LINEAR_MOVEMENT` | disabled | Disables all but LINEAR movement. Saves up to 1540 bytes program memory. |
 | `DISABLE_COMPLEX_FUNCTIONS` | disabled | Disables the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory. |
 | `MAX_EASING_SERVOS` | 12, 16(for PCA9685) | Saves 4 byte RAM per servo. If this value is smaller than the amount of servos declared, attach() will return error and other library functions will not work as expected.<br/>Of course all *AllServos*() functions and isOneServoMoving() can't work correctly! |
-| `DISABLE_MICROS_AS_DEGREE_PARAMETER` | disabled | Disables passing also microsecond values as (target angle) parameter (see [OneServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino#L93)). Saves 128 bytes program memory. |
+| `DISABLE_MICROS_AS_DEGREE_PARAMETER` | disabled | Disables passing also microsecond values as (target angle) parameter (see [OneServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino#L93)). Saves up to 128 bytes program memory. |
 | `DISABLE_MIN_AND_MAX_CONSTRAINTS` | disabled | Disables servo movement constraints. Saves 4 bytes RAM per servo but strangely enough no program memory. |
 | `DISABLE_PAUSE_RESUME` | disabled | Disables pause and resume functionality. Saves 5 bytes RAM per servo. |
 | `PRINT_FOR_SERIAL_PLOTTER` | disabled | Generate serial output for Arduino Plotter (Ctrl-Shift-L). |
