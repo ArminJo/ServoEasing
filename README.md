@@ -8,7 +8,7 @@ It uses the standard Arduino Servo library and therefore has its restrictions re
 
 [![Badge License: GPLv3](https://img.shields.io/badge/License-GPLv3-brightgreen.svg)](https://www.gnu.org/licenses/gpl-3.0)
  &nbsp; &nbsp; 
-[![Badge Version](https://img.shields.io/github/v/release/ArminJo/ServoEasing?include_prereleases&color=yellow&logo=DocuSign&logoColor=white)](https://github.com/ServoEasing/ServoEasing/releases/latest)
+[![Badge Version](https://img.shields.io/github/v/release/ArminJo/ServoEasing?include_prereleases&color=yellow&logo=DocuSign&logoColor=white)](https://github.com/ArminJo/ServoEasing/releases/latest)
  &nbsp; &nbsp; 
 [![Badge Commits since latest](https://img.shields.io/github/commits-since/ArminJo/ServoEasing/latest?color=yellow)](https://github.com/ArminJo/ServoEasing/commits/master)
  &nbsp; &nbsp; 
@@ -277,7 +277,7 @@ which should not be a problem since you normally attach all servos in `setup()`.
 On the **ESP32 the I2C library is only capable to run at 100 kHz**, because it interferes with the Ticker / Timer library used.
 Even with 100 kHz clock we have some dropouts / NAK's because of sending address again instead of first data.<br/>
 Since the raw transmission time of 32 Servo positions is 17.4 µs @ 100 kHz, not more than 2 expander boards can be connected to one I2C bus on an ESP32 board, if all servos should move simultaneously.<br/>
-If you do not use any timer in your program you can increase speed up to 800 kHz. Maybe you have to attach 2x2k2 Ohm pullup resistors to the I2C lines to have it working reliably.
+If you do not use any timer in your program you can increase speed up to 800 kHz. Maybe you have to attach 2 x 2.2 k&ohm; pullup resistors to the I2C lines to have it working reliably.
 
 <br/>
 

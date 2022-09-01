@@ -10,14 +10,14 @@
  *  You can modify the HC-SR04 modules to 1 Pin mode by:
  *  Old module with 3 16 pin chips: Connect Trigger and Echo direct or use a resistor < 4.7 kOhm.
  *        If you remove both 10 kOhm pullup resistors you can use a connecting resistor < 47 kOhm, but I suggest to use 10 kOhm which is more reliable.
- *  Old module with 3 16 pin chips but with no pullup resistors near the connector row: Connect Trigger and Echo with a resistor > 200 Ohm. Use 10 kOhm.
- *  New module with 1 16 pin and 2 8 pin chips: Connect Trigger and Echo by a resistor > 200 Ohm and < 22 kOhm.
+ *  Old module with 3 16 pin chips but with no pullup resistors near the connector row: Connect Trigger and Echo with a resistor > 200 ohm. Use 10 kOhm.
+ *  New module with 1 16 pin and 2 8 pin chips: Connect Trigger and Echo by a resistor > 200 ohm and < 22 kOhm.
  *  All modules: Connect Trigger and Echo by a resistor of 4.7 kOhm.
  *  Some old HY-SRF05 modules of mine cannot be converted by adding a 4.7 kOhm resistor,
  *  since the output signal going low triggers the next measurement. But they work with removing the 10 kOhm pull up resistors and adding 10 kOhm.
  *
  * Sensitivity is increased by removing C3 / the low pass part of the 22 kHz Bandpass filter.
- * After this the crosstalking of the output signal will be detected as a low distance. We can avoid this by changing R7 to 0 Ohm.
+ * After this the crosstalking of the output signal will be detected as a low distance. We can avoid this by changing R7 to 0 ohm.
  *
  *  Module Type                   |   Characteristics     |         3 Pin Mode          | Increase sensitivity
  *  ------------------------------------------------------------------------------------------------------------
