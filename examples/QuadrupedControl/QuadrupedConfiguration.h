@@ -10,10 +10,6 @@
 #ifndef _QUADRUPED_CONFIGURATION_H
 #define _QUADRUPED_CONFIGURATION_H
 
-#define PIN_BUZZER     3
-
-#define VCC_STOP_THRESHOLD_MILLIVOLT 3400 // stop moving if below measured 3.4 volt
-
 //#define QUADRUPED_HAS_IR_CONTROL      // Requires additionally 8600 bytes (including the movements)
 //#define QUADRUPED_ENABLE_RTTTL        // Requires additionally 1300 bytes for Short + Down
 //#define QUADRUPED_HAS_NEOPIXEL        // Requires additionally 6300 to 6600 bytes
@@ -69,6 +65,8 @@
 #endif
 
 //#define USE_USER_DEFINED_MOVEMENTS
+
+#define PIN_BUZZER     3
 
 #if defined(QUADRUPED_HAS_IR_CONTROL)
 #define USE_TINY_IR_RECEIVER // must be specified before including IRCommandDispatcher.hpp to define which IR library to use

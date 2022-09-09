@@ -40,25 +40,27 @@ uint8_t sActionType;
  ******************************************/
 
 void __attribute__((weak)) doGoCenter() {
-    setAllServos(4, 0, 0, 0, 0);
+    goToCenter();
 }
 
 void __attribute__((weak)) doGoFolded() {
     goToFolded();
 }
 
-void __attribute__((weak)) doGoBack() {
-    if (sHorizontalServoAngle > 2) {
-        sHorizontalServoAngle -= 2;
-        HorizontalServo.easeTo(sHorizontalServoAngle);
-    }
-}
-
 void __attribute__((weak)) doGoForward() {
-    if (sHorizontalServoAngle < 178) {
+    if (sHorizontalServoAngle < HORIZONTAL_MAXIMUM_DEGREE - 2) {
         sHorizontalServoAngle += 2;
         HorizontalServo.easeTo(sHorizontalServoAngle);
     }
+    Serial.println(sHorizontalServoAngle);
+}
+
+void __attribute__((weak)) doGoBack() {
+    if (sHorizontalServoAngle > HORIZONTAL_MINIMUM_DEGREE + 2) {
+        sHorizontalServoAngle -= 2;
+        HorizontalServo.easeTo(sHorizontalServoAngle);
+    }
+    Serial.println(sHorizontalServoAngle);
 }
 
 // Allow to go to -92
@@ -66,8 +68,8 @@ void __attribute__((weak)) doTurnRight() {
     if (sBodyPivotAngle > -90) {
         sBodyPivotAngle -= 2;
         BasePivotServo.easeTo(sBodyPivotAngle);
-        Serial.println(sBodyPivotAngle);
     }
+    Serial.println(sBodyPivotAngle);
 }
 
 // Allow to go to 82
@@ -75,41 +77,40 @@ void __attribute__((weak)) doTurnLeft() {
     if (sBodyPivotAngle <= 90) {
         sBodyPivotAngle += 2;
         BasePivotServo.easeTo(sBodyPivotAngle);
-        Serial.println(sBodyPivotAngle);
     }
+    Serial.println(sBodyPivotAngle);
 }
 
 void __attribute__((weak)) doLiftUp() {
     if (sLiftServoAngle <= LIFT_MAXIMUM_DEGREE - 2) {
         sLiftServoAngle += 2;
         LiftServo.easeTo(sLiftServoAngle);
-        Serial.println(sLiftServoAngle);
     }
+    Serial.println(sLiftServoAngle);
 }
 
 void __attribute__((weak)) doLiftDown() {
     if (sLiftServoAngle > LIFT_MINIMUM_DEGREE + 2) {
         sLiftServoAngle -= 2;
         LiftServo.easeTo(sLiftServoAngle);
-        Serial.println(sLiftServoAngle);
     }
+    Serial.println(sLiftServoAngle);
 }
 
 void __attribute__((weak)) doOpenClaw() {
-    if (sClawServoAngle < 90) {
-        sClawServoAngle += 2;
+    if (sClawServoAngle < CLAW_MAXIMUM_DEGREE - 4) {
+        sClawServoAngle += 4;
         ClawServo.easeTo(sClawServoAngle);
-        Serial.println(sClawServoAngle);
     }
+    Serial.println(sClawServoAngle);
 }
 
 void __attribute__((weak)) doCloseClaw() {
-    if (sClawServoAngle >= 2) {
-        sClawServoAngle -= 2;
+    if (sClawServoAngle >= CLAW_CLOSE_DEGREE + 4) {
+        sClawServoAngle -= 4;
         ClawServo.easeTo(sClawServoAngle);
-        Serial.println(sClawServoAngle);
-
     }
+    Serial.println(sClawServoAngle);
 }
 
 void __attribute__((weak)) doSwitchToManual() {

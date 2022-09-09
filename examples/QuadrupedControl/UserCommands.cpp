@@ -77,6 +77,8 @@
  * Stripes(), Heartbeat(), ScannerExtended(), Fire(), Delay()
  *
  */
+#ifndef _USER_COMMANDS_HPP
+#define _USER_COMMANDS_HPP
 
 #include <Arduino.h>
 
@@ -199,4 +201,5 @@ void doQuadrupedAutoMove() {
     sCurrentlyRunningAction = ACTION_TYPE_STOP;
 }
 
-#endif
+#endif // defined(USE_USER_DEFINED_MOVEMENTS)
+#endif // _USER_COMMANDS_HPP

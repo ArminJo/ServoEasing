@@ -44,7 +44,7 @@ int sClawServoAngle = 0;
  */
 uint8_t sEasingType = EASE_LINEAR;
 float sLastPercentageOfCompletion;
-uint16_t sRobotArmServoSpeed = 40; // in degree/second or millimeter/second for inverse kinematic
+uint16_t sRobotArmServoSpeed = ROBOT_ARM_INITIAL_SERVO_SPEED; // in degree/second or millimeter/second for inverse kinematic
 
 // User functions for ServoEasing implementing inverse kinematics movement
 float moveInverseKinematic(float aPercentageOfCompletion, void *aUserDataPointer);
@@ -83,9 +83,9 @@ void setupRobotArmServos() {
     LiftServo.registerUserEaseInFunction(&moveInverseKinematic, &sCurrentPosition.DownUpDegree);
 
     /*
-     * Operate claw from 0° (close) to 90° (open), this is an initial trim
+     * Operate claw from 0° (close) to 180° (open), this is an initial trim
      */
-    ClawServo.attach(CLAW_SERVO_PIN, 0, CLAW_MICROS_AT_180_DEGREE, CLAW_MICROS_AT_CLOSE, 180, 0);
+    ClawServo.attach(CLAW_SERVO_PIN, 0, CLAW_MICROS_AT_180_DEGREE, CLAW_MICROS_AT_CLOSE, CLAW_MAXIMUM_DEGREE, CLAW_CLOSE_DEGREE);
 
     setSpeedForAllServos(sRobotArmServoSpeed); // must be after attach
 
@@ -134,10 +134,19 @@ void setAllServosDAndWait(uint16_t aMillisForMove, uint8_t aNumberOfValues, ...)
 void goToFolded() {
     Serial.println(F("Shutdown servos"));
     setAllServos(4, 0, HORIZONTAL_MINIMUM_DEGREE, 0, 0);
+    sBodyPivotAngle = 0;
+    sHorizontalServoAngle = HORIZONTAL_MINIMUM_DEGREE;
+    sLiftServoAngle = 0;
+    sClawServoAngle = 0;
 }
 
 void goToCenter() {
+    Serial.println(F("Go to center"));
     setAllServos(4, 0, 0, 0, 0);
+    sBodyPivotAngle = 0;
+    sHorizontalServoAngle = 0;
+    sLiftServoAngle = 0;
+    sClawServoAngle = 0;
 }
 
 uint16_t getMaxDeltaMillimeter() {

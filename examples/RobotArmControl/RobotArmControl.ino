@@ -37,14 +37,15 @@
 #define USE_TINY_IR_RECEIVER // must be specified before including IRCommandDispatcher.hpp to define which IR library to use
 #define IR_INPUT_PIN  A0
 #if defined(ROBOT_ARM_2)
-#define USE_MSI_REMOTE // Transparent arm
+#define USE_CAR_MP3_REMOTE // Transparent arm
 #else
-#define USE_CAR_MP3_REMOTE // Black arm
+#define USE_MSI_REMOTE // Black arm
 #endif
-#include "IRCommandMapping.h" // must be included before IRCommandDispatcher.hpp to define IR_ADDRESS and IRMapping and string "unknown".
+#include "RobotArmIRCommandMapping.h" // must be included before IRCommandDispatcher.hpp to define IR_ADDRESS and IRMapping and string "unknown".
 #include "IRCommandDispatcher.hpp"
 #endif
 
+#define ROBOT_ARM_INITIAL_SERVO_SPEED   80 // in degree/second or millimeter/second for inverse kinematic
 #include "RobotArmServoControl.hpp" // includes ServoEasing.hpp
 
 #if defined(ROBOT_ARM_HAS_RTC_CONTROL)
@@ -142,6 +143,18 @@ void setup() {
     printRTCTemperature();
     Serial.println();
 #endif
+
+    sDebugOutputIsEnabled = !digitalRead(DEBUG_OUTPUT_ENABLE_PIN);
+    Serial.print(F("Pin " STR(DEBUG_OUTPUT_ENABLE_PIN) " is"));
+    if (!sDebugOutputIsEnabled) {
+        Serial.print(F(" not"));
+    }
+    Serial.print(F(" connected to ground, debug output is "));
+    if (sDebugOutputIsEnabled) {
+        Serial.println(F("enabled"));
+    } else {
+        Serial.println(F("disabled"));
+    }
 
     // Output VCC voltage
     printVCCVoltageMillivolt(&Serial);
@@ -406,7 +419,7 @@ void handleManualControl() {
                 tManualAction = true;
             }
             sLastClaw = tClaw;
-            tTargetAngle = mapSpecial(tClaw, 0, 1023, -10, 190);
+            tTargetAngle = mapSpecial(tClaw, 0, 1023, CLAW_CLOSE_DEGREE - 10,  CLAW_MAXIMUM_DEGREE + 10);
             moveOneServoAndCheckInputAndWait(SERVO_CLAW, tTargetAngle, sRobotArmServoSpeed);
 
             Serial.print(F("ClawServo: micros="));

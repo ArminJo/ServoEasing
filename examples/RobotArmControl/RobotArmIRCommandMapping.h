@@ -263,8 +263,8 @@
  */
 #define COMMAND_UP          IR_2
 #define COMMAND_DOWN        IR_8
-#define COMMAND_RIGHT       IR_4
-#define COMMAND_LEFT        IR_6
+#define COMMAND_RIGHT       IR_6
+#define COMMAND_LEFT        IR_4
 
 #define COMMAND_FORWARD     IR_CH_PLUS
 #define COMMAND_BACKWARD    IR_CH_MINUS

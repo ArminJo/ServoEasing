@@ -112,8 +112,10 @@
 #define HORIZONTAL_MINIMUM_DEGREE              -50 // Mechanic is folded
 
 // operate claw servo from 0° to 180°
-#define CLAW_MICROS_AT_CLOSE                 1080 // The higher this value, the lower the degree / the closer the claw
-#define CLAW_MICROS_AT_180_DEGREE             750 // Value for 180" open claw (each side has 90°)
+#define CLAW_MICROS_AT_CLOSE                  1080 // The higher this value, the lower the degree / the closer the claw
+#define CLAW_MICROS_AT_180_DEGREE              750 // Value for 180° open claw (each side has 90°)
+#define CLAW_MAXIMUM_DEGREE                    180
+#define CLAW_CLOSE_DEGREE                        0 // 0° is close by definition
 
 #elif defined(ROBOT_ARM_2)
 #define ORIGIN_HEIGHT_OVER_GROUND_PLANE        68 // Height of Z=0 over ground, depends of the screw length used and the bumper attached on the base plate
@@ -136,8 +138,10 @@
 #define HORIZONTAL_MINIMUM_DEGREE              -50 // Mechanic is folded
 
 // operate claw servo from 0° to 180°
-#define CLAW_MICROS_AT_CLOSE                 1700
-#define CLAW_MICROS_AT_180_DEGREE             300 // Computed value for 180" open claw (each side has 90°) since my claw cannot really open to 180°
+#define CLAW_MICROS_AT_CLOSE                  1700
+#define CLAW_MICROS_AT_180_DEGREE              300 // Computed value for 180" open claw (each side has 90°) since my claw cannot really open to 180°
+#define CLAW_MAXIMUM_DEGREE                    180
+#define CLAW_CLOSE_DEGREE                        0 // 0° is close by definition
 
 #else
 /*
@@ -165,6 +169,8 @@
 // operate claw servo from 0° to 180°
 #define CLAW_MICROS_AT_CLOSE                  1200
 #define CLAW_MICROS_AT_180_DEGREE              600 // Value for 180" open claw (each side has 90°)
+#define CLAW_MAXIMUM_DEGREE                    180
+#define CLAW_CLOSE_DEGREE                        0 // 0° is close by definition
 #endif
 
 #endif // _ROBOT_ARM_SERVO_CONFIGURATION_H

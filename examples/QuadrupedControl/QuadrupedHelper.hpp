@@ -1,5 +1,5 @@
 /*
- * QuadrupedHelper.cpp
+ * QuadrupedHelper.hpp
  *
  *  Contains miscellaneous function for the quadruped
  *
@@ -21,6 +21,9 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/gpl.html>.
  */
+
+#ifndef _QUADRUPED_HELPER_HPP
+#define _QUADRUPED_HELPER_HPP
 
 #include <Arduino.h>
 
@@ -219,7 +222,7 @@ void doRandomMelody() {
 #  if !defined(USE_USER_DEFINED_MOVEMENTS)
 // Disable doCalibration() also for user defined movements, since just testing the remote may lead to accidental wrong calibration
 
-#include "IRCommandMapping.h" // for COMMAND_* definitions in doCalibration()
+#include "QuadrupedIRCommandMapping.h" // for COMMAND_* definitions in doCalibration()
 
 /*
  * Signals which leg is to be calibrated
@@ -324,3 +327,5 @@ void doBeep() {
     delay(400);
     tone(PIN_BUZZER, 2000, 200);
 }
+
+#endif // _QUADRUPED_HELPER_HPP

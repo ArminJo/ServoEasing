@@ -50,13 +50,14 @@
 // 2.0 major refactoring
 // 1.1 mirror computation at transformAndSetPivotServos and transformOneServoIndex
 
-#include "QuadrupedConfiguration.h"
+#include "QuadrupedConfiguration.h" // Contains the feature definitions as well as the pin layout
 
-#include "QuadrupedHelper.h"    // for checkForLowVoltage() and playShutdownMelody()
+#define VCC_STOP_THRESHOLD_MILLIVOLT 3200   // stop moving if below measured 3.2 volt
+#include "QuadrupedHelper.hpp"              // for checkForLowVoltage() and playShutdownMelody()
 
 #if defined(QUADRUPED_HAS_IR_CONTROL)
 // Include the header only IRCommandDispatcher library in the main program
-#include "IRCommandMapping.h"   // Must be included before IRCommandDispatcher.hpp to define IR_ADDRESS and IRMapping and string "unknown".
+#include "QuadrupedIRCommandMapping.h"      // Must be included before IRCommandDispatcher.hpp to define IR_ADDRESS and IRMapping and string "unknown".
 #include "IRCommandDispatcher.hpp"
 #define QUADRUPED_MOVEMENT_BREAK_FLAG (IRDispatcher.requestToStopReceived)
 #else
@@ -64,11 +65,11 @@
 #endif
 
 #define USE_NO_RTX_EXTENSIONS // Disables RTX format definitions `'s'` (style) and `'l'` (loop). Saves up to 332 bytes program memory
-#define ENABLE_EXTERNAL_SERVO_TIMER_HANDLER // Evaluated by ServoEasing.hpp
-#include "QuadrupedControlCommands.hpp" // In turn includes ServoEasing. Commands can also be used e.g. in loop().
 #if defined(QUADRUPED_HAS_NEOPIXEL)
+#define ENABLE_EXTERNAL_SERVO_TIMER_HANDLER // Evaluated by ServoEasing.hpp
 #include "QuadrupedNeoPixel.hpp"
 #endif
+#include "QuadrupedControlCommands.hpp" // In turn includes ServoEasing. Commands can also be used e.g. in loop().
 #if defined(QUADRUPED_ENABLE_RTTTL)
 #include <PlayRtttl.hpp>
 #endif
