@@ -70,7 +70,7 @@
 #define COMMAND_LEFT        IR_LEFT
 
 #define COMMAND_CENTER      IR_OK
-#define COMMAND_STOP        IR_HASH
+#define COMMAND_PAUSE_RESUME IR_HASH
 #define COMMAND_CALIBRATE   IR_0
 #define COMMAND_DANCE       IR_1
 #define COMMAND_WAVE        IR_3
@@ -132,7 +132,7 @@
 #define COMMAND_LEFT        IR_LEFT
 
 #define COMMAND_CENTER      IR_OK
-#define COMMAND_STOP        IR_HASH
+#define COMMAND_PAUSE_RESUME IR_HASH
 #define COMMAND_CALIBRATE   IR_0
 #define COMMAND_DANCE       IR_1
 #define COMMAND_WAVE        IR_3
@@ -195,7 +195,7 @@
 #define COMMAND_LEFT        IR_LEFT
 
 #define COMMAND_CENTER      IR_ENTER
-#define COMMAND_STOP        IR_ON_OFF
+#define COMMAND_PAUSE_RESUME IR_ON_OFF
 #define COMMAND_CALIBRATE   IR_MUTE
 #define COMMAND_DANCE       IR_SRC
 #define COMMAND_WAVE        IR_RETURN
@@ -266,7 +266,7 @@
 #define COMMAND_LEFT        IR_LEFT
 
 #define COMMAND_CENTER      IR_ENTER
-#define COMMAND_STOP        IR_ON_OFF
+#define COMMAND_PAUSE_RESUME IR_ON_OFF
 #define COMMAND_CALIBRATE   IR_MUTE
 #define COMMAND_DANCE       IR_SRC
 #define COMMAND_WAVE        IR_RETURN
@@ -300,43 +300,48 @@
 
 #define IR_ON_OFF 0x13
 
-#define IR_1    0x01
-#define IR_2    0x02
-#define IR_3    0x03
-#define IR_4    0x04
-#define IR_5    0x05
-#define IR_6    0x06
-#define IR_7    0x07
-#define IR_8    0x08
-#define IR_9    0x09
-#define IR_0    0x00
+#define IR_1            0x01
+#define IR_2            0x02
+#define IR_3            0x03
 
-#define IR_CH_PLUS      0x0A
+#define IR_4            0x04
+#define IR_5            0x05
+#define IR_6            0x06
+
+#define IR_7            0x07
+#define IR_8            0x08
+#define IR_9            0x09
+
+#define IR_0            0x00
 #define IR_CH_MINUS     0x0B
+#define IR_CH_PLUS      0x0A
 
-#define IR_REC          0x15
-#define IR_PAUSE        0x1A
+#define IR_REC          0x15 // Calibrate
+#define IR_PAUSE        0x1A // Play / Pause
 
-#define IR_UP           0x16 // Play
-#define IR_DOWN         0x17 // Stop
-#define IR_RIGHT        0x18 // FastForward
-#define IR_LEFT         0x19 // Fast Backward
+#define IR_UP           0x16 // Creep Forward
+#define IR_DOWN         0x17 // Creep backward
+#define IR_RIGHT        0x18 // Turn Right
+#define IR_LEFT         0x19 // Turn Left
 
-#define IR_ENTER        0x45
+#define IR_ENTER        0x45 // Center
 #define IR_INDEX        0x14
 #define IR_CANCEL       0x4A
-#define IR_MENU         0x50
+#define IR_MENU         0x50 // Demo
 
 // Lower small keys
 #define IR_1_LOWER      0x0D // Timer_REC
 #define IR_2_LOWER      0x1D
-#define IR_3_LOWER      0x5F // Call
+#define IR_3_LOWER      0x5F // Test
+
 #define IR_4_LOWER      0x51
 #define IR_5_LOWER      0x4C
 #define IR_6_LOWER      0x4B
+
 #define IR_7_LOWER      0x1E
 #define IR_8_LOWER      0x12
 #define IR_9_LOWER      0x0E // Audio Select
+
 #define IR_EJECT        0x4E
 /*
  * SECOND:
@@ -356,7 +361,7 @@
 #define COMMAND_TWIST       IR_7
 #define COMMAND_TROT        IR_9
 #define COMMAND_AUTO        IR_5
-#define COMMAND_TEST        IR_MENU
+#define COMMAND_DEMO        IR_MENU
 
 #define COMMAND_INCREASE_SPEED  IR_6
 #define COMMAND_DECREASE_SPEED  IR_4
@@ -374,7 +379,7 @@
 
 #define COMMAND_PATTERN_1   IR_1_LOWER
 #define COMMAND_PATTERN_2   IR_2_LOWER
-#define COMMAND_PATTERN_3   IR_3_LOWER
+#define COMMAND_TEST        IR_3_LOWER
 
 #define COMMAND_PATTERN_4   IR_4_LOWER
 #define COMMAND_PATTERN_5   IR_5_LOWER
@@ -400,7 +405,11 @@ static const char back[] PROGMEM ="back";
 static const char beep[] PROGMEM ="beep";
 static const char calibration[] PROGMEM ="calibration";
 static const char center[] PROGMEM ="center";
+static const char creep[] PROGMEM ="creep";
+static const char creepForward[] PROGMEM ="creep forward";
+static const char creepBack[] PROGMEM ="creep back";
 static const char dance[] PROGMEM ="dance";
+static const char demo[] PROGMEM ="demo";
 static const char dirForward[] PROGMEM ="dir forward";
 static const char dirBack[] PROGMEM ="dir back";
 static const char dirRight[] PROGMEM ="dir right";
@@ -420,7 +429,10 @@ static const char stop[] PROGMEM ="stop";
 static const char test[] PROGMEM ="test";
 //static const char onOff[] PROGMEM ="on/off";
 static const char trot[] PROGMEM ="trot";
-static const char twist[] PROGMEM ="twist";
+static const char turn[] PROGMEM ="turn";
+static const char turnRight[] PROGMEM ="turn right";
+static const char turnLeft[] PROGMEM ="turn left";
+static const char twistString[] PROGMEM ="twist";
 static const char ultrasonicServoLeft[] PROGMEM ="US servo left";
 static const char ultrasonicServoRight[] PROGMEM ="US servo right";
 static const char ultrasonicServoScan[] PROGMEM ="US servo scan";
@@ -428,41 +440,45 @@ static const char unknown[] PROGMEM ="unknown";
 static const char wave[] PROGMEM ="wave";
 static const char pauseResume[] PROGMEM ="pause/resume";
 
+#define COMMAND_TURN   0xFD // Command is used by doSetDirectionForward to start a turn if not creep or trot is running
+#define COMMAND_CREEP   0xFE // Command is used by doSetDirectionForward to start a creep if not trot is running
 /*
  * Main mapping array of commands to C functions and command strings
  */
-const struct IRToCommandMappingStruct IRMapping[] = { {
+const struct IRToCommandMappingStruct IRMapping[] = {
 /*
  * Commands, which must run exclusively and therefore must first stop other commands running.
  */
-COMMAND_DANCE, IR_COMMAND_FLAG_BLOCKING, &doDance, dance }, {
-COMMAND_TWIST, IR_COMMAND_FLAG_BLOCKING, &doTwist, twist }, {
-COMMAND_WAVE, IR_COMMAND_FLAG_BLOCKING, &doWave, wave }, {
-COMMAND_TROT, IR_COMMAND_FLAG_BLOCKING, &doTrot, trot }, {
-COMMAND_AUTO, IR_COMMAND_FLAG_BLOCKING, &doQuadrupedAutoMove, autoMove }, {
-COMMAND_TEST, IR_COMMAND_FLAG_BLOCKING, &doTest, test }, {
 #if defined(QUADRUPED_HAS_IR_CONTROL) && !defined(USE_USER_DEFINED_MOVEMENTS)
-        COMMAND_CALIBRATE, IR_COMMAND_FLAG_BLOCKING, &doCalibration, calibration}, {
+        { COMMAND_CALIBRATE, IR_COMMAND_FLAG_BLOCKING, &doCalibration, calibration}, /**/
 #endif
-        COMMAND_CENTER, IR_COMMAND_FLAG_BLOCKING, &doCenterServos, center }, {
-/*
- * Set direction also starts the movement
- */
-COMMAND_FORWARD, IR_COMMAND_FLAG_BLOCKING, &doSetDirectionForward, dirForward }, {
-COMMAND_BACKWARD, IR_COMMAND_FLAG_BLOCKING, &doSetDirectionBack, dirBack }, {
-COMMAND_RIGHT, IR_COMMAND_FLAG_BLOCKING, &doSetDirectionRight, dirRight }, {
-COMMAND_LEFT, IR_COMMAND_FLAG_BLOCKING, &doSetDirectionLeft, dirLeft }, {
-/*
- * Commands, which can be executed always, since they are short and repeats are allowed
- */
-COMMAND_INCREASE_SPEED, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doIncreaseSpeed, speedIncrease }, {
-COMMAND_DECREASE_SPEED, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doDecreaseSpeed, speedDecrease }, {
-COMMAND_INCREASE_HEIGHT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doIncreaseHeight, heighIncrease }, {
-COMMAND_DECREASE_HEIGHT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doDecreaseHeight, heighDecrease }, {
-#if defined(HAS_ADDITIONAL_REMOTE_COMMANDS)
-COMMAND_STOP, IR_COMMAND_FLAG_IS_STOP_COMMAND, &doStop, stop }
-#else
-COMMAND_STOP, IR_COMMAND_FLAG_NON_BLOCKING, &doPauseResume, pauseResume }
+        { COMMAND_DANCE, IR_COMMAND_FLAG_BLOCKING, &doDance, dance }, /**/
+        { COMMAND_TWIST, IR_COMMAND_FLAG_BLOCKING, &doTwist, twistString }, /**/
+        { COMMAND_WAVE, IR_COMMAND_FLAG_BLOCKING, &doWave, wave }, /**/
+        { COMMAND_TROT, IR_COMMAND_FLAG_BLOCKING, &doTrot, trot }, /**/
+        { COMMAND_AUTO, IR_COMMAND_FLAG_BLOCKING, &doQuadrupedAutoMove, autoMove }, /**/
+        { COMMAND_TEST, IR_COMMAND_FLAG_BLOCKING, &doTest, test }, /**/
+        { COMMAND_CENTER, IR_COMMAND_FLAG_BLOCKING, &doCenterServos, center }, /**/
+
+        /*
+         * Basic movements
+         */
+        { COMMAND_FORWARD, IR_COMMAND_FLAG_NON_BLOCKING, &doSetDirectionForward, dirForward }, /**/
+        { COMMAND_BACKWARD, IR_COMMAND_FLAG_NON_BLOCKING, &doSetDirectionBack, dirBack }, /**/
+        { COMMAND_RIGHT, IR_COMMAND_FLAG_NON_BLOCKING, &doSetDirectionRight, dirRight }, /**/
+        { COMMAND_LEFT, IR_COMMAND_FLAG_NON_BLOCKING, &doSetDirectionLeft, dirLeft }, /**/
+        { COMMAND_CREEP, IR_COMMAND_FLAG_BLOCKING, &doCreep, creep }, /* dummy IR command */
+        { COMMAND_TURN, IR_COMMAND_FLAG_BLOCKING, &doTurn, turn }, /* dummy IR command */
+
+        /*
+         * Commands, which can be executed always, since they are short and repeats are allowed
+         */
+        { COMMAND_INCREASE_SPEED, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doIncreaseSpeed, speedIncrease }, /**/
+        { COMMAND_DECREASE_SPEED, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doDecreaseSpeed, speedDecrease }, /**/
+        { COMMAND_INCREASE_HEIGHT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doIncreaseHeight, heighIncrease }, /**/
+        { COMMAND_DECREASE_HEIGHT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doDecreaseHeight, heighDecrease }, /**/
+#if !defined(HAS_ADDITIONAL_REMOTE_COMMANDS)
+        { COMMAND_PAUSE_RESUME, IR_COMMAND_FLAG_BLOCKING, &doStop, stop }
 #endif
 
 #if defined(HAS_ADDITIONAL_REMOTE_COMMANDS)
@@ -470,19 +486,19 @@ COMMAND_STOP, IR_COMMAND_FLAG_NON_BLOCKING, &doPauseResume, pauseResume }
          * Commands not accessible by simple remote because of lack of keys
          */
 #if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
-        , { COMMAND_US_RIGHT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doUSRight, ultrasonicServoRight }, {
-        COMMAND_US_LEFT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doUSLeft, ultrasonicServoLeft }, {
-        COMMAND_US_SCAN, IR_COMMAND_FLAG_NON_BLOCKING, &doUSScan, ultrasonicServoScan }
+        { COMMAND_US_RIGHT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doUSRight, ultrasonicServoRight }, /**/
+        { COMMAND_US_LEFT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doUSLeft, ultrasonicServoLeft }, /**/
+        { COMMAND_US_SCAN, IR_COMMAND_FLAG_NON_BLOCKING, &doUSScan, ultrasonicServoScan }, /**/
 #endif
-        , {
-        COMMAND_PAUSE_RESUME, IR_COMMAND_FLAG_NON_BLOCKING, &doPauseResume, pauseResume }, {
-        COMMAND_PATTERN_1, IR_COMMAND_FLAG_NON_BLOCKING, &doPattern1, pattern }, {
-        COMMAND_PATTERN_2, IR_COMMAND_FLAG_NON_BLOCKING, &doPattern2, pattern }, {
-        COMMAND_PATTERN_3, IR_COMMAND_FLAG_NON_BLOCKING, &doPatternStripes, pattern }, {
-        COMMAND_PATTERN_4, IR_COMMAND_FLAG_NON_BLOCKING, &doPatternHeartbeat, pattern }, {
-        COMMAND_PATTERN_5, IR_COMMAND_FLAG_NON_BLOCKING, &doPatternFire, pattern }, {
-        COMMAND_PATTERN_6, IR_COMMAND_FLAG_NON_BLOCKING, &doWipeOutPatterns, pattern }, {
-        COMMAND_PATTERN_0, IR_COMMAND_FLAG_NON_BLOCKING, &doRandomMelody, melody }
+        { COMMAND_STOP, IR_COMMAND_FLAG_BLOCKING, &doStop, stop },
+        { COMMAND_PAUSE_RESUME, IR_COMMAND_FLAG_NON_BLOCKING, &doPauseResume, pauseResume }, /**/
+        { COMMAND_DEMO, IR_COMMAND_FLAG_BLOCKING, &doQuadrupedDemoMove, demo }, /**/
+        { COMMAND_PATTERN_1, IR_COMMAND_FLAG_NON_BLOCKING, &doPattern1, pattern }, /**/
+        { COMMAND_PATTERN_2, IR_COMMAND_FLAG_NON_BLOCKING, &doPattern2, pattern }, /**/
+        { COMMAND_PATTERN_4, IR_COMMAND_FLAG_NON_BLOCKING, &doPatternHeartbeat, pattern }, /**/
+        { COMMAND_PATTERN_5, IR_COMMAND_FLAG_NON_BLOCKING, &doPatternFire, pattern }, /**/
+        { COMMAND_PATTERN_6, IR_COMMAND_FLAG_NON_BLOCKING, &doWipeOutPatterns, pattern }, /**/
+        { COMMAND_PATTERN_0, IR_COMMAND_FLAG_NON_BLOCKING, &doRandomMelody, melody }
 
 #endif
         };

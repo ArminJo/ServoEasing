@@ -22,13 +22,13 @@
 
 void initNeoPatterns();
 
-#if defined(HAS_ADDITIONAL_REMOTE_COMMANDS)
+//#if defined(HAS_ADDITIONAL_REMOTE_COMMANDS)
 void doPattern1();
 void doPattern2();
 void doPatternStripes();
 void doPatternHeartbeat();
 void doPatternFire();
-#endif
+//#endif
 
 void doWipeOutPatterns();
 
@@ -48,7 +48,7 @@ extern NeoPatterns FrontNeoPixelBar;
 extern NeoPatterns LeftNeoPixelBar;
 extern color32_t sBarBackgroundColorArrayForDistance[]; // // The color background for front distance bar
 
-extern bool sAtLeastOnePatternsIsActive; // True if at least one pattern is active => call update()
+extern volatile bool sAtLeastOnePatternsIsActive; // True if at least one pattern is active => call update()
 extern bool sCleanPatternAfterEnd; // Do a wipe out after pattern ended
 extern bool sShowPatternSynchronizedWithServos; // Flag set e.g. by main loop to force to show the pattern (e.g.distance value) synchronized with servo interrupts.
 

@@ -46,6 +46,7 @@ void initUSDistancePins(uint8_t aTriggerOutPin, uint8_t aEchoInPin = 0);
 void initUSDistancePin(uint8_t aTriggerOutEchoInPin); // Using this determines one pin mode
 unsigned int getUSDistance(unsigned int aTimeoutMicros = US_DISTANCE_DEFAULT_TIMEOUT_MICROS);
 unsigned int getCentimeterFromUSMicroSeconds(unsigned int aDistanceMicros);
+uint8_t getMillisFromUSCentimeter(unsigned int aDistanceCentimeter);
 unsigned int getUSDistanceAsCentimeter(unsigned int aTimeoutMicros = US_DISTANCE_DEFAULT_TIMEOUT_MICROS);
 unsigned int getUSDistanceAsCentimeterWithCentimeterTimeout(unsigned int aTimeoutCentimeter);
 void testUSSensor(uint16_t aSecondsToTest);

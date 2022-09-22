@@ -32,10 +32,11 @@
 
 //#define INFO // activate this to see serial info output
 
-volatile uint8_t sMovingDirection = MOVE_DIRECTION_FORWARD;
+volatile uint8_t sMovingDirection = MOVE_DIRECTION_FORWARD; // controls the direction of the basic moves
 
-uint8_t sCurrentlyRunningAction; // A change on this action type triggers the generation of new NeoPatterns
-uint8_t sLastRunningAction; // do enable pause / resume
+uint8_t sCurrentlyRunningCombinedAction = ACTION_TYPE_STOP; // To suppress melodies or waves during these moves
+uint8_t sCurrentlyRunningAction = ACTION_TYPE_STOP; // A change on this action type can be detected e.g. to trigger the generation of new NeoPatterns
+uint8_t sLastRunningAction = ACTION_TYPE_STOP;      // To enable pause / resume
 
 /*
  * Gait variations
@@ -71,6 +72,11 @@ void moveTrot(uint8_t aNumberOfTrots) {
     } while (aNumberOfTrots != 0);
 
     setEasingTypeToLinear();
+    setActionToStop();
+}
+
+void setActionToStop() {
+    sLastRunningAction = sCurrentlyRunningAction;
     sCurrentlyRunningAction = ACTION_TYPE_STOP;
 }
 
@@ -89,7 +95,15 @@ void basicTwist(int8_t aTwistAngle, bool aTurnLeft) {
     aTurnLeft ? tTwistAngle = -aTwistAngle : tTwistAngle = aTwistAngle;
 
     setPivotServos(90 + tTwistAngle, 90 + tTwistAngle, 90 + tTwistAngle, 90 + tTwistAngle);
-    sCurrentlyRunningAction = ACTION_TYPE_STOP;
+    setActionToStop();
+}
+
+void twist(int8_t aTwistAngle, uint8_t aNumberOfTwists) {
+    for (uint8_t i = 0; i < aNumberOfTwists; ++i) {
+        basicTwist(aTwistAngle, true);
+        basicTwist(aTwistAngle, false);
+        QUADRUPED_RETURN_IF_STOP;
+    }
 }
 
 /*
@@ -103,6 +117,7 @@ void moveTurn(uint8_t aNumberOfBasicTurns) {
 
     /*
      * First move one leg out of center position, otherwise the COG (Center Of Gravity) is not supported at the first move
+     * If sMovingDirection == MOVE_DIRECTION_LEFT then turn left, otherwise turn right.
      */
     if (sMovingDirection == MOVE_DIRECTION_LEFT) {
         moveOneServoAndCheckInputAndWait(FRONT_RIGHT_PIVOT, TURN_LEFT_START_ANGLE);
@@ -123,7 +138,7 @@ void moveTurn(uint8_t aNumberOfBasicTurns) {
     }while (--aNumberOfBasicTurns != 0);
 
     setEasingTypeToLinear();
-    sCurrentlyRunningAction = ACTION_TYPE_STOP;
+    setActionToStop();
 }
 
 /*
@@ -181,7 +196,7 @@ void basicTurn(uint8_t aLiftLegIndex, bool aTurnLeft) {
  */
 void goToYPosition(uint8_t aDirection) {
 #if defined(INFO)
-    Serial.print(F("goToYPosition aDirection="));
+    Serial.print(F("goToYPosition direction="));
     Serial.println(aDirection);
 #endif
     transformAndSetPivotServos(180 - Y_POSITION_OPEN_ANGLE, Y_POSITION_OPEN_ANGLE, (180 - Y_POSITION_CLOSE_ANGLE),
@@ -190,7 +205,7 @@ void goToYPosition(uint8_t aDirection) {
 }
 
 /*
- * 0 -> 256 creeps
+ * Default is 0 -> 256 creeps
  */
 void moveCreep(uint8_t aNumberOfCreeps) {
     sCurrentlyRunningAction = ACTION_TYPE_CREEP;
@@ -210,10 +225,7 @@ void moveCreep(uint8_t aNumberOfCreeps) {
     } while (aNumberOfCreeps != 0);
 
     setEasingTypeToLinear();
-    sCurrentlyRunningAction = ACTION_TYPE_STOP;
-#if defined(INFO)
-    Serial.println(F("Creep ended"));
-#endif
+    setActionToStop();
 }
 
 /*
@@ -365,5 +377,43 @@ void basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
     QUADRUPED_RETURN_IF_STOP;
 
     moveOneServoAndCheckInputAndWait(tDiagonalIndex + LIFT_SERVO_OFFSET, sRequestedBodyHeightAngle);
+}
+
+void lean(uint8_t aDirection) {
+#if defined(INFO)
+    Serial.print(F("lean direction="));
+    Serial.println(aDirection);
+#endif
+    if (aDirection == MOVE_DIRECTION_FORWARD) {
+        // Front
+        setLiftServos(LIFT_HIGHEST_ANGLE, LIFT_LOWEST_ANGLE, LIFT_LOWEST_ANGLE, LIFT_HIGHEST_ANGLE);
+    } else if (aDirection == MOVE_DIRECTION_BACKWARD) {
+        // Back
+        setLiftServos(LIFT_LOWEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_LOWEST_ANGLE);
+    } else if (aDirection == MOVE_DIRECTION_RIGHT) {
+        // Right
+        setLiftServos(LIFT_LOWEST_ANGLE, LIFT_LOWEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_HIGHEST_ANGLE);
+    } else {
+        // Left
+        setLiftServos(LIFT_HIGHEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_LOWEST_ANGLE, LIFT_LOWEST_ANGLE);
+    }
+}
+
+/*
+ * A movement to get attention, that quadruped may be switched off
+ * Move down and up and back to starting height
+ */
+void downAndUp(uint8_t aNumberOfDownAndUps) {
+    sCurrentlyRunningAction = ACTION_TYPE_DOWN_UP;
+    for (uint8_t i = 0; i < aNumberOfDownAndUps; ++i) {
+        // Move down and up and back to starting height
+        setLiftServos(LIFT_HIGHEST_ANGLE);
+        QUADRUPED_BREAK_IF_STOP;
+        setLiftServos(LIFT_LOWEST_ANGLE);
+        QUADRUPED_BREAK_IF_STOP;
+    }
+    // set back to normal height
+    setLiftServos(sRequestedBodyHeightAngle);
+    setActionToStop();
 }
 #endif // _QUADRUPED_BASIC_MOVEMENTS_HPP

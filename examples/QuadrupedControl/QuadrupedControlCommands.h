@@ -16,24 +16,18 @@
 // The code for the called command is available in variable sCurrentIRCode
 // All functions have the prefix __attribute__((weak)) in order to enable easy overwriting with own functions.
 
-// Basic moves
-void doCreepForward();
 void doTrot();
-void doTurnLeft();
-void doTurnRight();
+void doCreep();
+void doTurn();
 
 // Combined moves
 void doDance();
 void doWave();
 void doTwist();
+void doQuadrupedDemoMove();
 void doQuadrupedAutoMove();
 
-// not on the remote
-void doBow();
-void doLeanLeft();
-void doLeanRight();
-void doLeanBack();
-void doLeanFront();
+// Moves not on the remote
 void doAttention();
 
 // Special commands

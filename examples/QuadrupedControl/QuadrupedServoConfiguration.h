@@ -15,7 +15,7 @@
 #define NUMBER_OF_LEG_SERVOS 8
 // Pins where servos are attached. The other servos are attached to the next pins (pins 6 to 12).
 #define FRONT_LEFT_PIVOT_SERVO_PIN 5
-#define SERVOS_PER_LEG (NUMBER_OF_LEG_SERVOS / NUMBER_OF_LEGS)
+#define SERVOS_PER_LEG (NUMBER_OF_LEG_SERVOS / NUMBER_OF_LEGS) // 2
 #define DIAGONAL_SERVO_OFFSET (2 * SERVOS_PER_LEG)
 #define PIVOT_SERVO_OFFSET 0 // Pivot servo index in leg
 #define LIFT_SERVO_OFFSET 1 // Lift servo number is 1 more than base/pivot servo number

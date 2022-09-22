@@ -27,10 +27,12 @@
 
 #include <Arduino.h>
 
-#include "QuadrupedConfiguration.h"
+#include "digitalWriteFast.h"
+
 #include "QuadrupedHelper.h"
 #include "ADCUtils.h" // for getVCCVoltageMillivoltSimple()
 #include "QuadrupedBasicMovements.h" // for sCurrentlyRunningAction
+#include "QuadrupedControlCommands.h"
 
 #if defined(QUADRUPED_HAS_NEOPIXEL)
 #include "QuadrupedNeoPixel.h"
@@ -44,6 +46,15 @@
 #if defined(QUADRUPED_HAS_IR_CONTROL)
 #include "IRCommandDispatcher.h"
 #endif
+
+#if defined(QUADRUPED_HAS_US_DISTANCE)
+uint32_t sLastDistanceMeasurementMillis;
+uint8_t sCurrentDistance;
+uint8_t sLastDistance;
+#endif
+
+uint32_t sLastVolageMeasurementMillis;
+
 #include "QuadrupedServoControl.h"
 
 #if !defined(STR_HELPER)
@@ -52,7 +63,6 @@
 #endif
 
 bool isShutDown = false;
-bool doShutDown = false;
 
 void playShutdownMelody() {
 #if defined(QUADRUPED_ENABLE_RTTTL)
@@ -69,124 +79,169 @@ void playShutdownMelody() {
 }
 
 /*
+ * Stop servos if voltage gets low
+ * @return  true - if voltage too low
+ */
+bool checkForLowVoltage() {
+    sVCCVoltage = getVCCVoltageMillivoltSimple();
+    return (sVCCVoltage <= VCC_STOP_THRESHOLD_MILLIVOLT);
+}
+
+/*
  * Called exclusively by main loop
  */
 void checkForLowVoltageAndShutdown() {
+    if ((millis() - sLastVolageMeasurementMillis) <= MILLIS_BETWEEN_VOLTAGE_MEASUREMENTS) {
+        return;
+    }
+
     // Reset shutdown and enable new check, if a new command is running
     if (sCurrentlyRunningAction != ACTION_TYPE_STOP) {
         isShutDown = false;
+        sShutdownCount = 0;
     }
-    if (doShutDown || (!isShutDown && checkForLowVoltage())) {
+
+    if (!checkForLowVoltage()) {
+        isShutDown = false;
+        sShutdownCount--;
+    } else if (!isShutDown) {
+        sShutdownCount++;
+        if (sShutdownCount == NUMBER_OF_VOLTAGE_LOW_FOR_SHUTDOWN) {
+            /*
+             * Transition to low voltage here
+             */
+            // print message
+            Serial.print(F("VCC "));
+            Serial.print(sVCCVoltage);
+            Serial.println(F(" below " STR(VCC_STOP_THRESHOLD_MILLIVOLT) " Millivolt"));
+
 #if defined(QUADRUPED_HAS_NEOPIXEL)
         doWipeOutPatterns(); // to save power
 #endif
+
 #if defined(QUADRUPED_HAS_IR_CONTROL)
         IRDispatcher.setRequestToStopReceived(false); // This enables shutdown move and new moves
 #endif
-        shutdownServos();
-        playShutdownMelody();
-        doShutDown = false; // shutdown done
-        isShutDown = true; // do it only once until next command arrives
+
+            shutdownServos();
+            playShutdownMelody();
+            isShutDown = true; // Do it only once. Next (IR) command resets this flag
+        }
     }
 }
 
 /*
  * Special delay function for the quadruped control.
- * It checks for low voltage and returns prematurely if requestToStopReceived is set
+ * It returns prematurely if requestToStopReceived is set
  * @return  true - if stop received
  */
-bool delayAndCheckForLowVoltageAndStop(uint16_t aDelayMillis) {
-    isShutDown = false; // here we are in a (new) command and can enable a shutdown
-
-// check voltage only once per delay
-    if (!doShutDown && checkForLowVoltage()) { // !doShutDown enables shutdownServos() to run
-        // Voltage is low here
-#if defined(QUADRUPED_HAS_IR_CONTROL)
-        IRDispatcher.setRequestToStopReceived(); // This in turn stops any movement -> do not forget to reset it before next movement!
+bool delayAndCheckForStopByIR(uint16_t aDelayMillis) {
+#if defined(QUADRUPED_HAS_US_DISTANCE)
+    // adjust delay value
+    // we know, that delay is <= 10 and aDelayMillis is > =19
+    aDelayMillis -= handleUSSensor();
 #endif
-        doShutDown = true;
-        sCurrentlyRunningAction = ACTION_TYPE_STOP; // required for QUADRUPED_RETURN_IF_STOP
+#if defined(QUADRUPED_HAS_IR_CONTROL)
+    if (IRDispatcher.delayAndCheckForStop(aDelayMillis)) {
+        Serial.println(F("Stop requested"));
+        sCurrentlyRunningAction = ACTION_TYPE_STOP;
         return true;
-#if defined(QUADRUPED_HAS_IR_CONTROL)
-    } else {
-        // Voltage is OK here :-)
-        if (IRDispatcher.delayAndCheckForStop(aDelayMillis)) {
-            Serial.println(F("Stop requested"));
-            sCurrentlyRunningAction = ACTION_TYPE_STOP;
-            return true;
-        }
-#else
-        delay(aDelayMillis);
-#endif
     }
+
+#else
+    delay(aDelayMillis);
+#endif
     return false;
 }
 
-/*
- * Stop servos if voltage gets low
- * @return  true - if voltage too low
+#if defined(QUADRUPED_HAS_US_DISTANCE)
+/**
+ * Get US distance and display it on front bar
+ * Can introduce a delay up to 10 ms
+ * @return ms of delay, that was introduced
  */
-bool checkForLowVoltage() {
-    uint16_t tVCC = getVCCVoltageMillivoltSimple();
-    if (tVCC > VCC_STOP_THRESHOLD_MILLIVOLT) {
-        return false; // signal voltage is OK
+uint8_t handleUSSensor() {
+#  if defined(QUADRUPED_ENABLE_RTTTL)
+    // 2 measurements per second even when melody is playing
+    if (isPlayRtttlRunning() && (millis() - sLastDistanceMeasurementMillis) <= MILLIS_BETWEEN_DISTANCE_MEASUREMENTS_FOR_MELODY) {
+        return 0; // showPatternSynchronizedWithServos() disturbs the melody
+    }
+#  endif
+
+    if ((millis() - sLastDistanceMeasurementMillis) <= MILLIS_BETWEEN_DISTANCE_MEASUREMENTS || isShutDown) {
+        return 0; // no measurement required
     }
 
-    /*
-     * Low voltage here
-     */
-    Serial.print(F("VCC "));
-    Serial.print(tVCC);
-    Serial.println(F(" below " STR(VCC_STOP_THRESHOLD_MILLIVOLT) " Millivolt"));
-    return true;
-}
-
-#if defined(QUADRUPED_HAS_US_DISTANCE)
-/*
- * Get front distance and display it on front bar
- */
-void handleUSSensor() {
-    static uint32_t sLastMeasurementMillis;
-    static uint8_t sLastDistance;
-    if (millis() - sLastMeasurementMillis > MILLIS_BETWEEN_MEASUREMENTS) {
-        sLastMeasurementMillis = millis();
-        uint8_t tDistance = getUSDistanceAsCentimeter(10000);
-        if (tDistance != 0 && sLastDistance != tDistance) {
-            sLastDistance = tDistance;
+    sLastDistanceMeasurementMillis = millis();
+    sCurrentDistance = getUSDistanceAsCentimeter(10000);
+    if (sCurrentDistance != 0 && sLastDistance != sCurrentDistance) {
+        sLastDistance = sCurrentDistance;
 #  if defined(INFO)
-//            Serial.print(F("Distance="));
-//            Serial.print(tDistance);
-//            Serial.println(F("cm"));
+        if(sCurrentlyRunningAction == ACTION_TYPE_STOP ){
+            Serial.print(F("Distance="));
+            Serial.print(sCurrentDistance);
+            Serial.println(F("cm"));
+        }
 #  endif
 #  if defined(QUADRUPED_HAS_NEOPIXEL)
-            // Show distance bar if no other pattern is active
-            if (FrontNeoPixelBar.ActivePattern == PATTERN_NONE) {
-                /*
-                 * The first 3 pixel represent a distance of each 5 cm
-                 * The 4. pixel is active if distance is >= 20 cm and < 30 cm
-                 * The 7. pixel is active if distance is >= 80 cm and < 120 cm
-                 * The 8. pixel is active if distance is >= 1.2 meter
-                 */
-                uint8_t tBarLength;
-                if (tDistance < 20) {
-                    tBarLength = tDistance / 5;
-                } else if (tDistance < 30) {
-                    tBarLength = 4;
-                } else if (tDistance < 50) {
-                    tBarLength = 5;
-                } else if (tDistance < 80) {
-                    tBarLength = 6;
-                } else if (tDistance < 120) {
-                    tBarLength = 7;
-                } else {
-                    tBarLength = 8;
-                }
-                FrontNeoPixelBar.drawBarFromColorArray(tBarLength, sBarBackgroundColorArrayForDistance);
-                showPatternSynchronizedWithServos();
+        // Show distance bar if no other pattern is active
+        if (FrontNeoPixelBar.ActivePattern == PATTERN_NONE && QuadrupedNeoPixelBar.ActivePattern == PATTERN_NONE) {
+            /*
+             * The first 3 pixel represent a distance of each 5 cm
+             * The 4. pixel is active if distance is >= 20 cm and < 30 cm
+             * The 7. pixel is active if distance is >= 80 cm and < 120 cm
+             * The 8. pixel is active if distance is >= 1.2 meter
+             */
+            uint8_t tBarLength;
+            if (sCurrentDistance < 20) {
+                tBarLength = sCurrentDistance / 5;
+            } else if (sCurrentDistance < 30) {
+                tBarLength = 4;
+            } else if (sCurrentDistance < 50) {
+                tBarLength = 5;
+            } else if (sCurrentDistance < 80) {
+                tBarLength = 6;
+            } else if (sCurrentDistance < 120) {
+                tBarLength = 7;
+            } else {
+                tBarLength = 8;
+            }
+            FrontNeoPixelBar.drawBarFromColorArray(tBarLength, sBarBackgroundColorArrayForDistance);
+            showPatternSynchronizedWithServos();
+        }
+#  endif
+        if (sCurrentlyRunningAction == ACTION_TYPE_STOP && sCurrentlyRunningCombinedAction == ACTION_TYPE_STOP){
+#  if defined(QUADRUPED_ENABLE_RTTTL)
+            /*
+             * Play melody if distance is below 10 cm and above 3 cm
+             */
+            if (sCurrentlyRunningAction == ACTION_TYPE_STOP && sCurrentDistance >= 3 && sCurrentDistance <= MIN_DISTANCE_FOR_MELODY_CM && !isPlayRtttlRunning()) {
+                randomSeed(millis());
+                doRandomMelody();
+                return getMillisFromUSCentimeter(sCurrentDistance); // do not check for wave!
             }
 #  endif
+            /*
+             * Do wave if distance is between 35 cm and 25 cm
+             * Fist wave can be done 10 seconds after boot
+             */
+            if (sCurrentlyRunningAction == ACTION_TYPE_STOP && sCurrentDistance >= MIN_DISTANCE_FOR_WAVE_CM && sCurrentDistance <= MAX_DISTANCE_FOR_WAVE_CM
+#if defined(QUADRUPED_HAS_IR_CONTROL)
+                && (millis() - IRDispatcher.IRReceivedData.MillisOfLastCode) > MILLIS_BETWEEN_WAVES
+#else
+                && (millis() - sMillisOfLastSpecialAction) > MILLIS_BETWEEN_WAVES
+#endif
+            ) {
+                doWave();
+#if defined(QUADRUPED_HAS_IR_CONTROL)
+                IRDispatcher.IRReceivedData.MillisOfLastCode = millis(); // disable next auto move, next attention in 2 minutes
+#else
+                sMillisOfLastSpecialAction = millis(); // disable next auto move, next attention in 2 minutes
+#endif
+            }
         }
     }
+    return getMillisFromUSCentimeter(sCurrentDistance);
 }
 #endif // #if defined(QUADRUPED_HAS_US_DISTANCE)
 
@@ -212,7 +267,7 @@ void doUSScan() {
 
 #if defined(QUADRUPED_ENABLE_RTTTL)
 void doRandomMelody() {
-    sCurrentlyRunningAction = ACTION_TYPE_MELODY;
+    sCurrentlyRunningAction = ACTION_TYPE_MELODY; // to make melody stoppable with stop command of IR
     startPlayRandomRtttlFromArrayPGMAndPrintName(PIN_BUZZER, RTTTLMelodiesSmall,
     ARRAY_SIZE_MELODIES_SMALL, &Serial, NULL);
     sAtLeastOnePatternsIsActive = false; // disable any pattern, which disturbs the melody

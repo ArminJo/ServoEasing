@@ -40,6 +40,8 @@
  *
  * - USE_BUTTON_0                   Enables code for button at INT0 (pin2 on 328P, PB6 on ATtiny167, PB2 on ATtinyX5).
  * - USE_BUTTON_1                   Enables code for button at INT1 (pin3 on 328P, PA3 on ATtiny167, PCINT0 / PCx for ATtinyX5).
+ * - INT1_PIN                       It overrides the usage of pin at the processors INT1 pin. Thus, it is the pin number of the pin for button 1 to use with Pin Change Interrupts.
+ * - NO_INITIALIZE_IN_CONSTRUCTOR   Disables the auto initializing in all constructors without the aIsButtonAtINT0 parameter.
  * - BUTTON_IS_ACTIVE_HIGH          Enable this if you buttons are active high.
  * - USE_ATTACH_INTERRUPT           This forces use of the arduino function attachInterrupt(). It is required if you get the error "multiple definition of __vector_1".
  * - NO_BUTTON_RELEASE_CALLBACK     Disables the code for release callback. This saves 2 bytes RAM and 64 bytes program memory.
@@ -92,126 +94,105 @@ EasyButton *EasyButton::sPointerToButton1ForISR;
 
 /*
  * These constructors are deterministic if only one button is enabled
- * If two buttons are enabled they can be taken for the 1. button at INT0
+ * If both buttons are enabled, it initializes the 1. button (USE_BUTTON_0),
+ * so the second button must be enabled manually or by using a constructor with the parameter aIsButtonAtINT0.
  */
-EasyButton::EasyButton() {
-#if defined(USE_BUTTON_0)
-    init(true);  // 1. button
-#else
-    init(false); // 2. button
+EasyButton::EasyButton() { // @suppress("Class members should be properly initialized")
+#if !defined(NO_INITIALIZE_IN_CONSTRUCTOR)
+#  if defined(USE_BUTTON_0)
+    init(BUTTON_AT_INT0);  // 1. button
+#  else
+    init(BUTTON_AT_INT1_OR_PCINT); // 2. button
+#  endif
 #endif
 }
 /*
  * The same with aButtonPressCallback
+ * If both buttons are enabled, it initializes the 1. button (USE_BUTTON_0)
  */
-EasyButton::EasyButton(void (*aButtonPressCallback)(bool aButtonToggleState)) {
+EasyButton::EasyButton(void (*aButtonPressCallback)(bool aButtonToggleState)) { // @suppress("Class members should be properly initialized")
     ButtonPressCallback = aButtonPressCallback;
-#if defined(USE_BUTTON_0)
-    init(true);  // 1. button
-#else
-    init(false); // 2. button
+#if !defined(NO_INITIALIZE_IN_CONSTRUCTOR)
+#  if defined(USE_BUTTON_0)
+    init(BUTTON_AT_INT0);  // 1. button
+#  else
+    init(BUTTON_AT_INT1_OR_PCINT); // 2. button
+#  endif
 #endif
 }
 
 #if !defined(NO_BUTTON_RELEASE_CALLBACK)
 EasyButton::EasyButton(void (*aButtonPressCallback)(bool aButtonToggleState),
-        void (*aButtonReleaseCallback)(bool aButtonToggleState, uint16_t aButtonPressDurationMillis)) {
+        void (*aButtonReleaseCallback)(bool aButtonToggleState, uint16_t aButtonPressDurationMillis)) { // @suppress("Class members should be properly initialized")
     ButtonPressCallback = aButtonPressCallback;
     ButtonReleaseCallback = aButtonReleaseCallback;
-#  if defined(USE_BUTTON_0)
-    init(true); // 1. button
-#  else
-    init(false); // 2. button
+#if !defined(NO_INITIALIZE_IN_CONSTRUCTOR)
+#    if defined(USE_BUTTON_0)
+    init(BUTTON_AT_INT0); // 1. button
+#    else
+    init(BUTTON_AT_INT1_OR_PCINT); // 2. button
+#    endif
 #  endif
 }
 #endif // NO_BUTTON_RELEASE_CALLBACK
 
-/*
- * These constructors use the first (bool) parameter to decide which button to take.
+/**
+ * @param aIsButtonAtINT0   true if this button is connected to INT0 i.e. is button 0
  */
-#if defined(USE_BUTTON_0) && defined(USE_BUTTON_1)
-EasyButton::EasyButton(bool aIsButtonAtINT0)
-#else
-// Constructor with unused attribute to avoid warnings
-EasyButton::EasyButton(bool aIsButtonAtINT0 __attribute__((unused)))
+EasyButton::EasyButton(bool aIsButtonAtINT0) {
+#if !(defined(USE_BUTTON_0) && defined(USE_BUTTON_1))
+    (void) aIsButtonAtINT0; // to suppress compiler warnings
 #endif
-        {
 #if defined(USE_BUTTON_0) && not defined(USE_BUTTON_1)
-    init(true); // 1. button
+    init(BUTTON_AT_INT0); // 1. button
 #elif defined(USE_BUTTON_1) && not defined(USE_BUTTON_0)
-    init(false); // 2. button
+    init(BUTTON_AT_INT1_OR_PCINT); // 2. button
 #else
     init(aIsButtonAtINT0);
 #endif
 }
 
-#if defined(USE_BUTTON_0) && defined(USE_BUTTON_1)
-EasyButton::EasyButton(bool aIsButtonAtINT0, void (*aButtonPressCallback)(bool aButtonToggleState))
-#else
-// Constructor with unused attribute to avoid warnings
-EasyButton::EasyButton(bool aIsButtonAtINT0 __attribute__((unused)), void (*aButtonPressCallback)(bool aButtonToggleState))
+/**
+ * @param aIsButtonAtINT0   true if this button is connected to INT0 i.e. is button 0
+ */
+EasyButton::EasyButton(bool aIsButtonAtINT0, void (*aButtonPressCallback)(bool aButtonToggleState)) {
+#if !(defined(USE_BUTTON_0) && defined(USE_BUTTON_1))
+    (void) aIsButtonAtINT0; // to suppress compiler warnings
 #endif
-        {
     ButtonPressCallback = aButtonPressCallback;
 #if defined(USE_BUTTON_0) && not defined(USE_BUTTON_1)
-    init(true); // 1. button
+    init(BUTTON_AT_INT0); // 1. button
 #elif defined(USE_BUTTON_1) && not defined(USE_BUTTON_0)
-    init(false); // 2. button
+    init(BUTTON_AT_INT1_OR_PCINT); // 2. button
 #else
     init(aIsButtonAtINT0);
 #endif
 }
 
 #if !defined(NO_BUTTON_RELEASE_CALLBACK)
-#  if defined(USE_BUTTON_0) && defined(USE_BUTTON_1)
+/**
+ * @param aIsButtonAtINT0   true if this button is connected to INT0 i.e. is button 0
+ */
 EasyButton::EasyButton(bool aIsButtonAtINT0, void (*aButtonPressCallback)(bool aButtonToggleState),
-        void (*aButtonReleaseCallback)(bool aButtonToggleState, uint16_t aButtonPressDurationMillis))
-#  else
-// Constructor with unused attribute to avoid warnings
-EasyButton::EasyButton(bool aIsButtonAtINT0 __attribute__((unused)), void (*aButtonPressCallback)(bool aButtonToggleState),
-        void (*aButtonReleaseCallback)(bool aButtonToggleState, uint16_t aButtonPressDurationMillis))
+        void (*aButtonReleaseCallback)(bool aButtonToggleState, uint16_t aButtonPressDurationMillis)) {
+#  if !(defined(USE_BUTTON_0) && defined(USE_BUTTON_1))
+    (void) aIsButtonAtINT0; // to suppress compiler warnings
 #  endif
-                {
     ButtonPressCallback = aButtonPressCallback;
     ButtonReleaseCallback = aButtonReleaseCallback;
 #  if defined(USE_BUTTON_0) && not defined(USE_BUTTON_1)
-init(true); // 1. button
+init(BUTTON_AT_INT0); // 1. button
 #  elif defined(USE_BUTTON_1) && not defined(USE_BUTTON_0)
-init(false); // 2. button
+init(BUTTON_AT_INT1_OR_PCINT); // 2. button
 #  else
     init(aIsButtonAtINT0);
 #  endif
 }
 #endif // NO_BUTTON_RELEASE_CALLBACK
 
-#if defined(USE_ATTACH_INTERRUPT) || defined(USE_ATTACH_INTERRUPT_DIRECT)
-#  if defined(USE_ATTACH_INTERRUPT)
-
-#  else
-
-#  endif
-
-#else
-
-#  if defined(USE_INT0)
-
-
-#  elif defined(USE_INT1)
-
-
-#  elif defined(USE_PCIE) // For ATtiny85 etc.
-
-
-#  elif defined(USE_PCINT0)
-
-#  elif defined(USE_PCINT1)
-
-#  elif defined(USE_PCINT2)
-
-#  endif
-#endif // defined(USE_ATTACH_INTERRUPT)
 /*
  * Sets pin mode to INPUT_PULLUP if not defined(BUTTON_IS_ACTIVE_HIGH) and enables INT0 Interrupt on any logical change.
+ * @param aIsButtonAtINT0   true if this button is connected to INT0 i.e. is button 0
  */
 void EasyButton::init(bool aIsButtonAtINT0) {
     isButtonAtINT0 = aIsButtonAtINT0;
@@ -291,7 +272,7 @@ void EasyButton::init(bool aIsButtonAtINT0) {
 #  if defined(USE_ATTACH_INTERRUPT)
         attachInterrupt(digitalPinToInterrupt(INT0_PIN), &handleINT0Interrupt, CHANGE);
 #  else
-        EICRA |= _BV(ISC00);  // interrupt on any logical change
+        EICRA |= _BV(ISC00);    // interrupt on any logical change
         EIFR |= _BV(INTF0);     // clear interrupt bit
         EIMSK |= _BV(INT0);     // enable interrupt on next change
 #  endif //USE_ATTACH_INTERRUPT

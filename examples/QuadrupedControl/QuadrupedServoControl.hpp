@@ -396,7 +396,7 @@ void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree) {
 void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree, uint16_t aDegreesPerSecond) {
     ServoEasing::ServoEasingArray[aServoIndex]->startEaseTo(aDegree, aDegreesPerSecond, false);
     do {
-        if (delayAndCheckForLowVoltageAndStop(REFRESH_INTERVAL_MILLIS)) { // 20 ms - REFRESH_INTERVAL is in Microseconds
+        if (delayAndCheckForStopByIR(REFRESH_INTERVAL_MILLIS - 1)) { // 19 ms - REFRESH_INTERVAL is in Microseconds
             return;
         }
     } while (!ServoEasing::ServoEasingArray[aServoIndex]->update());
@@ -404,7 +404,7 @@ void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree, uint16_t
 
 void updateAndCheckInputAndWaitForAllServosToStop() {
     do {
-        if (delayAndCheckForLowVoltageAndStop(REFRESH_INTERVAL_MILLIS)) { // 20 ms - REFRESH_INTERVAL is in Microseconds
+        if (delayAndCheckForStopByIR(REFRESH_INTERVAL_MILLIS - 1)) { // 19 ms - REFRESH_INTERVAL is in Microseconds
             return;
         }
     } while (!updateAllServos() || sCurrentlyRunningAction == ACTION_TYPE_PAUSE); // sCurrentlyRunningAction = ACTION_TYPE_PAUSE -> supports pause / resume

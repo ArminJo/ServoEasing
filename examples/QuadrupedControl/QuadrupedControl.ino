@@ -15,7 +15,9 @@
  * If QUADRUPED_HAS_IR_CONTROL not defined (no IR control attached) the AutoMove demo starts after 20 seconds and repeats every 4 minutes.
  * 2 Minutes after the last movement, Attention movement is performed and repeated every minute.
  *
- * IF US distance sensor and NeoPixel are attached, the distance is shown at the front NeopixelBar.
+ * If US distance sensor and NeoPixel are attached, the distance is shown at the front NeopixelBar.
+ * If distance is between MIN and MAX DISTANCE_FOR_WAVE_CM ( 25 - 35 cm) a doWave is performed every MILLIS_BETWEEN_WAVES (10 seconds)
+ * If distance is between MIN and MAX DISTANCE_FOR_MELODY_CM ( 5 - 10 cm) a random melody is played.
  *
  *
  * To run this example you need to install the "ServoEasing" library.
@@ -43,7 +45,9 @@
 
 #include <Arduino.h>
 
-#define VERSION_EXAMPLE "3.1"
+#define VERSION_EXAMPLE "3.3"
+// 3.3 Extended demo mode
+// 3.2 Demo mode added
 // 3.1 Moving US Servo and pause + resume added and pattern handling improved
 // 3.0 NeoPixel and distance sensor added
 // 2.1 auto move
@@ -52,7 +56,31 @@
 
 #include "QuadrupedConfiguration.h" // Contains the feature definitions as well as the pin layout
 
-#define VCC_STOP_THRESHOLD_MILLIVOLT 3200   // stop moving if below measured 3.2 volt
+/*
+ * Demo mode:
+ * run doTableMove() every minute
+ */
+#define ENABLE_QUADRUPED_DEMO_MODE
+
+#if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
+#define VCC_STOP_THRESHOLD_MILLIVOLT 3500   // stop moving if below 3.6 volt. Below 3.7 volt, the US distance sensor does not work :-(
+#else
+#define VCC_STOP_THRESHOLD_MILLIVOLT 3200   // stop moving if below 3.2 volt.
+#endif
+uint16_t sVCCVoltage;
+#define NUMBER_OF_VOLTAGE_LOW_FOR_SHUTDOWN        5     // If 5 times voltage low, start shutdown
+#define MILLIS_BETWEEN_VOLTAGE_MEASUREMENTS     200     // 5 per second
+uint8_t sShutdownCount = 0;
+
+#if defined(QUADRUPED_HAS_US_DISTANCE)
+#define MILLIS_BETWEEN_DISTANCE_MEASUREMENTS    200     // 5 measurements per second
+#define MILLIS_BETWEEN_DISTANCE_MEASUREMENTS_FOR_MELODY 500 // 2 measurements per second
+#define MIN_DISTANCE_FOR_MELODY_CM               10     // Play melody triggered by distance below 5 cm.
+#define MIN_DISTANCE_FOR_WAVE_CM                 25     // Waves triggered by distance between 25 cm and 35 cm.
+#define MAX_DISTANCE_FOR_WAVE_CM                 35     // Waves triggered by distance between 25 cm and 35 cm.
+#define MILLIS_BETWEEN_WAVES                  10000     // 10 second between waves triggered by distance.
+#endif
+
 #include "QuadrupedHelper.hpp"              // for checkForLowVoltage() and playShutdownMelody()
 
 #if defined(QUADRUPED_HAS_IR_CONTROL)
@@ -61,7 +89,7 @@
 #include "IRCommandDispatcher.hpp"
 #define QUADRUPED_MOVEMENT_BREAK_FLAG (IRDispatcher.requestToStopReceived)
 #else
-#define QUADRUPED_MOVEMENT_BREAK_FLAG (doShutDown)
+#define QUADRUPED_MOVEMENT_BREAK_FLAG false
 #endif
 
 #define USE_NO_RTX_EXTENSIONS // Disables RTX format definitions `'s'` (style) and `'l'` (loop). Saves up to 332 bytes program memory
@@ -89,12 +117,19 @@ ServoEasing USServo;
 #define MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE     40000   // 40 seconds
 #else
 #define MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE     20000   // 20 seconds
-#define MILLIS_OF_INACTIVITY_BETWEEN_AUTO_MOVE             240000   // 4 Minutes
-uint32_t MillisOfLastAutoMove;                                      // millis() of last doQuadrupedAutoMove()
+#define MILLIS_OF_INACTIVITY_BETWEEN_AUTO_MOVE             240000   // 4 minutes
+uint32_t sMillisOfLastSpecialAction = 0;                            // millis() of last doAttention() or doWave()
 #endif
+// In demo mode AutoMove is disabled since demo runs earlier
+#if defined(ENABLE_QUADRUPED_DEMO_MODE)
+#define MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE           60000   // 1 minute before demo move
+#define MILLIS_OF_INACTIVITY_BETWEEN_REMINDER_MOVE          60000   // 1 minute between each demo move
+#else
 #define MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE          120000   // 2 Minutes
 #define MILLIS_OF_INACTIVITY_BETWEEN_REMINDER_MOVE          60000   // 1 Minute
-uint32_t MillisOfLastAttention;                                     // millis() of last doAttention()
+#endif
+
+#define VOLTAGE_USB_LOWER_THRESHOLD_MILLIVOLT                4300   // Assume USB powered, if voltage is higher, -> disable auto move after timeout.
 
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
@@ -134,6 +169,17 @@ void setup() {
     initNeoPatterns();
     enableServoEasingInterrupt(); // This enables the ServoEasing 20 ms interrupt, which we use to synchronize the NeoPixel update with the servo pulse generation.
 #endif
+
+#if defined(QUADRUPED_HAS_US_DISTANCE)
+    getUSDistanceAsCentimeter(10000); // this seems to suppress the initial low reading of US distance
+#endif
+
+//#if defined(QUADRUPED_HAS_NEOPIXEL)
+//    while (FrontNeoPixelBar.ActivePattern != PATTERN_NONE) {
+//        ; // wait for pattern to end
+//    }
+//#endif
+    Serial.println(F("Start loop"));
 }
 
 void loop() {
@@ -142,17 +188,12 @@ void loop() {
      */
     checkForLowVoltageAndShutdown();
 
+#if defined(QUADRUPED_HAS_US_DISTANCE)
     /*
      * US distance sensor handling
+     * Currently distance display on front bar and wave or melody at different distances
      */
-#if defined(QUADRUPED_HAS_US_DISTANCE)
-#  if defined(QUADRUPED_ENABLE_RTTTL)
-    if (!isPlayRtttlRunning()) { // handleUSSensor() disturbs the melody
-#  endif
-        handleUSSensor(); // currently only distance display on front bar
-#  if defined(QUADRUPED_ENABLE_RTTTL)
-    }
-#  endif
+    handleUSSensor();
 #endif
 
     /*
@@ -160,8 +201,15 @@ void loop() {
      */
 #if defined(QUADRUPED_ENABLE_RTTTL)
     if (isPlayRtttlRunning()) {
-        updatePlayRtttl();
-        if (sCurrentlyRunningAction == ACTION_TYPE_STOP) {
+        if (!updatePlayRtttl()) {
+            // Melody has just stopped - delay autoruns and attentions
+#if defined(QUADRUPED_HAS_IR_CONTROL)
+            IRDispatcher.IRReceivedData.MillisOfLastCode = millis(); // disable next auto move, next attention in 2 minutes
+#else
+            sMillisOfLastSpecialAction = millis(); // disable next auto move, next attention in 2 minutes
+#endif
+            sCurrentlyRunningAction = ACTION_TYPE_STOP; // to enable next melody
+        } else if (sCurrentlyRunningAction == ACTION_TYPE_STOP) {
             stopPlayRtttl();
         }
     }
@@ -172,55 +220,60 @@ void loop() {
      */
 #if defined(QUADRUPED_HAS_IR_CONTROL)
     //Check for IR commands and execute them. Returns only AFTER finishing of requested blocking movement
-    IRDispatcher.checkAndRunSuspendedBlockingCommands();
-
-    if (!isShutDown) {
-        // Call doQuadrupedAutoMove() if timeout (40 s) after boot was reached and no IR command was received
-        if (IRDispatcher.IRReceivedData.MillisOfLastCode == 0 && (millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)) {
-            doQuadrupedAutoMove(); // Can be terminated by IR command
-            IRDispatcher.IRReceivedData.MillisOfLastCode = millis(); // next attention in 2 minutes
-        }
+    if (IRDispatcher.checkAndRunSuspendedBlockingCommands()) {
+        delay(50); // for the voltage to stabilize after the blocking movement
     }
-
-    //Get attention that no IR command was received since 1 minutes and quadruped may be switched off
-    if (millis() - IRDispatcher.IRReceivedData.MillisOfLastCode > MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE) {
-        IRDispatcher.IRReceivedData.MillisOfLastCode += MILLIS_OF_INACTIVITY_BETWEEN_REMINDER_MOVE; // next attention in 1 minute if no IR command
-#if defined(INFO)
-        Serial.println(F("Get attention"));
 #endif
-        if (isShutDown) {
-            sCurrentlyRunningAction = ACTION_TYPE_ATTENTION; // do not move servos, just light the Neopixel
-            delay(40);
-            sCurrentlyRunningAction = ACTION_TYPE_STOP; // do not light forever
-        } else {
-            doAttention();
-        }
-        printVCCVoltageMillivolt(&Serial);
-    }
+
+    /*
+     * Auto move if timeout (40 s) after boot was reached (and no IR command was received)
+     */
+    if (!isShutDown) {
+        if ((millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)
+#if defined(QUADRUPED_HAS_IR_CONTROL)
+                && IRDispatcher.IRReceivedData.MillisOfLastCode == 0
 #else
-    if (!isShutDown) {
-        // Call doQuadrupedAutoMove() if timeout (20 s) after boot was reached
-        if ((millis() - MillisOfLastAutoMove) > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE) {
-            doQuadrupedAutoMove();
-            MillisOfLastAutoMove = millis() - MILLIS_OF_INACTIVITY_BETWEEN_AUTO_MOVE;
-            MillisOfLastAttention = millis();
+                && sMillisOfLastSpecialAction == 0
+#endif
+                && (sVCCVoltage < (VOLTAGE_USB_LOWER_THRESHOLD_MILLIVOLT / 1000.0))) {
+            doQuadrupedAutoMove(); // Can be terminated by IR command
+#if defined(QUADRUPED_HAS_IR_CONTROL)
+            IRDispatcher.IRReceivedData.MillisOfLastCode = millis(); // disable next auto move, next attention in 2 minutes
+#else
+            sMillisOfLastSpecialAction = millis(); // disable next auto move, next attention in 2 minutes
+#endif
         }
     }
 
-    if ((millis() - MillisOfLastAttention) > MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE) {
-        MillisOfLastAttention = millis() - (MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE - MILLIS_OF_INACTIVITY_BETWEEN_REMINDER_MOVE); // next attention in 1 minute
-#if defined(INFO)
-        Serial.println(F("Get attention"));
+    /*
+     * Run demo or get attention that no IR command was received since 2 minutes and quadruped may be switched off
+     */
+#if defined(QUADRUPED_HAS_IR_CONTROL)
+    if (millis() - IRDispatcher.IRReceivedData.MillisOfLastCode > MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE)
+#else
+    if ((millis() - sMillisOfLastSpecialAction) > MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE)
 #endif
+    {
         if (isShutDown) {
-            sCurrentlyRunningAction = ACTION_TYPE_ATTENTION; // do not move servos, just light the Neopixel
-            delay(40);
+            // do not move servos, just light the Neopixel
+            sCurrentlyRunningAction = ACTION_TYPE_ATTENTION;
+            delay(40); // Neopixel handler is called every 20 ms
             sCurrentlyRunningAction = ACTION_TYPE_STOP; // do not light forever
         } else {
+#  if defined(ENABLE_QUADRUPED_DEMO_MODE)
+            doQuadrupedDemoMove(); // Can be terminated by IR command
+#  else
             doAttention();
+#  endif
+
+#if defined(QUADRUPED_HAS_IR_CONTROL)
+            IRDispatcher.IRReceivedData.MillisOfLastCode = millis()
+                    - (MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE - MILLIS_OF_INACTIVITY_BETWEEN_REMINDER_MOVE); // next attention in 1 minute if no IR command
+#else
+            sMillisOfLastSpecialAction = millis()
+                    - (MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE - MILLIS_OF_INACTIVITY_BETWEEN_REMINDER_MOVE); // next attention in 1 minute
+#endif
         }
         printVCCVoltageMillivolt(&Serial);
     }
-
-#endif
 }

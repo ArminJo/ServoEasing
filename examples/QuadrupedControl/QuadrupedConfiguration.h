@@ -38,11 +38,9 @@
 #define QUADRUPED_HAS_NEOPIXEL
 #define QUADRUPED_HAS_US_DISTANCE
 #define QUADRUPED_HAS_US_DISTANCE_SERVO
-#define INFO
+//#define INFO
 
 // This patterns only accessible by DVD remote
-#define HAS_ADDITIONAL_REMOTE_COMMANDS
-#define ENABLE_PATTERN_RAINBOW_CYCLE
 #define ENABLE_PATTERN_FADE
 #define ENABLE_PATTERN_FIRE
 #endif
@@ -75,9 +73,8 @@
 
 #if defined(QUADRUPED_HAS_US_DISTANCE)
 #include "HCSR04.h"
-#define PIN_TRIGGER_OUT     A3
-#define PIN_ECHO_IN         A4
-#define MILLIS_BETWEEN_MEASUREMENTS 200 // 5 per second
+#define PIN_TRIGGER_OUT                         A3
+#define PIN_ECHO_IN                             A4
 #endif
 
 #if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
@@ -98,7 +95,8 @@ extern ServoEasing USServo;
 #define ENABLE_PATTERN_STRIPES
 #define ENABLE_PATTERN_FLASH
 #define ENABLE_PATTERN_SCANNER_EXTENDED
-#include "QuadrupedNeoPixel.h"
+#define ENABLE_PATTERN_RAINBOW_CYCLE
+#include "QuadrupedNeoPixel.h" // for handleQuadrupedNeoPixelUpdate();
 #endif
 
 /*

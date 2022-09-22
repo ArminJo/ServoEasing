@@ -34,11 +34,18 @@
 #ifndef _EASY_BUTTON_AT_INT01_H
 #define _EASY_BUTTON_AT_INT01_H
 
-#define VERSION_EASY_BUTTON "3.2.1"
+#define VERSION_EASY_BUTTON "3.3.2"
 #define VERSION_EASY_BUTTON_MAJOR 3
-#define VERSION_EASY_BUTTON_MINOR 2
+#define VERSION_EASY_BUTTON_MINOR 3
+#define VERSION_EASY_BUTTON_PATCH 2
 // The change log is at the bottom of the file
 
+/*
+ * Macro to convert 3 version parts into an integer
+ * To be used in preprocessor comparisons, such as #if VERSION_EASY_BUTTON_HEX >= VERSION_HEX_VALUE(3, 0, 0)
+ */
+#define VERSION_HEX_VALUE(major, minor, patch) ((major << 16) | (minor << 8) | (patch))
+#define VERSION_EASY_BUTTON_HEX  VERSION_HEX_VALUE(VERSION_EASY_BUTTON_MAJOR, VERSION_EASY_BUTTON_MINOR, VERSION_EASY_BUTTON_PATCH)
 #if defined(__AVR__)
 #include <Arduino.h>
 
@@ -135,7 +142,9 @@
 #if ! (defined(USE_BUTTON_0) || defined(USE_BUTTON_1))
 #error USE_BUTTON_0 and USE_BUTTON_1 are not defined, please define them or remove the #include "EasyButtonAtInt01.h"
 #endif
-
+// Can be be used as parameter
+#define BUTTON_AT_INT0 ((bool)true)
+#define BUTTON_AT_INT1_OR_PCINT ((bool)false)
 /*
  * Pin and port definitions for Arduinos
  */
@@ -248,9 +257,6 @@
 #define INT0_BIT INT0_PIN
 #endif
 
-#define BUTTON_AT_INT0 ((bool)true)
-#define BUTTON_AT_INT1_OR_PCINT ((bool)false)
-
 class EasyButton {
 
 public:
@@ -276,6 +282,7 @@ public:
 #endif
 
     void init(bool aIsButtonAtINT0);
+    bool enablePCIInterrupt();
 
     /*
      * !!! checkForDoublePress() works only reliable if called in button press callback function !!!
@@ -363,6 +370,12 @@ void __attribute__ ((weak)) handleINT1Interrupt();
 #endif // defined(__AVR__)
 
 /*
+ *  Version 3.3.2 - 9/2022
+ *  - Added NO_INITIALIZE_IN_CONSTRUCTOR macro to enable late initializing.
+ *
+ *  Version 3.3.1 - 2/2022
+ *  - Avoid mistakenly double press detection after boot.
+ *
  *  Version 3.3.0 - 9/2021
  *  - Renamed EasyButtonAtInt01.cpp.h to EasyButtonAtInt01.hpp.
  *

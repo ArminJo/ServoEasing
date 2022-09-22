@@ -98,7 +98,7 @@ void handleManualControl();
 #define VCC_STOP_THRESHOLD_MILLIVOLT 3500   // We have voltage drop at the connectors, so the battery voltage is assumed to be higher, than the Arduino VCC.
 #define VCC_STOP_MIN_MILLIVOLT 3200         // We have voltage drop at the connectors, so the battery voltage is assumed to be higher, than the Arduino VCC.
 #define VCC_CHECK_PERIOD_MILLIS 2000        // Period of VCC checks
-#define VCC_STOP_PERIOD_REPETITIONS 9       // Shutdown after 9 times (18 seconds) VCC below VCC_STOP_THRESHOLD_MILLIVOLT or 1 time below VCC_STOP_MIN_MILLIVOLT
+#define VCC_CHECKS_TOO_LOW_BEFORE_STOP 9       // Shutdown after 9 times (18 seconds) VCC below VCC_STOP_THRESHOLD_MILLIVOLT or 1 time below VCC_STOP_MIN_MILLIVOLT
 
 #define _TIMEOUT_MILLIS_BEFORE_SWITCH_TO_AUTO_MOVE  30000
 #define MILLIS_OF_INACTIVITY_BEFORE_ATTENTION       60000
@@ -274,17 +274,17 @@ bool checkVCC() {
         if (!sVCCTooLow) {
             if (tVCC < VCC_STOP_THRESHOLD_MILLIVOLT) {
                 /*
-                 * Voltage too low, wait VCC_STOP_PERIOD_REPETITIONS (9) times and then shut down.
+                 * Voltage too low, wait VCC_CHECKS_TOO_LOW_BEFORE_STOP (9) times and then shut down.
                  */
                 if (tVCC < VCC_STOP_MIN_MILLIVOLT) {
                     // emergency shutdown
-                    sVoltageTooLowCounter = VCC_STOP_PERIOD_REPETITIONS;
+                    sVoltageTooLowCounter = VCC_CHECKS_TOO_LOW_BEFORE_STOP;
                     Serial.println(F("Voltage < 3.2 volt detected"));
                 } else {
                     sVoltageTooLowCounter++;
                     Serial.println(F("Voltage < 3.4 volt detected"));
                 }
-                if (sVoltageTooLowCounter == VCC_STOP_PERIOD_REPETITIONS) {
+                if (sVoltageTooLowCounter == VCC_CHECKS_TOO_LOW_BEFORE_STOP) {
                     Serial.println(F("Shut down"));
                     sVCCTooLow = true;
                     /*
@@ -420,7 +420,8 @@ void handleManualControl() {
             }
             sLastClaw = tClaw;
             tTargetAngle = mapSpecial(tClaw, 0, 1023, CLAW_CLOSE_DEGREE - 10,  CLAW_MAXIMUM_DEGREE + 10);
-            moveOneServoAndCheckInputAndWait(SERVO_CLAW, tTargetAngle, sRobotArmServoSpeed);
+            // "sRobotArmServoSpeed * 2" makes claw a lot more responsive
+            moveOneServoAndCheckInputAndWait(SERVO_CLAW, tTargetAngle, sRobotArmServoSpeed * 2);
 
             Serial.print(F("ClawServo: micros="));
             Serial.print(ClawServo.getEndMicrosecondsOrUnits());
