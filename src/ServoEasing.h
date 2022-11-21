@@ -516,6 +516,7 @@ public:
     void setTargetPositionReachedHandler(void (*aTargetPositionReachedHandler)(ServoEasing*));
 
     int getCurrentAngle();
+    int getCurrentMicroseconds();
     int getEndMicrosecondsOrUnits();
     int getEndMicrosecondsOrUnitsWithTrim();
     int getDeltaMicrosecondsOrUnits();
@@ -720,6 +721,9 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
 #endif
 
 /*
+ * Version 3.1.1 - 09/2022
+ * - New function `getCurrentMicroseconds()`.
+ *
  * Version 3.1.0 - 08/2022
  * - SAMD51 support by Lutz Aumüller.
  * - Added support to pause and resume and `DISABLE_PAUSE_RESUME`.

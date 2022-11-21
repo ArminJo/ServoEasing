@@ -55,6 +55,7 @@
 // 1.1 mirror computation at transformAndSetPivotServos and transformOneServoIndex
 
 #include "QuadrupedConfiguration.h" // Contains the feature definitions as well as the pin layout
+#include "digitalWriteFast.h"
 
 /*
  * Demo mode:
@@ -67,7 +68,6 @@
 #else
 #define VCC_STOP_THRESHOLD_MILLIVOLT 3200   // stop moving if below 3.2 volt.
 #endif
-uint16_t sVCCVoltage;
 #define NUMBER_OF_VOLTAGE_LOW_FOR_SHUTDOWN        5     // If 5 times voltage low, start shutdown
 #define MILLIS_BETWEEN_VOLTAGE_MEASUREMENTS     200     // 5 per second
 uint8_t sShutdownCount = 0;
@@ -78,7 +78,9 @@ uint8_t sShutdownCount = 0;
 #define MIN_DISTANCE_FOR_MELODY_CM               10     // Play melody triggered by distance below 5 cm.
 #define MIN_DISTANCE_FOR_WAVE_CM                 25     // Waves triggered by distance between 25 cm and 35 cm.
 #define MAX_DISTANCE_FOR_WAVE_CM                 35     // Waves triggered by distance between 25 cm and 35 cm.
+#define MAX_DISTANCE_TIMEOUT_CM                 200     // Do not try to measure distances above 200 cm.
 #define MILLIS_BETWEEN_WAVES                  10000     // 10 second between waves triggered by distance.
+#include "HCSR04.hpp"
 #endif
 
 #include "QuadrupedHelper.hpp"              // for checkForLowVoltage() and playShutdownMelody()
@@ -132,7 +134,7 @@ uint32_t sMillisOfLastSpecialAction = 0;                            // millis() 
 #define VOLTAGE_USB_LOWER_THRESHOLD_MILLIVOLT                4300   // Assume USB powered, if voltage is higher, -> disable auto move after timeout.
 
 void setup() {
-    pinMode(LED_BUILTIN, OUTPUT);
+    pinModeFast(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
 #if defined(__AVR_ATmega32U4__) || defined(SERIAL_PORT_USBVIRTUAL) || defined(SERIAL_USB) /*stm32duino*/|| defined(USBCON) /*STM32_stm32*/|| defined(SERIALUSB_PID) || defined(ARDUINO_attiny3217)
     delay(4000); // To be able to connect Serial monitor after reset or power up and before first print out. Do not wait for an attached Serial Monitor!
@@ -148,7 +150,7 @@ void setup() {
 
 #if defined(QUADRUPED_HAS_US_DISTANCE)
     Serial.println(F("Init US distance sensor"));
-    initUSDistancePins(PIN_TRIGGER_OUT, PIN_ECHO_IN);
+    initUSDistancePins(TRIGGER_OUT_PIN, ECHO_IN_PIN);
 #endif
 
 #if defined(QUADRUPED_ENABLE_RTTTL)

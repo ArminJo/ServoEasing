@@ -16,7 +16,7 @@ void playShutdownMelody();
 void doBeep();
 
 #if defined(QUADRUPED_HAS_US_DISTANCE)
-uint8_t handleUSSensor();
+void handleUSSensor();
 #endif
 
 #if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)

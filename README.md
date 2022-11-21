@@ -4,8 +4,6 @@
 A library for smooth servo movements.<br/>
 It uses the standard Arduino Servo library and therefore has its restrictions regarding pins and platform support.
 
-### [Version 3.1.1](https://github.com/ArminJo/ServoEasing/archive/master.zip) - work in progress
-
 [![Badge License: GPLv3](https://img.shields.io/badge/License-GPLv3-brightgreen.svg)](https://www.gnu.org/licenses/gpl-3.0)
  &nbsp; &nbsp; 
 [![Badge Version](https://img.shields.io/github/v/release/ArminJo/ServoEasing?include_prereleases&color=yellow&logo=DocuSign&logoColor=white)](https://github.com/ArminJo/ServoEasing/releases/latest)
@@ -45,6 +43,7 @@ Available as [Arduino library "ServoEasing"](https://www.arduinolibraries.info/l
 - [Comparison between Quadratic, Cubic and Sine easings.](https://github.com/ArminJo/ServoEasing#comparison-between-quadratic-cubic-and-sine-easings)
 - [Useful resources](https://github.com/ArminJo/ServoEasing#useful-resources)
 - [Resolution of servo positioning](https://github.com/ArminJo/ServoEasing#resolution-of-servo-positioning)
+- [Mapping of servo positioning](https://github.com/ArminJo/ServoEasing#mapping-of-servo-positioning)
 - [Speed of servo positioning](https://github.com/ArminJo/ServoEasing#speed-of-servo-positioning)
 - [Why *.hpp instead of *.cpp](https://github.com/ArminJo/ServoEasing#why-hpp-instead-of-cpp)
 - [Using the new *.hpp files](https://github.com/ArminJo/ServoEasing#using-the-new-hpp-files)
@@ -91,7 +90,7 @@ For instructions how to enable these alternatives, see [Compile options / macros
 - A **trim value** can be set for any servo. Its value is internally added to each requested position.
 - **Reverse operation** of servo is possible e.g. if it is mounted head down.
 - **Constraints for minimum and maximum servo degree** can be specified. Trim and reverse are applied after constraint processing.
-- Allow to specify an arbitrary mapping between degrees and microseconds by `attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree)`.
+- Allow to specify an [**arbitrary mapping between degrees and microseconds**](https://github.com/ArminJo/ServoEasing#mapping-of-servo-positioning) by `attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree)`.
 - **Servo speed** can be specified in **degree per second** or **milliseconds** for the complete move.
 - **Multiple servo handling** by *ForAllServos() functions like `setDegreeForAllServos(3, 135, 135, 135)`.
 - All ServoEasing objects are accessible by using the [`ServoEasing::ServoEasingArray[]`](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServos/ThreeServos.ino#L104).
@@ -184,6 +183,20 @@ You can handle multiple servos simultaneously by [special functions](https://git
 - The **PCA9685 expander** has a resolution of **4.88 µs** per step (@ 20 ms interval) resulting in a resolution of **0.5 degree**.
 Digital Servos have a **deadband of approximately 5 µs / 0.5 degree** which means, that you will see a **stuttering movement** if the moving speed is slow.
 If you control them with a PCA9685 expander it may get worse, since one step of 4.88 µs can be within the deadband, so it takes 2 steps to move the servo from its current position.
+
+# Mapping of servo positioning
+If you want to **operate your servo e.g. from -90 to +90 degree**, you have two possibilities to specify this during attach:
+1. Use `Servo1.attachWithTrim(SERVO1_PIN, 90, START_DEGREE_VALUE, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE)` like it is done in the [TwoServos example](https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServos/TwoServos.ino#L94).
+2. Use `Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, -90, 90)`.
+
+If your servo has **other timing characteristics than the default** one -544 µs for 0 and 2400 µs for 180 degree- you have to use `Servo1.attach(SERVO1_PIN, <MY_SERVO_MICROSECONDS_FOR_0_DEGREE>, <MY_SERVO_MICROSECONDS_FOR_180_DEGREE>)`.<br/>
+You can combine this with variant 2 from above to transparently specify your servo characteristics e.g. like it is done in the [RobotArmControl example]( https://github.com/ArminJo/ServoEasing/blob/master/examples/RobotArmControl/RobotArmServoConfiguration.h#L97):
+
+```c++
+#define PIVOT_MICROS_AT_PLUS_70_DEGREE        2400 // Left - the MG90 servos are not capable of full 180°
+#define PIVOT_MICROS_AT_MINUS_70_DEGREE        700 // Right
+BasePivotServo.attach(PIVOT_SERVO_PIN, 0, PIVOT_MICROS_AT_MINUS_70_DEGREE, PIVOT_MICROS_AT_PLUS_70_DEGREE, -70, 70);
+```
 
 # Speed of servo positioning
 These values are measured with the [SpeedTest example](https://github.com/ArminJo/ServoEasing/blob/master/examples/SpeedTest/SpeedTest.ino).
@@ -379,6 +392,10 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 <br/>
 
 # Revision History
+### Version 3.1.1
+- Added function `getCurrentMicroseconds()`.
+- Improved many examples.
+
 ### Version 3.1.0
 - SAMD51 support by Lutz Aumüller.
 - Added support to pause and resume and `DISABLE_PAUSE_RESUME`.
@@ -512,7 +529,7 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 - added convenience function `clipDegreeSpecial()`.
 
 ### Version 1.0.0
-Initial Arduino library version
+Initial Arduino library version.
 
 # CI
 Since Travis CI is slow (5 times slower 17:43 vs. 3:15 minutes), the library examples are now tested with GitHub Actions for [this boards](.github/workflows/LibraryBuild.yml#L41).

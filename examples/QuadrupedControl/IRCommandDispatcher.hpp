@@ -7,11 +7,11 @@
  * To run this example you need to install the "IRremote" or "IRMP" library.
  * Install it under "Tools -> Manage Libraries..." or "Ctrl+Shift+I"
  *
- * The IR library calls a callback function, which executes a non blocking command directly in ISR context!
+ * The IR library calls a callback function, which executes a non blocking command directly in ISR (Interrupt Service Routine) context!
  * A blocking command is stored and sets a stop flag for an already running blocking function to terminate.
  * The blocking command can in turn be executed by main loop by calling IRDispatcher.checkAndRunSuspendedBlockingCommands().
  *
- *  Copyright (C) 2019-2021  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2022  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -76,22 +76,20 @@ void IRCommandDispatcher::init() {
  * This is the TinyReceiver callback function which is called if a complete command was received
  * It checks for right address and then call the dispatcher
  */
-#if defined(ESP32) || defined(ESP8266)
-void IRAM_ATTR handleReceivedTinyIRData(uint16_t aAddress, uint8_t aCommand, bool isRepeat)
-#  else
-void handleReceivedTinyIRData(uint16_t aAddress, uint8_t aCommand, bool isRepeat)
-#  endif
-{
+#if defined(ESP8266) || defined(ESP32)
+IRAM_ATTR
+#endif
+void handleReceivedTinyIRData(uint8_t aAddress, uint8_t aCommand, uint8_t aFlags) {
     IRDispatcher.IRReceivedData.address = aAddress;
     IRDispatcher.IRReceivedData.command = aCommand;
-    IRDispatcher.IRReceivedData.isRepeat = isRepeat;
+    IRDispatcher.IRReceivedData.isRepeat = aFlags & IRDATA_FLAGS_IS_REPEAT;
     IRDispatcher.IRReceivedData.MillisOfLastCode = millis();
 
     CD_INFO_PRINT(F("A=0x"));
     CD_INFO_PRINT(aAddress, HEX);
     CD_INFO_PRINT(F(" C=0x"));
     CD_INFO_PRINT(aCommand, HEX);
-    if (isRepeat) {
+    if (IRDispatcher.IRReceivedData.isRepeat) {
         CD_INFO_PRINT(F("R"));
     }
     CD_INFO_PRINTLN();
@@ -100,7 +98,7 @@ void handleReceivedTinyIRData(uint16_t aAddress, uint8_t aCommand, bool isRepeat
         IRDispatcher.IRReceivedData.isAvailable = true;
         if(!IRDispatcher.doNotUseDispatcher) {
             /*
-             * Only short (non blocking) commands are executed directly in ISR context,
+             * Only short (non blocking) commands are executed directly in ISR (Interrupt Service Routine) context,
              * others are stored for main loop which calls checkAndRunSuspendedBlockingCommands()
              */
             IRDispatcher.checkAndCallCommand(false);
@@ -124,12 +122,10 @@ void IRCommandDispatcher::init() {
 /*
  * This is the callback function which is called if a complete command was received
  */
-#  if defined(ESP32) || defined(ESP8266)
-void IRAM_ATTR handleReceivedIRData()
-#  else
-void handleReceivedIRData()
-#  endif
-{
+#if defined(ESP8266) || defined(ESP32)
+IRAM_ATTR
+#endif
+void handleReceivedIRData() {
     IRMP_DATA tTeporaryData;
     irmp_get_data(&tTeporaryData);
     IRDispatcher.IRReceivedData.address = tTeporaryData.address;

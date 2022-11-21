@@ -47,11 +47,11 @@
 #include "IRCommandDispatcher.h"
 #endif
 
-#if defined(QUADRUPED_HAS_US_DISTANCE)
-uint32_t sLastDistanceMeasurementMillis;
-uint8_t sCurrentDistance;
-uint8_t sLastDistance;
-#endif
+//#if defined(QUADRUPED_HAS_US_DISTANCE)
+//uint32_t sLastDistanceMeasurementMillis;
+//uint8_t sCurrentDistance;
+//uint8_t sLastDistance;
+//#endif
 
 uint32_t sLastVolageMeasurementMillis;
 
@@ -139,7 +139,8 @@ bool delayAndCheckForStopByIR(uint16_t aDelayMillis) {
 #if defined(QUADRUPED_HAS_US_DISTANCE)
     // adjust delay value
     // we know, that delay is <= 10 and aDelayMillis is > =19
-    aDelayMillis -= handleUSSensor();
+     handleUSSensor();
+     aDelayMillis -= sUsedMillisForMeasurement;
 #endif
 #if defined(QUADRUPED_HAS_IR_CONTROL)
     if (IRDispatcher.delayAndCheckForStop(aDelayMillis)) {
@@ -160,29 +161,20 @@ bool delayAndCheckForStopByIR(uint16_t aDelayMillis) {
  * Can introduce a delay up to 10 ms
  * @return ms of delay, that was introduced
  */
-uint8_t handleUSSensor() {
+void handleUSSensor() {
 #  if defined(QUADRUPED_ENABLE_RTTTL)
     // 2 measurements per second even when melody is playing
-    if (isPlayRtttlRunning() && (millis() - sLastDistanceMeasurementMillis) <= MILLIS_BETWEEN_DISTANCE_MEASUREMENTS_FOR_MELODY) {
-        return 0; // showPatternSynchronizedWithServos() disturbs the melody
+    if (isPlayRtttlRunning() && (millis() - sLastUSDistanceMeasurementMillis) <= MILLIS_BETWEEN_DISTANCE_MEASUREMENTS_FOR_MELODY) {
+        return; // showPatternSynchronizedWithServos() disturbs the melody
     }
 #  endif
 
-    if ((millis() - sLastDistanceMeasurementMillis) <= MILLIS_BETWEEN_DISTANCE_MEASUREMENTS || isShutDown) {
-        return 0; // no measurement required
+    if (isShutDown) {
+        return; // no measurement required
     }
 
-    sLastDistanceMeasurementMillis = millis();
-    sCurrentDistance = getUSDistanceAsCentimeter(10000);
-    if (sCurrentDistance != 0 && sLastDistance != sCurrentDistance) {
-        sLastDistance = sCurrentDistance;
-#  if defined(INFO)
-        if(sCurrentlyRunningAction == ACTION_TYPE_STOP ){
-            Serial.print(F("Distance="));
-            Serial.print(sCurrentDistance);
-            Serial.println(F("cm"));
-        }
-#  endif
+    if(getUSDistanceAsCentimeterWithCentimeterTimeoutPeriodicallyAndPrintIfChanged( MAX_DISTANCE_TIMEOUT_CM,
+            MILLIS_BETWEEN_DISTANCE_MEASUREMENTS, &Serial)){
 #  if defined(QUADRUPED_HAS_NEOPIXEL)
         // Show distance bar if no other pattern is active
         if (FrontNeoPixelBar.ActivePattern == PATTERN_NONE && QuadrupedNeoPixelBar.ActivePattern == PATTERN_NONE) {
@@ -193,15 +185,15 @@ uint8_t handleUSSensor() {
              * The 8. pixel is active if distance is >= 1.2 meter
              */
             uint8_t tBarLength;
-            if (sCurrentDistance < 20) {
-                tBarLength = sCurrentDistance / 5;
-            } else if (sCurrentDistance < 30) {
+            if (sUSDistanceCentimeter < 20) {
+                tBarLength = sUSDistanceCentimeter / 5;
+            } else if (sUSDistanceCentimeter < 30) {
                 tBarLength = 4;
-            } else if (sCurrentDistance < 50) {
+            } else if (sUSDistanceCentimeter < 50) {
                 tBarLength = 5;
-            } else if (sCurrentDistance < 80) {
+            } else if (sUSDistanceCentimeter < 80) {
                 tBarLength = 6;
-            } else if (sCurrentDistance < 120) {
+            } else if (sUSDistanceCentimeter < 120) {
                 tBarLength = 7;
             } else {
                 tBarLength = 8;
@@ -215,17 +207,17 @@ uint8_t handleUSSensor() {
             /*
              * Play melody if distance is below 10 cm and above 3 cm
              */
-            if (sCurrentlyRunningAction == ACTION_TYPE_STOP && sCurrentDistance >= 3 && sCurrentDistance <= MIN_DISTANCE_FOR_MELODY_CM && !isPlayRtttlRunning()) {
+            if (sCurrentlyRunningAction == ACTION_TYPE_STOP && sUSDistanceCentimeter >= 3 && sUSDistanceCentimeter <= MIN_DISTANCE_FOR_MELODY_CM && !isPlayRtttlRunning()) {
                 randomSeed(millis());
                 doRandomMelody();
-                return getMillisFromUSCentimeter(sCurrentDistance); // do not check for wave!
+                return; // do not check for wave!
             }
 #  endif
             /*
              * Do wave if distance is between 35 cm and 25 cm
              * Fist wave can be done 10 seconds after boot
              */
-            if (sCurrentlyRunningAction == ACTION_TYPE_STOP && sCurrentDistance >= MIN_DISTANCE_FOR_WAVE_CM && sCurrentDistance <= MAX_DISTANCE_FOR_WAVE_CM
+            if (sCurrentlyRunningAction == ACTION_TYPE_STOP && sUSDistanceCentimeter >= MIN_DISTANCE_FOR_WAVE_CM && sUSDistanceCentimeter <= MAX_DISTANCE_FOR_WAVE_CM
 #if defined(QUADRUPED_HAS_IR_CONTROL)
                 && (millis() - IRDispatcher.IRReceivedData.MillisOfLastCode) > MILLIS_BETWEEN_WAVES
 #else
@@ -241,7 +233,6 @@ uint8_t handleUSSensor() {
             }
         }
     }
-    return getMillisFromUSCentimeter(sCurrentDistance);
 }
 #endif // #if defined(QUADRUPED_HAS_US_DISTANCE)
 

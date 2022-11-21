@@ -34,7 +34,7 @@
 
 #include <stdint.h>
 
-#define DISTANCE_TIMEOUT_RESULT                0
+#define DISTANCE_TIMEOUT_RESULT                   0
 #define US_DISTANCE_DEFAULT_TIMEOUT_MICROS    20000
 #define US_DISTANCE_DEFAULT_TIMEOUT_CENTIMETER  343   // Timeout of 20000L is 3.43 meter
 
@@ -44,11 +44,14 @@
 
 void initUSDistancePins(uint8_t aTriggerOutPin, uint8_t aEchoInPin = 0);
 void initUSDistancePin(uint8_t aTriggerOutEchoInPin); // Using this determines one pin mode
+void setHCSR04OnePinMode(bool aUseOnePinMode);
 unsigned int getUSDistance(unsigned int aTimeoutMicros = US_DISTANCE_DEFAULT_TIMEOUT_MICROS);
 unsigned int getCentimeterFromUSMicroSeconds(unsigned int aDistanceMicros);
 uint8_t getMillisFromUSCentimeter(unsigned int aDistanceCentimeter);
 unsigned int getUSDistanceAsCentimeter(unsigned int aTimeoutMicros = US_DISTANCE_DEFAULT_TIMEOUT_MICROS);
 unsigned int getUSDistanceAsCentimeterWithCentimeterTimeout(unsigned int aTimeoutCentimeter);
+bool getUSDistanceAsCentimeterWithCentimeterTimeoutPeriodicallyAndPrintIfChanged(unsigned int aTimeoutCentimeter,
+        unsigned int aMillisBetweenMeasurements, Print *aSerial);
 void testUSSensor(uint16_t aSecondsToTest);
 
 #if (defined(USE_PIN_CHANGE_INTERRUPT_D0_TO_D7) | defined(USE_PIN_CHANGE_INTERRUPT_D8_TO_D13) | defined(USE_PIN_CHANGE_INTERRUPT_A0_TO_A5))
@@ -65,5 +68,10 @@ extern volatile unsigned long sUSPulseMicros;
 #define HCSR04_MODE_USE_1_PIN       1
 #define HCSR04_MODE_USE_2_PINS      2
 extern uint8_t sHCSR04Mode;
+extern unsigned long sLastUSDistanceMeasurementMillis; // Only written by getUSDistanceAsCentimeterWithCentimeterTimeoutPeriodicallyAndPrintIfChanged()
+extern unsigned int sLastUSDistanceCentimeter; // Only written by getUSDistanceAsCentimeterWithCentimeterTimeoutPeriodicallyAndPrintIfChanged()
+extern unsigned int sUSDistanceMicroseconds;
+extern unsigned int sUSDistanceCentimeter;
+extern uint8_t sUsedMillisForMeasurement; // is optimized out if not used
 
 #endif // _HCSR04_H

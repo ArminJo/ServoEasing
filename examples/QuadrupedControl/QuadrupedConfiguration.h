@@ -72,9 +72,8 @@
 #endif
 
 #if defined(QUADRUPED_HAS_US_DISTANCE)
-#include "HCSR04.h"
-#define PIN_TRIGGER_OUT                         A3
-#define PIN_ECHO_IN                             A4
+#define TRIGGER_OUT_PIN                         A3
+#define ECHO_IN_PIN                             A4
 #endif
 
 #if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)

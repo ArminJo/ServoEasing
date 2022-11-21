@@ -1,7 +1,7 @@
 /*
  *  PinDefinitionsAndMore.h
  *
- *  Contains SERVOX_PIN definitions for ServoEasing examples for various platforms
+ *  Contains SERVO*_PIN definitions for ServoEasing examples for various platforms
  *  as well as includes and definitions for LED_BUILTIN
  *
  *  Copyright (C) 2020-2022  Armin Joachimsmeyer

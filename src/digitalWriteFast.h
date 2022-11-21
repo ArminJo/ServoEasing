@@ -121,13 +121,20 @@
 #define __digitalPinToBit(P) \
 (((P) <= 7) ? (P) : (((P) >= 8 && (P) <= 15) ? (P) - 8 : (((P) >= 16 && (P) <= 23) ? (P) - 16 : (((P) >= 16 && (P) <= 23) ? (P) - 24 : (P) - 32))))
 # endif
-#else
+#elif defined(PORTA)
 #define __digitalPinToPortReg(P) \
 (((P) <= 7) ? &PORTB : (((P) >= 8 && (P) <= 15) ? &PORTD : (((P) >= 16 && (P) <= 23) ? &PORTC : &PORTA)))
 #define __digitalPinToDDRReg(P) \
 (((P) <= 7) ? &DDRB : (((P) >= 8 && (P) <= 15) ? &DDRD : (((P) >= 16 && (P) <= 23) ? &DDRC : &DDRA)))
 #define __digitalPinToPINReg(P) \
 (((P) <= 7) ? &PINB : (((P) >= 8 && (P) <= 15) ? &PIND : (((P) >= 16 && (P) <= 23) ? &PINC : &PINA)))
+#else
+#define __digitalPinToPortReg(P) \
+(((P) <= 7) ? &PORTB : (((P) >= 8 && (P) <= 15) ? &PORTD : &PORTC))
+#define __digitalPinToDDRReg(P) \
+(((P) <= 7) ? &DDRB : (((P) >= 8 && (P) <= 15) ? &DDRD : &DDRC))
+#define __digitalPinToPINReg(P) \
+(((P) <= 7) ? &PINB : (((P) >= 8 && (P) <= 15) ? &PIND : &PINC))
 # if defined(SANGUINO_PINOUT)
 #define __digitalPinToBit(P) \
 (((P) <= 7) ? (P) : (((P) >= 8 && (P) <= 15) ? (P) - 8 : (((P) >= 16 && (P) <= 23) ? (P) - 16 : (7 - ((P) - 24)))))
@@ -227,12 +234,18 @@
 // TinyCore
 // https://raw.githubusercontent.com/xukangmin/TinyCore/master/avr/package/package_tinycore_index.json
 // https://docs.tinycore.dev/en/latest/
-#elif  defined(__AVR_ATtiny1616__)  || defined(__AVR_ATtiny3216__) || defined(__AVR_ATtiny3217__)
+#elif  defined(__AVR_ATtiny1616__) || defined(__AVR_ATtiny3216__) || defined(__AVR_ATtiny3217__)
 #define __digitalPinToPortReg(P) ((P) <= 5 ? &VPORTB.OUT : ((P) <= 9 ? &VPORTC.OUT : ((P) <= 16 ? &VPORTA.OUT : ((P) <= 18 ? &VPORTB.OUT : &VPORTC.OUT))))
 #define __digitalPinToDDRReg(P) ((P) <= 5 ? &VPORTB.DIR : ((P) <= 9 ? &VPORTC.DIR : ((P) <= 16 ? &VPORTA.DIR : ((P) <= 18 ? &VPORTB.DIR : &VPORTC.DIR))))
 #define __digitalPinToPINReg(P) ((P) <= 5 ? &VPORTB.IN : ((P) <= 9 ? &VPORTC.IN : ((P) <= 16 ? &VPORTA.IN : ((P) <= 18 ? &VPORTB.IN : &VPORTC.IN))))
 #define __digitalPinToBit(P) ( (P) <= 3 ? (3 - P) : ((P) <= 5 ? (P) : ((P) <= 9 ? (P - 6) : ((P) <= 16 ? ((P) - 9) : ((P) <= 18 ? ((P) - 11) : ((P) - 15))))) )
 
+#elif  defined(__AVR_ATtiny816__)
+// https://github.com/Arduino-IRremote/Arduino-IRremote/discussions/1029
+#define __digitalPinToPortReg(P) ((P) <= 3 ? &VPORTA.OUT : ((P) <= 9 ? &VPORTB.OUT : ((P) <= 13 ? &VPORTC.OUT : ((P) <= 17 ? &VPORTA.OUT : &VPORTC.OUT))))
+#define __digitalPinToDDRReg(P) ((P) <= 3 ? &VPORTA.DIR : ((P) <= 9 ? &VPORTB.DIR : ((P) <= 13 ? &VPORTC.DIR : ((P) <= 17 ? &VPORTA.DIR : &VPORTC.DIR))))
+#define __digitalPinToPINReg(P) ((P) <= 3 ? &VPORTA.IN : ((P) <= 9 ? &VPORTB.IN : ((P) <= 13 ? &VPORTC.IN : ((P) <= 17 ? &VPORTA.IN : &VPORTC.IN))))
+#define __digitalPinToBit(P) ( (P) <= 3 ? (P + 4) : ((P) <= 9 ? (9 - P) : ((P) <= 13 ? (P - 10) : ((P) <= 16 ? (P - 13) : ((P) - 17)))) )
 
 // --- ATtinyX5 ---
 #elif defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)

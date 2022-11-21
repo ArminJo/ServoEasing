@@ -89,16 +89,22 @@
 void changeEasingType(bool aButtonToggleState);
 EasyButton ButtonAtPin2(&changeEasingType);
 
-#include "ADCUtils.hpp" // for get getVCCVoltageMillivolt
+/*
+ * Default values are suitable for Li-ion batteries.
+ * We normally have voltage drop at the connectors, so the battery voltage is assumed slightly higher, than the Arduino VCC.
+ * But keep in mind that the ultrasonic distance module HC-SR04 may not work reliable below 3.7 volt.
+ */
+#define VCC_STOP_THRESHOLD_MILLIVOLT    3300 // Do not stress your battery and we require some power for standby
+#define VCC_EMERGENCY_STOP_MILLIVOLT    3000 // Many Li-ions are specified down to 3.0 volt
+#define VCC_CHECK_PERIOD_MILLIS        10000 // Period of VCC checks
+#define VCC_CHECKS_TOO_LOW_BEFORE_STOP     6 // Shutdown after 6 times (60 seconds) VCC below VCC_STOP_THRESHOLD_MILLIVOLT or 1 time below VCC_EMERGENCY_STOP_MILLIVOLT
+#include "ADCUtils.hpp"
+void checkAndHandleVCCTooLow();
 
 #define VERSION_EXAMPLE "2.0"
 
 void handleManualControl();
-
-#define VCC_STOP_THRESHOLD_MILLIVOLT 3500   // We have voltage drop at the connectors, so the battery voltage is assumed to be higher, than the Arduino VCC.
-#define VCC_STOP_MIN_MILLIVOLT 3200         // We have voltage drop at the connectors, so the battery voltage is assumed to be higher, than the Arduino VCC.
-#define VCC_CHECK_PERIOD_MILLIS 2000        // Period of VCC checks
-#define VCC_CHECKS_TOO_LOW_BEFORE_STOP 9       // Shutdown after 9 times (18 seconds) VCC below VCC_STOP_THRESHOLD_MILLIVOLT or 1 time below VCC_STOP_MIN_MILLIVOLT
+void printConfigPinInfo(uint8_t aConfigPinNumber, const __FlashStringHelper *aConfigPinDescription, Print *aSerial);
 
 #define _TIMEOUT_MILLIS_BEFORE_SWITCH_TO_AUTO_MOVE  30000
 #define MILLIS_OF_INACTIVITY_BEFORE_ATTENTION       60000
@@ -145,16 +151,7 @@ void setup() {
 #endif
 
     sDebugOutputIsEnabled = !digitalRead(DEBUG_OUTPUT_ENABLE_PIN);
-    Serial.print(F("Pin " STR(DEBUG_OUTPUT_ENABLE_PIN) " is"));
-    if (!sDebugOutputIsEnabled) {
-        Serial.print(F(" not"));
-    }
-    Serial.print(F(" connected to ground, debug output is "));
-    if (sDebugOutputIsEnabled) {
-        Serial.println(F("enabled"));
-    } else {
-        Serial.println(F("disabled"));
-    }
+    printConfigPinInfo(DEBUG_OUTPUT_ENABLE_PIN, F("debug output"),&Serial);
 
     // Output VCC voltage
     printVCCVoltageMillivolt(&Serial);
@@ -167,7 +164,9 @@ void loop() {
 
     sDebugOutputIsEnabled = !digitalRead(DEBUG_OUTPUT_ENABLE_PIN); // enabled if LOW
 
-    checkVCC();
+#if defined(__AVR__) && defined(ADCSRA) && defined(ADATE) && (!defined(__AVR_ATmega4809__))
+    checkAndHandleVCCTooLow();
+#endif // defined(__AVR__)
 
 #if defined(ROBOT_ARM_HAS_RTC_CONTROL)
 #  if defined(DEBUG)
@@ -229,78 +228,34 @@ void loop() {
 
 /*
  * Special delay function for the robot arm control.
- * It checks for low voltage and IR input
+ * It checks for IR input
  * @return  true - if exit condition occurred like stop received
  */
 bool delayAndCheckForRobotArm(uint16_t aDelayMillis) {
-    // check only once per delay
-    if (checkVCC()) {
 #if defined(ROBOT_ARM_HAS_IR_CONTROL)
-        if (IRDispatcher.delayAndCheckForStop(aDelayMillis)) {
-            Serial.println(F("Stop requested"));
-            sActionType = ACTION_TYPE_STOP;
-            return true;
-        }
-#endif
-
-        return false;
+    if (IRDispatcher.delayAndCheckForStop(aDelayMillis)) {
+        Serial.println(F("Stop requested"));
+        sActionType = ACTION_TYPE_STOP;
+        return true;
     }
-#if defined(ROBOT_ARM_HAS_IR_CONTROL)
-    sActionType = ACTION_TYPE_STOP;
 #endif
-    return true;
+    return false;
 }
 
+#if defined(__AVR__) && defined(ADCSRA) && defined(ADATE) && (!defined(__AVR_ATmega4809__))
 /*
- * checks VCC periodically and sets sVCCTooLow
+ * If isVCCTooLowMultipleTimes() returns true clear all pattern and activate only 2 MultipleFallingStars pattern on the 2 bars
  */
-bool checkVCC() {
-    static uint8_t sVoltageTooLowCounter;
-    static uint16_t sLastVoltage;
-    static long sLastMillisOfVoltageCheck;
-    if (millis() - sLastMillisOfVoltageCheck >= VCC_CHECK_PERIOD_MILLIS) {
-        sLastMillisOfVoltageCheck = millis();
-        uint16_t tVCC = getVCCVoltageMillivolt();
-
-        if (sDebugOutputIsEnabled) {
-            if (sLastVoltage != tVCC) {
-                sLastVoltage = tVCC;
-                Serial.print(F("VCC="));
-                Serial.print(tVCC);
-                Serial.println(F(" mV"));
-            }
-        }
-        // one time flag
-        if (!sVCCTooLow) {
-            if (tVCC < VCC_STOP_THRESHOLD_MILLIVOLT) {
-                /*
-                 * Voltage too low, wait VCC_CHECKS_TOO_LOW_BEFORE_STOP (9) times and then shut down.
-                 */
-                if (tVCC < VCC_STOP_MIN_MILLIVOLT) {
-                    // emergency shutdown
-                    sVoltageTooLowCounter = VCC_CHECKS_TOO_LOW_BEFORE_STOP;
-                    Serial.println(F("Voltage < 3.2 volt detected"));
-                } else {
-                    sVoltageTooLowCounter++;
-                    Serial.println(F("Voltage < 3.4 volt detected"));
-                }
-                if (sVoltageTooLowCounter == VCC_CHECKS_TOO_LOW_BEFORE_STOP) {
-                    Serial.println(F("Shut down"));
-                    sVCCTooLow = true;
-                    /*
-                     * Do it once and wait for 5 seconds
-                     * Afterwards only auto move is disabled
-                     */
-                    goToFolded();
-                    delay(5000);
-                }
-            } else {
-                sVoltageTooLowCounter = 0;
-            }
-        }
+void checkAndHandleVCCTooLow() {
+    if (isVCCTooLowMultipleTimes()) {
+        goToFolded(); // Afterwards only auto move is disabled
+#if defined(ROBOT_ARM_HAS_IR_CONTROL)
+        sActionType = ACTION_TYPE_STOP;
+#endif
+        Serial.println(F("Shut down"));
     }
-    return sVCCTooLow;
 }
+#endif // defined(__AVR__) && defined(ADCSRA) && defined(ADATE) && (!defined(__AVR_ATmega4809__))
 
 /*
  * Button callback function
@@ -419,7 +374,7 @@ void handleManualControl() {
                 tManualAction = true;
             }
             sLastClaw = tClaw;
-            tTargetAngle = mapSpecial(tClaw, 0, 1023, CLAW_CLOSE_DEGREE - 10,  CLAW_MAXIMUM_DEGREE + 10);
+            tTargetAngle = mapSpecial(tClaw, 0, 1023, CLAW_CLOSE_DEGREE - 10, CLAW_MAXIMUM_DEGREE + 10);
             // "sRobotArmServoSpeed * 2" makes claw a lot more responsive
             moveOneServoAndCheckInputAndWait(SERVO_CLAW, tTargetAngle, sRobotArmServoSpeed * 2);
 
@@ -443,3 +398,22 @@ void handleManualControl() {
         }
     }
 }
+
+void printConfigPinInfo(uint8_t aConfigPinNumber, const __FlashStringHelper *aConfigPinDescription, Print *aSerial) {
+    aSerial->print(F("Pin "));
+    aSerial->print(aConfigPinNumber);
+    aSerial->print(F(" is"));
+    bool tIsEnabled = digitalRead(aConfigPinNumber) == LOW;
+    if (!tIsEnabled) {
+        aSerial->print(F(" not"));
+    }
+    aSerial->print(F(" connected to ground, "));
+    aSerial->print(aConfigPinDescription);
+    aSerial->print(F(" is "));
+    if (tIsEnabled) {
+        aSerial->println(F("enabled"));
+    } else {
+        aSerial->println(F("disabled"));
+    }
+}
+

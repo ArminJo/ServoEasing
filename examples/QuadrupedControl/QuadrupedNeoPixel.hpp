@@ -43,7 +43,7 @@
 
 #if defined(QUADRUPED_HAS_IR_CONTROL)
 #include "IRCommandDispatcher.h"
-#include "TinyIRReceiver.h" // for isTinyReceiverIdle()
+#include "TinyIR.h" // for isTinyReceiverIdle()
 #endif
 
 #if defined(QUADRUPED_ENABLE_RTTTL)

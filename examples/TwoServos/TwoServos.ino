@@ -92,6 +92,8 @@ void setup() {
     Serial.println(F("Operate servo 1 from -90 to + 90 degree by using attachWithTrim()"));
 #endif
     Servo1.attachWithTrim(SERVO1_PIN, 90, START_DEGREE_VALUE, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
+    // alternative way to get the same result
+//    Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, -90, 90);
 
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
     /*
