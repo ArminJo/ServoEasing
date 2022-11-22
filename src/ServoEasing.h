@@ -522,7 +522,7 @@ public:
     int getDeltaMicrosecondsOrUnits();
     int getMillisForCompleteMove();
     bool isMoving();
-    bool isMovingAndCallYield() __attribute__ ((deprecated ("Most times better use areInterruptsActive()")));
+    bool isMovingAndCallYield() __attribute__ ((deprecated ("Replaced by isMoving(). Often better to use areInterruptsActive() instead.")));
 
     int MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits);
     int MicrosecondsToDegree(int aMicroseconds);

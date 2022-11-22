@@ -183,12 +183,20 @@ void loop() {
             /*
              * Put your own code here
              */
+#if defined(ESP32)
+            delay(1); // ESP32 requires it, delay(0) or yield() or taskYIELD() is not sufficient here :-(
+#else
             ; // no delays here to avoid break between forth and back movement
+#endif
         }
         Servo1.startEaseToD(45, 1000);
 //        Servo1.startEaseToD((544 + ((2400 - 544) / 4)), 1000); // Alternatively you can specify the target as microsecond value
         while (Servo1.isMoving()) {
+#if defined(ESP32)
+            delay(1); // ESP32 requires it, delay(0) or yield() or taskYIELD() is not sufficient here :-(
+#else
             ; // no delays here to avoid break between forth and back movement
+#endif
         }
     }
     Servo1.setEasingType(EASE_LINEAR);

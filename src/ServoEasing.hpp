@@ -831,7 +831,8 @@ void ServoEasing::_writeMicrosecondsOrUnits(int aTargetDegreeOrMicrosecond) {
 // Apply reverse, values for 0 to 180 are swapped if reverse - this is the only place mOperateServoReverse is evaluated
 // (except in the DegreeToMicrosecondsOrUnitsWithTrimAndReverse() function for external testing purposes)
     if (mOperateServoReverse) {
-        aTargetDegreeOrMicrosecond = mServo180DegreeMicrosecondsOrUnits - (aTargetDegreeOrMicrosecond - mServo0DegreeMicrosecondsOrUnits);
+        aTargetDegreeOrMicrosecond = mServo180DegreeMicrosecondsOrUnits
+                - (aTargetDegreeOrMicrosecond - mServo0DegreeMicrosecondsOrUnits);
 #if defined(LOCAL_TRACE)
         Serial.print(F(" r="));
         Serial.print(aTargetDegreeOrMicrosecond);
@@ -1605,11 +1606,28 @@ float ServoEasing::callEasingFunction(float aFactorOfTimeCompletion) {
 
 #endif //PROVIDE_ONLY_LINEAR_MOVEMENT
 
+/**
+ * Test if servo is moving yet.
+ */
 bool ServoEasing::isMoving() {
 #if defined(ESP8266)
-    yield(); // Not required for ESP32, since our code is running on CPU1 and using yield seems to disturb the I2C interface
+    yield();
+#elif defined(ESP32)
+//    yield(); // taskYIELD() and yield() sometimes helps, but this is not deterministic :-(. Allow context switch for the ticker task to run
 #endif
     return mServoMoves;
+}
+
+/**
+ * The recommended test if at least one servo is moving yet.
+ */
+bool ServoEasing::areInterruptsActive() {
+#if defined(ESP8266)
+    yield();
+#elif defined(ESP32)
+//    taskYIELD(); // Allow context switch for the ticker task to run
+#endif
+    return sInterruptsAreActive;
 }
 
 /**
@@ -1620,16 +1638,12 @@ bool ServoEasing::isMoving() {
  * which leads to an error: CORRUPT HEAP: Bad head at ...
  */
 bool ServoEasing::isMovingAndCallYield() {
-#if defined(ESP8266)
-    yield(); // Dangerous and not required for ESP32, since our code is running on CPU1 and using yield seems to disturb the I2C interface
-#endif
-    return mServoMoves;
+    return isMoving();
 }
 
 int ServoEasing::getCurrentAngle() {
     return MicrosecondsOrUnitsToDegree(mCurrentMicrosecondsOrUnits);
 }
-
 
 int ServoEasing::getCurrentMicroseconds() {
     return MicrosecondsOrUnitsToMicroseconds(mCurrentMicrosecondsOrUnits);
@@ -1810,16 +1824,6 @@ int clipDegreeSpecial(uint_fast8_t aDegreeToClip) {
 }
 
 /**
- * The recommended test if at least one servo is moving yet.
- */
-bool ServoEasing::areInterruptsActive() {
-#if defined(ESP8266)
-    yield(); // required for ESP8266
-#endif
-    return sInterruptsAreActive;
-}
-
-/**
  * Update all servos from list and check if all servos have stopped.
  * Guarded by an macro in order to be able to overwrite it, e.g. for synchronizing with NeoPixel updates,
  * which otherwise leads to servo twitching. See QuadrupedNeoPixel.cpp of QuadrupedControl example.
@@ -1915,7 +1919,7 @@ void enableServoEasingInterrupt() {
     if(ServoEasing::sInterruptsAreActive) {
         Timer20ms.detach();     // otherwise the ESP32 kernel at least will crash and reboot
     }
-    // It seems that the callback is called by a task not an ISR, which allow us to have the callback without the IRAM attribute
+    // The callback is called by a RTOS task not an ISR, which allows us to have the callback without the IRAM attribute
     Timer20ms.attach_ms(REFRESH_INTERVAL_MILLIS, handleServoTimerInterrupt);
 
 // BluePill in 2 flavors

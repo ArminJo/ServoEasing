@@ -176,20 +176,28 @@ void loop() {
 #endif
     Servo1.setEasingType(EASE_CUBIC_IN_OUT); // EASE_LINEAR is default
 
-    for (int i = 0; i < 2; ++i) {
+    for (uint_fast8_t i = 0; i < 2; ++i) {
         Servo1.startEaseToD(135, 1000);
-//        Servo1.startEaseToD((544 + (((2400 - 544) / 4) * 3)), 1000); // Alternatively you can specify the target as microsecond value
+//        Servo1.startEaseToD((544 + (((2400 - 544) / 4) * 3)), 1000); // Alternatively you can specify the target as a microsecond value
         // isMoving() calls yield for the ESP8266 boards
         while (Servo1.isMoving()) {
             /*
              * Put your own code here
              */
+#if defined(ESP32)
+            delay(1); // ESP32 requires it, delay(0) or yield() or taskYIELD() is not sufficient here :-(
+#else
             ; // no delays here to avoid break between forth and back movement
+#endif
         }
         Servo1.startEaseToD(45, 1000);
 //        Servo1.startEaseToD((544 + ((2400 - 544) / 4)), 1000); // Alternatively you can specify the target as microsecond value
         while (Servo1.isMoving()) {
+#if defined(ESP32)
+            delay(1); // ESP32 requires it, delay(0) or yield() or taskYIELD() is not sufficient here :-(
+#else
             ; // no delays here to avoid break between forth and back movement
+#endif
         }
     }
     Servo1.setEasingType(EASE_LINEAR);
@@ -229,7 +237,7 @@ void loop() {
 #if !defined(DISABLE_PAUSE_RESUME)
 #  if !defined(PRINT_FOR_SERIAL_PLOTTER)
     Serial.println(F("Interrupt movement with pause() for 1 second at 90 degree"));
-  #endif
+#endif
     /*
      * Demonstrate pause and resume in the middle of a movement
      */
