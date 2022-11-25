@@ -237,7 +237,8 @@ Every other extension e.g. *cinclude* would do, but *hpp* seems to be common sen
 
 # Using the new *.hpp files
 In order to support [compile options](#compile-options--macros-for-this-library) more easily,
-the line `#include <ServoEasing.h>` must be changed to  `#include <ServoEasing.hpp>` in your main program (aka *.ino file with setup() and loop()).
+the line `#include <ServoEasing.h>` must be changed to  `#include <ServoEasing.hpp>`
+in your main program (aka *.ino file with setup() and loop()).
 
 In **all other files** you must use `#include <ServoEasing.h>`, to **prevent `multiple definitions` linker errors**:
 
@@ -259,6 +260,7 @@ Modify them by enabling / disabling them, or change the values if applicable.
 | Name | Default value | Description |
 |-|-|-|
 | `USE_PCA9685_SERVO_EXPANDER` | disabled | Enables the use of the PCA9685 I2C expander chip/board. |
+| `PCA9685_ACTUAL_CLOCK_FREQUENCY` | 25000000L | Change it, if your PCA9685 has another than the default 25 MHz internal clock. See chapter 2 and 5 of the PCA9685 Datasheet "25 MHz typical internal oscillator requires no external components". |
 | `USE_SOFT_I2C_MASTER` | disabled | Saves up to 1756 bytes program memory and 218 bytes RAM for PCA9685 I2C communication compared with Arduino Wire. |
 | `USE_SERVO_LIB` | disabled | Use of PCA9685 normally disables use of regular servo library. You can force additional using of regular servo library by defining `USE_SERVO_LIB`. See [below](https://github.com/ArminJo/ServoEasing#using-pca9685-16-channel-servo-expander). |
 | `PROVIDE_ONLY_LINEAR_MOVEMENT` | disabled | Disables all but LINEAR movement. Saves up to 1540 bytes program memory. |
@@ -394,7 +396,8 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 # Revision History
 ### Version 3.1.1
 - Added function `getCurrentMicroseconds()`.
-- Improved many examples.
+- Improved many and added workaround for ESP32 bug in while loops in examples.
+- Added `PCA9685_ACTUAL_CLOCK_FREQUENCY` macro.
 
 ### Version 3.1.0
 - SAMD51 support by Lutz Aumüller.

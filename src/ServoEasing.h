@@ -390,8 +390,12 @@ extern const char *const easeTypeStrings[] PROGMEM;
 #define PCA9685_MODE_1_SLEEP            4
 #define PCA9685_FIRST_PWM_REGISTER   0x06
 #define PCA9685_PRESCALE_REGISTER    0xFE
+#if !defined(PCA9685_ACTUAL_CLOCK_FREQUENCY)
+// See chapter 2 and 5 of the PCA9685 Datasheet "25 MHz typical internal oscillator requires no external components"
+#define PCA9685_ACTUAL_CLOCK_FREQUENCY   25000000L // 25 MHz this is the default frequency
+#endif
 
-#define PCA9685_PRESCALER_FOR_20_MS ((25000000L /(4096L * 50))-1) // = 121 / 0x79 at 50 Hz
+#define PCA9685_PRESCALER_FOR_20_MS ((PCA9685_ACTUAL_CLOCK_FREQUENCY /(4096L * 50)) - 1) // = 121 / 0x79 at 50 Hz
 
 // to be used as values for parameter bool aStartUpdateByInterrupt
 #define START_UPDATE_BY_INTERRUPT           true
