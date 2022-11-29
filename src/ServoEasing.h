@@ -681,8 +681,6 @@ bool setEaseToForAllServos(uint_fast16_t aDegreesPerSecond);
 bool setEaseToDForAllServos(uint_fast16_t aMillisForMove);
 void setEaseToForAllServosSynchronizeAndStartInterrupt();
 void setEaseToForAllServosSynchronizeAndStartInterrupt(uint_fast16_t aDegreesPerSecond);
-void synchronizeAndEaseToArrayPositions();
-void synchronizeAndEaseToArrayPositions(uint_fast16_t aDegreesPerSecond);
 void synchronizeAllServosAndStartInterrupt(bool aStartUpdateByInterrupt = START_UPDATE_BY_INTERRUPT);
 
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
@@ -693,6 +691,10 @@ void setEasingTypeForMultipleServos(uint_fast8_t aNumberOfServos, uint_fast8_t a
 // blocking wait functions
 void updateAndWaitForAllServosToStop();
 bool delayAndUpdateAndWaitForAllServosToStop(unsigned long aMillisDelay, bool aTerminateDelayIfAllServosStopped = false);
+void setEaseToForAllServosSynchronizeAndWaitForAllServosToStop();
+void setEaseToForAllServosSynchronizeAndWaitForAllServosToStop(uint_fast16_t aDegreesPerSecond);
+void synchronizeAndEaseToArrayPositions() __attribute__ ((deprecated ("Please use setEaseToForAllServosSynchronizeAndWait().")));
+void synchronizeAndEaseToArrayPositions(uint_fast16_t aDegreesPerSecond) __attribute__ ((deprecated ("Please use setEaseToForAllServosSynchronizeAndWait().")));
 void synchronizeAllServosStartAndWaitForAllServosToStop();
 
 void printArrayPositions(Print *aSerial);
@@ -726,7 +728,10 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
 
 /*
  * Version 3.1.1 - 09/2022
- * - New function `getCurrentMicroseconds()`.
+ * - Added function `getCurrentMicroseconds()`.
+ * - Improved many and added workaround for ESP32 bug in while loops in examples.
+ * - Added `PCA9685_ACTUAL_CLOCK_FREQUENCY` macro.
+ * - Renamed function `synchronizeAndEaseToArrayPositions()` to `setEaseToForAllServosSynchronizeAndWaitForAllServosToStop()`.
  *
  * Version 3.1.0 - 08/2022
  * - SAMD51 support by Lutz Aumüller.

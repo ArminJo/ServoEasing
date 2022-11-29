@@ -63,6 +63,7 @@ setDegreeForAllServos	KEYWORD2
 setEaseToForAllServos	KEYWORD2
 setEaseToForAllServosSynchronizeAndStartInterrupt	KEYWORD2
 synchronizeAndEaseToArrayPositions	KEYWORD2
+setEaseToForAllServosSynchronizeAndWait	KEYWORD2
 printArrayPositions	KEYWORD2
 isOneServoMoving	KEYWORD2
 stopAllServos	KEYWORD2

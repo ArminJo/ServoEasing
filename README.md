@@ -156,8 +156,9 @@ Just call `myServo.startEaseTo()` instead of `myServo.write()` and you are done.
 <br/>
 
 # Multiple servo handling
-You can handle multiple servos simultaneously by [special functions](https://github.com/ArminJo/ServoEasing/blob/master/src/ServoEasing.h#L641) like
- `writeAllServos()`, `setSpeedForAllServos()`, `setDegreeForAllServos()`, `setEaseToDForAllServos()`, `synchronizeAndEaseToArrayPositions()`, `updateAndWaitForAllServosToStop()` and much more.
+You can handle multiple servos simultaneously by [special functions](https://github.com/ArminJo/ServoEasing/blob/master/src/ServoEasing.h#L667) like
+ `writeAllServos()`, `setSpeedForAllServos()`, `setDegreeForAllServos()`, `setEaseToDForAllServos()`, `updateAndWaitForAllServosToStop()`, `setEaseToForAllServosSynchronizeAndWaitForAllServosToStop()`,  `setEaseToForAllServosSynchronizeAndStartInterrupt()` and much more.<br/>
+ [See below](https://github.com/ArminJo/ServoEasing#handling-multiple-servos-with-the-internal-servoeasingarray).
 
 <br/>
 
@@ -260,7 +261,7 @@ Modify them by enabling / disabling them, or change the values if applicable.
 | Name | Default value | Description |
 |-|-|-|
 | `USE_PCA9685_SERVO_EXPANDER` | disabled | Enables the use of the PCA9685 I2C expander chip/board. |
-| `PCA9685_ACTUAL_CLOCK_FREQUENCY` | 25000000L | Change it, if your PCA9685 has another than the default 25 MHz internal clock. See chapter 2 and 5 of the PCA9685 Datasheet "25 MHz typical internal oscillator requires no external components". |
+| `PCA9685_ACTUAL_CLOCK_FREQUENCY` | 25000000L | Change it, if your PCA9685 has another than the default 25 MHz internal clock. See chapter 2 and 5 of the PCA9685 Datasheet "25 MHz typical internal oscillator requires no external components". This value is taken for all attached PCA9685 expanders! |
 | `USE_SOFT_I2C_MASTER` | disabled | Saves up to 1756 bytes program memory and 218 bytes RAM for PCA9685 I2C communication compared with Arduino Wire. |
 | `USE_SERVO_LIB` | disabled | Use of PCA9685 normally disables use of regular servo library. You can force additional using of regular servo library by defining `USE_SERVO_LIB`. See [below](https://github.com/ArminJo/ServoEasing#using-pca9685-16-channel-servo-expander). |
 | `PROVIDE_ONLY_LINEAR_MOVEMENT` | disabled | Disables all but LINEAR movement. Saves up to 1540 bytes program memory. |
@@ -311,10 +312,14 @@ The ServoEasing library provides two arrays to ease the handling of multiple ser
 
 Every ServoEasing object is appended to the ServoEasingArray by the attach() function.
 **Only the order of the attach() statements determines the position in the array.**
-So you can access your servo, which you attached secondly, also by `ServoEasing::ServoEasingArray[1]->setEaseTo(135)` as it is done [here](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServos/ThreeServos.ino#L142).<br/>
+So you can access your servo, which you attached secondly, also by `ServoEasing::ServoEasingArray[1]->setEaseTo(135)` as it is done [here](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServos/ThreeServos.ino#L144).<br/>
 There are also many other `*AllServos*` functions like `stopAllServos()`.
 
-To move multiple servos synchronized, you can fill up the `ServoEasing::ServoEasingNextPositionArray` with the desired positions and then use e.g. the function `setEaseToForAllServos(uint_fast16_t aDegreesPerSecond)`. Another example can be found [here](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServos/ThreeServos.ino#L162).<br/>
+To move multiple servo, you can fill up the `ServoEasing::ServoEasingNextPositionArray` with the desired positions and then use e.g. the function `setEaseToForAllServos()`.
+Then you must enable interrupt with `enableServoEasingInterrupt()` or call `updateAllServos()` in your main loop until it returns true.<br/>
+If you want to move all your servos synchronized, i.e. they all stop at the same time,
+you can use the `setEaseToForAllServosSynchronizeAndWaitForAllServosToStop()` or `setEaseToForAllServosSynchronizeAndStartInterrupt` function.<br/>
+An example can be found [here](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServos/ThreeServos.ino#L162).<br/>
 The [Quadruped example](https://github.com/ArminJo/ServoEasing/blob/master/examples/QuadrupedControl/QuadrupedServoControl.hpp#L32) makes heavy use of the `*AllServos*` functions.
 
 If you **detach** a servo and then attach another one, the latter will get the index of the former detached one.
@@ -398,6 +403,7 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 - Added function `getCurrentMicroseconds()`.
 - Improved many and added workaround for ESP32 bug in while loops in examples.
 - Added `PCA9685_ACTUAL_CLOCK_FREQUENCY` macro.
+- Renamed function `synchronizeAndEaseToArrayPositions()` to `setEaseToForAllServosSynchronizeAndWaitForAllServosToStop()`.
 
 ### Version 3.1.0
 - SAMD51 support by Lutz Aumüller.

@@ -2192,6 +2192,9 @@ void setEasingTypeForAllServos(uint_fast8_t aEasingType) {
     setEasingTypeForMultipleServos(ServoEasing::sServoArrayMaxIndex, aEasingType);
 }
 
+/**
+ * Sets easing type aEasingType for the first aNumberOfServos in ServoEasingArray[]
+ */
 void setEasingTypeForMultipleServos(uint_fast8_t aNumberOfServos, uint_fast8_t aEasingType) {
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= aNumberOfServos; ++tServoIndex) {
         if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
@@ -2210,6 +2213,20 @@ void setEaseToForAllServosSynchronizeAndStartInterrupt(uint_fast16_t aDegreesPer
     setEaseToForAllServos(aDegreesPerSecond);
     synchronizeAllServosAndStartInterrupt();
 }
+
+/**
+ * Synchronize and blocking wait until all servos are stopped
+ */
+void setEaseToForAllServosSynchronizeAndWaitForAllServosToStop() {
+    setEaseToForAllServos();
+    synchronizeAllServosStartAndWaitForAllServosToStop();
+}
+
+void setEaseToForAllServosSynchronizeAndWaitForAllServosToStop(uint_fast16_t aDegreesPerSecond) {
+    setEaseToForAllServos(aDegreesPerSecond);
+    synchronizeAllServosStartAndWaitForAllServosToStop();
+}
+
 
 void synchronizeAndEaseToArrayPositions() {
     setEaseToForAllServos();
@@ -2292,7 +2309,8 @@ void setDegreeForAllServos(uint_fast8_t aNumberOfServos, ...) {
 #endif
 
 /**
- * Sets target position using content of ServoEasingNextPositionArray
+ * Sets target position using content of ServoEasingNextPositionArray.
+ * Does not start interrupt/movement!
  * @return false if one servo was still moving
  */
 bool setEaseToForAllServos() {
@@ -2307,6 +2325,11 @@ bool setEaseToForAllServos() {
     return tOneServoIsMoving;
 }
 
+/**
+ * Sets target position using content of ServoEasingNextPositionArray and use aDegreesPerSecond instead of the one stored in mSpeed.
+ * Does not start interrupt/movement!
+ * @return false if one servo was still moving
+ */
 bool setEaseToForAllServos(uint_fast16_t aDegreesPerSecond) {
     bool tOneServoIsMoving = false;
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
@@ -2318,6 +2341,11 @@ bool setEaseToForAllServos(uint_fast16_t aDegreesPerSecond) {
     return tOneServoIsMoving;
 }
 
+/**
+ * Sets target position using content of ServoEasingNextPositionArray and use aMillisForMove instead of the speed stored in mSpeed.
+ * Does not start interrupt/movement!
+ * @return false if one servo was still moving
+ */
 bool setEaseToDForAllServos(uint_fast16_t aMillisForMove) {
     bool tOneServoIsMoving = false;
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
@@ -2393,6 +2421,9 @@ bool updateAllServos() {
     return tAllServosStopped;
 }
 
+/**
+ * Blocking wait until all servos are stopped
+ */
 void updateAndWaitForAllServosToStop() {
     do {
         // First do the delay, then check for update, since we are likely called directly after start and there is nothing to move yet
@@ -2422,6 +2453,9 @@ bool delayAndUpdateAndWaitForAllServosToStop(unsigned long aMillisDelay, bool aT
     }
 }
 
+/**
+ * Synchronize and blocking wait until all servos are stopped
+ */
 void synchronizeAllServosStartAndWaitForAllServosToStop() {
     synchronizeAllServosAndStartInterrupt(false);
     updateAndWaitForAllServosToStop();
@@ -2439,7 +2473,7 @@ void synchronizeAllServosAndStartInterrupt(bool aStartUpdateByInterrupt) {
 
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
         if (ServoEasing::ServoEasingArray[tServoIndex] != NULL && ServoEasing::ServoEasingArray[tServoIndex]->mServoMoves) {
-            //process servos which really moves
+            // process servos which really moves
             tMillisAtStartMove = ServoEasing::ServoEasingArray[tServoIndex]->mMillisAtStartMove;
             if (ServoEasing::ServoEasingArray[tServoIndex]->mMillisForCompleteMove > tMaxMillisForCompleteMove) {
                 tMaxMillisForCompleteMove = ServoEasing::ServoEasingArray[tServoIndex]->mMillisForCompleteMove;
