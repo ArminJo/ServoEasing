@@ -50,6 +50,7 @@
  * - BUTTON_LED_FEEDBACK            This activates LED_BUILTIN as long as button is pressed.
  * - BUTTON_LED_FEEDBACK_PIN        The pin to use for button LED feedback.
  *
+ * The macros INT0_PIN and INT1_PIN are set after the include.
  */
 
 #ifndef _EASY_BUTTON_AT_INT01_HPP
@@ -237,7 +238,7 @@ void EasyButton::init(bool aIsButtonAtINT0) {
     PCMSK0 = digitalPinToBitMask(INT1_PIN);
 #    else
     // ATtinyX5 no ISC10 flag existent
-    GIMSK |= _BV(PCIE);//PCINT enable, we have only one
+    GIMSK |= _BV(PCIE); //PCINT enable, we have only one
     PCMSK = digitalPinToBitMask(INT1_PIN);
 #    endif
 #  elif (INT1_PIN != 3)
@@ -364,6 +365,8 @@ bool EasyButton::readButtonState() {
         return !(INT1_IN_PORT & _BV(INT1_BIT));  //  = digitalReadFast(3);
     }
 #  endif
+#else
+    return false;
 #endif
 }
 

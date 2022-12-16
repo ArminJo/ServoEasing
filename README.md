@@ -5,13 +5,13 @@ A library for smooth servo movements.<br/>
 It uses the standard Arduino Servo library and therefore has its restrictions regarding pins and platform support.
 
 [![Badge License: GPLv3](https://img.shields.io/badge/License-GPLv3-brightgreen.svg)](https://www.gnu.org/licenses/gpl-3.0)
- &nbsp; &nbsp; 
+ &nbsp; &nbsp;
 [![Badge Version](https://img.shields.io/github/v/release/ArminJo/ServoEasing?include_prereleases&color=yellow&logo=DocuSign&logoColor=white)](https://github.com/ArminJo/ServoEasing/releases/latest)
- &nbsp; &nbsp; 
+ &nbsp; &nbsp;
 [![Badge Commits since latest](https://img.shields.io/github/commits-since/ArminJo/ServoEasing/latest?color=yellow)](https://github.com/ArminJo/ServoEasing/commits/master)
- &nbsp; &nbsp; 
+ &nbsp; &nbsp;
 [![Badge Build Status](https://github.com/ArminJo/ServoEasing/workflows/LibraryBuild/badge.svg)](https://github.com/ArminJo/ServoEasing/actions)
- &nbsp; &nbsp; 
+ &nbsp; &nbsp;
 ![Badge Hit Counter](https://visitor-badge.laobi.icu/badge?page_id=ArminJo_ServoEasing)
 <br/>
 <br/>
@@ -20,9 +20,9 @@ It uses the standard Arduino Servo library and therefore has its restrictions re
 Available as [Arduino library "ServoEasing"](https://www.arduinolibraries.info/libraries/servo-easing).
 
 [![Button Install](https://img.shields.io/badge/Install-brightgreen?logoColor=white&logo=GitBook)](https://www.ardu-badge.com/ServoEasing)
- &nbsp; &nbsp; 
+ &nbsp; &nbsp;
 [![Button API](https://img.shields.io/badge/API-yellow?logoColor=white&logo=OpenStreetMap)](https://arminjo.github.io/ServoEasing/classServoEasing.html)
- &nbsp; &nbsp; 
+ &nbsp; &nbsp;
 [![Button Changelog](https://img.shields.io/badge/Changelog-blue?logoColor=white&logo=AzureArtifacts)](https://github.com/ArminJo/ServoEasing#revision-history)
 
 </div>
@@ -126,6 +126,10 @@ To restrict servo movements to a fixed range, you can specify constraints with `
 Arduino Plotter Output with constraints at 5 degree and 175 degree activated.
 ![Arduino Plotter Output with constraints at 5 degree and 175 degree activated](https://github.com/ArminJo/ServoEasing/blob/master/pictures/Constraints.png)
 
+### Disable easing temporarily
+By setting speed -which is an uint16- to a real high value like e.g. 50000, you can effectively disable easing
+and get almost the same behavior as if using Servo.write() function directly.
+
 <br/>
 
 # API
@@ -179,18 +183,18 @@ You can handle multiple servos simultaneously by [special functions](https://git
 <br/>
 
 # Resolution of servo positioning
-- The standard range of 544 to 2400 µs per 180 degree results in an timing of around **10 µs per degree**.
-- The **Arduino Servo library on AVR** uses an prescaler of 8 at 16 MHz clock resulting in a resolution of **0.5 µs**.
-- The **PCA9685 expander** has a resolution of **4.88 µs** per step (@ 20 ms interval) resulting in a resolution of **0.5 degree**.
-Digital Servos have a **deadband of approximately 5 µs / 0.5 degree** which means, that you will see a **stuttering movement** if the moving speed is slow.
-If you control them with a PCA9685 expander it may get worse, since one step of 4.88 µs can be within the deadband, so it takes 2 steps to move the servo from its current position.
+- The standard range of 544 to 2400 &micro;s per 180 degree results in an timing of around **10 &micro;s per degree**.
+- The **Arduino Servo library on AVR** uses an prescaler of 8 at 16 MHz clock resulting in a resolution of **0.5 &micro;s**.
+- The **PCA9685 expander** has a resolution of **4.88 &micro;s** per step (@ 20 ms interval) resulting in a resolution of **0.5 degree**.
+Digital Servos have a **deadband of approximately 5 &micro;s / 0.5 degree** which means, that you will see a **stuttering movement** if the moving speed is slow.
+If you control them with a PCA9685 expander it may get worse, since one step of 4.88 &micro;s can be within the deadband, so it takes 2 steps to move the servo from its current position.
 
 # Mapping of servo positioning
 If you want to **operate your servo e.g. from -90 to +90 degree**, you have two possibilities to specify this during attach:
 1. Use `Servo1.attachWithTrim(SERVO1_PIN, 90, START_DEGREE_VALUE, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE)` like it is done in the [TwoServos example](https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServos/TwoServos.ino#L94).
 2. Use `Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, -90, 90)`.
 
-If your servo has **other timing characteristics than the default** one -544 µs for 0 and 2400 µs for 180 degree- you have to use `Servo1.attach(SERVO1_PIN, <MY_SERVO_MICROSECONDS_FOR_0_DEGREE>, <MY_SERVO_MICROSECONDS_FOR_180_DEGREE>)`.<br/>
+If your servo has **other timing characteristics than the default** one -544 &micro;s for 0 and 2400 &micro;s for 180 degree- you have to use `Servo1.attach(SERVO1_PIN, <MY_SERVO_MICROSECONDS_FOR_0_DEGREE>, <MY_SERVO_MICROSECONDS_FOR_180_DEGREE>)`.<br/>
 You can combine this with variant 2 from above to transparently specify your servo characteristics e.g. like it is done in the [RobotArmControl example]( https://github.com/ArminJo/ServoEasing/blob/master/examples/RobotArmControl/RobotArmServoConfiguration.h#L97):
 
 ```c++
@@ -292,7 +296,7 @@ which should not be a problem since you normally attach all servos in `setup()`.
 
 On the **ESP32 the I2C library is only capable to run at 100 kHz**, because it interferes with the Ticker / Timer library used.
 Even with 100 kHz clock we have some dropouts / NAK's because of sending address again instead of first data.<br/>
-Since the raw transmission time of 32 Servo positions is 17.4 µs @ 100 kHz, not more than 2 expander boards can be connected to one I2C bus on an ESP32 board, if all servos should move simultaneously.<br/>
+Since the raw transmission time of 32 Servo positions is 17.4 &micro;s @ 100 kHz, not more than 2 expander boards can be connected to one I2C bus on an ESP32 board, if all servos should move simultaneously.<br/>
 If you do not use any timer in your program you can increase speed up to 800 kHz. Maybe you have to attach 2 x 2.2 k&ohm; pullup resistors to the I2C lines to have it working reliably.
 
 <br/>
@@ -347,7 +351,7 @@ Converting a 10 pin double row pin header with 21 mm pin length to a breadboard 
 <br/>
 
 # Internals
-The API accepts only degree (except for write() and writeMicrosecondsOrUnits()) but internally only microseconds (or units (= 4.88 µs) if using PCA9685 expander) and not degree are used to speed up things. Other expander or servo libraries can therefore easily be used.<br/>
+The API accepts only degree (except for write() and writeMicrosecondsOrUnits()) but internally only microseconds (or units (= 4.88 &micro;s) if using PCA9685 expander) and not degree are used to speed up things. Other expander or servo libraries can therefore easily be used.<br/>
 
 <br/>
 
@@ -355,12 +359,13 @@ The API accepts only degree (except for write() and writeMicrosecondsOrUnits()) 
 **Every Arduino architecture with a Servo library** will work without any modifications in blocking mode.<br/>
 Non blocking behavior can always be achieved manually by calling `update()` in a loop - see last movement in [Simple example](examples/Simple/Simple.ino).<br/>
 Interrupt based movement (movement without calling `update()` manually in a loop) is supported for the following Arduino architectures:<br/>
-**avr, megaavr, sam, samd, esp8266, esp32, stm32, STM32F1 and apollo3.**
+**avr, megaavr, sam, samd, esp8266, esp32, stm32, STM32F1 and apollo3.**<br/>
+**It is not planned to support the ATtiny architecture, but you are invited to [do it by yourself](https://github.com/ArminJo/ServoEasing#adding-a-new-platform--board) and send a pull request.**
 
 <br/>
 
 # Timer usage for interrupt based movement
-On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking easing functions its unused **Channel B** is used to generate an interrupt 100 µs before the end of the 20 ms Arduino Servo refresh period. This interrupt then updates all servo values for the next refresh period.
+On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking easing functions its unused **Channel B** is used to generate an interrupt 100 &micro;s before the end of the 20 ms Arduino Servo refresh period. This interrupt then updates all servo values for the next refresh period.
 | Platform | Timer | Library providing the timer |
 |---|---|---|
 | avr | Timer1 | Servo.h |

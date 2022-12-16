@@ -78,6 +78,9 @@
 #endif
 
 #if defined(ESP8266) || defined(ESP32)
+//#  if defined(ESP32)
+//#include "esp_task_wdt.h" // for esp_task_wdt_reset();
+//#  endif
 #include "Ticker.h" // for ServoEasingInterrupt functions
 Ticker Timer20ms;
 
@@ -312,8 +315,8 @@ void ServoEasing::setPWM(uint16_t aPWMOffValueAsUnits) {
     i2c_stop();
 #else
     mI2CClass->beginTransmission(mPCA9685I2CAddress);
-    // +2 since we we do not set the begin value, it is fixed at 0
-    mI2CClass->write((PCA9685_FIRST_PWM_REGISTER + 2) + 4 * mServoPin);
+    // +2 since we we do set the OFF value and not the ON value, which is fixed at 0
+    mI2CClass->write((PCA9685_FIRST_PWM_REGISTER + 2) + 4 * mServoPin); // 4 * mServoPin is the register offset
     mI2CClass->write(aPWMOffValueAsUnits);
     mI2CClass->write(aPWMOffValueAsUnits >> 8);
 #  if defined(LOCAL_DEBUG) && not defined(ESP32)
@@ -1613,6 +1616,7 @@ bool ServoEasing::isMoving() {
 #if defined(ESP8266)
     yield();
 #elif defined(ESP32)
+//    esp_task_wdt_reset();
 //    yield(); // taskYIELD() and yield() sometimes helps, but this is not deterministic :-(. Allow context switch for the ticker task to run
 #endif
     return mServoMoves;
@@ -1625,7 +1629,8 @@ bool ServoEasing::areInterruptsActive() {
 #if defined(ESP8266)
     yield();
 #elif defined(ESP32)
-//    taskYIELD(); // Allow context switch for the ticker task to run
+//    esp_task_wdt_reset();
+//    yield(); // Allow context switch for the ticker task to run
 #endif
     return sInterruptsAreActive;
 }
@@ -2413,6 +2418,7 @@ bool updateAllServos() {
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
         if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
             tAllServosStopped = ServoEasing::ServoEasingArray[tServoIndex]->update() && tAllServosStopped;
+
         }
     }
 #if defined(PRINT_FOR_SERIAL_PLOTTER)

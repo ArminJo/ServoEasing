@@ -191,7 +191,7 @@ void loop() {
     for (int i = 0; i < 2; ++i) {
         Servo1.startEaseToD(45, 1000);
         Servo1AtPCA9685.startEaseToD(135, 1000);
-        // Must call yield here for the ESP boards, since we have no delay called
+        // Call yield for the ESP boards must be handled in areInterruptsActive()
         while (ServoEasing::areInterruptsActive()) {
             ; // no delays here to avoid break between forth and back movement
         }

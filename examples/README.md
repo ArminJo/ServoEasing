@@ -119,7 +119,7 @@ On the ESP32, the I2C library interferes with the 29 millisecond timer and there
 ## [EndPositionsTest example](https://github.com/ArminJo/ServoEasing/blob/master/examples/EndPositionsTest/EndPositionsTest.ino)
 This example helps you determine the right end values for your servo.<br/>
 These values are required for the `attach(int aPin, int aInitialDegree, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree)` function, if your servo does not comply to the standard values.
-E.g. some of my SG90 servos have a 0° period of 620 µs instead of the standard 544.<br/>
+E.g. some of my SG90 servos have a 0° period of 620 &micro;s instead of the standard 544.<br/>
 This example does not use the ServoEasing functions.
 
 ## [SpeedTest example](https://github.com/ArminJo/ServoEasing/blob/master/examples/SpeedTest/SpeedTest.ino)

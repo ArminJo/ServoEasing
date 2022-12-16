@@ -116,11 +116,13 @@ void setup() {
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
     // Legend for Arduino plotter
     Serial.println(); // end of line of attach values
-    Serial.println("Servo1, Servo2, Servo3");
+    Serial.println(F("Servo1, Servo2, Servo3"));
 #endif
 
     // Wait for servos to reach start position.
     delay(500);
+    Serial.println(F("Start loop"));
+
 }
 
 void blinkLED() {
@@ -131,15 +133,18 @@ void blinkLED() {
 }
 
 void loop() {
+    uint16_t tSpeed = 20;
 
     /*
      * Move three servos synchronously without interrupt handler
      */
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
-    Serial.println(F("Move to 90/135/180 degree with up to 20 degree per second with updates by own do-while loop"));
+    Serial.print(F("Move to 90/135/180 degree with up to "));
+    Serial.print(tSpeed);
+    Serial.println(F(" degree per second with updates by own do-while loop"));
 #endif
     // this speed is changed for the first 2 servos below by synchronizing to the longest duration
-    setSpeedForAllServos(20);
+    setSpeedForAllServos(tSpeed);
 
     ServoEasing::ServoEasingArray[0]->setEaseTo(90);    // This servo uses effectively 10 degrees per second, since it is synchronized to Servo3
     ServoEasing::ServoEasingArray[1]->setEaseTo(135);   // "ServoEasing::ServoEasingArray[1]->" can be used instead of "Servo2."
@@ -156,13 +161,17 @@ void loop() {
     /*
      * Move three servos synchronously with interrupt handler
      */
+    tSpeed = 30;
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
-    Serial.println(F("Move to 180/180/0 degree with up to 30 degree per second using interrupts"));
+    Serial.print(F("Move to 180/180/0 degree with up to "));
+    Serial.print(tSpeed);
+    Serial.println(F(" degree per second using interrupts"));
+
 #endif
     ServoEasing::ServoEasingNextPositionArray[0] = 180;
     ServoEasing::ServoEasingNextPositionArray[1] = 180;
     ServoEasing::ServoEasingNextPositionArray[2] = 0;
-    setEaseToForAllServosSynchronizeAndStartInterrupt(30);
+    setEaseToForAllServosSynchronizeAndStartInterrupt(tSpeed);
     /*
      * Now you can run your program while the servos are moving.
      * Just let the LED blink until servos stop.
@@ -177,10 +186,13 @@ void loop() {
     /*
      * Move first and second servo synchronously with interrupt handler
      */
+    tSpeed = 80;
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
-    Serial.println(F("Move to 90/90 degree with 40 degree per second using interrupts"));
+    Serial.print(F("Move to 90/90 degree with "));
+    Serial.print(tSpeed);
+    Serial.println(F(" degree per second using interrupts"));
 #endif
-    Servo1.setEaseTo(90, 80);
+    Servo1.setEaseTo(90, tSpeed);
     Servo2.startEaseToD(90, Servo1.mMillisForCompleteMove);
     // No timing synchronization required :-)
     // blink until servo stops

@@ -11,6 +11,7 @@
  *  #define USE_BUTTON_0
  *  #include "EasyButtonAtInt01.h"
  *  EasyButton Button0AtPin2(true);
+ *  The macros INT0_PIN and INT1_PIN are set after the include.
  *
  *  Copyright (C) 2018-2022  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com

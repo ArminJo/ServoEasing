@@ -175,7 +175,7 @@ void loop() {
     ServoEasing::ServoEasingNextPositionArray[1] = 90.0f;
     setEaseToForAllServosSynchronizeAndStartInterrupt(90);
 
-    // Must call yield here for the ESP boards, since we have no delay called
+    // Call yield for the ESP boards must be handled in areInterruptsActive()
     while (ServoEasing::areInterruptsActive()) {
         ;
     }

@@ -203,7 +203,7 @@ void loop() {
     /*
      * No need to call synchronizeAllServosAndStartInterrupt(), since I know that all durations are the same
      * Since all servos stops at the same time I have to check only one
-     * Must call yield here for the ESP boards, since we do not call delay in the loop
+     * Call yield for the ESP boards must be handled in areInterruptsActive()
      */
     while (ServoEasing::areInterruptsActive()) {
         ; // no delays here to avoid break between forth and back movement

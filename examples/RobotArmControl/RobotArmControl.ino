@@ -164,7 +164,7 @@ void loop() {
 
     sDebugOutputIsEnabled = !digitalRead(DEBUG_OUTPUT_ENABLE_PIN); // enabled if LOW
 
-#if defined(__AVR__) && defined(ADCSRA) && defined(ADATE) && (!defined(__AVR_ATmega4809__))
+#if defined(ADC_UTILS_ARE_AVAILABLE)
     checkAndHandleVCCTooLow();
 #endif // defined(__AVR__)
 
@@ -242,7 +242,7 @@ bool delayAndCheckForRobotArm(uint16_t aDelayMillis) {
     return false;
 }
 
-#if defined(__AVR__) && defined(ADCSRA) && defined(ADATE) && (!defined(__AVR_ATmega4809__))
+#if defined(ADC_UTILS_ARE_AVAILABLE)
 /*
  * If isVCCTooLowMultipleTimes() returns true clear all pattern and activate only 2 MultipleFallingStars pattern on the 2 bars
  */
@@ -255,7 +255,7 @@ void checkAndHandleVCCTooLow() {
         Serial.println(F("Shut down"));
     }
 }
-#endif // defined(__AVR__) && defined(ADCSRA) && defined(ADATE) && (!defined(__AVR_ATmega4809__))
+#endif // defined(ADC_UTILS_ARE_AVAILABLE)
 
 /*
  * Button callback function

@@ -186,7 +186,10 @@ void loop() {
              * Put your own code here
              */
 #if defined(ESP32)
-            delay(1); // ESP32 requires it, delay(0) or yield() or taskYIELD() is not sufficient here :-(
+            // ESP32 requires it, delay(0) or yield() or taskYIELD() is not sufficient here,
+            // because yield() only yields to higher priority tasks and the ??? timer is a low priority task.
+            // delay() naturally yields to all priorities.
+            delay(1);
 #else
             ; // no delays here to avoid break between forth and back movement
 #endif
@@ -195,7 +198,9 @@ void loop() {
 //        Servo1.startEaseToD((544 + ((2400 - 544) / 4)), 1000); // Alternatively you can specify the target as microsecond value
         while (Servo1.isMoving()) {
 #if defined(ESP32)
-            delay(1); // ESP32 requires it, delay(0) or yield() or taskYIELD() is not sufficient here :-(
+            // ESP32 requires it, delay(0) or yield() or taskYIELD() is not sufficient here,
+            // because yield() only yields to higher priority tasks and the ??? timer is a low priority task
+            delay(1);
 #else
             ; // no delays here to avoid break between forth and back movement
 #endif

@@ -26,7 +26,7 @@
 #define _ADC_UTILS_HPP
 
 #include "ADCUtils.h"
-#if defined(__AVR__) && defined(ADCSRA) && defined(ADATE) && (!defined(__AVR_ATmega4809__))
+#if defined(ADC_UTILS_ARE_AVAILABLE)
 
 #if !defined(STR_HELPER)
 #define STR_HELPER(x) #x
@@ -599,10 +599,10 @@ float getTemperature(void) {
 #endif
 }
 
-#elif defined(ARDUINO_ARCH_APOLLO3) // defined(__AVR__) && defined(ADATE)
+#elif defined(ARDUINO_ARCH_APOLLO3) // defined(ADC_UTILS_ARE_AVAILABLE)
     void ADCUtilsDummyToAvoidBFDAssertions(){
         ;
     }
-#endif // defined(__AVR__) && defined(ADATE)
+#endif // defined(ADC_UTILS_ARE_AVAILABLE)
 
 #endif // _ADC_UTILS_HPP
