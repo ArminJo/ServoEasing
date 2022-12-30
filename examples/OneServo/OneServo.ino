@@ -143,7 +143,7 @@ void loop() {
 #endif
     Servo1.startEaseTo(180, 30, DO_NOT_START_UPDATE_BY_INTERRUPT); // no interrupts here
     do {
-        // First do the delay, then check for update, since we are likely called directly after start and there is nothing to move yet
+        // First do the delay, then check for update, since we are probably called directly after start and there is nothing to move yet
         delay(REFRESH_INTERVAL_MILLIS); // 20 ms
 
 #if defined(PRINT_FOR_SERIAL_PLOTTER)

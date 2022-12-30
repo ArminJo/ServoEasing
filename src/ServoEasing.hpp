@@ -1041,7 +1041,7 @@ void ServoEasing::easeTo(float aTargetDegreeOrMicrosecond) {
 void ServoEasing::easeTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond) {
     startEaseTo(aTargetDegreeOrMicrosecond, aDegreesPerSecond, DO_NOT_START_UPDATE_BY_INTERRUPT); // no interrupts
     do {
-        // First do the delay, then check for update, since we are likely called directly after start and there is nothing to move yet
+        // First do the delay, then check for update, since we are probably called directly after start and there is nothing to move yet
         delay(REFRESH_INTERVAL_MILLIS); // 20 ms
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
     } while (!updateAllServos()); // Update all servos in order to always create a complete plotter data set
@@ -1053,7 +1053,7 @@ void ServoEasing::easeTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesP
 void ServoEasing::easeTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond) {
     startEaseTo(aTargetDegreeOrMicrosecond, aDegreesPerSecond, DO_NOT_START_UPDATE_BY_INTERRUPT); // no interrupts
     do {
-        // First do the delay, then check for update, since we are likely called directly after start and there is nothing to move yet
+        // First do the delay, then check for update, since we are probably called directly after start and there is nothing to move yet
         delay(REFRESH_INTERVAL_MILLIS); // 20 ms
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
     } while (!updateAllServos());
@@ -1877,7 +1877,7 @@ void enableServoEasingInterrupt() {
     TIMSK5 |= _BV(OCIE5B);// enable the output compare B interrupt
     OCR5B = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL_MICROS) / 8) - 100;// update values 100 us before the new servo period starts
 
-#  elif defined(__AVR_ATmega4809__) || defined(__AVR_ATtiny3217__) // Uno WiFi Rev 2, Nano Every, Tiny Core 32 Dev Board
+#  elif defined(__AVR_ATmega4808__) || defined(__AVR_ATmega4809__) || defined(__AVR_ATtiny3217__) // Thinary Nano Every with MegaCoreX, Uno WiFi Rev 2, Nano Every, Tiny Core 32 Dev Board
     // For MegaTinyCore:
     // TCB1 is used by Tone()
     // TCB2 is used by Servo, but we cannot hijack the ISR, so we must use a dedicated timer for the 20 ms interrupt
@@ -1912,8 +1912,7 @@ void enableServoEasingInterrupt() {
      */
     TCCR1B |= _BV(ICNC1);
 #    if !defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-    // Generate interrupt 100 us before a new servo period starts
-    OCR1B = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL_MICROS) / 8) - 100;
+    OCR1B = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL_MICROS) / 8) - 100; // Generate interrupt 100 us before a new servo period starts
 #    endif
 
 #  else
@@ -2072,7 +2071,7 @@ void disableServoEasingInterrupt() {
 #  if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
     TIMSK5 &= ~(_BV(OCIE5B)); // disable the output compare B interrupt
 
-#  elif defined(__AVR_ATmega4809__) || defined(__AVR_ATtiny3217__) // Uno WiFi Rev 2, Nano Every, Tiny Core 32 Dev Board
+#  elif defined(__AVR_ATmega4808__) || defined(__AVR_ATmega4809__) || defined(__AVR_ATtiny3217__) // Thinary Nano Every with MegaCoreX, Uno WiFi Rev 2, Nano Every, Tiny Core 32 Dev Board
     TCA0.SINGLE.INTCTRL &= ~(TCA_SINGLE_OVF_bm); // disable the overflow interrupt
 
 #  elif defined(TIMSK1)// defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
@@ -2133,7 +2132,7 @@ ISR(TIMER5_COMPB_vect) {
     handleServoTimerInterrupt();
 }
 
-#  elif defined(__AVR_ATmega4809__) || defined(__AVR_ATtiny3217__) // Uno WiFi Rev 2, Nano Every, Tiny Core 32 Dev Board
+#  elif defined(__AVR_ATmega4808__) || defined(__AVR_ATmega4809__) || defined(__AVR_ATtiny3217__) // Thinary Nano Every with MegaCoreX, Uno WiFi Rev 2, Nano Every, Tiny Core 32 Dev Board
 ISR(TCA0_OVF_vect) {
     TCA0.SINGLE.INTFLAGS = TCA_SINGLE_OVF_bm; // Reset interrupt flags.
     handleServoTimerInterrupt();
@@ -2231,7 +2230,6 @@ void setEaseToForAllServosSynchronizeAndWaitForAllServosToStop(uint_fast16_t aDe
     setEaseToForAllServos(aDegreesPerSecond);
     synchronizeAllServosStartAndWaitForAllServosToStop();
 }
-
 
 void synchronizeAndEaseToArrayPositions() {
     setEaseToForAllServos();
@@ -2432,7 +2430,7 @@ bool updateAllServos() {
  */
 void updateAndWaitForAllServosToStop() {
     do {
-        // First do the delay, then check for update, since we are likely called directly after start and there is nothing to move yet
+        // First do the delay, then check for update, since we are probably called directly after start and there is nothing to move yet
         delay(REFRESH_INTERVAL_MILLIS); // 20 ms
     } while (!updateAllServos());
 }
@@ -2444,7 +2442,7 @@ void updateAndWaitForAllServosToStop() {
  */
 bool delayAndUpdateAndWaitForAllServosToStop(unsigned long aMillisDelay, bool aTerminateDelayIfAllServosStopped) {
     while (true) {
-        // First do the delay, then check for update, since we are likely called directly after start and there is nothing to move yet
+        // First do the delay, then check for update, since we are probably called directly after start and there is nothing to move yet
         if (aMillisDelay > REFRESH_INTERVAL_MILLIS) {
             aMillisDelay -= REFRESH_INTERVAL_MILLIS;
             delay(REFRESH_INTERVAL_MILLIS); // 20 ms

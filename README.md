@@ -351,7 +351,7 @@ Converting a 10 pin double row pin header with 21 mm pin length to a breadboard 
 <br/>
 
 # Internals
-The API accepts only degree (except for write() and writeMicrosecondsOrUnits()) but internally only microseconds (or units (= 4.88 &micro;s) if using PCA9685 expander) and not degree are used to speed up things. Other expander or servo libraries can therefore easily be used.<br/>
+The API accepts degrees or microseconds as float or integer values, but internally only microseconds (or units (= 4.88 &micro;s) if using PCA9685 expander) and not degrees are used to speed up things.<br/>
 
 <br/>
 
@@ -360,12 +360,13 @@ The API accepts only degree (except for write() and writeMicrosecondsOrUnits()) 
 Non blocking behavior can always be achieved manually by calling `update()` in a loop - see last movement in [Simple example](examples/Simple/Simple.ino).<br/>
 Interrupt based movement (movement without calling `update()` manually in a loop) is supported for the following Arduino architectures:<br/>
 **avr, megaavr, sam, samd, esp8266, esp32, stm32, STM32F1 and apollo3.**<br/>
-**It is not planned to support the ATtiny architecture, but you are invited to [do it by yourself](https://github.com/ArminJo/ServoEasing#adding-a-new-platform--board) and send a pull request.**
+**It is not planned to support the ATtiny architecture, but you are invited to [do it by yourself](https://github.com/ArminJo/ServoEasing#adding-a-new-platform--board) and send a pull request.**<br/>
+For ATmega4808, take care, that the Servo library from ...\packages\MegaCoreX\hardware\megaavr\1.1.0\libraries\Servo is used, otherwise you will see strange errors.
 
 <br/>
 
 # Timer usage for interrupt based movement
-On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking easing functions its unused **Channel B** is used to generate an interrupt 100 &micro;s before the end of the 20 ms Arduino Servo refresh period. This interrupt then updates all servo values for the next refresh period.
+On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking easing functions its unused **Channel B** is used to generate an interrupt [100 &micro;s before the end of the 20 ms Arduino Servo refresh period](https://github.com/ArminJo/ServoEasing/blob/13a9ae3f93c0ae75e7ac381216abe1154dd0a7e4/src/ServoEasing.hpp#L1915). This interrupt then updates all servo values for the next servo signal refresh period.
 | Platform | Timer | Library providing the timer |
 |---|---|---|
 | avr | Timer1 | Servo.h |
@@ -386,7 +387,7 @@ On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking ea
 # Adding a new platform / board
 If timer support is available for a platform the library can be ported by adding code for the Timer20ms like is was done for ESP and STM.<br/>
 To add a new platform, the following steps have to be performed:
-1. If the new platform has an **Arduino compatible Servo library**, fine, otherwise include the one required for this platform like it is done for ESP32 [here](src/ServoEasing.h#L83).
+1. If the new platform has an **Arduino compatible Servo library**, fine, otherwise include the one required for this platform like it is done for ESP32 [here](src/ServoEasing.h#L98).
 2. You need a **20ms interrupt source** providing the functions enableServoEasingInterrupt() and (optional) disableServoEasingInterrupt(). Extend these functions with code for the new platform. Place includes and timer definitions at top of *ServoEasing.hpp*.
 3. If your interrupt source requires an ISR (Interrupt Service Routine) place it after disableServoEasingInterrupt() where all the other ISR are located.
 4. To test the new platform, you may want to enable **TRACE output** by activating the line `#define TRACE` in *ServoEasing.hpp*
