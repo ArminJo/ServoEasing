@@ -23,5 +23,13 @@
     "espressif32",
     "ststm32"
   ],
-  "headers": "ServoEasing.hpp"
+  "headers": "ServoEasing.hpp",
+  "dependencies": [
+    {
+      "owner": "madhephaestus",
+      "name": "ESP32Servo",
+      "version": "*",
+      "platforms": ["espressif32"]
+    }
+  ]
 }
