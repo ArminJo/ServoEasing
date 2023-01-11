@@ -360,8 +360,7 @@ The API accepts degrees or microseconds as float or integer values, but internal
 Non blocking behavior can always be achieved manually by calling `update()` in a loop - see last movement in [Simple example](examples/Simple/Simple.ino).<br/>
 Interrupt based movement (movement without calling `update()` manually in a loop) is supported for the following Arduino architectures:<br/>
 **avr, megaavr, sam, samd, esp8266, esp32, stm32, STM32F1 and apollo3.**<br/>
-**It is not planned to support the ATtiny architecture, but you are invited to [do it by yourself](https://github.com/ArminJo/ServoEasing#adding-a-new-platform--board) and send a pull request.**<br/>
-For ATmega4808, take care, that the Servo library from ...\packages\MegaCoreX\hardware\megaavr\1.1.0\libraries\Servo is used, otherwise you will see strange errors.
+**It is not planned to support the ATtiny architecture, but you are invited to [do it by yourself](https://github.com/ArminJo/ServoEasing#adding-a-new-platform--board) and send a pull request.**
 
 <br/>
 

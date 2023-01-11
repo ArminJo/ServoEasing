@@ -13,8 +13,8 @@
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/gpl.html>.
@@ -95,19 +95,26 @@ __attribute__((weak)) extern void handleServoTimerInterrupt();
 //#    if ! __has_include("ESP32Servo.h")
 //#error This ServoEasing library requires the "ESP32Servo" library for running on an ESP32. Please install it via the Arduino library manager.
 //#    endif
-#   include <ESP32Servo.h>
+#include <ESP32Servo.h>
 
 #  elif defined(MEGATINYCORE)
-#   include <Servo_megaTinyCore.h>
+#include <Servo_megaTinyCore.h>
+
+#  elif defined(MEGACOREX)
+#    if __has_include("ServoMegaCoreX.h")
+#include <ServoMegaCoreX.h> // since Version 1.1.1 of MEGACOREX
+#    else
+#include <Servo.h>
+#    endif
 
 #  else // defined(ESP32)
 #    if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-#  include "LightweightServo.h"
+#include "LightweightServo.h"
 #      if !defined(MAX_EASING_SERVOS)
-#    define MAX_EASING_SERVOS 2 // default value for UNO etc.
+#define MAX_EASING_SERVOS 2 // default value for UNO etc.
 #      endif
 #    else
-#   include <Servo.h>
+#include <Servo.h>
 #    endif // !defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 #  endif // defined(ESP32)
 #endif // defined(USE_SERVO_LIB)
@@ -120,18 +127,18 @@ __attribute__((weak)) extern void handleServoTimerInterrupt();
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 #  if !defined(MAX_EASING_SERVOS)
-#    define MAX_EASING_SERVOS 16 // One PCA9685 has 16 outputs. You must MODIFY this, if you have more than one PCA9685 attached!
+#define MAX_EASING_SERVOS 16 // One PCA9685 has 16 outputs. You must MODIFY this, if you have more than one PCA9685 attached!
 #  endif // defined(USE_PCA9685_SERVO_EXPANDER)
    #include <Wire.h>
 // PCA9685 works with up to 1 MHz I2C frequency
 #  if defined(ESP32)
 // The ESP32 I2C interferes with the Ticker / Timer library used.
 // Even with 100 kHz clock we have some dropouts / NAK's because of sending address again instead of first data.
-#    define I2C_CLOCK_FREQUENCY 100000 // 200000 does not work for my ESP32 module together with the timer even with external pullups :-(
+# define I2C_CLOCK_FREQUENCY 100000 // 200000 does not work for my ESP32 module together with the timer even with external pullups :-(
 #  elif defined(ESP8266)
-#    define I2C_CLOCK_FREQUENCY 400000 // 400000 is the maximum for 80 MHz clocked ESP8266 (I measured real 330000 Hz for this setting)
+#define I2C_CLOCK_FREQUENCY 400000 // 400000 is the maximum for 80 MHz clocked ESP8266 (I measured real 330000 Hz for this setting)
 #  else
-#    define I2C_CLOCK_FREQUENCY 800000 // 1000000 does not work for my Arduino Nano, maybe because of parasitic breadboard capacities
+#define I2C_CLOCK_FREQUENCY 800000 // 1000000 does not work for my Arduino Nano, maybe because of parasitic breadboard capacities
 #  endif
 #endif // defined(USE_PCA9685_SERVO_EXPANDER)
 
@@ -145,9 +152,9 @@ __attribute__((weak)) extern void handleServoTimerInterrupt();
  ****************************************************************************************/
 #if !defined(MAX_EASING_SERVOS)
 #  if defined(MAX_SERVOS)
-#   define MAX_EASING_SERVOS MAX_SERVOS // =12 use default value from Servo.h for UNO etc.
+#define MAX_EASING_SERVOS MAX_SERVOS // =12 use default value from Servo.h for UNO etc.
 #  else
-#   define MAX_EASING_SERVOS 12 // just take default value from Servo.h for UNO etc.
+#define MAX_EASING_SERVOS 12 // just take default value from Servo.h for UNO etc.
 #  endif
 #endif // !defined(MAX_EASING_SERVOS)
 

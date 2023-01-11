@@ -21,8 +21,8 @@
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/gpl.html>.
@@ -85,7 +85,7 @@
 Ticker Timer20ms;
 
 // BluePill in 2 flavors
-#elif defined(STM32F1xx)   // for "Generic STM32F1 series / STM32:stm32" from STM32 Boards from STM32 cores of Arduino Board manager
+#elif defined(STM32F1xx)   // for "Generic STM32F1 series / STMicroelectronics:stm32" from STM32 Boards from STM32 cores of Arduino Board manager
 // https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json
 #include <HardwareTimer.h> // 4 timers and 3. timer is used for tone(), 2. for Servo
 /*
@@ -1889,6 +1889,9 @@ void enableServoEasingInterrupt() {
     TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV8_gc | TCA_SINGLE_ENABLE_bm;   // set prescaler to 8 and enable timer
     TCA0.SINGLE.INTCTRL = TCA_SINGLE_OVF_bm;                                // Enable overflow interrupt
 
+#  if defined(MEGACOREX) && defined(USE_TIMERB2)
+#error It seems, that not the Megacore Servo library, but an Arduino Servo library is taken for compile, which will lead to errors. You must update MEGACOREX to >= 1.1.1 or remove the Arduino Servo library to fix this.
+#  endif
 #  elif defined(TCCR1B) && defined(TIFR1) // Uno, Nano etc.
     /*
      * Standard AVR
@@ -1927,7 +1930,7 @@ void enableServoEasingInterrupt() {
     Timer20ms.attach_ms(REFRESH_INTERVAL_MILLIS, handleServoTimerInterrupt);
 
 // BluePill in 2 flavors
-#elif defined(STM32F1xx)   // for "STM32:stm32" from STM32 Boards from STM32 cores of Arduino Board manager
+#elif defined(STM32F1xx)   // for "STMicroelectronics:stm32" from STM32 Boards from STM32 cores of Arduino Board manager
     Timer20ms.setMode(LL_TIM_CHANNEL_CH1, TIMER_OUTPUT_COMPARE, NC);    // used for generating only interrupts, no pin specified
     Timer20ms.setOverflow(REFRESH_INTERVAL_MICROS, MICROSEC_FORMAT);    // microsecond period
     Timer20ms.attachInterrupt(handleServoTimerInterrupt);               // this sets update interrupt enable
