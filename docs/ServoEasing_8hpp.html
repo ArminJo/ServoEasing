@@ -136,11 +136,17 @@ Functions</h2></td></tr>
 <tr class="memdesc:a6a709d51a26d9ee9b11a6ee08151bc7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">60 us for single servo + 160 us per servo if using I2C e.g.for PCA9685 expander at 400 kHz or + 100 at 800 kHz 20 us for last interrupt The first servo pulse starts just after this interrupt routine has finished  <a href="ServoEasing_8hpp.html#a6a709d51a26d9ee9b11a6ee08151bc7a">More...</a><br /></td></tr>
 <tr class="separator:a6a709d51a26d9ee9b11a6ee08151bc7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a34d8d10f7e8ed301e16761017b7e8d3d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ServoEasing_8hpp.html#a34d8d10f7e8ed301e16761017b7e8d3d">setEasingTypeForMultipleServos</a> (uint_fast8_t aNumberOfServos, uint_fast8_t aEasingType)</td></tr>
+<tr class="memdesc:a34d8d10f7e8ed301e16761017b7e8d3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets easing type aEasingType for the first aNumberOfServos in ServoEasingArray[].  <a href="ServoEasing_8hpp.html#a34d8d10f7e8ed301e16761017b7e8d3d">More...</a><br /></td></tr>
 <tr class="separator:a34d8d10f7e8ed301e16761017b7e8d3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afc99e509838b5b5cbd21942cea366e2c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ServoEasing_8hpp.html#afc99e509838b5b5cbd21942cea366e2c">setEaseToForAllServosSynchronizeAndStartInterrupt</a> ()</td></tr>
 <tr class="separator:afc99e509838b5b5cbd21942cea366e2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a146432b60fa1a4bb94560504b41987c0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ServoEasing_8hpp.html#a146432b60fa1a4bb94560504b41987c0">setEaseToForAllServosSynchronizeAndStartInterrupt</a> (uint_fast16_t aDegreesPerSecond)</td></tr>
 <tr class="separator:a146432b60fa1a4bb94560504b41987c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b5872f39331d279ca84e9c4d1eaa980"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ServoEasing_8hpp.html#a1b5872f39331d279ca84e9c4d1eaa980">setEaseToForAllServosSynchronizeAndWaitForAllServosToStop</a> ()</td></tr>
+<tr class="memdesc:a1b5872f39331d279ca84e9c4d1eaa980"><td class="mdescLeft">&#160;</td><td class="mdescRight">Synchronize and blocking wait until all servos are stopped.  <a href="ServoEasing_8hpp.html#a1b5872f39331d279ca84e9c4d1eaa980">More...</a><br /></td></tr>
+<tr class="separator:a1b5872f39331d279ca84e9c4d1eaa980"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a599e3624bd1cf81813cad1e1dd41372b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ServoEasing_8hpp.html#a599e3624bd1cf81813cad1e1dd41372b">setEaseToForAllServosSynchronizeAndWaitForAllServosToStop</a> (uint_fast16_t aDegreesPerSecond)</td></tr>
+<tr class="separator:a599e3624bd1cf81813cad1e1dd41372b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3225cc894f78b7f8b2552561d150052c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ServoEasing_8hpp.html#a3225cc894f78b7f8b2552561d150052c">synchronizeAndEaseToArrayPositions</a> ()</td></tr>
 <tr class="separator:a3225cc894f78b7f8b2552561d150052c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2e01d3a948938384a076259b83e799d0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ServoEasing_8hpp.html#a2e01d3a948938384a076259b83e799d0">synchronizeAndEaseToArrayPositions</a> (uint_fast16_t aDegreesPerSecond)</td></tr>
@@ -156,8 +162,10 @@ Functions</h2></td></tr>
 <tr class="memdesc:a6e84acc192dfce2c901a25acf2744eb7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets target position using content of ServoEasingNextPositionArray.  <a href="ServoEasing_8hpp.html#a6e84acc192dfce2c901a25acf2744eb7">More...</a><br /></td></tr>
 <tr class="separator:a6e84acc192dfce2c901a25acf2744eb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aac7f62f888ddd6fe47d276992fff0a4e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ServoEasing_8hpp.html#aac7f62f888ddd6fe47d276992fff0a4e">setEaseToForAllServos</a> (uint_fast16_t aDegreesPerSecond)</td></tr>
+<tr class="memdesc:aac7f62f888ddd6fe47d276992fff0a4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets target position using content of ServoEasingNextPositionArray and use aDegreesPerSecond instead of the one stored in mSpeed.  <a href="ServoEasing_8hpp.html#aac7f62f888ddd6fe47d276992fff0a4e">More...</a><br /></td></tr>
 <tr class="separator:aac7f62f888ddd6fe47d276992fff0a4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2d8b155cc6260a2a9adce2865df0e46a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ServoEasing_8hpp.html#a2d8b155cc6260a2a9adce2865df0e46a">setEaseToDForAllServos</a> (uint_fast16_t aMillisForMove)</td></tr>
+<tr class="memdesc:a2d8b155cc6260a2a9adce2865df0e46a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets target position using content of ServoEasingNextPositionArray and use aMillisForMove instead of the speed stored in mSpeed.  <a href="ServoEasing_8hpp.html#a2d8b155cc6260a2a9adce2865df0e46a">More...</a><br /></td></tr>
 <tr class="separator:a2d8b155cc6260a2a9adce2865df0e46a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad4e9a93af7f6aba0a14046a9e36dd358"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ServoEasing_8hpp.html#ad4e9a93af7f6aba0a14046a9e36dd358">isOneServoMoving</a> ()</td></tr>
 <tr class="separator:ad4e9a93af7f6aba0a14046a9e36dd358"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -172,10 +180,12 @@ Functions</h2></td></tr>
 <tr class="memitem:a12b38a954d3061ea45838d147a7cfc08"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ServoEasing_8hpp.html#a12b38a954d3061ea45838d147a7cfc08">updateAllServos</a> ()</td></tr>
 <tr class="separator:a12b38a954d3061ea45838d147a7cfc08"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6081a17da896d37eb783459e7e8e63b0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ServoEasing_8hpp.html#a6081a17da896d37eb783459e7e8e63b0">updateAndWaitForAllServosToStop</a> ()</td></tr>
+<tr class="memdesc:a6081a17da896d37eb783459e7e8e63b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Blocking wait until all servos are stopped.  <a href="ServoEasing_8hpp.html#a6081a17da896d37eb783459e7e8e63b0">More...</a><br /></td></tr>
 <tr class="separator:a6081a17da896d37eb783459e7e8e63b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a847cdf65eb6371a3aa2d4dfaa027f67f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ServoEasing_8hpp.html#a847cdf65eb6371a3aa2d4dfaa027f67f">delayAndUpdateAndWaitForAllServosToStop</a> (unsigned long aMillisDelay, bool aTerminateDelayIfAllServosStopped)</td></tr>
 <tr class="separator:a847cdf65eb6371a3aa2d4dfaa027f67f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a138cfe5aec8d6a132994aedd0b7b20a1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ServoEasing_8hpp.html#a138cfe5aec8d6a132994aedd0b7b20a1">synchronizeAllServosStartAndWaitForAllServosToStop</a> ()</td></tr>
+<tr class="memdesc:a138cfe5aec8d6a132994aedd0b7b20a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Synchronize and blocking wait until all servos are stopped.  <a href="ServoEasing_8hpp.html#a138cfe5aec8d6a132994aedd0b7b20a1">More...</a><br /></td></tr>
 <tr class="separator:a138cfe5aec8d6a132994aedd0b7b20a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7d2b265451252b889c52d8941e661ec4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ServoEasing_8hpp.html#a7d2b265451252b889c52d8941e661ec4">synchronizeAllServosAndStartInterrupt</a> (bool aStartUpdateByInterrupt)</td></tr>
 <tr class="memdesc:a7d2b265451252b889c52d8941e661ec4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Take the longer duration in order to move all servos synchronously.  <a href="ServoEasing_8hpp.html#a7d2b265451252b889c52d8941e661ec4">More...</a><br /></td></tr>
@@ -199,7 +209,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02529">2529</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02579">2579</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -215,7 +225,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02530">2530</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02580">2580</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -231,7 +241,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02526">2526</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02576">2576</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -247,7 +257,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02527">2527</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02577">2577</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -263,7 +273,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02525">2525</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02575">2575</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -287,7 +297,7 @@ Variables</h2></td></tr>
 <p>Clips the unsigned degree value and handles unsigned underflow. </p>
 <dl class="section return"><dt>Returns</dt><dd>0 if aDegreeToClip &gt;= 218 and 180 if 180 &lt;= aDegreeToClip &lt; 218 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l01797">1797</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l01821">1821</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -325,7 +335,7 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if all Servos reached endAngle / stopped </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02399">2399</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02446">2446</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -344,7 +354,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02056">2056</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02072">2072</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -366,7 +376,7 @@ Variables</h2></td></tr>
 <p>Timer1 is used for the Arduino Servo library. </p>
 <p>To have non blocking easing functions its unused channel B is used to generate an interrupt 100 us before the end of the 20 ms Arduino Servo refresh period. This interrupt then updates all servo values for the next refresh period. First interrupt is triggered not directly, but after 20 ms, since we are often called here at the time of the last interrupt of the preceding servo move. </p>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l01852">1852</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l01866">1866</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -388,7 +398,7 @@ Variables</h2></td></tr>
 <p>Update all servos from list and check if all servos have stopped. </p>
 <p>Guarded by an macro in order to be able to overwrite it, e.g. for synchronizing with NeoPixel updates, which otherwise leads to servo twitching. See QuadrupedNeoPixel.cpp of QuadrupedControl example. We have 100 us before the next servo period starts. </p>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l01827">1827</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l01841">1841</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -407,7 +417,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02323">2323</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02366">2366</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -426,7 +436,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02343">2343</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02386">2386</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -454,7 +464,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02219">2219</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02251">2251</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -473,7 +483,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02355">2355</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02398">2398</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -492,7 +502,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02363">2363</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02406">2406</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -512,7 +522,10 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02312">2312</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p>Sets target position using content of ServoEasingNextPositionArray and use aMillisForMove instead of the speed stored in mSpeed. </p>
+<p>Does not start interrupt/movement! </p><dl class="section return"><dt>Returns</dt><dd>false if one servo was still moving </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02355">2355</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -532,9 +545,9 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Sets target position using content of ServoEasingNextPositionArray. </p>
-<dl class="section return"><dt>Returns</dt><dd>false if one servo was still moving </dd></dl>
+<p>Does not start interrupt/movement! </p><dl class="section return"><dt>Returns</dt><dd>false if one servo was still moving </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02289">2289</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02322">2322</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -554,7 +567,10 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02301">2301</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p>Sets target position using content of ServoEasingNextPositionArray and use aDegreesPerSecond instead of the one stored in mSpeed. </p>
+<p>Does not start interrupt/movement! </p><dl class="section return"><dt>Returns</dt><dd>false if one servo was still moving </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02339">2339</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -573,7 +589,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02195">2195</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02214">2214</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -593,7 +609,48 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02200">2200</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02219">2219</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+
+</div>
+</div>
+<a id="a1b5872f39331d279ca84e9c4d1eaa980"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1b5872f39331d279ca84e9c4d1eaa980">&#9670;&nbsp;</a></span>setEaseToForAllServosSynchronizeAndWaitForAllServosToStop() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void setEaseToForAllServosSynchronizeAndWaitForAllServosToStop </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Synchronize and blocking wait until all servos are stopped. </p>
+
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02227">2227</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+
+</div>
+</div>
+<a id="a599e3624bd1cf81813cad1e1dd41372b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a599e3624bd1cf81813cad1e1dd41372b">&#9670;&nbsp;</a></span>setEaseToForAllServosSynchronizeAndWaitForAllServosToStop() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void setEaseToForAllServosSynchronizeAndWaitForAllServosToStop </td>
+          <td>(</td>
+          <td class="paramtype">uint_fast16_t&#160;</td>
+          <td class="paramname"><em>aDegreesPerSecond</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02232">2232</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -615,7 +672,7 @@ Variables</h2></td></tr>
 
 <p>60 us for single servo + 160 us per servo if using I2C e.g.for PCA9685 expander at 400 kHz or + 100 at 800 kHz 20 us for last interrupt The first servo pulse starts just after this interrupt routine has finished </p>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02182">2182</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02198">2198</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -645,7 +702,9 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02186">2186</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p>Sets easing type aEasingType for the first aNumberOfServos in ServoEasingArray[]. </p>
+
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02205">2205</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -665,7 +724,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02254">2254</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02286">2286</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -684,7 +743,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02332">2332</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02375">2375</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -706,7 +765,7 @@ Variables</h2></td></tr>
 
 <p>Take the longer duration in order to move all servos synchronously. </p>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02424">2424</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02474">2474</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -725,7 +784,9 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02416">2416</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p>Synchronize and blocking wait until all servos are stopped. </p>
+
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02466">2466</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -744,7 +805,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02205">2205</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02237">2237</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -764,7 +825,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02210">2210</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02242">2242</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -784,7 +845,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>true if all Servos reached endAngle / stopped </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02374">2374</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02417">2417</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -803,7 +864,9 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02387">2387</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p>Blocking wait until all servos are stopped. </p>
+
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02434">2434</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -823,7 +886,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02246">2246</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02278">2278</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -840,7 +903,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l00162">162</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l00165">165</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -850,7 +913,7 @@ Variables</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="ServoEasing_8hpp.html">ServoEasing.hpp</a></li>
-    <li class="footer">Generated on Sat Aug 6 2022 14:24:47 for ServoEasing by
+    <li class="footer">Generated on Thu Feb 16 2023 21:55:49 for ServoEasing by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.18 </li>
   </ul>

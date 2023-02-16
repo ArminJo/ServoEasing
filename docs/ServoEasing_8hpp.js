@@ -20,6 +20,8 @@ var ServoEasing_8hpp =
     [ "setEaseToForAllServos", "ServoEasing_8hpp.html#aac7f62f888ddd6fe47d276992fff0a4e", null ],
     [ "setEaseToForAllServosSynchronizeAndStartInterrupt", "ServoEasing_8hpp.html#afc99e509838b5b5cbd21942cea366e2c", null ],
     [ "setEaseToForAllServosSynchronizeAndStartInterrupt", "ServoEasing_8hpp.html#a146432b60fa1a4bb94560504b41987c0", null ],
+    [ "setEaseToForAllServosSynchronizeAndWaitForAllServosToStop", "ServoEasing_8hpp.html#a1b5872f39331d279ca84e9c4d1eaa980", null ],
+    [ "setEaseToForAllServosSynchronizeAndWaitForAllServosToStop", "ServoEasing_8hpp.html#a599e3624bd1cf81813cad1e1dd41372b", null ],
     [ "setEasingTypeForAllServos", "ServoEasing_8hpp.html#a6a709d51a26d9ee9b11a6ee08151bc7a", null ],
     [ "setEasingTypeForMultipleServos", "ServoEasing_8hpp.html#a34d8d10f7e8ed301e16761017b7e8d3d", null ],
     [ "setSpeedForAllServos", "ServoEasing_8hpp.html#a7f5e55942347ec43e67f4445fb52f5aa", null ],

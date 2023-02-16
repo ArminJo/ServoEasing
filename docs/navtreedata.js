@@ -25,7 +25,6 @@
 var NAVTREE =
 [
   [ "ServoEasing", "index.html", [
-    [ "<a href=\"https://github.com/ArminJo/ServoEasing\">ServoEasing</a> - move your servo more natural", "index.html", null ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
       [ "Class Hierarchy", "hierarchy.html", "hierarchy" ],
@@ -50,7 +49,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "LightweightServo_8h.html",
-"classServoEasing.html#a99c8a1543b2ade92cab1ac52ab040f8f"
+"classServoEasing.html#a8e45a2aac3f2857d9af9a0820b27c237"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
