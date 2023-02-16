@@ -108,14 +108,14 @@ For instructions how to enable these alternatives, see [Compile options / macros
 
 
 ### All easing functions can be used in the following variants:
-All ease functions are called internally with the value: `PercentageOfCompletion / 100` resulting in values from 0 and 1.
+All ease functions are called internally with the value: `PercentageOfCompletion / 100` giving a call value from 0 to 1.
 
-- In (start the function with 0 and go to 1) for PRECISION, do a bounce if approaching from above (go in to origin), else linear.
-- Out (start the function with 1 and go to 0) for PRECISION, do a bounce if approaching from  below (go out from origin), else linear.
-- InOut (start the function with 0 go to 1 and back to 0)
-- Bouncing (start with OUT, then return with IN to start degree) e.g. Bouncing of the Sine function results in the upper (positive) half of the sine.
+- In: Start the function with 0 and go to 1 linear. Except for PRECISION, where we do a bounce if approaching from above (go in to origin).
+- Out: Start the function with 1 and go to 0 linear. Except for PRECISION, where we do a bounce if approaching from  below (go out from origin).
+- InOut: Start the function with 0 go to 1 and back to 0.
+- Bouncing: Start with OUT, then return with IN to start degree. E.g. Bouncing of the SINE function results in the upper (positive) half of the sine.
 
-All easing types (starting in flavor IN_OUT, then IN, OUT and BOUNCE) in one plot.<br/>
+#### All easing types (starting in flavor IN_OUT, then IN, OUT and BOUNCE) in one plot.<br/>
 Since the values are computed in a fixed 20 ms raster, the last degree increment or decrement
 in an easing may be much smaller than the increment/decrement before,
 resulting in some small discontinuities between adjacent movements.<br/>
@@ -123,7 +123,7 @@ resulting in some small discontinuities between adjacent movements.<br/>
 
 ### Constraints
 To restrict servo movements to a fixed range, you can specify constraints with `setMinMaxConstraint(int aMinDegreeOrMicrosecond, int aMaxDegreeOrMicrosecond)`.<br/>
-Arduino Plotter Output with constraints at 5 degree and 175 degree activated.
+#### Arduino Plotter Output with constraints at 5 degree and 175 degree activated.
 ![Arduino Plotter Output with constraints at 5 degree and 175 degree activated](https://github.com/ArminJo/ServoEasing/blob/master/pictures/Constraints.png)
 
 ### Disable easing temporarily
@@ -160,7 +160,7 @@ Just call `myServo.startEaseTo()` instead of `myServo.write()` and you are done.
 <br/>
 
 # Multiple servo handling
-You can handle multiple servos simultaneously by [special functions](https://github.com/ArminJo/ServoEasing/blob/master/src/ServoEasing.h#L667) like
+You can handle multiple servos simultaneously by [special functions](https://github.com/ArminJo/ServoEasing/blob/master/src/ServoEasing.h#L674) like
  `writeAllServos()`, `setSpeedForAllServos()`, `setDegreeForAllServos()`, `setEaseToDForAllServos()`, `updateAndWaitForAllServosToStop()`, `setEaseToForAllServosSynchronizeAndWaitForAllServosToStop()`,  `setEaseToForAllServosSynchronizeAndStartInterrupt()` and much more.<br/>
  [See below](https://github.com/ArminJo/ServoEasing#handling-multiple-servos-with-the-internal-servoeasingarray).
 
@@ -175,7 +175,7 @@ You can handle multiple servos simultaneously by [special functions](https://git
 # Useful resources
 - [Easings Cheat Sheet](https://easings.net/)
 - [Robert Penner](http://www.robertpenner.com/easing/)
-- [C functions on Github](https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c)
+- [Easing C functions on Github](https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c)
 - [Interactive cubic-bezier](http://cubic-bezier.com)
 - Servo signal gif from https://workshop.pglu.ch/arduino-servo/
 [![Servo signal gif from https://workshop.pglu.ch/arduino-servo/](pictures/ServoFunktion_workshop.pglu.ch.gif)](https://workshop.pglu.ch/arduino-servo/)
@@ -271,7 +271,7 @@ Modify them by enabling / disabling them, or change the values if applicable.
 | `PROVIDE_ONLY_LINEAR_MOVEMENT` | disabled | Disables all but LINEAR movement. Saves up to 1540 bytes program memory. |
 | `DISABLE_COMPLEX_FUNCTIONS` | disabled | Disables the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory. |
 | `MAX_EASING_SERVOS` | 12, 16(for PCA9685) | Saves 4 byte RAM per servo. If this value is smaller than the amount of servos declared, attach() will return error and other library functions will not work as expected.<br/>Of course all *AllServos*() functions and isOneServoMoving() can't work correctly! |
-| `DISABLE_MICROS_AS_DEGREE_PARAMETER` | disabled | Disables passing also microsecond values as (target angle) parameter (see [OneServo example](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino#L93)). Saves up to 128 bytes program memory. |
+| `DISABLE_MICROS_AS_DEGREE_PARAMETER` | disabled | Disables passing also microsecond values as (target angle) parameter. Saves up to 128 bytes program memory. |
 | `DISABLE_MIN_AND_MAX_CONSTRAINTS` | disabled | Disables servo movement constraints. Saves 4 bytes RAM per servo but strangely enough no program memory. |
 | `DISABLE_PAUSE_RESUME` | disabled | Disables pause and resume functionality. Saves 5 bytes RAM per servo. |
 | `PRINT_FOR_SERIAL_PLOTTER` | disabled | Generate serial output for Arduino Plotter (Ctrl-Shift-L). |
@@ -281,7 +281,7 @@ Modify them by enabling / disabling them, or change the values if applicable.
 <br/>
 
 # Using PCA9685 16-Channel Servo Expander
-Using the expander makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
+Using the PCA9685 expander makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
 To enable the use of the expander, activate [the line `#define USE_PCA9685_SERVO_EXPANDER`](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino#L28) before `#include <ServoEasing.hpp>`.<br/>
 In expander mode, timer1 is only required for the startEaseTo* functions and not for the blocking easeTo* functions, since no servo signal must be generated by it.
 
@@ -316,14 +316,14 @@ The ServoEasing library provides two arrays to ease the handling of multiple ser
 
 Every ServoEasing object is appended to the ServoEasingArray by the attach() function.
 **Only the order of the attach() statements determines the position in the array.**
-So you can access your servo, which you attached secondly, also by `ServoEasing::ServoEasingArray[1]->setEaseTo(135)` as it is done [here](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServos/ThreeServos.ino#L144).<br/>
+So you can access your servo, which you attached secondly, also by `ServoEasing::ServoEasingArray[1]->setEaseTo(135)` as it is done [here](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServos/ThreeServos.ino#L149).<br/>
 There are also many other `*AllServos*` functions like `stopAllServos()`.
 
 To move multiple servo, you can fill up the `ServoEasing::ServoEasingNextPositionArray` with the desired positions and then use e.g. the function `setEaseToForAllServos()`.
 Then you must enable interrupt with `enableServoEasingInterrupt()` or call `updateAllServos()` in your main loop until it returns true.<br/>
 If you want to move all your servos synchronized, i.e. they all stop at the same time,
 you can use the `setEaseToForAllServosSynchronizeAndWaitForAllServosToStop()` or `setEaseToForAllServosSynchronizeAndStartInterrupt` function.<br/>
-An example can be found [here](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServos/ThreeServos.ino#L162).<br/>
+An example can be found [here](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServos/ThreeServos.ino#L174).<br/>
 The [Quadruped example](https://github.com/ArminJo/ServoEasing/blob/master/examples/QuadrupedControl/QuadrupedServoControl.hpp#L32) makes heavy use of the `*AllServos*` functions.
 
 If you **detach** a servo and then attach another one, the latter will get the index of the former detached one.
@@ -357,7 +357,7 @@ The API accepts degrees or microseconds as float or integer values, but internal
 
 # Supported Arduino architectures
 **Every Arduino architecture with a Servo library** will work without any modifications in blocking mode.<br/>
-Non blocking behavior can always be achieved manually by calling `update()` in a loop - see last movement in [Simple example](examples/Simple/Simple.ino).<br/>
+Non blocking behavior can always be achieved manually by calling `update()` or `updateAllServos()` in a loop - see [ThreeServos example](examples/ThreeServos/ThreeServos.ino#L153).<br/>
 Interrupt based movement (movement without calling `update()` manually in a loop) is supported for the following Arduino architectures:<br/>
 **avr, megaavr, sam, samd, esp8266, esp32, stm32, STM32F1 and apollo3.**<br/>
 **It is not planned to support the ATtiny architecture, but you are invited to [do it by yourself](https://github.com/ArminJo/ServoEasing#adding-a-new-platform--board) and send a pull request.**
@@ -379,7 +379,7 @@ On **AVR** Timer1 is used for the Arduino Servo library. To have non blocking ea
 | Teensy |  | IntervalTimer |
 | apollo3 | timer 3 segment A |  |
 | Mbed | mbed::Ticker | Ticker.h |
-| [RP2040 / Pi Pico](https://github.com/earlephilhower/arduino-pico | [default alarm pool](https://raspberrypi.github.io/pico-sdk-doxygen/group__repeating__timer.html) | time.h |
+| [RP2040 / Pi Pico](https://github.com/earlephilhower/arduino-pico) | [default alarm pool](https://raspberrypi.github.io/pico-sdk-doxygen/group__repeating__timer.html) | time.h |
 
 <br/>
 
@@ -404,7 +404,8 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 <br/>
 
 # Revision History
-### Version 3.1.1
+### Version 3.2.0
+- ATmega4808 support added.
 - Added function `getCurrentMicroseconds()`.
 - Improved many and added workaround for ESP32 bug in while loops in examples.
 - Added `PCA9685_ACTUAL_CLOCK_FREQUENCY` macro.

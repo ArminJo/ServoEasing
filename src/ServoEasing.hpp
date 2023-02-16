@@ -9,7 +9,7 @@
  *
  *  The AVR Servo library supports only one timer, which means not more than 12 servos are supported using this library.
  *
- *  Copyright (C) 2019-2022  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2023  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -1035,7 +1035,7 @@ void ServoEasing::easeTo(float aTargetDegreeOrMicrosecond) {
 
 /**
  * Blocking move without interrupt
- * @param aMicrosecondsOrUnits  For servos connected to a PCA9685 assume units, else assume microseconds
+ * @param aTargetDegreeOrMicrosecond  For servos connected to a PCA9685 assume units, else assume microseconds
  * @param aDegreesPerSecond     Can range from 1 to the physically maximum value of 450
  */
 void ServoEasing::easeTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond) {

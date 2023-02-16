@@ -1,7 +1,7 @@
 /*
  * ServoEasing.h
  *
- *  Copyright (C) 2019-2022  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2023  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -24,9 +24,9 @@
 #ifndef _SERVO_EASING_H
 #define _SERVO_EASING_H
 
-#define VERSION_SERVO_EASING "3.1.0"
+#define VERSION_SERVO_EASING "3.2.0"
 #define VERSION_SERVO_EASING_MAJOR 3
-#define VERSION_SERVO_EASING_MINOR 1
+#define VERSION_SERVO_EASING_MINOR 2
 #define VERSION_SERVO_EASING_PATCH 0
 // The change log is at the bottom of the file
 
@@ -42,7 +42,7 @@
 // The eclipse formatter has problems with // comments in undefined code blocks
 // !!! Must be without comment and closed by @formatter:on
 // @formatter:off
-#define START_EASE_TO_SPEED 5 // If not specified use 5 degree per second. It is chosen so low in order to signal that it was forgotten to specify.
+#define START_EASE_TO_SPEED 5 // If not specified use 5 degree per second. It is chosen so low in order to signal that it was forgotten to specify by program.
 
 /*
  * USE_PCA9685_SERVO_EXPANDER is for use with e.g. the Adafruit PCA9685 16-Channel Servo Driver board.
@@ -734,7 +734,8 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
 #endif
 
 /*
- * Version 3.1.1 - 09/2022
+ * Version 3.2.0 - 02/2023
+ * - ATmega4808 support added.
  * - Added function `getCurrentMicroseconds()`.
  * - Improved many and added workaround for ESP32 bug in while loops in examples.
  * - Added `PCA9685_ACTUAL_CLOCK_FREQUENCY` macro.
