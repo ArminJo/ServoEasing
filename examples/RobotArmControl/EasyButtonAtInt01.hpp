@@ -480,6 +480,7 @@ bool EasyButton::checkForDoublePress(uint16_t aDoublePressDelayMillis) {
     /*
      * Check if ButtonReleaseMillis is not in initialized state
      * otherwise a single press before aDoublePressDelayMillis after boot is mistakenly detected as double press
+     * Check costs 26 bytes program memory :-(
      */
     if (ButtonReleaseMillis != 0) {
         // because ButtonReleaseMillis is initialized with 0 milliseconds, which is interpreted as the first press happened at the beginning of boot.

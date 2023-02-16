@@ -236,7 +236,7 @@ void loop() {
 #if !defined(DISABLE_PAUSE_RESUME)
 #  if !defined(PRINT_FOR_SERIAL_PLOTTER)
     Serial.println(F("Interrupt movement with pause() for 1 second at 90 degree"));
-  #endif
+#  endif
     /*
      * Demonstrate pause and resume in the middle of a movement
      */
@@ -246,6 +246,10 @@ void loop() {
     Servo1.resumeWithInterrupts();
 #endif
     while (Servo1.isMoving()); // wait for servo to stop
+
+#  if !defined(PRINT_FOR_SERIAL_PLOTTER)
+    Serial.println(F("Detach the servo for 5 seconds. During this time you can move the servo manually."));
+#  endif
 
     Servo1.detach();
     /*

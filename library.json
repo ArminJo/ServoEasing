@@ -6,7 +6,7 @@
     "type": "git",
     "url": "https://github.com/ArminJo/ServoEasing"
   },
-  "version": "3.1.0",
+  "version": "3.2.0",
   "exclude": "pictures",
   "authors": {
     "name": "Armin Joachimsmeyer",
@@ -23,13 +23,5 @@
     "espressif32",
     "ststm32"
   ],
-  "headers": "ServoEasing.hpp",
-  "dependencies": [
-    {
-      "owner": "madhephaestus",
-      "name": "ESP32Servo",
-      "version": "*",
-      "platforms": ["espressif32"]
-    }
-  ]
+  "headers": "ServoEasing.hpp"
 }
