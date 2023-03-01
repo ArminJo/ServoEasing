@@ -1,7 +1,7 @@
 /*
  * ConsecutiveEasingsWithCallback.cpp
  *
- *  This example shows 1 linear and 7 non-linear easings in flavor IN_OUT for 1 servo, followed with flavors of IN, OUT and BOUNCING.
+ *  This example shows a trajectory consisting of 1 linear and 7 non-linear easings in flavor IN_OUT for 1 servo, followed with flavors of IN, OUT and BOUNCING.
  *  Linear->Quadratic->Cubic->Quartic->Sine-Circular->Back->Elastic->Quadratic_in->Cubic_out->Cubic_bounce->Dummy.
  *  Note, that Back and Elastic are not totally visible at your servo, since they use angels above 180 and below 0 degree in this example.
  *  It uses a callback handler and specification arrays to generate the movement cycle.
@@ -64,6 +64,23 @@ ServoEasing Servo1;
 #define START_DEGREE_VALUE  0 // The degree value written to the servo at time of attach.
 //#define USE_MICROSECONDS      // Use microseconds instead degrees as parameter
 //#define USE_CONSTRAINTS       // Use constraints to limit the servo movements
+
+/*
+ * Arrays for the parameter of movements controlled by callback
+ */
+#define NUMBER_OF_MOVEMENTS_IN_A_TRAJECTORY  14
+uint_fast8_t EasingTypesArray[NUMBER_OF_MOVEMENTS_IN_A_TRAJECTORY] = { EASE_LINEAR, EASE_QUADRATIC_IN_OUT, EASE_CUBIC_IN_OUT,
+EASE_QUARTIC_IN_OUT, EASE_SINE_IN_OUT, EASE_CIRCULAR_IN_OUT, EASE_BACK_IN_OUT, EASE_ELASTIC_IN_OUT, EASE_QUADRATIC_IN,
+EASE_CUBIC_OUT, EASE_CUBIC_BOUNCING, EASE_DUMMY_MOVE, EASE_PRECISION_IN, EASE_BOUNCE_OUT };
+#if defined(USE_MICROSECONDS)
+int TargetDegreesArray[NUMBER_OF_MOVEMENTS_IN_A_TRAJECTORY] = { DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE,
+DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_90_DEGREE,
+DEFAULT_MICROSECONDS_FOR_180_DEGREE, DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_0_DEGREE,
+DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE,
+DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_0_DEGREE };
+#else
+int TargetDegreesArray[NUMBER_OF_MOVEMENTS_IN_A_TRAJECTORY] = { 90, 180, 90, 0, 90, 180, 90, 0, 90, 180, 180, 90, 90, 0 };
+#endif
 
 void blinkLED();
 void ServoTargetPositionReachedHandler(ServoEasing *aServoEasingInstance);
@@ -148,23 +165,6 @@ void blinkLED() {
 }
 
 /*
- * Arrays for the parameter of movements controlled by callback
- */
-#define NUMBER_OF_EASING_TYPES_TO_SHOW  14
-uint_fast8_t EasingTypesArray[NUMBER_OF_EASING_TYPES_TO_SHOW] = { EASE_LINEAR, EASE_QUADRATIC_IN_OUT, EASE_CUBIC_IN_OUT,
-EASE_QUARTIC_IN_OUT, EASE_SINE_IN_OUT, EASE_CIRCULAR_IN_OUT, EASE_BACK_IN_OUT, EASE_ELASTIC_IN_OUT, EASE_QUADRATIC_IN,
-EASE_CUBIC_OUT, EASE_CUBIC_BOUNCING, EASE_DUMMY_MOVE, EASE_PRECISION_IN, EASE_BOUNCE_OUT };
-#if defined(USE_MICROSECONDS)
-int TargetDegreesArray[NUMBER_OF_EASING_TYPES_TO_SHOW] = { DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE,
-DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_90_DEGREE,
-DEFAULT_MICROSECONDS_FOR_180_DEGREE, DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_0_DEGREE,
-DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE,
-DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_90_DEGREE, DEFAULT_MICROSECONDS_FOR_0_DEGREE };
-#else
-int TargetDegreesArray[NUMBER_OF_EASING_TYPES_TO_SHOW] = { 90, 180, 90, 0, 90, 180, 90, 0, 90, 180, 180, 90, 90, 0 };
-#endif
-
-/*
  * !!!This function is called in ISR context!!!
  * This means, that interrupts are disabled and delay() is not working, only delayMicroseconds() work.
  * All variables, that are set here and read by the main loop, must be declared as "volatile" otherwise race condition may appear.
@@ -174,7 +174,7 @@ int TargetDegreesArray[NUMBER_OF_EASING_TYPES_TO_SHOW] = { 90, 180, 90, 0, 90, 1
 void ServoTargetPositionReachedHandler(ServoEasing *aServoEasingInstance) {
     static uint_fast8_t sStep = 0;
 
-    #if !defined(PRINT_FOR_SERIAL_PLOTTER)
+#if !defined(PRINT_FOR_SERIAL_PLOTTER)
     static bool sDoDelay = false;
     if (sDoDelay) {
         sDoDelay = false;
@@ -182,15 +182,15 @@ void ServoTargetPositionReachedHandler(ServoEasing *aServoEasingInstance) {
     } else {
         sDoDelay = true;
 #endif
-    int tTargetDegree = TargetDegreesArray[sStep];
-    uint_fast8_t tEasingType = EasingTypesArray[sStep];
+        int tTargetDegree = TargetDegreesArray[sStep];
+        uint_fast8_t tEasingType = EasingTypesArray[sStep];
 
-    aServoEasingInstance->setEasingType(tEasingType); // Sevo1
-    aServoEasingInstance->startEaseTo(tTargetDegree); // easeTo() uses delay() and will not work here.
-    sStep++;
-    if (sStep >= NUMBER_OF_EASING_TYPES_TO_SHOW) {
-        sStep = 0; // do it forever
-    }
+        aServoEasingInstance->setEasingType(tEasingType); // Sevo1
+        aServoEasingInstance->startEaseTo(tTargetDegree); // easeTo() uses delay() and will not work here.
+        sStep++;
+        if (sStep >= NUMBER_OF_MOVEMENTS_IN_A_TRAJECTORY) {
+            sStep = 0; // do it forever
+        }
 
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
         Serial.print(F("Move "));

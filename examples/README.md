@@ -51,8 +51,8 @@ WOKWI online simulation of the ThreeServos example.<br/>
 [![WOKWI online simulation of the ThreeServo example](https://github.com/ArminJo/ServoEasing/blob/master/pictures/Wokwi_ThreeServos.png)](https://wokwi.com/arduino/projects/299552195816194570).
 
 # [ConsecutiveEasingsWithCallback](https://github.com/ArminJo/ServoEasing/blob/master/examples/ConsecutiveEasingsWithCallback/ConsecutiveEasingsWithCallback.ino)
-This example shows 1 linear and 7 non-linear easings in flavor IN_OUT for 1 servo, followed with flavors of IN, OUT and BOUNCING.<br/>
-Note, that Back and Elastic are not totally visible at your servo, since they use angels above 180° and below 0° in this example.<br/>
+This example shows a trajectory consisting of 1 linear and 7 non-linear easings in flavor IN_OUT for 1 servo, followed with flavors of IN, OUT and BOUNCING.<br/>
+Note, that Back and Elastic may not be totally visible at your servo, since they use angels above 180° and below 0° in this example.<br/>
 This example uses a **callback handler** and **specification arrays** to generate the movement cycle.
 **Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` is enabled.<br/>
 ![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/NonlinearMovements.png)
