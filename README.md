@@ -404,6 +404,9 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 <br/>
 
 # Revision History
+### Version 3.2.1
+- Renamed function `setDegreeForAllServos()` to `setIntegerDegreeForAllServos()` and added function `setFloatDegreeForAllServos()`.
+
 ### Version 3.2.0
 - ATmega4808 support added.
 - Added function `getCurrentMicroseconds()`.

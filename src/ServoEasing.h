@@ -677,10 +677,13 @@ public:
 void writeAllServos(int aTargetDegreeOrMicrosecond);
 void setSpeedForAllServos(uint_fast16_t aDegreesPerSecond);
 #if defined(va_arg)
-void setDegreeForAllServos(uint_fast8_t aNumberOfValues, va_list *aDegreeValues);
+void setIntegerDegreeForAllServos(uint_fast8_t aNumberOfValues, va_list *aDegreeValues);
+void setFloatDegreeForAllServos(uint_fast8_t aNumberOfValues, va_list *aDegreeValues);
 #endif
 #if defined(va_start)
-void setDegreeForAllServos(uint_fast8_t aNumberOfValues, ...);
+void setDegreeForAllServos(uint_fast8_t aNumberOfValues, ...) __attribute__ ((deprecated ("Please use setIntegerDegreeForAllServos().")));
+void setIntegerDegreeForAllServos(uint_fast8_t aNumberOfValues, ...);
+void setFloatDegreeForAllServos(uint_fast8_t aNumberOfValues, ...);
 #endif
 
 bool setEaseToForAllServos();
@@ -734,6 +737,9 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
 #endif
 
 /*
+ * Version 3.2.1 - 03/2023
+ * - Renamed function `setDegreeForAllServos()` to `setIntegerDegreeForAllServos()` and added function `setFloatDegreeForAllServos()`.
+ *
  * Version 3.2.0 - 02/2023
  * - ATmega4808 support added.
  * - Added function `getCurrentMicroseconds()`.

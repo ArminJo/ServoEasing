@@ -60,10 +60,10 @@ void setup() {
 
 void loop() {
     Serial.println(F("Move to 135 degree with 40 degree per second blocking"));
-    Servo1.easeTo(135, 40); // Blocking call
+    Servo1.easeTo(135, 40); // Blocking call, runs on all platforms
 
     Serial.println(F("Move to 45 degree  with 40 degree per second blocking"));
-    Servo1.easeTo(45, 40); // Blocking call
+    Servo1.easeTo(45, 40); // Blocking call, runs on all platforms
     delay(1000);
 }
 

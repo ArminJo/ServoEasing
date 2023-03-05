@@ -4,7 +4,7 @@
  *  Contains SERVO*_PIN definitions for ServoEasing examples for various platforms
  *  as well as includes and definitions for LED_BUILTIN
  *
- *  Copyright (C) 2020-2022  Armin Joachimsmeyer
+ *  Copyright (C) 2020-20232  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
