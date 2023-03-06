@@ -103,7 +103,7 @@ void setAllServos(uint8_t aNumberOfValues, ...) {
 #endif
     va_list aDegreeValues;
     va_start(aDegreeValues, aNumberOfValues);
-    setDegreeForAllServos(aNumberOfValues, &aDegreeValues);
+    setIntegerDegreeForAllServos(aNumberOfValues, &aDegreeValues);
     va_end(aDegreeValues);
 #if defined(DEBUG)
     printArrayPositions(&Serial);
@@ -120,7 +120,7 @@ void setAllServosDAndWait(uint16_t aMillisForMove, uint8_t aNumberOfValues, ...)
 #endif
     va_list aDegreeValues;
     va_start(aDegreeValues, aNumberOfValues);
-    setDegreeForAllServos(aNumberOfValues, &aDegreeValues);
+    setIntegerDegreeForAllServos(aNumberOfValues, &aDegreeValues);
     va_end(aDegreeValues);
 #if defined(DEBUG)
     printArrayPositions(&Serial);

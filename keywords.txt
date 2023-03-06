@@ -59,7 +59,8 @@ ElasticEaseIn	KEYWORD2
 EaseOutBounce	KEYWORD2
 
 setSpeedForAllServos	KEYWORD2
-setDegreeForAllServos	KEYWORD2
+setIntegerDegreeForAllServos	KEYWORD2
+setFloatDegreeForAllServos	KEYWORD2
 setEaseToForAllServos	KEYWORD2
 setEaseToForAllServosSynchronizeAndStartInterrupt	KEYWORD2
 synchronizeAndEaseToArrayPositions	KEYWORD2

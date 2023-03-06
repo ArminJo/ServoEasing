@@ -172,10 +172,11 @@ jobs:
           library-manager: update
 
       # See: https://github.com/codespell-project/actions-codespell/blob/master/README.md
-      - name: Spell check
-        uses: codespell-project/actions-codespell@master
-        with:
-          only_warn: 1
+#      - name: Spell check
+#        uses: codespell-project/actions-codespell@master
+#        with:
+#          only_warn: 1
+#          ignore_words_list: rcall, InOut
 
       - name: Compile all examples using the arduino-test-compile action
         uses: ArminJo/arduino-test-compile@master

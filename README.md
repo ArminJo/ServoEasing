@@ -92,7 +92,7 @@ For instructions how to enable these alternatives, see [Compile options / macros
 - **Constraints for minimum and maximum servo degree** can be specified. Trim and reverse are applied after constraint processing.
 - Allow to specify an [**arbitrary mapping between degrees and microseconds**](https://github.com/ArminJo/ServoEasing#mapping-of-servo-positioning) by `attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree)`.
 - **Servo speed** can be specified in **degree per second** or **milliseconds** for the complete move.
-- **Multiple servo handling** by *ForAllServos() functions like `setDegreeForAllServos(3, 135, 135, 135)`.
+- **Multiple servo handling** by *ForAllServos() functions like `setIntegerDegreeForAllServos(3, 135, 135, 135)`.
 - All ServoEasing objects are accessible by using the [`ServoEasing::ServoEasingArray[]`](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServos/ThreeServos.ino#L104).
 - Easy implementation of a **move list** - see [ConsecutiveEasingsWithCallback example](https://github.com/ArminJo/ServoEasing/blob/master/examples/ConsecutiveEasingsWithCallback/ConsecutiveEasingsWithCallback.ino#L150).
 
@@ -161,7 +161,7 @@ Just call `myServo.startEaseTo()` instead of `myServo.write()` and you are done.
 
 # Multiple servo handling
 You can handle multiple servos simultaneously by [special functions](https://github.com/ArminJo/ServoEasing/blob/master/src/ServoEasing.h#L674) like
- `writeAllServos()`, `setSpeedForAllServos()`, `setDegreeForAllServos()`, `setEaseToDForAllServos()`, `updateAndWaitForAllServosToStop()`, `setEaseToForAllServosSynchronizeAndWaitForAllServosToStop()`,  `setEaseToForAllServosSynchronizeAndStartInterrupt()` and much more.<br/>
+ `writeAllServos()`, `setSpeedForAllServos()`, `setIntegerDegreeForAllServos()`, `setEaseToDForAllServos()`, `updateAndWaitForAllServosToStop()`, `setEaseToForAllServosSynchronizeAndWaitForAllServosToStop()`,  `setEaseToForAllServosSynchronizeAndStartInterrupt()` and much more.<br/>
  [See below](https://github.com/ArminJo/ServoEasing#handling-multiple-servos-with-the-internal-servoeasingarray).
 
 <br/>
