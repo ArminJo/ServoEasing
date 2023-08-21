@@ -41,7 +41,7 @@ This example moves one Servo with different speeds and using blocking and interr
 The OneServo example with activated line `#define USE_PCA9685_SERVO_EXPANDER` to run it on a PCA9685 expander board.
 
 # [TwoServos](https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServos/TwoServos.ino)
-This example shows how to move 2 servos attached at pin 9 and 10 synchronized or independently using the LightweightServo library for an ATmega328 (UNO board etc.). This saves 640 bytes program memory compared to using Arduino Servo library and reduces jitter caused by interrupt handling.<br/>
+This example shows how to move 2 servos attached at pin 9 and 10 synchronized or independently using the LightweightServo library for an ATmega328 (Uno board etc.). This saves 640 bytes program memory compared to using Arduino Servo library and reduces jitter caused by interrupt handling.<br/>
 In this example target degrees are specified as **floating point values**.<br/>
 It operates the first servo from -90.0° to +90.0° using **attachWithTrim()**.
 

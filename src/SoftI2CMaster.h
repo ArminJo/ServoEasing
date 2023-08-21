@@ -70,7 +70,7 @@
  * Version 2.1.5
  * - replaced all rcalls and rjmps by calls and jmps
  * Version 2.1.4
- * - fixed bug in Softwire conerning repeated starts
+ * - fixed bug in Softwire concerning repeated starts
  * Version 2.1.3
  * - removed WireEmu and fixed bug in Eeprom24AA1025SoftI2C.ino
  * Version 2.1

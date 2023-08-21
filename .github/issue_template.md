@@ -10,7 +10,7 @@ If you have handling problems or questions, consider to **open a [discussion](ht
 ## Bug Report
 
 ### Board
-* [ ] Arduino ATmega328* board (UNO, Nano)
+* [ ] Arduino ATmega328* board (Uno, Nano)
 * [ ] Arduino ATmega2560 board (Mega)
 * [ ] Arduino ATmega32U4 board (Leonardo)
 * [ ] Arduino megaAVR board (NanoEvery)
