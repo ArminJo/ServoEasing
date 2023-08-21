@@ -76,7 +76,7 @@
 
 //#define DISABLE_PARITY_CHECKS // Disable parity checks. Saves 48 bytes of program memory.
 //#define USE_ONKYO_PROTOCOL    // Like NEC, but take the 16 bit address and command each as one 16 bit value and not as 8 bit normal and 8 bit inverted value.
-//#define USE_FAST_PROTOCOL     // Use FAST protocol instead of NEC.
+//#define USE_FAST_PROTOCOL     // Use FAST protocol instead of NEC / ONKYO.
 //#define ENABLE_NEC2_REPEATS // Instead of sending / receiving the NEC special repeat code, send / receive the original frame for repeat.
 
 #include "TinyIR.h" // If not defined, it defines IR_RECEIVE_PIN, IR_FEEDBACK_LED_PIN and TINY_RECEIVER_USE_ARDUINO_ATTACH_INTERRUPT
@@ -153,6 +153,9 @@ uint32_t sMicrosOfGap; // The length of the gap before the start bit
  * It handles the NEC protocol decoding and calls the user callback function on complete.
  * 5 us + 3 us for push + pop for a 16MHz ATmega
  */
+#if defined(ESP8266) || defined(ESP32)
+IRAM_ATTR
+#endif
 void IRPinChangeInterruptHandler(void) {
 #if defined(_IR_MEASURE_TIMING) && defined(_IR_TIMING_TEST_PIN)
     digitalWriteFast(_IR_TIMING_TEST_PIN, HIGH); // 2 clock cycles

@@ -30,6 +30,8 @@
 /**
  * Union to specify parts / manifestations of a 16 bit Word without casts and shifts.
  * It also supports the compiler generating small code.
+ * Usage: WordUnion tWord;
+ *        tWord.UByte.HighByte = 0x12;
  */
 union WordUnion {
     struct {
@@ -92,6 +94,7 @@ union LongUnion {
     int16_t Words[2];
     uint32_t ULong;
     int32_t Long;
+    float Float;
 };
 #endif // _LONG_UNION_H
 
@@ -138,6 +141,12 @@ union LongLongUnion {
     int16_t Words[4];
     uint64_t ULongLong;
     int64_t LongLong;
+#if __DBL_MANT_DIG__== 24
+    float Floats[2]; // 32 bit double, as for AVR
+#else
+    // 64 bit double
+    double Double;
+#endif
 };
 #endif // _LONG_LONG_UNION_H
 

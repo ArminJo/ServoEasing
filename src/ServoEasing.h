@@ -111,7 +111,7 @@ __attribute__((weak)) extern void handleServoTimerInterrupt();
 #    if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 #include "LightweightServo.h"
 #      if !defined(MAX_EASING_SERVOS)
-#define MAX_EASING_SERVOS 2 // default value for UNO etc.
+#define MAX_EASING_SERVOS 2 // default value for Uno etc.
 #      endif
 #    else
 #include <Servo.h>
@@ -152,9 +152,9 @@ __attribute__((weak)) extern void handleServoTimerInterrupt();
  ****************************************************************************************/
 #if !defined(MAX_EASING_SERVOS)
 #  if defined(MAX_SERVOS)
-#define MAX_EASING_SERVOS MAX_SERVOS // =12 use default value from Servo.h for UNO etc.
+#define MAX_EASING_SERVOS MAX_SERVOS // =12 use default value from Servo.h for Uno etc.
 #  else
-#define MAX_EASING_SERVOS 12 // just take default value from Servo.h for UNO etc.
+#define MAX_EASING_SERVOS 12 // just take default value from Servo.h for Uno etc.
 #  endif
 #endif // !defined(MAX_EASING_SERVOS)
 

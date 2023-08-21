@@ -53,7 +53,7 @@ jobs:
           - arduino:avr:mega
           - arduino:megaavr:nona4809:mode=off
           - MegaCoreX:megaavr:4808:pinout=32pin_standard,clock=internal_16MHz
-          - megaTinyCore:megaavr:atxy7:chip=3217,clock=16internal
+#          - megaTinyCore:megaavr:atxy7:chip=3217,clock=16internal
           - arduino:sam:arduino_due_x
           - arduino:samd:arduino_zero_native
 #          - adafruit:samd:adafruit_metro_m4:cache=on,speed=120,opt=small,maxqspi=50,usbstack=arduino,debug=off
@@ -98,10 +98,11 @@ jobs:
             platform-url: https://mcudude.github.io/MegaCoreX/package_MCUdude_MegaCoreX_index.json
             sketches-exclude: TwoServos,SpeedTest,EndPositionsTest,QuadrupedControl,RobotArmControl # No getVCCVoltageMillivolt(), no EasyButton
 
-          - arduino-boards-fqbn: megaTinyCore:megaavr:atxy7:chip=3217,clock=16internal
-            platform-url: http://drazzy.com/package_drazzy.com_index.json
-            required-libraries: Servo
-            sketches-exclude: TwoServos,SpeedTest,EndPositionsTest,QuadrupedControl,RobotArmControl # No getVCCVoltageMillivolt(), no EasyButton
+#         https://github.com/SpenceKonde/megaTinyCore/issues/935
+#          - arduino-boards-fqbn: megaTinyCore:megaavr:atxy7:chip=3217,clock=16internal
+#            platform-url: http://drazzy.com/package_drazzy.com_index.json
+#            required-libraries: Servo
+#            sketches-exclude: TwoServos,SpeedTest,EndPositionsTest,QuadrupedControl,RobotArmControl # No getVCCVoltageMillivolt(), no EasyButton
 
           - arduino-boards-fqbn: arduino:sam:arduino_due_x
             required-libraries: Servo
