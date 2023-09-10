@@ -528,6 +528,7 @@ public:
 
     int getCurrentAngle();
     int getCurrentMicroseconds();
+    int getEndAngle();
     int getEndMicrosecondsOrUnits();
     int getEndMicrosecondsOrUnitsWithTrim();
     int getDeltaMicrosecondsOrUnits();
