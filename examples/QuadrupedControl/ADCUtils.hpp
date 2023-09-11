@@ -319,8 +319,8 @@ uint16_t readADCChannelWithReferenceMaxMicros(uint8_t aADCChannelNumber, uint8_t
  * aMaxRetries = 255 -> try forever
  * @return (tMax + tMin) / 2
  */
-uint16_t readUntil4ConsecutiveValuesAreEqual(uint8_t aADCChannelNumber, uint8_t aReference, uint8_t aDelay, uint8_t aAllowedDifference,
-        uint8_t aMaxRetries) {
+uint16_t readUntil4ConsecutiveValuesAreEqual(uint8_t aADCChannelNumber, uint8_t aReference, uint8_t aDelay,
+        uint8_t aAllowedDifference, uint8_t aMaxRetries) {
     int tValues[4]; // last value is in tValues[3]
     int tMin;
     int tMax;
@@ -651,7 +651,7 @@ bool isVCCTooHighSimple() {
  * !!! Function without handling of switched reference and channel.!!!
  * Use it ONLY if you only use INTERNAL reference (e.g. only call getTemperatureSimple()) in your program.
  */
-float getTemperatureSimple(void) {
+float getCPUTemperatureSimple(void) {
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
     return 0.0;
 #else
@@ -661,12 +661,13 @@ float getTemperatureSimple(void) {
     Serial.print(F("TempRaw="));
     Serial.println(tTempRaw);
 #endif
-#if defined(__AVR_ATmega328P__)
-    tTempRaw -= 317;
-    return (float)tTempRaw / 1.22;
-#elif defined(__AVR_ATmega328PB__)
+
+#if defined(__AVR_ATmega328PB__)
     tTempRaw -= 245;
     return (float)tTempRaw;
+#else
+    tTempRaw -= 317;
+    return (float) tTempRaw / 1.22;
 #endif
 #endif
 }
@@ -675,12 +676,15 @@ float getTemperatureSimple(void) {
  * Handles usage of 1.1 V reference and channel switching by introducing the appropriate delays.
  */
 float getTemperature(void) {
+    return getCPUTemperature();
+}
+float getCPUTemperature(void) {
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
     return 0.0;
 #else
     // use internal 1.1 volt as reference
     checkAndWaitForReferenceAndChannelToSwitch(ADC_TEMPERATURE_CHANNEL_MUX, INTERNAL);
-    return getTemperatureSimple();
+    return getCPUTemperatureSimple();
 #endif
 }
 
