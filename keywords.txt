@@ -33,6 +33,7 @@ continueWithInterrupts	KEYWORD2
 continueWithoutInterrupts	KEYWORD2
 update	KEYWORD2
 getCurrentAngle	KEYWORD2
+getEndAngle	KEYWORD2
 getEndMicrosecondsOrUnits	KEYWORD2
 getEndMicrosecondsOrUnitsWithTrim	KEYWORD2
 getDeltaMicrosecondsOrUnits	KEYWORD2
