@@ -1654,10 +1654,6 @@ int ServoEasing::getCurrentMicroseconds() {
     return MicrosecondsOrUnitsToMicroseconds(mCurrentMicrosecondsOrUnits);
 }
 
-int ServoEasing::getEndAngle() {
-    return MicrosecondsOrUnitsToDegree(mEndMicrosecondsOrUnits);
-}
-
 int ServoEasing::getEndMicrosecondsOrUnits() {
     return mEndMicrosecondsOrUnits;
 }

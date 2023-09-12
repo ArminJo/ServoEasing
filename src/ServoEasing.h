@@ -276,8 +276,8 @@ __attribute__((weak)) extern void handleServoTimerInterrupt();
  *
  */
 // Offset to decide if the user function returns degrees instead of 0.0 to 1.0.
-#define EASE_FUNCTION_DEGREE_INDICATOR_OFFSET       200 // Returns 20 for -180°, 110 for -90°, 200 for 0° and 380 for 180°.
-#define EASE_FUNCTION_DEGREE_THRESHOLD              (EASE_FUNCTION_DEGREE_INDICATOR_OFFSET - 180) // allows -180°.
+#define EASE_FUNCTION_DEGREE_INDICATOR_OFFSET       200 // Returns 20 for -180 degree, 110 for -90 degree, 200 for 0 degree and 380 for 180 degree.
+#define EASE_FUNCTION_DEGREE_THRESHOLD              (EASE_FUNCTION_DEGREE_INDICATOR_OFFSET - 180) // allows -180 degree.
 #define EASE_FUNCTION_MICROSECONDS_INDICATOR_OFFSET (EASE_FUNCTION_DEGREE_INDICATOR_OFFSET + 200) // Offset to decide if the user function returns microseconds instead of 0.0 to 1.0. => returns 256 for 0 degree.
 
 /*
@@ -528,7 +528,6 @@ public:
 
     int getCurrentAngle();
     int getCurrentMicroseconds();
-    int getEndAngle();
     int getEndMicrosecondsOrUnits();
     int getEndMicrosecondsOrUnitsWithTrim();
     int getDeltaMicrosecondsOrUnits();
@@ -749,7 +748,7 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
  * - Renamed function `synchronizeAndEaseToArrayPositions()` to `setEaseToForAllServosSynchronizeAndWaitForAllServosToStop()`.
  *
  * Version 3.1.0 - 08/2022
- * - SAMD51 support by Lutz Aumüller.
+ * - SAMD51 support by Lutz Aumueller.
  * - Added support to pause and resume and `DISABLE_PAUSE_RESUME`.
  * - Fixed some bugs for PCA9685 expander introduced in 3.0.0.
  * - Feather Huzzah support with the help of Danner Claflin.
