@@ -35,7 +35,7 @@
 
 #if defined(ROBOT_ARM_HAS_IR_CONTROL)
 #define USE_TINY_IR_RECEIVER // must be specified before including IRCommandDispatcher.hpp to define which IR library to use
-#define IR_INPUT_PIN  A0
+#define IR_RECEIVE_PIN  A0
 #if defined(ROBOT_ARM_2)
 #define USE_CAR_MP3_REMOTE // Transparent arm
 #else
@@ -142,7 +142,7 @@ void setup() {
     IRDispatcher.init();
     Serial.print(F("Listening to IR remote of type "));
     Serial.print(IR_REMOTE_NAME);
-    Serial.println(F(" at pin " STR(IR_INPUT_PIN)));
+    Serial.println(F(" at pin " STR(IR_RECEIVE_PIN)));
 #endif
 
 #if defined(ROBOT_ARM_HAS_RTC_CONTROL)

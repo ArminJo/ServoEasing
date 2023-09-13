@@ -43,7 +43,7 @@ The OneServo example with activated line `#define USE_PCA9685_SERVO_EXPANDER` to
 # [TwoServos](https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServos/TwoServos.ino)
 This example shows how to move 2 servos attached at pin 9 and 10 synchronized or independently using the LightweightServo library for an ATmega328 (Uno board etc.). This saves 640 bytes program memory compared to using Arduino Servo library and reduces jitter caused by interrupt handling.<br/>
 In this example target degrees are specified as **floating point values**.<br/>
-It operates the first servo from -90.0° to +90.0° using **attachWithTrim()**.
+It operates the first servo from -90.0ï¿½ to +90.0ï¿½ using **attachWithTrim()**.
 
 # [ThreeServos](https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServos/ThreeServos.ino)
 This example shows how to move 3 servos synchronized or independently. It demonstrates the use of `ServoEasingArray` and `ServoEasingNextPositionArray`.<br/>
@@ -52,7 +52,7 @@ WOKWI online simulation of the ThreeServos example.<br/>
 
 # [ConsecutiveEasingsWithCallback](https://github.com/ArminJo/ServoEasing/blob/master/examples/ConsecutiveEasingsWithCallback/ConsecutiveEasingsWithCallback.ino)
 This example shows a trajectory consisting of 1 linear and 7 non-linear easings in flavor IN_OUT for 1 servo, followed with flavors of IN, OUT and BOUNCING.<br/>
-Note, that Back and Elastic may not be totally visible at your servo, since they use angels above 180° and below 0° in this example.<br/>
+Note, that Back and Elastic may not be totally visible at your servo, since they use angels above 180ï¿½ and below 0ï¿½ in this example.<br/>
 This example uses a **callback handler** and **specification arrays** to generate the movement cycle.
 **Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` is enabled.<br/>
 ![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/NonlinearMovements.png)
@@ -69,8 +69,8 @@ It includes a partially **user defined easing function**  `EaseQuadraticInQuarti
 ![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/AsymmetricEasing.png)
 
 # [PrecisionEasing](https://github.com/ArminJo/ServoEasing/blob/master/examples/PrecisionEasing/PrecisionEasing.ino)
-This example shows `EASE_PRECISION_OUT` type moving up/out to 135° with a bounce and way back without a bounce. 
-Then it does this again with `EASE_PRECISION_IN`, doing a bounce on moving down/in to 45°.
+This example shows `EASE_PRECISION_OUT` type moving up/out to 135ï¿½ with a bounce and way back without a bounce. 
+Then it does this again with `EASE_PRECISION_IN`, doing a bounce on moving down/in to 45ï¿½.
 **Arduino Serial Plotter** result of this example if `#define PRINT_FOR_SERIAL_PLOTTER` is enabled.<br/>
 ![Arduino plot](https://github.com/ArminJo/ServoEasing/blob/master/pictures/PrecisionEasing.png)
 
@@ -85,8 +85,7 @@ Demo of using two servos in a pan tilt housing to move a laser pointer.
 
 # [QuadrupedControl](https://github.com/ArminJo/ServoEasing/blob/master/examples/QuadrupedControl/QuadrupedControl.ino)
 Control 8 servos to move a Quadruped robot.<br/>
-The full example with IR remote control, NeoPixel and US distance sensor support is available [here](https://github.com/ArminJo/QuadrupedControl).
-Only for AVR, because it uses EEPROM.
+Documented [here](https://github.com/ArminJo/QuadrupedControl).
 
 ## YouTube Videos
 [![mePed V2 in actions](https://i.ytimg.com/vi/MsIjTRRUyGU/hqdefault.jpg)](https://youtu.be/MsIjTRRUyGU)
@@ -119,12 +118,12 @@ On the ESP32, the I2C library interferes with the 29 millisecond timer and there
 ## [EndPositionsTest](https://github.com/ArminJo/ServoEasing/blob/master/examples/EndPositionsTest/EndPositionsTest.ino)
 This example helps you determine the right end values for your servo.<br/>
 These values are required for the `attach(int aPin, int aInitialDegree, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree)` function, if your servo does not comply to the standard values.
-E.g. some of my SG90 servos have a 0° period of 620 &micro;s instead of the standard 544.<br/>
+E.g. some of my SG90 servos have a 0ï¿½ period of 620 &micro;s instead of the standard 544.<br/>
 This example does not use the ServoEasing functions.
 
 ## [SpeedTest](https://github.com/ArminJo/ServoEasing/blob/master/examples/SpeedTest/SpeedTest.ino)
 This example gives you a feeling how fast your servo can move, what the end position values are and which refresh rate they accept.<br/>
-It starts with setting the servo to 90°, to easily put your servos to a reference position.<br/>
+It starts with setting the servo to 90ï¿½, to easily put your servos to a reference position.<br/>
 This example does not use the ServoEasing functions.
 Not for ESP8266 because it requires at least 2 analog inputs.
 

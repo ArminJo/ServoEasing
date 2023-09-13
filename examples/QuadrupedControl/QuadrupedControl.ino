@@ -163,7 +163,7 @@ void setup() {
     IRDispatcher.init();
     Serial.print(F("Listening to IR remote of type "));
     Serial.print(IR_REMOTE_NAME);
-    Serial.println(F(" at pin " STR(IR_INPUT_PIN)));
+    Serial.println(F(" at pin " STR(IR_RECEIVE_PIN)));
 #endif
 
 #if defined(QUADRUPED_HAS_NEOPIXEL)
@@ -185,10 +185,12 @@ void setup() {
 }
 
 void loop() {
+#if defined(ADC_UTILS_ARE_AVAILABLE)
     /*
      * Check for low voltage
      */
     checkForLowVoltageAndShutdown();
+#endif
 
 #if defined(QUADRUPED_HAS_US_DISTANCE)
     /*
@@ -237,7 +239,7 @@ void loop() {
 #else
                 && sMillisOfLastSpecialAction == 0
 #endif
-                && (sVCCVoltage < (VOLTAGE_USB_LOWER_THRESHOLD_MILLIVOLT / 1000.0))) {
+                && (sVCCVoltageMillivolt < (VOLTAGE_USB_LOWER_THRESHOLD_MILLIVOLT / 1000.0))) {
             doQuadrupedAutoMove(); // Can be terminated by IR command
 #if defined(QUADRUPED_HAS_IR_CONTROL)
             IRDispatcher.IRReceivedData.MillisOfLastCode = millis(); // disable next auto move, next attention in 2 minutes
@@ -276,6 +278,8 @@ void loop() {
                     - (MILLIS_OF_INACTIVITY_BEFORE_REMINDER_MOVE - MILLIS_OF_INACTIVITY_BETWEEN_REMINDER_MOVE); // next attention in 1 minute
 #endif
         }
+#if defined(ADC_UTILS_ARE_AVAILABLE)
         printVCCVoltageMillivolt(&Serial);
+#endif
     }
 }

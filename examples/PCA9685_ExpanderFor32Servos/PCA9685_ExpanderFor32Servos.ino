@@ -84,7 +84,7 @@
 
 void getAndAttach16ServosToPCA9685Expander(uint8_t aPCA9685I2CAddress);
 #if defined (SP)
-uint16_t getFreeRam(void);
+uint16_t getCurrentFreeHeapOrStack(void);
 #endif
 
 void setup() {
@@ -128,8 +128,8 @@ void setup() {
 #endif
 
 #if defined (SP)
-    Serial.print(F("Free Ram/Stack[bytes]="));
-    Serial.println(getFreeRam());
+    Serial.print(F("Current free Heap / Stack[bytes]="));
+    Serial.println(getCurrentFreeHeapOrStack());
 #endif
     // Wait for servos to reach start position.
     delay(500);
@@ -196,21 +196,30 @@ void getAndAttach16ServosToPCA9685Expander(uint8_t aPCA9685I2CAddress) {
 }
 
 #if defined (SP)
+extern void *__brkval;
+
 /*
- * Get amount of free RAM = Stack - Heap
+ * Returns actual start of free heap
+ * Usage for print:
+ Serial.print(F("HeapStart=0x"));
+ Serial.println((uintptr_t) getHeapStart(), HEX);
  */
-uint16_t getFreeRam(void) {
-    extern unsigned int __heap_start;
-    extern void *__brkval;
-
-    uint16_t tFreeRamBytes;
-
+uint8_t* getHeapStart(void) {
     if (__brkval == 0) {
-        tFreeRamBytes = SP - (int) &__heap_start;
-    } else {
-        tFreeRamBytes = SP - (int) __brkval;
+        __brkval = __malloc_heap_start;
     }
-    return (tFreeRamBytes);
+    return (uint8_t*) __brkval;
+}
+
+/*
+ * Get amount of free RAM = current stackpointer - heap end
+ */
+uint16_t getCurrentFreeHeapOrStack(void) {
+    uint16_t tHeapStart = (uint16_t) getHeapStart();
+    if (tHeapStart >= SP) {
+        return 0;
+    }
+    return (SP - (uint16_t) getHeapStart());
 }
 
 #endif

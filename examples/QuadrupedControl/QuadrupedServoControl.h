@@ -87,11 +87,13 @@ void transformAndSetPivotServos(int aFrontLeftPivot, int aBackLeftPivot, int aBa
         uint8_t aDirection = MOVE_DIRECTION_FORWARD, bool doMirror = false, bool aDoMove = true);
 uint8_t transformOneServoIndex(uint8_t aServoIndexToTransform, uint8_t aDirection = MOVE_DIRECTION_FORWARD, bool doMirror = false);
 
+#if E2END
 /*
  * Servo trim handling
  */
 void printAndSetTrimAngles();
 void eepromReadAndSetServoTrim();
 void eepromWriteServoTrim();
+#endif
 
 #endif // _QUADRUPED_SERVO_CONTROL_H

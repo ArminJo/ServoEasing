@@ -83,8 +83,8 @@ void playShutdownMelody() {
  * @return  true - if voltage too low
  */
 bool checkForLowVoltage() {
-    sVCCVoltage = getVCCVoltageMillivoltSimple();
-    return (sVCCVoltage <= VCC_STOP_THRESHOLD_MILLIVOLT);
+    sVCCVoltageMillivolt = getVCCVoltageMillivoltSimple();
+    return (sVCCVoltageMillivolt <= VCC_STOP_THRESHOLD_MILLIVOLT);
 }
 
 /*
@@ -112,7 +112,7 @@ void checkForLowVoltageAndShutdown() {
              */
             // print message
             Serial.print(F("VCC "));
-            Serial.print(sVCCVoltage);
+            Serial.print(sVCCVoltageMillivolt);
             Serial.println(F(" below " STR(VCC_STOP_THRESHOLD_MILLIVOLT) " Millivolt"));
 
 #if defined(QUADRUPED_HAS_NEOPIXEL)
@@ -285,15 +285,17 @@ void signalLeg(uint8_t aPivotServoIndex) {
  * Is only available if IR control is attached
  */
 void doCalibration() {
+#if    E2END
+
     uint8_t tPivotServoIndex = 0; // start with front left i.e. ServoEasing::ServoEasingArray[0]
     bool tGotExitCommand = false;
     resetServosTo90Degree();
     delay(500);
     signalLeg(tPivotServoIndex);
-#  if defined(INFO)
+#      if defined(INFO)
     Serial.println(F("Entered calibration. Use the forward/backward right/left buttons to set the servo position to 90 degree."));
     Serial.println(F("Use enter/OK button to go to next leg. Values are stored at receiving a different button or after 4th leg."));
-#  endif
+#      endif
 
     IRDispatcher.doNotUseDispatcher = true; // disable dispatcher by mapping table
     while (!tGotExitCommand) {
@@ -303,9 +305,9 @@ void doCalibration() {
         IRDispatcher.IRReceivedData.isAvailable = false;
 
         unsigned long tIRCode = IRDispatcher.IRReceivedData.command;
-#  if defined(INFO)
+#      if defined(INFO)
         IRDispatcher.printIRCommandString(&Serial);
-#  endif
+#      endif
         switch (tIRCode) {
         case COMMAND_RIGHT:
             sServoTrimAngles[tPivotServoIndex]++;
@@ -348,7 +350,7 @@ void doCalibration() {
             tGotExitCommand = true;
             break;
         }
-#  if defined(INFO)
+#      if defined(INFO)
         Serial.print(F("ServoTrimAngles["));
         Serial.print(tPivotServoIndex);
         Serial.print(F("]="));
@@ -357,13 +359,13 @@ void doCalibration() {
         Serial.print(tPivotServoIndex + LIFT_SERVO_OFFSET);
         Serial.print(F("]="));
         Serial.println(sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET]);
-#  endif
+#      endif
         ServoEasing::ServoEasingArray[tPivotServoIndex]->print(&Serial);
         ServoEasing::ServoEasingArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->print(&Serial);
         delay(200);
     }
     IRDispatcher.doNotUseDispatcher = false; // re enable dispatcher by mapping table
-
+#    endif
 }
 #  endif // !defined(USE_USER_DEFINED_MOVEMENTS)
 #endif // defined(QUADRUPED_HAS_IR_CONTROL)

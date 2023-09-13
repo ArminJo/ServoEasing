@@ -64,11 +64,11 @@
 
 //#define USE_USER_DEFINED_MOVEMENTS
 
-#define PIN_BUZZER     3
+#define PIN_BUZZER                              3
 
 #if defined(QUADRUPED_HAS_IR_CONTROL)
 #define USE_TINY_IR_RECEIVER // must be specified before including IRCommandDispatcher.hpp to define which IR library to use
-#define IR_INPUT_PIN  A0
+#define IR_RECEIVE_PIN                          A0
 #endif
 
 #if defined(QUADRUPED_HAS_US_DISTANCE)
@@ -78,7 +78,7 @@
 
 #if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
 #include "QuadrupedServoControl.h"
-#define PIN_US_SERVO        13
+#define PIN_US_SERVO                            13
 #define NO_LED_FEEDBACK_CODE // Disable IR LED feedback because servo is at the same pin. Must be included before IRCommandDispatcher.hpp
 extern ServoEasing USServo;
 #endif

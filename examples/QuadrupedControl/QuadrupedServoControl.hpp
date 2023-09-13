@@ -50,8 +50,12 @@ volatile uint8_t sRequestedBodyHeightAngle = LIFT_LOWEST_ANGLE + 20; // From LIF
 uint8_t sBodyHeight;            // normalized body height from 0 (low) to 255 (high), used by e.g. NeoPixel display
 uint8_t sBodyHeightPercent;     // normalized body height from 0% (low) to 100% (high), only used for printing
 
+#if !E2END
+# warning "Device does not have EEPROM available. No support for persistent storage of correction trim angels."
+#else
 // Arrays of trim angles stored in EEPROM
 EEMEM int8_t sServoTrimAnglesEEPROM[NUMBER_OF_LEG_SERVOS]; // The one which resides in EEPROM and IR read out at startup - filled by eepromWriteServoTrim
+#endif
 int8_t sServoTrimAngles[NUMBER_OF_LEG_SERVOS]; // RAM copy for easy setting trim angles by remote, filled by eepromReadServoTrim
 
 void attachAllQuadrupedServos() {
@@ -82,8 +86,10 @@ void initializeAllQuadrupedServos(uint_fast16_t aQuadrupedServoSpeed) {
     attachAllQuadrupedServos();
     setQuadrupedServoSpeed(aQuadrupedServoSpeed);
 
+#if E2END
     //Read and apply trim values
     eepromReadAndSetServoTrim();
+#endif
 
     // Reset all servo to initial position of 90 degree
     resetServosTo90Degree();
@@ -144,21 +150,24 @@ void resetServosTo90Degree() {
     }
 }
 
+#if E2END
 /*
  * Copy calibration array from EEPROM to RAM and set uninitialized values to 0
  */
 void eepromReadAndSetServoTrim() {
-#if defined(INFO)
+#  if defined(INFO)
     Serial.println(F("eepromReadAndSetServoTrim()"));
-#endif
+#  endif
     eeprom_read_block((void*) &sServoTrimAngles, &sServoTrimAnglesEEPROM, NUMBER_OF_LEG_SERVOS);
     printAndSetTrimAngles();
 }
+
 
 void eepromWriteServoTrim() {
     eeprom_write_block((void*) &sServoTrimAngles, &sServoTrimAnglesEEPROM, NUMBER_OF_LEG_SERVOS);
     printAndSetTrimAngles();
 }
+#endif
 
 void setEasingTypeToLinear() {
     for (uint_fast8_t tServoIndex = 0; tServoIndex < NUMBER_OF_LEG_SERVOS; ++tServoIndex) {

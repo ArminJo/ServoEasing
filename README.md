@@ -18,6 +18,7 @@ It uses the standard Arduino Servo library and therefore has its restrictions re
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
 
 Available as [Arduino library "ServoEasing"](https://www.arduinolibraries.info/libraries/servo-easing).
+Contains the [QuadrupedControl](https://github.com/ArminJo/QuadrupedControl) example.
 
 [![Button Install](https://img.shields.io/badge/Install-brightgreen?logoColor=white&logo=GitBook)](https://www.ardu-badge.com/ServoEasing)
  &nbsp; &nbsp;
@@ -26,6 +27,8 @@ Available as [Arduino library "ServoEasing"](https://www.arduinolibraries.info/l
 [![Button Changelog](https://img.shields.io/badge/Changelog-blue?logoColor=white&logo=AzureArtifacts)](https://github.com/ArminJo/ServoEasing#revision-history)
 
 </div>
+
+#### If you find this library useful, please give it a star.
 
 <br/>
 
@@ -51,7 +54,7 @@ Available as [Arduino library "ServoEasing"](https://www.arduinolibraries.info/l
 - [Using PCA9685 16-Channel Servo Expander](https://github.com/ArminJo/ServoEasing#using-pca9685-16-channel-servo-expander)
 - [Using the included Lightweight Servo library for ATmega328](https://github.com/ArminJo/ServoEasing#using-the-included-lightweight-servo-library-for-atmega328)
 - [Handling multiple servos with the internal ServoEasingArray](https://github.com/ArminJo/ServoEasing#handling-multiple-servos-with-the-internal-servoeasingarray)
-- [Description of examples](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples)
+- [Examples for this library](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples)
 - [WOKWI online examples](https://github.com/ArminJo/ServoEasing#wokwi-online-examples)
 - [Servo utilities](https://github.com/ArminJo/ServoEasing/tree/master/examples#servo-utilities)
 - [Building breadboard servo adapter](https://github.com/ArminJo/ServoEasing#building-breadboard-servo-adapter)
@@ -330,7 +333,8 @@ If you **detach** a servo and then attach another one, the latter will get the i
 
 <br/>
 
-# Description of [examples](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples)
+# [Examples](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples) for this library
+The examples are available at File > Examples > Examples from Custom Libraries / ServoEasing.<br/>
 
 <br/>
 
@@ -554,5 +558,3 @@ Since Travis CI is slow (5 times slower 17:43 vs. 3:15 minutes), the library exa
 
 # Requests for modifications / extensions
 Please write me a PM including your motivation/problem if you need a modification or an extension.
-
-#### If you find this library useful, please give it a star.
