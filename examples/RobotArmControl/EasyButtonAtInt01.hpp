@@ -28,7 +28,7 @@
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *  See the See the See the GNU General Public License for more details.
+ *  See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/gpl.html>.
@@ -372,6 +372,10 @@ bool EasyButton::readButtonState() {
 
 // @formatter:on
 
+bool EasyButton::getButtonStateIsActive() {
+    return ButtonStateIsActive;
+
+}
 /*
  * Returns stored state if in debouncing period otherwise current state of button
  */

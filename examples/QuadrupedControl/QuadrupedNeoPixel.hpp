@@ -62,7 +62,7 @@ bool sCleanPatternAfterEnd; // Do a wipe out after pattern ended
 bool sShowPatternSynchronizedWithServos; // Flag set e.g. by main loop to force to show the pattern (e.g.distance value) synchronized with servo interrupts.
 uint8_t sLastNPEvaluatedAction; // do determine changes of sCurrentlyRunningAction
 
-NeoPatterns QuadrupedNeoPixelBar = NeoPatterns(NUM_PIXELS, PIN_NEOPIXEL, NEO_GRB + NEO_KHZ800, &QuadrupedOnPatternCompleteHandler,
+NeoPatterns QuadrupedNeoPixelBar = NeoPatterns(NUM_PIXELS, PIN_NEOPIXEL_TRACK, NEO_GRB + NEO_KHZ800, &QuadrupedOnPatternCompleteHandler,
         true);
 // false -> do not allow show on partial NeoPixel bar
 NeoPatterns RightNeoPixelBar = NeoPatterns(&QuadrupedNeoPixelBar, PIXEL_OFFSET_RIGHT_BAR, PIXELS_ON_ONE_BAR, false,

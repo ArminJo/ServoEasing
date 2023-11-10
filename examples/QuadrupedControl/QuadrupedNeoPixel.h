@@ -11,7 +11,7 @@
 #if defined(QUADRUPED_HAS_NEOPIXEL)
 #include <NeoPatterns.h>
 
-#define PIN_NEOPIXEL    4
+#define PIN_NEOPIXEL_TRACK    4
 // How many NeoPixels are mounted?
 #define NUM_PIXELS      24
 

@@ -93,17 +93,6 @@ jobs:
             required-libraries: Servo
             sketches-exclude: TwoServos,SpeedTest,EndPositionsTest,QuadrupedControl,RobotArmControl # No getVCCVoltageMillivolt(), no EasyButton
 
-            # Here we have a platform bundled Servo library
-          - arduino-boards-fqbn: MegaCoreX:megaavr:4808:pinout=32pin_standard,clock=internal_16MHz
-            platform-url: https://mcudude.github.io/MegaCoreX/package_MCUdude_MegaCoreX_index.json
-            sketches-exclude: TwoServos,SpeedTest,EndPositionsTest,QuadrupedControl,RobotArmControl # No getVCCVoltageMillivolt(), no EasyButton
-
-#         https://github.com/SpenceKonde/megaTinyCore/issues/935
-#          - arduino-boards-fqbn: megaTinyCore:megaavr:atxy7:chip=3217,clock=16internal
-#            platform-url: http://drazzy.com/package_drazzy.com_index.json
-#            required-libraries: Servo
-#            sketches-exclude: TwoServos,SpeedTest,EndPositionsTest,QuadrupedControl,RobotArmControl # No getVCCVoltageMillivolt(), no EasyButton
-
           - arduino-boards-fqbn: arduino:sam:arduino_due_x
             required-libraries: Servo
             sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl # QuadrupedControl RobotArmControl because of missing EEprom
@@ -112,17 +101,14 @@ jobs:
             required-libraries: Servo
             sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl
 
-# Error in default samd/Servo.cpp:44:60 - volatile struct TC_STATUS_Type::<unnamed> has no member named SYNCBUSY
-# because Arduino uses the newer arduino and not the adafruit servo library
-#          - arduino-boards-fqbn: adafruit:samd:adafruit_metro_m4:cache=on,speed=120,opt=small,maxqspi=50,usbstack=arduino,debug=off
-#            platform-url: https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
-#            sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl
-
           - arduino-boards-fqbn: arduino:mbed:nano33ble
             arduino-platform: arduino:mbed@1.3.2 # the 2.0.0 is incompatible with Servo library
             required-libraries: Servo
             sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl,PCA9685_ExpanderFor32Servos,PCA9685_Expander,PCA9685_ExpanderAndServo  # No Wire
 
+#
+# RP2040
+#
           - arduino-boards-fqbn: arduino:mbed_rp2040:pico
             required-libraries: Servo
             sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl # Comma separated list of example names to exclude in build
@@ -132,6 +118,27 @@ jobs:
             required-libraries: Servo
             sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl # Comma separated list of example names to exclude in build
 
+#
+# megaTinyCore
+#
+#         https://github.com/SpenceKonde/megaTinyCore/issues/935
+#          - arduino-boards-fqbn: megaTinyCore:megaavr:atxy7:chip=3217,clock=16internal
+#            platform-url: http://drazzy.com/package_drazzy.com_index.json
+#            required-libraries: Servo
+#            sketches-exclude: TwoServos,SpeedTest,EndPositionsTest,QuadrupedControl,RobotArmControl # No getVCCVoltageMillivolt(), no EasyButton
+
+
+#
+# MegaCoreX
+#
+            # Here we have a platform bundled Servo library
+          - arduino-boards-fqbn: MegaCoreX:megaavr:4808:pinout=32pin_standard,clock=internal_16MHz
+            platform-url: https://mcudude.github.io/MegaCoreX/package_MCUdude_MegaCoreX_index.json
+            sketches-exclude: TwoServos,SpeedTest,EndPositionsTest,QuadrupedControl,RobotArmControl # No getVCCVoltageMillivolt(), no EasyButton
+
+#
+# ESP
+#
           - arduino-boards-fqbn: esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
             platform-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
             required-libraries: Servo
@@ -142,6 +149,9 @@ jobs:
             required-libraries: ESP32Servo
             sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl # Comma separated list of example names to exclude in build
 
+#
+# STM
+#
           - arduino-boards-fqbn: STMicroelectronics:stm32:GenF1:pnum=BLUEPILL_F103C8 # STM version
             platform-url: https://raw.githubusercontent.com/stm32duino/BoardManagerFiles/main/package_stmicroelectronics_index.json
             required-libraries: Servo
@@ -151,6 +161,15 @@ jobs:
             platform-url: http://dan.drown.org/stm32duino/package_STM32duino_index.json
             required-libraries: Servo
             sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl
+
+#
+# Others
+#
+# Error in default samd/Servo.cpp:44:60 - volatile struct TC_STATUS_Type::<unnamed> has no member named SYNCBUSY
+# because Arduino uses the newer arduino and not the adafruit servo library
+#          - arduino-boards-fqbn: adafruit:samd:adafruit_metro_m4:cache=on,speed=120,opt=small,maxqspi=50,usbstack=arduino,debug=off
+#            platform-url: https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
+#            sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl
 
           - arduino-boards-fqbn: SparkFun:apollo3:sfe_artemis_nano
             platform-url: https://raw.githubusercontent.com/sparkfun/Arduino_Apollo3/master/package_sparkfun_apollo3_index.json

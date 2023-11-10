@@ -137,7 +137,7 @@ void initUSDistancePin(uint8_t aTriggerOutEchoInPin) {
 
 /*
  * Start of standard blocking implementation using pulseInLong() since PulseIn gives wrong (too small) results :-(
- * @param aTimeoutMicros timeout of 5825 micros is equivalent to 1 meter, default timeout of 20000 micro seconds is 3.43 meter
+ * @param aTimeoutMicros timeout of 5825 micros is equivalent to 1 meter, default timeout of 20000 micros is 3.43 meter
  * @return 0 / DISTANCE_TIMEOUT_RESULT if uninitialized or timeout happened
  */
 unsigned int getUSDistance(unsigned int aTimeoutMicros) {

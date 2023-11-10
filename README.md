@@ -106,7 +106,7 @@ For instructions how to enable these alternatives, see [Compile options / macros
 
 ` Precision ` &nbsp; &nbsp; ` Dummy ` &nbsp; &nbsp; ` User defined `
 
-- **Precision** is like linear, but if descending, add a 5 degree negative bounce in the last 20 % of the movement time. So the target position is always approached from below. This enables it to taken out the slack/backlash of any hardware moved by the servo.
+- **Precision** is like linear, but if descending, add a 5 &deg; negative bounce in the last 20 % of the movement time. So the target position is always approached from below. This enables it to taken out the slack/backlash of any hardware moved by the servo.
 - **Dummy** is used for delays in callback handler.
 
 
@@ -126,7 +126,7 @@ resulting in some small discontinuities between adjacent movements.<br/>
 
 ### Constraints
 To restrict servo movements to a fixed range, you can specify constraints with `setMinMaxConstraint(int aMinDegreeOrMicrosecond, int aMaxDegreeOrMicrosecond)`.<br/>
-#### Arduino Plotter Output with constraints at 5 degree and 175 degree activated.
+#### Arduino Plotter Output with constraints at 5 &deg; and 175 &deg; activated.
 ![Arduino Plotter Output with constraints at 5 degree and 175 degree activated](https://github.com/ArminJo/ServoEasing/blob/master/pictures/Constraints.png)
 
 ### Disable easing temporarily
@@ -156,9 +156,9 @@ void loop() {
 ```
 
 Just call `myServo.startEaseTo()` instead of `myServo.write()` and you are done. Or if you want to wait (blocking) until servo has arrived, use `myServo.easeTo()`.<br/>
-- Do not forget to **initially set the start position** for the Servo, since the library has **no knowledge about your servos initial position** and therefore starts at **0 degree** at the first move, which may be undesirable.<br/>
+- Do not forget to **initially set the start position** for the Servo, since the library has **no knowledge about your servos initial position** and therefore starts at **0 &deg;** at the first move, which may be undesirable.<br/>
   Setting the start position of the servo can be done as the second parameter to `myServo.attach(int aPin, int aInitialDegree)` or by calling `myServo.write(int aDegree)`,
-- And do not forget to **initially set the moving speed** (as degrees per second) with `myServo.setSpeed()` or as **second parameter** to startEaseTo() or easeTo(). Otherwise the Servo will start with the speed of 5 degrees per second, to indicate that speed was not set.<br/>
+- And do not forget to **initially set the moving speed** (as degrees per second) with `myServo.setSpeed()` or as **second parameter** to startEaseTo() or easeTo(). Otherwise the Servo will start with the speed of 5 &deg; per second, to indicate that speed was not set.<br/>
 
 <br/>
 
@@ -186,18 +186,18 @@ You can handle multiple servos simultaneously by [special functions](https://git
 <br/>
 
 # Resolution of servo positioning
-- The standard range of 544 to 2400 &micro;s per 180 degree results in an timing of around **10 &micro;s per degree**.
+- The standard range of 544 to 2400 &micro;s per 180 &deg; results in an timing of around **10 &micro;s per degree**.
 - The **Arduino Servo library on AVR** uses an prescaler of 8 at 16 MHz clock resulting in a resolution of **0.5 &micro;s**.
-- The **PCA9685 expander** has a resolution of **4.88 &micro;s** per step (@ 20 ms interval) resulting in a resolution of **0.5 degree**.
-Digital Servos have a **deadband of approximately 5 &micro;s / 0.5 degree** which means, that you will see a **stuttering movement** if the moving speed is slow.
+- The **PCA9685 expander** has a resolution of **4.88 &micro;s** per step (@ 20 ms interval) resulting in a resolution of **0.5 &deg;**.
+Digital Servos have a **deadband of approximately 5 &micro;s / 0.5 &deg;** which means, that you will see a **stuttering movement** if the moving speed is slow.
 If you control them with a PCA9685 expander it may get worse, since one step of 4.88 &micro;s can be within the deadband, so it takes 2 steps to move the servo from its current position.
 
 # Mapping of servo positioning
-If you want to **operate your servo e.g. from -90 to +90 degree**, you have two possibilities to specify this during attach:
+If you want to **operate your servo e.g. from -90 &deg; to +90 &deg;**, you have two possibilities to specify this during attach:
 1. Use `Servo1.attachWithTrim(SERVO1_PIN, 90, START_DEGREE_VALUE, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE)` like it is done in the [TwoServos example](https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServos/TwoServos.ino#L94).
 2. Use `Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, -90, 90)`.
 
-If your servo has **other timing characteristics than the default** one -544 &micro;s for 0 and 2400 &micro;s for 180 degree- you have to use `Servo1.attach(SERVO1_PIN, <MY_SERVO_MICROSECONDS_FOR_0_DEGREE>, <MY_SERVO_MICROSECONDS_FOR_180_DEGREE>)`.<br/>
+If your servo has **other timing characteristics than the default** one -544 &micro;s for 0 and 2400 &micro;s for 180 &deg; - you have to use `Servo1.attach(SERVO1_PIN, <MY_SERVO_MICROSECONDS_FOR_0_DEGREE>, <MY_SERVO_MICROSECONDS_FOR_180_DEGREE>)`.<br/>
 You can combine this with variant 2 from above to transparently specify your servo characteristics e.g. like it is done in the [RobotArmControl example]( https://github.com/ArminJo/ServoEasing/blob/master/examples/RobotArmControl/RobotArmServoConfiguration.h#L97):
 
 ```c++
@@ -266,7 +266,7 @@ These macros must be defined in your program **before** the line `#include <Serv
 Modify them by enabling / disabling them, or change the values if applicable.
 
 | Name | Default value | Description |
-|-|-|-|
+|-|-:|-|
 | `USE_PCA9685_SERVO_EXPANDER` | disabled | Enables the use of the PCA9685 I2C expander chip/board. |
 | `PCA9685_ACTUAL_CLOCK_FREQUENCY` | 25000000L | Change it, if your PCA9685 has another than the default 25 MHz internal clock. See chapter 2 and 5 of the PCA9685 Datasheet "25 MHz typical internal oscillator requires no external components". This value is taken for all attached PCA9685 expanders! |
 | `USE_SOFT_I2C_MASTER` | disabled | Saves up to 1756 bytes program memory and 218 bytes RAM for PCA9685 I2C communication compared with Arduino Wire. |
@@ -295,7 +295,7 @@ To control simultaneously servos with the Arduino Servo library i.e. servos whic
 In this case you should attach the expander servos first in order to initialize the expander board correctly.
 And as long as no servo using the Arduino Servo library is attached, the expander servos will not move,
 which should not be a problem since you normally attach all servos in `setup()`.<br/>
-**Resolution** of the is PCA9685 signal is approximately **0.5 degree**.
+**Resolution** of the is PCA9685 signal is approximately **0.5 &deg;**.
 
 On the **ESP32 the I2C library is only capable to run at 100 kHz**, because it interferes with the Ticker / Timer library used.
 Even with 100 kHz clock we have some dropouts / NAK's because of sending address again instead of first data.<br/>
@@ -304,8 +304,8 @@ If you do not use any timer in your program you can increase speed up to 800 kHz
 
 <br/>
 
-# Using the included [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) for ATmega328
-Using the **Lightweight Servo Library** reduces sketch size and makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
+# Using the included Lightweight Servo library for ATmega328
+Using the [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) reduces sketch size and makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
 Up to 2 servos are supported by this library and they must be physically attached to pin 9 and/or 10 of the Arduino board.<br/>
 To enable it, activate the line `#define USE_LEIGHTWEIGHT_SERVO_LIB` before the line `#include "LightweightServo.hpp"` [like it is done in the TwoServos example](https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServos/TwoServos.ino#L31).<br/>
 If you do not use the Arduino IDE, take care that Arduino Servo library sources are not compiled / included in the project.
@@ -333,17 +333,19 @@ If you **detach** a servo and then attach another one, the latter will get the i
 
 <br/>
 
-# [Examples](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples) for this library
-The examples are available at File > Examples > Examples from Custom Libraries / ServoEasing.<br/>
+# Examples for this library
+[The examples](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples) are available at File > Examples > Examples from Custom Libraries / ServoEasing.<br/>
 
 <br/>
 
 # WOKWI online examples
-- [ThreeServos] (https://wokwi.com/projects/299552195816194570).
+- [ThreeServos](https://wokwi.com/projects/299552195816194570).
 
 <br/>
 
-# [Servo utilities](https://github.com/ArminJo/ServoEasing/tree/master/examples#servo-utilities)
+# Servo utilities
+- [EndPositionsTest](https://github.com/ArminJo/ServoEasing/blob/master/examples#endpositionstest)
+- [SpeedTest](https://github.com/ArminJo/ServoEasing/blob/master/examples#speedtest)
 
 <br/>
 
@@ -532,7 +534,7 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 
 ### Version 1.3.0
 - Added **ESP32** support by using *ESP32Servo.h* and *Ticker.h* instead of *Servo.h* timer interrupts.
-- Changed degree parameter and values from uint8_t to integer to support operating a servo from -90 to + 90 degree with 90 degree trim.
+- Changed degree parameter and values from uint8_t to integer to support operating a servo from -90 &deg; to + 90 &deg; with 90 &deg; trim.
 - `RobotArmControl` + `QuadrupedControl` examples refactored.
 - Changed "while" to "for" loops to avoid a gcc 7.3.0 atmel6.3.1 bug.
 - Extended `SpeedTest` example. Now also able to change the width of the refresh period.
