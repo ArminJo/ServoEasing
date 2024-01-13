@@ -99,7 +99,7 @@ EasyButton ButtonAtPin2(&changeEasingType);
 #define VCC_CHECK_PERIOD_MILLIS        10000 // Period of VCC checks
 #define VCC_CHECKS_TOO_LOW_BEFORE_STOP     6 // Shutdown after 6 times (60 seconds) VCC below VCC_STOP_THRESHOLD_MILLIVOLT or 1 time below VCC_EMERGENCY_STOP_MILLIVOLT
 #include "ADCUtils.hpp"
-void checkAndHandleVCCTooLow();
+void checkAndHandleVCCUndervoltage();
 
 #define VERSION_EXAMPLE "2.0"
 
@@ -167,7 +167,7 @@ void loop() {
     sDebugOutputIsEnabled = !digitalRead(DEBUG_OUTPUT_ENABLE_PIN); // enabled if LOW
 
 #if defined(ADC_UTILS_ARE_AVAILABLE)
-    checkAndHandleVCCTooLow();
+    checkAndHandleVCCUndervoltage();
 #endif // defined(__AVR__)
 
 #if defined(ROBOT_ARM_HAS_RTC_CONTROL)
@@ -248,8 +248,8 @@ bool delayAndCheckForRobotArm(uint16_t aDelayMillis) {
 /*
  * If isVCCTooLowMultipleTimes() returns true clear all pattern and activate only 2 MultipleFallingStars pattern on the 2 bars
  */
-void checkAndHandleVCCTooLow() {
-    if (isVCCTooLowMultipleTimes()) {
+void checkAndHandleVCCUndervoltage() {
+    if (isVCCUndervoltageMultipleTimes()) {
         goToFolded(); // Afterwards only auto move is disabled
 #if defined(ROBOT_ARM_HAS_IR_CONTROL)
         sActionType = ACTION_TYPE_STOP;

@@ -186,7 +186,7 @@ void loop() {
     /*
      * Here we use the allServos functions
      */
-    setDegreeForAllServos(3, 135, 135, 135);
+    setIntegerDegreeForAllServos(3, 135, 135, 135);
     setEaseToForAllServos();
     synchronizeAllServosAndStartInterrupt(false); // false, since we call updateAllServos() manually below
 

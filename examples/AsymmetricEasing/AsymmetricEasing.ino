@@ -180,7 +180,7 @@ void loop() {
     /*
      * Here we use the allServos functions
      */
-    setDegreeForAllServos(3, 135, 135, 135);
+    setIntegerDegreeForAllServos(3, 135, 135, 135);
     setEaseToForAllServos();
     synchronizeAllServosAndStartInterrupt(false); // false, since we call updateAllServos() manually below
 
@@ -214,6 +214,7 @@ void loop() {
  * User defined combined movement
  */
 float EaseQuadraticInQuarticOut(float aPercentageOfCompletion, void * aUserDataPointer ) {
+    (void) aUserDataPointer; // to avoid compiler warnings
     if (aPercentageOfCompletion <= 0.5) {
         // Quadratic IN - output from 0.0 to 0.5
         return (2 * ServoEasing::QuadraticEaseIn(aPercentageOfCompletion));

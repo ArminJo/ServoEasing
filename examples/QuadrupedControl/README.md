@@ -23,6 +23,8 @@ Available as [QuadrupedControl](https://github.com/ArminJo/ServoEasing/tree/mast
 
 #### If you find this library useful, please give it a star.
 
+&#x1F30E; [Google Translate](https://translate.google.com/translate?sl=en&u=https://github.com/ArminJo/QuadrupedControl)
+
 <br/>
 
 # Features

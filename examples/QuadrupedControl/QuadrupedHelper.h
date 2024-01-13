@@ -10,8 +10,8 @@
 #ifndef _QUADRUPED_HELPER_H
 #define _QUADRUPED_HELPER_H
 
-void checkForLowVoltageAndShutdown();
-bool checkForLowVoltage();
+void checkForVCCUnderVoltageAndShutdown();
+bool checkForVCCUnderVoltage();
 void playShutdownMelody();
 void doBeep();
 

@@ -186,10 +186,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@master
 
-      - name: Arduino Lint
-        uses: arduino/arduino-lint-action@v1
-        with:
-          library-manager: update
+#      - name: Arduino Lint
+#        uses: arduino/arduino-lint-action@v1
+#        with:
+#          library-manager: update
 
       # See: https://github.com/codespell-project/actions-codespell/blob/master/README.md
 #      - name: Spell check

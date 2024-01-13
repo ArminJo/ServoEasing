@@ -64,7 +64,7 @@
 #define ENABLE_QUADRUPED_DEMO_MODE
 
 #if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
-#define VCC_STOP_THRESHOLD_MILLIVOLT 3500   // stop moving if below 3.6 volt. Below 3.7 volt, the US distance sensor does not work :-(
+#define VCC_STOP_THRESHOLD_MILLIVOLT 3500   // stop moving if below 3.5 volt. Below 3.7 volt, the US distance sensor does not work :-(
 #else
 #define VCC_STOP_THRESHOLD_MILLIVOLT 3200   // stop moving if below 3.2 volt.
 #endif
@@ -131,8 +131,6 @@ uint32_t sMillisOfLastSpecialAction = 0;                            // millis() 
 #define MILLIS_OF_INACTIVITY_BETWEEN_REMINDER_MOVE          60000   // 1 Minute
 #endif
 
-#define VOLTAGE_USB_LOWER_THRESHOLD_MILLIVOLT                4300   // Assume USB powered, if voltage is higher, -> disable auto move after timeout.
-
 void setup() {
     pinModeFast(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
@@ -189,7 +187,7 @@ void loop() {
     /*
      * Check for low voltage
      */
-    checkForLowVoltageAndShutdown();
+    checkForVCCUnderVoltageAndShutdown();
 #endif
 
 #if defined(QUADRUPED_HAS_US_DISTANCE)
@@ -230,7 +228,7 @@ void loop() {
 #endif
 
     /*
-     * Auto move if timeout (40 s) after boot was reached (and no IR command was received)
+     * Auto move if timeout (40 s) after boot was reached (and no IR command was received and not powered by USB)
      */
     if (!isShutDown) {
         if ((millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)
@@ -239,7 +237,7 @@ void loop() {
 #else
                 && sMillisOfLastSpecialAction == 0
 #endif
-                && (sVCCVoltageMillivolt < (VOLTAGE_USB_LOWER_THRESHOLD_MILLIVOLT / 1000.0))) {
+                && (!isVCCUSBPowered())) {
             doQuadrupedAutoMove(); // Can be terminated by IR command
 #if defined(QUADRUPED_HAS_IR_CONTROL)
             IRDispatcher.IRReceivedData.MillisOfLastCode = millis(); // disable next auto move, next attention in 2 minutes

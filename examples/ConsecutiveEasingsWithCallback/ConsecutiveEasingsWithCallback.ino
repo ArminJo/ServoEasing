@@ -185,7 +185,7 @@ void ServoTargetPositionReachedHandler(ServoEasing *aServoEasingInstance) {
         int tTargetDegree = TargetDegreesArray[sStep];
         uint_fast8_t tEasingType = EasingTypesArray[sStep];
 
-        aServoEasingInstance->setEasingType(tEasingType); // Sevo1
+        aServoEasingInstance->setEasingType(tEasingType); // Servo1
         aServoEasingInstance->startEaseTo(tTargetDegree); // easeTo() uses delay() and will not work here.
         sStep++;
         if (sStep >= NUMBER_OF_MOVEMENTS_IN_A_TRAJECTORY) {

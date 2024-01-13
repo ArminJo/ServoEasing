@@ -29,7 +29,7 @@
  *    90 degree 220 ms
  *    45 degree 115 ms
  *
- *  Copyright (C) 2019-2022  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2023  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -124,7 +124,20 @@ void setup() {
     digitalWrite(A5, HIGH);
 #endif
 
-    Serial.println(F("Value for 0 degree=" STR(ZERO_DEGREE_VALUE_MICROS) "us. Value for 180 degree=" STR(AT_180_DEGREE_VALUE_MICROS) "us."));
+    Serial.println(
+            F(
+                    "Value for 0 degree=" STR(ZERO_DEGREE_VALUE_MICROS) "us. Value for 180 degree=" STR(AT_180_DEGREE_VALUE_MICROS) "us."));
+
+    Serial.println(F("Mode analog input pin=" STR(MODE_ANALOG_INPUT_PIN)));
+#if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+    Serial.println(F("Servo signal refresh period (2.5 ms to 20 ms) analog input pin=" STR(REFRESH_PERIOD_ANALOG_INPUT_PIN)));
+#endif
+    Serial.println(F("Position or delay analog input pin=" STR(SPEED_OR_POSITION_ANALOG_INPUT_PIN)));
+    Serial.println(F("Mode 0 is direct positioning"));
+    Serial.println(F("Mode 1 to 7 is swipe with delay and 180, 90, 45, 30, 20, 10 degree per step"));
+#if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#endif
+    Serial.println();
 
     /*
      * Attach servo to pin 9
@@ -139,6 +152,7 @@ void setup() {
     digitalWrite(LED_BUILTIN, HIGH);
     delay(3000);
     digitalWrite(LED_BUILTIN, LOW);
+
 }
 
 void printVCCAndMode(int aVCCMillivolt, uint8_t aMode) {
@@ -155,9 +169,9 @@ void loop() {
     static int sLastPulseMicros;
 
 #if defined(__AVR__)
-    int tVoltageMillivolts = getVCCVoltageMillivolt();
+    int tVCCVoltageMillivolts = getVCCVoltageMillivolt();
 #else
-    int tVoltageMillivolts = 3333; // Dummy value
+    int tVCCVoltageMillivolts = 3333; // Dummy value
 #endif
 
     // required to switch ADC reference
@@ -166,6 +180,7 @@ void loop() {
     int tMode = analogRead(MODE_ANALOG_INPUT_PIN);
 
     int tSpeedOrPosition = analogRead(SPEED_OR_POSITION_ANALOG_INPUT_PIN);
+    int tReactionDelay;
 
 #if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
     /*
@@ -182,9 +197,9 @@ void loop() {
      * Avoid print for mode 0 if nothing changed
      */
     if (tMode != 0) {
-        printVCCAndMode(tVoltageMillivolts, tMode);
+        printVCCAndMode(tVCCVoltageMillivolts, tMode);
     } else if (abs(sLastPulseMicros - tPulseMicros) > 3) {
-        printVCCAndMode(tVoltageMillivolts, tMode);
+        printVCCAndMode(tVCCVoltageMillivolts, tMode);
     }
 
     switch (tMode) {
@@ -245,19 +260,19 @@ void loop() {
 
     case 7:
         // Test for fast reaction to write
-        tSpeedOrPosition = (((1023 - tSpeedOrPosition) >> 7) * 20) + 20; // gives values 20, 40 to 160
-        Serial.print(F("fast reaction: 85 -> 90 -> 95 -> 90 delay="));
-        Serial.println(tSpeedOrPosition);
+        tReactionDelay = (((1023 - tSpeedOrPosition) >> 7) * 20) + 20; // gives values 20, 40 to 160
+        Serial.print(F("fast reaction: 85 -> 90 -> 95 -> 90 delay between writes="));
+        Serial.println(tReactionDelay);
 
 #if !defined(USE_LEIGHTWEIGHT_SERVO_LIB)
         ServoUnderTest.write(85);
-        delay(tSpeedOrPosition);
+        delay(tReactionDelay);
         ServoUnderTest.write(90);
-        delay(tSpeedOrPosition);
+        delay(tReactionDelay);
         ServoUnderTest.write(95);
-        delay(tSpeedOrPosition);
+        delay(tReactionDelay);
         ServoUnderTest.write(90);
-        delay(tSpeedOrPosition);
+        delay(tReactionDelay);
 #endif
         break;
 

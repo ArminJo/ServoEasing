@@ -82,7 +82,7 @@ void playShutdownMelody() {
  * Stop servos if voltage gets low
  * @return  true - if voltage too low
  */
-bool checkForLowVoltage() {
+bool checkForVCCUnderVoltage() {
     sVCCVoltageMillivolt = getVCCVoltageMillivoltSimple();
     return (sVCCVoltageMillivolt <= VCC_STOP_THRESHOLD_MILLIVOLT);
 }
@@ -90,7 +90,7 @@ bool checkForLowVoltage() {
 /*
  * Called exclusively by main loop
  */
-void checkForLowVoltageAndShutdown() {
+void checkForVCCUnderVoltageAndShutdown() {
     if ((millis() - sLastVolageMeasurementMillis) <= MILLIS_BETWEEN_VOLTAGE_MEASUREMENTS) {
         return;
     }
@@ -101,7 +101,7 @@ void checkForLowVoltageAndShutdown() {
         sShutdownCount = 0;
     }
 
-    if (!checkForLowVoltage()) {
+    if (!checkForVCCUnderVoltage()) {
         isShutDown = false;
         sShutdownCount--;
     } else if (!isShutDown) {

@@ -399,13 +399,11 @@ ServoEasing::ServoEasing() // @suppress("Class members should be properly initia
 #endif
 {
     // On an ESP8266 it was NOT initialized to 0 :-(.
-    mTrimMicrosecondsOrUnits = 0;
     mSpeed = START_EASE_TO_SPEED;
     mServoMoves = false;
 #if !defined(DISABLE_PAUSE_RESUME)
     mServoIsPaused = false;
 #endif
-    mOperateServoReverse = false;
 
 #if defined(USE_PCA9685_SERVO_EXPANDER) && defined(USE_SERVO_LIB)
     mServoIsConnectedToExpander = false;
@@ -465,6 +463,7 @@ uint8_t ServoEasing::attachWithTrim(int aPin, int aTrimDegreeOrMicrosecond, int 
 }
 
 /**
+ * Combination of attach with initial write().
  * Specify the start value written to the servo and the microseconds values for 0 and 180 degree for the servo.
  * The values can be determined by the EndPositionsTest example.
  * By modifying the Micoseconds* parameter values you can also provide an initial trim.
@@ -499,6 +498,10 @@ uint8_t ServoEasing::attachWithTrim(int aPin, int aTrimDegreeOrMicrosecond, int 
         int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree) {
     uint8_t tReturnValue = attach(aPin, aMicrosecondsForServoLowDegree, aMicrosecondsForServoHighDegree, aServoLowDegree,
             aServoHighDegree);
+    /*
+     * Trim value was reset by attach.
+     * Do not write here, because we need conversion of aInitialDegreeOrMicrosecond, which is included in write() :-).
+     */
     setTrim(aTrimDegreeOrMicrosecond, false);
     write(aInitialDegreeOrMicrosecond);
     return tReturnValue;
@@ -516,6 +519,13 @@ uint8_t ServoEasing::attachWithTrim(int aPin, int aTrimDegreeOrMicrosecond, int 
  */
 uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree,
         int aServoHighDegree) {
+
+    /*
+     * Reset trim and reverse
+     */
+    mTrimMicrosecondsOrUnits = 0;
+    mOperateServoReverse = false;
+
     /*
      * Get the 0 and 180 degree values.
      */
@@ -622,10 +632,10 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
      * Call attach() of the underlying Servo library
      */
 #    if defined(ARDUINO_ARCH_APOLLO3)
-    Servo::attach(aPin, tMicrosecondsForServo0Degree, tMicrosecondsForServo180Degree);
+    Servo::attach(aPin);
     return aPin; // Sparkfun apollo3 Servo library has no return value for attach :-(
 #    else
-    return Servo::attach(aPin, tMicrosecondsForServo0Degree, tMicrosecondsForServo180Degree);
+    return Servo::attach(aPin); // This starts generating pulses of DEFAULT_PULSE_WIDTH
 #    endif // defined(ARDUINO_ARCH_APOLLO3)
 #  endif // defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 #endif // defined(USE_SERVO_LIB)
@@ -671,9 +681,9 @@ void ServoEasing::detach() {
 }
 
 /**
- * @note Reverse means, that values for 180 and 0 degrees are swapped by: aValue = mServo180DegreeMicrosecondsOrUnits - (aValue - mServo0DegreeMicrosecondsOrUnits)
- * Be careful, if you specify different end values, it may not behave, as you expect.
- * For this case better use the attach function with 5 parameter.
+ * @note Reverse means, that values for 180 and 0 degrees are replaced by: reverseValue = mServo180DegreeMicrosecondsOrUnits - (originalValue - mServo0DegreeMicrosecondsOrUnits)
+ * Be careful, if you specify different end values than 0 and 180 degree, it may not behave, as you expect.
+ * For this case, better use the attach function with 5 parameter.
  * This flag is only used at _writeMicrosecondsOrUnits()
  */
 void ServoEasing::setReverseOperation(bool aOperateServoReverse) {
@@ -760,7 +770,7 @@ void ServoEasing::write(int aTargetDegreeOrMicrosecond) {
 #if defined(LOCAL_TRACE)
     Serial.print(F("write "));
     Serial.print(aTargetDegreeOrMicrosecond);
-    Serial.print(' ');
+    Serial.print(F(" | "));
 #endif
     /*
      * Check for valid initialization of servo.
@@ -779,7 +789,7 @@ void ServoEasing::write(float aTargetDegreeOrMicrosecond) {
 #if defined(LOCAL_TRACE)
     Serial.print(F("write "));
     Serial.print(aTargetDegreeOrMicrosecond);
-    Serial.print(' ');
+    Serial.print(F(" | "));
 #endif
     /*
      * Check for valid initialization of servo.
@@ -824,7 +834,7 @@ void ServoEasing::_writeMicrosecondsOrUnits(int aTargetDegreeOrMicrosecond) {
     Serial.print(F(" us/u="));
     Serial.print(aTargetDegreeOrMicrosecond);
     if (mTrimMicrosecondsOrUnits != 0) {
-        Serial.print(" t=");
+        Serial.print(" +trim=");
         Serial.print(aTargetDegreeOrMicrosecond + mTrimMicrosecondsOrUnits);
     }
 #endif // TRACE
@@ -837,7 +847,7 @@ void ServoEasing::_writeMicrosecondsOrUnits(int aTargetDegreeOrMicrosecond) {
         aTargetDegreeOrMicrosecond = mServo180DegreeMicrosecondsOrUnits
                 - (aTargetDegreeOrMicrosecond - mServo0DegreeMicrosecondsOrUnits);
 #if defined(LOCAL_TRACE)
-        Serial.print(F(" r="));
+        Serial.print(F(" +reverse="));
         Serial.print(aTargetDegreeOrMicrosecond);
 #endif
     }
@@ -875,7 +885,7 @@ void ServoEasing::_writeMicrosecondsOrUnits(int aTargetDegreeOrMicrosecond) {
 #  if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
     writeMicrosecondsLightweightServo(aTargetDegreeOrMicrosecond, (mServoPin == 9));
 #  else
-    Servo::writeMicroseconds(aTargetDegreeOrMicrosecond); // requires 7 us
+    Servo::writeMicroseconds(aTargetDegreeOrMicrosecond); // requires 7 us on Uno
 #  endif
 #endif
 
@@ -1084,6 +1094,10 @@ void ServoEasing::easeToD(float aTargetDegreeOrMicrosecond, uint_fast16_t aMilli
 #endif
 }
 
+bool ServoEasing::setEaseTo(unsigned int aTargetDegreeOrMicrosecond) {
+    return startEaseTo((int)aTargetDegreeOrMicrosecond, mSpeed, DO_NOT_START_UPDATE_BY_INTERRUPT);
+}
+
 bool ServoEasing::setEaseTo(int aTargetDegreeOrMicrosecond) {
     return startEaseTo(aTargetDegreeOrMicrosecond, mSpeed, DO_NOT_START_UPDATE_BY_INTERRUPT);
 }
@@ -1107,12 +1121,20 @@ bool ServoEasing::setEaseTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aDeg
 /**
  * Starts interrupt for update()
  */
+bool ServoEasing::startEaseTo(unsigned int aTargetDegreeOrMicrosecond) {
+    return startEaseTo((int)aTargetDegreeOrMicrosecond, mSpeed, START_UPDATE_BY_INTERRUPT);
+}
 bool ServoEasing::startEaseTo(int aTargetDegreeOrMicrosecond) {
     return startEaseTo(aTargetDegreeOrMicrosecond, mSpeed, START_UPDATE_BY_INTERRUPT);
 }
 
 bool ServoEasing::startEaseTo(float aTargetDegreeOrMicrosecond) {
     return startEaseTo(aTargetDegreeOrMicrosecond, mSpeed, START_UPDATE_BY_INTERRUPT);
+}
+
+bool ServoEasing::startEaseTo(unsigned int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond,
+        bool aStartUpdateByInterrupt) {
+    return startEaseTo((int) aTargetDegreeOrMicrosecond, aDegreesPerSecond, aStartUpdateByInterrupt);
 }
 
 /**
@@ -1208,6 +1230,10 @@ bool ServoEasing::startEaseTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aD
  * Sets easing parameter, but does not start
  * @return false if servo was still moving
  */
+bool ServoEasing::setEaseToD(unsigned int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove) {
+    return startEaseToD((int)aTargetDegreeOrMicrosecond, aMillisForMove, DO_NOT_START_UPDATE_BY_INTERRUPT);
+}
+
 bool ServoEasing::setEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove) {
     return startEaseToD(aTargetDegreeOrMicrosecond, aMillisForMove, DO_NOT_START_UPDATE_BY_INTERRUPT);
 }
@@ -1222,6 +1248,10 @@ bool ServoEasing::setEaseToD(float aTargetDegreeOrMicrosecond, uint_fast16_t aMi
  */
 bool ServoEasing::noMovement(uint_fast16_t aMillisToWait) {
     return startEaseToD(MicrosecondsOrUnitsToMicroseconds(mCurrentMicrosecondsOrUnits), aMillisToWait, START_UPDATE_BY_INTERRUPT);
+}
+
+bool ServoEasing::startEaseToD(unsigned int aDegreeOrMicrosecond, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt) {
+    return startEaseToD((int) aDegreeOrMicrosecond, aMillisForMove, aStartUpdateByInterrupt);
 }
 
 /**
@@ -2223,6 +2253,7 @@ void setEaseToForAllServosSynchronizeAndStartInterrupt(uint_fast16_t aDegreesPer
 
 /**
  * Synchronize and blocking wait until all servos are stopped
+ * Take the longer duration in order to move all servos synchronously
  */
 void setEaseToForAllServosSynchronizeAndWaitForAllServosToStop() {
     setEaseToForAllServos();

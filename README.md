@@ -30,6 +30,8 @@ Contains the [QuadrupedControl](https://github.com/ArminJo/QuadrupedControl) exa
 
 #### If you find this library useful, please give it a star.
 
+&#x1F30E; [Google Translate](https://translate.google.com/translate?sl=en&u=https://github.com/ArminJo/ServoEasing)
+
 <br/>
 
 #### YouTube video of ServoEasing in action
@@ -76,7 +78,7 @@ ServoEasing works with the Arduino Servo library as well as with [PCA9685 servo 
 The expander in turn requires the Arduino Wire library or a [compatible one](https://github.com/felias-fogg/SoftI2CMaster) and is bound to their restrictions.<br/>
 For **ESP32** you need to install the Arduino ESP32Servo library.<br/>
 <br/>
-If you require only one or two servos, you may want to use the included [LightweightServo library](https://github.com/ArminJo/LightweightServo) (only for **AVR**), instead of the Arduino Servo library.
+If you require only one or two servos, you may want to use the included [LightweightServo library](https://github.com/ArminJo/LightweightServo) which is like the [Adafruit TiCoServo library](https://github.com/adafruit/Adafruit_TiCoServo), but more lightweight and currently only for **Uno, Nano**, instead of the Arduino Servo library.
 The LightweightServo library uses the internal Timer1 with no software overhead and therefore has no problems with **servo twitching** or interrupt blocking libraries like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
 For instructions how to enable these alternatives, see [Compile options / macros](https://github.com/ArminJo/ServoEasing#compile-options--macros-for-this-library).
 
@@ -305,6 +307,8 @@ If you do not use any timer in your program you can increase speed up to 800 kHz
 <br/>
 
 # Using the included Lightweight Servo library for ATmega328
+This library is like the [Adafruit TiCoServo library](https://github.com/adafruit/Adafruit_TiCoServo), but more lightweight and currently only for **Uno, Nano**.
+
 Using the [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) reduces sketch size and makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
 Up to 2 servos are supported by this library and they must be physically attached to pin 9 and/or 10 of the Arduino board.<br/>
 To enable it, activate the line `#define USE_LEIGHTWEIGHT_SERVO_LIB` before the line `#include "LightweightServo.hpp"` [like it is done in the TwoServos example](https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServos/TwoServos.ino#L31).<br/>
@@ -359,6 +363,10 @@ Converting a 10 pin double row pin header with 21 mm pin length to a breadboard 
 # Internals
 The API accepts degrees or microseconds as float or integer values, but internally only microseconds (or units (= 4.88 &micro;s) if using PCA9685 expander) and not degrees are used to speed up things.<br/>
 
+If you do not specify an initial position with attach, **the first attach** moves servo to DEFAULT_PULSE_WIDTH (90 degree | 1500 us). 
+This behavior is implemented by the underlying Servo library.
+Following attaches just use the last position of this Servo.
+
 <br/>
 
 # Supported Arduino architectures
@@ -410,6 +418,9 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 <br/>
 
 # Revision History
+### Version 3.2.2
+- Added functions `setEaseTo()`, `setEaseToD()`,  `startEaseTo()` and `startEaseToD()` with first parameter as `unsigned int` to avoid compiler errors `call of overloaded 'startEaseTo(unsigned int...`.
+
 ### Version 3.2.1
 - Renamed function `setDegreeForAllServos()` to `setIntegerDegreeForAllServos()` and added function `setFloatDegreeForAllServos()`.
 
