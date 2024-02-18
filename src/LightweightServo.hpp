@@ -6,7 +6,7 @@
  *  300 bytes code size / 4 bytes RAM including auto initialization compared to 700 / 48 bytes for Arduino Servo library.
  *  8 bytes for each call to setLightweightServoPulse...
  *
- *  Copyright (C) 2019  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2024  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -51,9 +51,9 @@ void initLightweightServoPin9And10() {
     /*
      * Periods below 20 ms gives problems with long signals i.e. the positioning is not possible
      */
-    DDRB |= _BV(DDB1) | _BV(DDB2);                // set pins OC1A = PortB1 -> PIN 9 and OC1B = PortB2 -> PIN 10 to output direction
+    DDRB |= _BV(DDB1) | _BV(DDB2);                   // set pins OC1A = PortB1 -> PIN 9 and OC1B = PortB2 -> PIN 10 to output direction
     TCCR1A = _BV(COM1A1) | _BV(COM1B1) | _BV(WGM11); // FastPWM Mode mode TOP (20 ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
-    TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);    // set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
+    TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);    // set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12 - other available prescaler are 1 and 64 :-(
     ICR1 = ISR1_COUNT_FOR_20_MILLIS;                 // set period to 20 ms
     // do not set counter here, since with counter = 0 (default) no output signal is generated.
 }
@@ -139,11 +139,15 @@ void writeMicrosecondsLightweightServo(int aMicroseconds, bool aUsePin9, bool aU
         initLightweightServoPin9_10(aUsePin9, !aUsePin9);
     }
 #endif
-    // since the resolution is 1/2 of microsecond
+    // since the resolution is 1/2 of microsecond for 16 MHz CPU clock and prescaler of 8
+#if (F_CPU == 16000000L)
     aMicroseconds *= 2;
+#elif (F_CPU < 8000000L) // for 8 MHz resolution is exactly 1 microsecond :-)
+    aMicroseconds /= (8000000L / F_CPU);
+#endif
     if (aUpdateFast) {
         uint16_t tTimerCount = TCNT1;
-        if (tTimerCount > 5000) {
+        if (tTimerCount > ISR1_COUNT_FOR_2_5_MILLIS) {
             // more than 2.5 ms since last pulse -> start a new one
             TCNT1 = ICR1 - 1;
         }
@@ -185,7 +189,12 @@ void writeMicroseconds9(int aMicroseconds, bool aUpdateFast) {
  * Without auto initialize!
  */
 void writeMicroseconds9Direct(int aMicroseconds) {
-    OCR1A = aMicroseconds * 2;
+#if (F_CPU == 16000000L)
+    aMicroseconds *= 2;
+#elif (F_CPU < 8000000L) // for 8 MHz resolution is exactly 1 microsecond :-)
+    aMicroseconds /= (8000000L / F_CPU);
+#endif
+    OCR1A = aMicroseconds;
 }
 
 /*
@@ -203,7 +212,12 @@ void writeMicroseconds10(int aMicroseconds, bool aUpdateFast) {
  * Without auto initialize!
  */
 void writeMicroseconds10Direct(int aMicroseconds) {
-    OCR1B = aMicroseconds * 2;
+#if (F_CPU == 16000000L)
+    aMicroseconds *= 2;
+#elif (F_CPU < 8000000L) // for 8 MHz resolution is exactly 1 microsecond :-)
+    aMicroseconds /= (8000000L / F_CPU);
+#endif
+    OCR1B = aMicroseconds;
 }
 
 /*

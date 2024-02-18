@@ -10,9 +10,9 @@
  * If you use another than the KEYES_CLONE, you have to select the one you use in QuadrupedConfiguration.h
  *
  * IF IR control enabled, the AutoMove demo starts once after 40 seconds.
- * 2 Minutes after the last IR command, Attention movement is performed and repeated every minute.
  *
  * If QUADRUPED_HAS_IR_CONTROL not defined (no IR control attached) the AutoMove demo starts after 20 seconds and repeats every 4 minutes.
+ *
  * 2 Minutes after the last movement, Attention movement is performed and repeated every minute.
  *
  * If US distance sensor and NeoPixel are attached, the distance is shown at the front NeopixelBar.
@@ -233,7 +233,7 @@ void loop() {
     if (!isShutDown) {
         if ((millis() > MILLIS_OF_INACTIVITY_BEFORE_SWITCH_TO_AUTO_MOVE)
 #if defined(QUADRUPED_HAS_IR_CONTROL)
-                && IRDispatcher.IRReceivedData.MillisOfLastCode == 0
+                && IRDispatcher.IRReceivedData.MillisOfLastCode == 0 /* Do auto move only if no IR command received */
 #else
                 && sMillisOfLastSpecialAction == 0
 #endif

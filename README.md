@@ -419,7 +419,7 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 
 # Revision History
 ### Version 3.2.2
-- Added functions `setEaseTo()`, `setEaseToD()`,  `startEaseTo()` and `startEaseToD()` with first parameter as `unsigned int` to avoid compiler errors `call of overloaded 'startEaseTo(unsigned int...`.
+- Added functions `setEaseTo()`, `setEaseToD()`, `startEaseTo()` and `startEaseToD()` with first parameter as `unsigned int` to avoid compiler errors `call of overloaded 'startEaseTo(unsigned int...`.
 
 ### Version 3.2.1
 - Renamed function `setDegreeForAllServos()` to `setIntegerDegreeForAllServos()` and added function `setFloatDegreeForAllServos()`.

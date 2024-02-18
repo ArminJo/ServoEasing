@@ -1,7 +1,7 @@
 /*
  * LightweightServo.h
  *
- *  Copyright (C) 2019-2020  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2024  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -36,7 +36,8 @@
  * Activating this saves 70 bytes program space. You must then use the init functions initLightweightServoPin*() manually.
  */
 //#define DISABLE_SERVO_TIMER_AUTO_INITIALIZE
-#define ISR1_COUNT_FOR_20_MILLIS 40000 // you can modify this if you have servos which accept a higher rate
+#define ISR1_COUNT_FOR_20_MILLIS (F_CPU / (8 * 50)) // 40000 For 50 Hz, 20 ms using a prescaler of 8. You can modify this if you have servos which accept a higher rate
+#define ISR1_COUNT_FOR_2_5_MILLIS (F_CPU / (8 * 400)) // 5000 For 400 Hz, 2.5 ms using a prescaler of 8.
 
 /*
  * Lightweight servo library

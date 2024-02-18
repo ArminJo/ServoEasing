@@ -306,6 +306,7 @@ void doCalibration() {
 
         unsigned long tIRCode = IRDispatcher.IRReceivedData.command;
 #      if defined(INFO)
+        Serial.print(F("IRCommand="));
         IRDispatcher.printIRCommandString(&Serial);
 #      endif
         switch (tIRCode) {

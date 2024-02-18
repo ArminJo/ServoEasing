@@ -104,7 +104,7 @@ void checkAndHandleVCCUndervoltage();
 #define VERSION_EXAMPLE "2.0"
 
 void handleManualControl();
-void printConfigPinInfo(uint8_t aConfigPinNumber, const __FlashStringHelper *aConfigPinDescription, Print *aSerial);
+void printConfigPinInfo(Print *aSerial, uint8_t aConfigPinNumber, const __FlashStringHelper *aConfigPinDescription);
 
 #define _TIMEOUT_MILLIS_BEFORE_SWITCH_TO_AUTO_MOVE  30000
 #define MILLIS_OF_INACTIVITY_BEFORE_ATTENTION       60000
@@ -153,7 +153,7 @@ void setup() {
 #endif
 
     sDebugOutputIsEnabled = !digitalRead(DEBUG_OUTPUT_ENABLE_PIN);
-    printConfigPinInfo(DEBUG_OUTPUT_ENABLE_PIN, F("debug output"),&Serial);
+    printConfigPinInfo(&Serial, DEBUG_OUTPUT_ENABLE_PIN, F("debug output"));
 
     // Output VCC voltage
     printVCCVoltageMillivolt(&Serial);
@@ -401,7 +401,7 @@ void handleManualControl() {
     }
 }
 
-void printConfigPinInfo(uint8_t aConfigPinNumber, const __FlashStringHelper *aConfigPinDescription, Print *aSerial) {
+void printConfigPinInfo(Print *aSerial, uint8_t aConfigPinNumber, const __FlashStringHelper *aConfigPinDescription) {
     aSerial->print(F("Pin "));
     aSerial->print(aConfigPinNumber);
     aSerial->print(F(" is"));

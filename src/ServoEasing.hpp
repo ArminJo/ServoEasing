@@ -57,17 +57,16 @@
  * Enable this to see information on each call.
  * Since there should be no library which uses Serial, it should only be enabled for development purposes.
  */
-#if defined(DEBUG)
-#define LOCAL_DEBUG
-#else
-//#define LOCAL_DEBUG // This enables debug output only for this file
-#endif
 #if defined(TRACE)
 #define LOCAL_TRACE
-// Propagate debug level
-#define LOCAL_DEBUG
+#define LOCAL_DEBUG // Propagate debug level
 #else
 //#define LOCAL_TRACE // This enables trace output only for this file
+#  if defined(DEBUG)
+#define LOCAL_DEBUG
+#  else
+//#define LOCAL_DEBUG // This enables debug output only for this file
+#  endif
 #endif
 
 // Enable this if you want to measure timing by toggling pin12 on an arduino
@@ -1095,7 +1094,7 @@ void ServoEasing::easeToD(float aTargetDegreeOrMicrosecond, uint_fast16_t aMilli
 }
 
 bool ServoEasing::setEaseTo(unsigned int aTargetDegreeOrMicrosecond) {
-    return startEaseTo((int)aTargetDegreeOrMicrosecond, mSpeed, DO_NOT_START_UPDATE_BY_INTERRUPT);
+    return startEaseTo((int) aTargetDegreeOrMicrosecond, mSpeed, DO_NOT_START_UPDATE_BY_INTERRUPT);
 }
 
 bool ServoEasing::setEaseTo(int aTargetDegreeOrMicrosecond) {
@@ -1122,7 +1121,7 @@ bool ServoEasing::setEaseTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aDeg
  * Starts interrupt for update()
  */
 bool ServoEasing::startEaseTo(unsigned int aTargetDegreeOrMicrosecond) {
-    return startEaseTo((int)aTargetDegreeOrMicrosecond, mSpeed, START_UPDATE_BY_INTERRUPT);
+    return startEaseTo((int) aTargetDegreeOrMicrosecond, mSpeed, START_UPDATE_BY_INTERRUPT);
 }
 bool ServoEasing::startEaseTo(int aTargetDegreeOrMicrosecond) {
     return startEaseTo(aTargetDegreeOrMicrosecond, mSpeed, START_UPDATE_BY_INTERRUPT);
@@ -1231,7 +1230,7 @@ bool ServoEasing::startEaseTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aD
  * @return false if servo was still moving
  */
 bool ServoEasing::setEaseToD(unsigned int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove) {
-    return startEaseToD((int)aTargetDegreeOrMicrosecond, aMillisForMove, DO_NOT_START_UPDATE_BY_INTERRUPT);
+    return startEaseToD((int) aTargetDegreeOrMicrosecond, aMillisForMove, DO_NOT_START_UPDATE_BY_INTERRUPT);
 }
 
 bool ServoEasing::setEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove) {
