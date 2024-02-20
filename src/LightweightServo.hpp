@@ -118,9 +118,9 @@ void deinitLightweightServoPin9_10(bool aUsePin9, bool aUsePin10) {
 }
 
 /*
- * If value is below 180 then assume degree, otherwise assume microseconds
- * If aUpdateFast then enable starting a new output pulse if more than 5 ms since last one, some servo might react faster in this mode.
- * If aUsePin9 is false, then Pin10 is used
+ * @param aDegree - If value is below 180 then assume degree, otherwise assume microseconds
+ * @param aUpdateFast - If true, enable starting a new output pulse if more than 5 ms since last one, some servo might react faster in this mode.
+ * @param aUsePin9 - If false, then Pin10 is used
  * 236 / 186(without auto init) bytes code size
  */
 int writeLightweightServo(int aDegree, bool aUsePin9, bool aUpdateFast) {

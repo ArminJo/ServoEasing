@@ -58,7 +58,7 @@
  * On AVR you can use the same pin for monitoring, on ESP32, this stops program.
  */
 #if defined(ESP32)
-#define DETACH_MONITORING_IN_PIN    SERVO2_PIN
+#define DETACH_MONITORING_IN_PIN    SERVO3_PIN
 #else
 #define DETACH_MONITORING_IN_PIN    SERVO1_PIN
 #endif
@@ -77,14 +77,15 @@ ServoEasing Servo2;
 #define TEST_ATTACH_PARAMETER
 #define TEST_DETACH_AND_ATTACH_AGAIN
 
-void generatePulsesManually(uint8_t aPin, uint16_t aMicroseconds, uint8_t aNumberOfPulses);
+void generatePulsesManuallyAndWait(uint8_t aPin, uint8_t aDegree, uint16_t aMicroseconds, uint8_t aNumberOfPulses,
+        uint16_t aMillisToWait);
 void testDetachTiming();
-void attachAndMoveToBothEnds();
+void moveToBothEndsAnd90Degree();
 void testFixedPulseNumbers();
 void testGetCurrentAngle();
 void testAttachParameters();
-void testDetachAndAtttachAgain();
-void testSetDegreeForAllServos() ;
+void testDetachAndReatttach();
+void testSetDegreeForAllServos();
 
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
@@ -95,44 +96,36 @@ void setup() {
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_SERVO_EASING));
 
-    // Move to both ends and end at 90 degree
-    attachAndMoveToBothEnds();
-    delay(4000);
-
-#if defined(TEST_DETACH_TIMING)
-    testDetachTiming();
-    delay(10000);
-#endif
-
-#if defined(TEST_FIXED_PULSE_NUMBERS)
-    /*
-     * Test of one to 5 discrete servo pulses
-     *
-     * For my MG90 Servo there seems to be a fixed time of internal servo control after last pulse of 340 to 380 ms
-     * This is sufficient for a move of around 100 degree.
-     *
-     * For my SG90 servo 4 or more pulses are sufficient for full 180 and 0 degree.
-     * 1 pulse for 180 or 0 degree moves 20 to 50 degree dependent of the last position - the bigger the difference, the bigger the movement.
-     */
-    testFixedPulseNumbers();
-    delay(10000);
-#endif
-
     // Attach servo to pin
     Serial.println(F("Attach servo at pin " STR(SERVO1_PIN) " and wait 3 seconds"));
 
     Servo1.attach(SERVO1_PIN); // First attach moves servo to DEFAULT_PULSE_WIDTH (90 degree | 1500 us) by underlying Servo library.
     delay(2000);
-    Servo1.write(0); // start at 0 degree
-    delay(1000);
 
-#if defined(TEST_GET_CURRENT_ANGLE)
-    testGetCurrentAngle();
+    // Move to both ends and end at 90 degree
+    moveToBothEndsAnd90Degree();
+    delay(4000);
+
+#if defined(TEST_DETACH_TIMING)
+    testDetachTiming();
     delay(2000);
 #endif
 
+#if defined(TEST_FIXED_PULSE_NUMBERS)
+    /*
+     * Test of 1 to 7 discrete servo pulses
+     */
+    testFixedPulseNumbers();
+    delay(10000);
+#endif
+
 #if defined(TEST_DETACH_AND_ATTACH_AGAIN)
-    testDetachAndAtttachAgain();
+    testDetachAndReatttach();
+    delay(2000);
+#endif
+
+#if defined(TEST_GET_CURRENT_ANGLE)
+    testGetCurrentAngle();
     delay(2000);
 #endif
 
@@ -164,13 +157,6 @@ void setup() {
 
 }
 
-void blinkLED() {
-    digitalWrite(LED_BUILTIN, HIGH);
-    delay(100);
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(100);
-}
-
 void loop() {
     // Move to one end
     Serial.print(F("--- Move to 135 degree with 90 degree | "));
@@ -191,11 +177,29 @@ void loop() {
 }
 
 /*
+ * Move to both ends and end at 90 degree
+ */
+void moveToBothEndsAnd90Degree() {
+    Serial.println(F("Move to 0 -> 180 -> 90 degree"));
+    Servo1.write(0); // start at 0 degree
+    delay(1000);
+    Servo1.write(180); // move to 180 degree
+    delay(1000);
+    Servo1.write(90); // move to 90 degree
+    delay(200);
+}
+
+/*
  * Connect servo out pin to monitoring in pin
  */
 #define MICROS_BETWEEN_PRINTS 50
-void waitAndPrintPinLevel() {
-    delayMicroseconds(MICROS_BETWEEN_PRINTS);
+void waitAndPrintPinLevel(uint32_t aMicrosOfPrint) {
+    // Wait for micros
+    while (true) {
+        if (aMicrosOfPrint < micros()) {
+            break;
+        }
+    }
     if (digitalRead(DETACH_MONITORING_IN_PIN) == HIGH) {
         Serial.print('-');
     } else {
@@ -207,119 +211,108 @@ void waitAndPrintPinLevel() {
  * 1. loop: detach while pulse is generated
  * 2. loop: detach after pulse is generated
  *
- * Sample output for Uno / Nano / ESP32:
+ * Sample output for Uno / Nano / BluePill / ESP32:
  * Each character is 50 microseconds
- * Move servo to 180 degree, wait 400 ms and then detach 600 microseconds after start of pulse
- * _------------___________________________________________
- * Move servo to 180 degree, wait 400 ms and then detach 2500 microseconds after start of pulse
- * _-----------------------------------____________________
+ * Move servo to 180 degree | 2400 us, wait 400 ms and then detach 600 microseconds after start of pulse
+ * _-------------------------------------------------------
+ * Move servo to 180 degree | 2400 us, wait 400 ms and then detach 2500 microseconds after start of pulse
+ * _-----------------------------------------------________
+ *  showing a 2.35 ms pulse
  */
 void testDetachTiming() {
     Serial.println();
 #if SERVO1_PIN != DETACH_MONITORING_IN_PIN
-    Serial.println(F("Connect servo out pin " STR(SERVO1_PIN) " to monitoring in pin=" STR(DETACH_MONITORING_IN_PIN)));
+    Serial.println(F("Connect servo out pin " STR(SERVO1_PIN) " to monitoring in pin " STR(DETACH_MONITORING_IN_PIN)));
 #endif
     Serial.println(F("Each character is 50 microseconds"));
 
     uint8_t tInitialWait50Micros = (DEFAULT_MICROSECONDS_FOR_0_DEGREE / MICROS_BETWEEN_PRINTS) + 2; // 600 us
     for (int j = 0; j < 2; ++j) {
-        Servo1.attach(SERVO1_PIN); // First attach moves servo to DEFAULT_PULSE_WIDTH (90 degree | 1500 us) by underlying Servo library.
+        Servo1.reattach(); // First attach moves servo to DEFAULT_PULSE_WIDTH (90 degree | 1500 us) by underlying Servo library.
         Servo1.write(180); // move to 180 degree
-        Serial.print(F("Move servo to 180 degree, wait 400 ms and then detach "));
+        Serial.print(F("Move servo to 180 degree | "));
+        Serial.print(DEFAULT_MICROSECONDS_FOR_180_DEGREE);
+        Serial.print(F(" us, wait 1000 ms and then detach "));
         Serial.print(tInitialWait50Micros * MICROS_BETWEEN_PRINTS);
         Serial.println(F(" microseconds after start of pulse"));
 
-        delay(400); // wait until positioned
+        delay(1000);
         // wait until signal is LOW
         while (true) {
             if (digitalRead(DETACH_MONITORING_IN_PIN) == LOW) {
                 break;
             }
         }
-        // wait for start of pulse
         Serial.print('_');
+        // wait for start of pulse
         while (true) {
             if (digitalRead(DETACH_MONITORING_IN_PIN) == HIGH) {
-                break;
+                break; // Start of pulse detected
             }
         }
 
+        uint32_t tMicrosOfPrint = micros();
         int i = 0;
-        // wait for the length of a minimal servo pulse 600 us and detach
+        // wait for the length of a minimal servo pulse (around 600 us) and detach
         for (; i < tInitialWait50Micros; ++i) {
-            waitAndPrintPinLevel();
+            tMicrosOfPrint += MICROS_BETWEEN_PRINTS;
+            waitAndPrintPinLevel(tMicrosOfPrint);
         }
         Servo1.detach();
+
         /*
          * Print resulting signal as ASCII art
          */
         for (; i < (DEFAULT_MICROSECONDS_FOR_180_DEGREE / MICROS_BETWEEN_PRINTS) + 7; ++i) {
-            waitAndPrintPinLevel();
+            tMicrosOfPrint += MICROS_BETWEEN_PRINTS;
+            waitAndPrintPinLevel(tMicrosOfPrint);
         }
         Serial.println();
         tInitialWait50Micros = (DEFAULT_MICROSECONDS_FOR_180_DEGREE / MICROS_BETWEEN_PRINTS) + 2; // 2400 DEFAULT_MICROSECONDS_FOR_180_DEGREE is 2400
-        delay(1000);
+        delay(2000);
     }
-    Servo1.attach(SERVO1_PIN);
+    Servo1.reattach();
     Serial.println();
 }
 
 /*
- * Move to both ends and end at 90 degree
- */
-void attachAndMoveToBothEnds() {
-    Serial.println(F("Attach servo at pin " STR(SERVO1_PIN) " and move to 0 -> 180 -> 90 degree"));
-    Servo1.attach(SERVO1_PIN); // First attach moves servo to DEFAULT_PULSE_WIDTH (90 degree | 1500 us) by underlying Servo library.
-    Servo1.write(0); // start at 0 degree
-    delay(1000);
-    Servo1.write(180); // move to 180 degree
-    delay(1000);
-    Servo1.write(90); // move to 90 degree
-    delay(200);
-}
-
-/*
- * Test of one to 5 discrete servo pulses
+ * Test of one to 7 discrete servo pulses
  *
- * For my MG90 Servo there seems to be a fixed time of internal servo control after last pulse of 340 to 380 ms
- * This is sufficient for a move of around 100 degree.
+ * After disconnected, my MG90 servo requires 1 pulse for a 110 degree turn. the second pulse (after 20 ms) adds around 10 degree to it,
+ * so it takes around 6 to 7 pulses (120 ms to 140 ms) for a complete 180 degree turn.
+ * The values seems to be independent of the turn direction.
  *
- * For my SG90 servo 4 or more pulses are sufficient for full 180 and 0 degree.
+ * After disconnected, my SG90 servo requires 4 pulses for a 180 degree turn. It may be less, if the turn is smaller.
  * 1 pulse for 180 or 0 degree moves 20 to 50 degree dependent of the last position - the bigger the difference, the bigger the movement.
  */
 void testFixedPulseNumbers() {
+    Servo1.detach();
+
     Serial.println();
-    Serial.println(F("Generate 1 to 5 180 degree pulses manually at pin " STR(SERVO1_PIN)));
+    Serial.println(F("Generate 1 to 7 180 degree pulses at pin " STR(SERVO1_PIN)));
     pinMode(SERVO1_PIN, OUTPUT);
     digitalWriteFast(SERVO1_PIN, LOW);
     delay(100);
-    for (uint_fast8_t i = 0; i < 5; ++i) {
+    for (uint_fast8_t i = 0; i < 7; ++i) {
         // position at 0, then move to 180
-        generatePulsesManually(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, 10);
-        delay(2000); // wait longer in order that the servo capacitor is unloaded
-        generatePulsesManually(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_180_DEGREE, i + 1);
-        delay(2000);
+        generatePulsesManuallyAndWait(SERVO1_PIN, 0, DEFAULT_MICROSECONDS_FOR_0_DEGREE, 10, 2000); // wait longer in order that the servo capacitor is unloaded
+        generatePulsesManuallyAndWait(SERVO1_PIN, 180, DEFAULT_MICROSECONDS_FOR_180_DEGREE, i + 1, 2000);
         // position at 90, then move to 180
-        generatePulsesManually(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_90_DEGREE, 10);
-        delay(2000);
-        generatePulsesManually(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_180_DEGREE, i + 1);
-        delay(2000);
+        generatePulsesManuallyAndWait(SERVO1_PIN, 90, DEFAULT_MICROSECONDS_FOR_90_DEGREE, 10, 2000);
+        generatePulsesManuallyAndWait(SERVO1_PIN, 180, DEFAULT_MICROSECONDS_FOR_180_DEGREE, i + 1, 2000);
     }
     delay(4000);
-    Serial.println(F("Generate 1 to 5 0 degree pulses manually at pin " STR(SERVO1_PIN)));
-    for (uint_fast8_t i = 0; i < 5; ++i) {
+    Serial.println(F("Generate 1 to 7 0 degree pulses manually at pin " STR(SERVO1_PIN)));
+    for (uint_fast8_t i = 0; i < 7; ++i) {
         // position at 180, then move to 0
-        generatePulsesManually(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_180_DEGREE, 10);
-        delay(2000);
-        generatePulsesManually(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, i + 1);
-        delay(2000);
+        generatePulsesManuallyAndWait(SERVO1_PIN, 180, DEFAULT_MICROSECONDS_FOR_180_DEGREE, 10, 2000);
+        generatePulsesManuallyAndWait(SERVO1_PIN, 0, DEFAULT_MICROSECONDS_FOR_0_DEGREE, i + 1, 2000);
         // position at 90, then move to 0
-        generatePulsesManually(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_90_DEGREE, 10);
-        delay(2000);
-        generatePulsesManually(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, i + 1);
-        delay(2000);
+        generatePulsesManuallyAndWait(SERVO1_PIN, 90, DEFAULT_MICROSECONDS_FOR_90_DEGREE, 10, 2000);
+        generatePulsesManuallyAndWait(SERVO1_PIN, 0, DEFAULT_MICROSECONDS_FOR_0_DEGREE, i + 1, 2000);
     }
     Serial.println();
+    Servo1.reattach();
 }
 
 void testGetCurrentAngle() {
@@ -437,7 +430,7 @@ void testSetDegreeForAllServos() {
     Serial.println();
     Serial.println(F("Attach 1. servo with default values and 2. servo at pin " STR(SERVO2_PIN)));
     Serial.println(F("3 setDegreeForAllServos() tests"));
-    Servo2.attach(SERVO2_PIN);
+    Servo2.attach(SERVO2_PIN); // attach with default values
     Servo2.setSpeed(45);
     Serial.print(F("Lowest speed is 45 degree/s of Servo2"));
     Serial.print(F("sServoArrayMaxIndex="));
@@ -473,17 +466,17 @@ void testSetDegreeForAllServos() {
     Serial.println();
 }
 
-void testDetachAndAtttachAgain() {
+void testDetachAndReatttach() {
     Serial.println();
-    Serial.println(F("--- Move to 90 degree and wait 1 second."));
-    Servo1.write(90);
+    Serial.println(F("--- Move to 135 degree and wait 1 second."));
+    Servo1.write(135);
     delay(1000);
     Serial.println(F("Detach for 5 seconds."));
     Serial.println(F("--- Servo should not move, but could be moved manually now"));
     Servo1.detach();
     delay(5000); // Test https://github.com/ArminJo/ServoEasing/discussions/91#discussioncomment-7592860
-    Serial.print(F("Reattach, servo moves to last position before detach (90 degree) -> "));
-    Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
+    Serial.print(F("Reattach, servo moves to last position before detach (135 degree) -> "));
+    Servo1.reattach();
     Serial.print(F("0 (default)="));
     Serial.print(Servo1.DegreeOrMicrosecondToMicrosecondsOrUnits(0));
     Serial.print(F(" | 180 (default)="));
@@ -491,7 +484,7 @@ void testDetachAndAtttachAgain() {
     delay(5000);
     Serial.print(F("The same with reverse -> "));
     Servo1.detach();
-    Servo1.attach(SERVO1_PIN); // Servo should not move back to former position (90 degree) on attach
+    Servo1.reattach(); // Servo should not move back to former position (135 degree) on attach
     Servo1.setReverseOperation(true);
     Serial.print(F("0="));
     Serial.print(Servo1.DegreeOrMicrosecondToMicrosecondsOrUnits(0));
@@ -507,13 +500,16 @@ void testDetachAndAtttachAgain() {
     Serial.println();
 }
 
-void generatePulsesManually(uint8_t aPin, uint16_t aMicroseconds, uint8_t aNumberOfPulses) {
-    Serial.print(F("Generate "));
+void generatePulsesManuallyAndWait(uint8_t aPin, uint8_t aDegree, uint16_t aMicroseconds, uint8_t aNumberOfPulses,
+        uint16_t aMillisToWait) {
+    Serial.print(aPin);
+    Serial.print(F(" - "));
     Serial.print(aNumberOfPulses);
-    Serial.print(F(" pulses of "));
+    Serial.print(F(" pulses for "));
+    Serial.print(aDegree);
+    Serial.print(F(" degree | "));
     Serial.print(aMicroseconds);
-    Serial.print(F(" us at pin "));
-    Serial.println(aPin);
+    Serial.println(F(" us"));
     Serial.flush();
 
     for (uint_fast8_t i = 0; i < aNumberOfPulses; ++i) {
@@ -525,4 +521,12 @@ void generatePulsesManually(uint8_t aPin, uint16_t aMicroseconds, uint8_t aNumbe
 
         delay(19);
     }
+    delay(aMillisToWait);
+}
+
+void blinkLED() {
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(100);
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(100);
 }

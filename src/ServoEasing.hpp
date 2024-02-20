@@ -91,7 +91,7 @@ Ticker Timer20ms;
  * Use timer 4 as IRMP timer.
  * Timer 4 blocks PB6, PB7, PB8, PB9, so if you require one of them as Servo output, you must choose another timer.
  */
-HardwareTimer Timer20ms(TIM4);
+HardwareTimer Timer20ms(TIM1);
 
 #elif defined(__STM32F1__) // or ARDUINO_ARCH_STM32F1 for "Generic STM32F103C series / stm32duino:STM32F1" from STM32F1 Boards (STM32duino.com) of Arduino Board manager
 // http://dan.drown.org/stm32duino/package_STM32duino_index.json
@@ -505,6 +505,51 @@ uint8_t ServoEasing::attachWithTrim(int aPin, int aTrimDegreeOrMicrosecond, int 
     write(aInitialDegreeOrMicrosecond);
     return tReturnValue;
 }
+
+/*
+ * Like attach, but keep end position values e.g. of last attach().
+ * !!! Can only be used AFTER initial attach() and detach()!!!
+ * Can be used to reverse detach() operation
+ */
+uint8_t ServoEasing::reattach() {
+    /*
+     * Just put this servo instance into list of servos
+     */
+    mServoIndex = INVALID_SERVO; // flag indicating an invalid servo index
+    for (uint_fast8_t tServoIndex = 0; tServoIndex < MAX_EASING_SERVOS; ++tServoIndex) {
+        if (ServoEasingArray[tServoIndex] == NULL) {
+            ServoEasingArray[tServoIndex] = this;
+            mServoIndex = tServoIndex;
+            if (tServoIndex > sServoArrayMaxIndex) {
+                sServoArrayMaxIndex = tServoIndex;
+            }
+            break;
+        }
+    }
+
+#if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+    return mServoPin;
+#else // We have no Servo::attach for USE_LEIGHTWEIGHT_SERVO_LIB
+    // No actions for PCA9685 required
+#  if !defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_SERVO_LIB)
+    /*
+     * Call attach() of the underlying Servo library and position to position of detach()
+     */
+#    if defined(ARDUINO_ARCH_APOLLO3)
+    Servo::attach(mServoPin, MINIMUM_PULSE_WIDTH, MAXIMUM_PULSE_WIDTH);
+    _writeMicrosecondsOrUnits (mCurrentMicrosecondsOrUnits); // Start at the position of detach()
+    return mServoPin; // Sparkfun apollo3 Servo library has no return value for attach :-(
+#    else
+    uint8_t tReturnValue = Servo::attach(mServoPin, MINIMUM_PULSE_WIDTH, MAXIMUM_PULSE_WIDTH);
+    _writeMicrosecondsOrUnits(mCurrentMicrosecondsOrUnits); // Start at the position of detach()
+    return tReturnValue;
+#    endif // defined(ARDUINO_ARCH_APOLLO3)
+#  else
+    return  mServoIndex;
+#  endif // defined(USE_SERVO_LIB)
+#endif // defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+}
+
 /**
  * Attaches servo to pin and sets the servo timing parameters.
  * @param   aPin    Pin number or port number of PCA9685 [0-15]
@@ -559,22 +604,21 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
     /*
      * Now put this servo instance into list of servos
      */
-    uint8_t tReturnValue = INVALID_SERVO; // flag indicating an invalid servo index
+    mServoIndex = INVALID_SERVO; // flag indicating an invalid servo index
     for (uint_fast8_t tServoIndex = 0; tServoIndex < MAX_EASING_SERVOS; ++tServoIndex) {
         if (ServoEasingArray[tServoIndex] == NULL) {
             ServoEasingArray[tServoIndex] = this;
-            tReturnValue = tServoIndex;
+            mServoIndex = tServoIndex;
             if (tServoIndex > sServoArrayMaxIndex) {
                 sServoArrayMaxIndex = tServoIndex;
             }
             break;
         }
     }
-    mServoIndex = tReturnValue;
 
 #if defined(LOCAL_TRACE)
     Serial.print("Index=");
-    Serial.print(tReturnValue);
+    Serial.print(mServoIndex);
     Serial.print(" pin=");
     Serial.print(mServoPin);
     Serial.print(" low=");
@@ -588,25 +632,29 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
     Serial.print(' ');
     printStatic(&Serial);
 #endif
+    // This error value has priority over the regular return value from Servo::attach()
+    if (mServoIndex == INVALID_SERVO) {
+        return INVALID_SERVO;
+    }
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
     mCurrentMicrosecondsOrUnits = DEFAULT_PCA9685_UNITS_FOR_90_DEGREE; // The start value if we forget the initial write()
 #  if defined(USE_SERVO_LIB)
     if (mServoIsConnectedToExpander) {
-        if (tReturnValue == 0) {
+        if (mServoIndex == 0) {
             I2CInit();          // init only once
             PCA9685Reset();     // reset only once
         }
         PCA9685Init(); // initialize at every attach is simpler but initializing once for every board would be sufficient.
-        return tReturnValue;
+        return mServoIndex;
     }
 #  else
-    if (tReturnValue == 0) {
+    if (mServoIndex == 0) {
         I2CInit();          // init only once
         PCA9685Reset();     // reset only once
     }
     PCA9685Init(); // initialize at every attach is simpler but initializing once for every board would be sufficient.
-    return tReturnValue;
+    return mServoIndex;
 #  endif
 #endif // defined(USE_PCA9685_SERVO_EXPANDER)
 
@@ -615,10 +663,6 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
      * Here servo is NOT connected to expander
      */
     mCurrentMicrosecondsOrUnits = DEFAULT_PULSE_WIDTH; // The start value if we forget the initial write()
-// This error value has priority over the regular return value from Servo::attach()
-    if (tReturnValue == INVALID_SERVO) {
-        return tReturnValue;
-    }
 
 #  if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
     if(aPin != 9 && aPin != 10) {
@@ -631,10 +675,10 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
      * Call attach() of the underlying Servo library
      */
 #    if defined(ARDUINO_ARCH_APOLLO3)
-    Servo::attach(aPin);
+    Servo::attach(aPin, MINIMUM_PULSE_WIDTH, MAXIMUM_PULSE_WIDTH);
     return aPin; // Sparkfun apollo3 Servo library has no return value for attach :-(
 #    else
-    return Servo::attach(aPin); // This starts generating pulses of DEFAULT_PULSE_WIDTH
+    return Servo::attach(aPin, MINIMUM_PULSE_WIDTH, MAXIMUM_PULSE_WIDTH); // This starts generating pulses of DEFAULT_PULSE_WIDTH
 #    endif // defined(ARDUINO_ARCH_APOLLO3)
 #  endif // defined(USE_LEIGHTWEIGHT_SERVO_LIB)
 #endif // defined(USE_SERVO_LIB)
@@ -1678,9 +1722,17 @@ bool ServoEasing::isMovingAndCallYield() {
 int ServoEasing::getCurrentAngle() {
     return MicrosecondsOrUnitsToDegree(mCurrentMicrosecondsOrUnits);
 }
+// To be compatible to Servo library
+int ServoEasing::read() {
+    return getCurrentAngle();
+}
 
 int ServoEasing::getCurrentMicroseconds() {
     return MicrosecondsOrUnitsToMicroseconds(mCurrentMicrosecondsOrUnits);
+}
+// To be compatible to Servo library
+int ServoEasing::readMicroseconds() {
+    return getCurrentMicroseconds();
 }
 
 int ServoEasing::getEndMicrosecondsOrUnits() {

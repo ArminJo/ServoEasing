@@ -24,10 +24,10 @@
 #ifndef _SERVO_EASING_H
 #define _SERVO_EASING_H
 
-#define VERSION_SERVO_EASING "3.2.2"
+#define VERSION_SERVO_EASING "3.3.0"
 #define VERSION_SERVO_EASING_MAJOR 3
-#define VERSION_SERVO_EASING_MINOR 2
-#define VERSION_SERVO_EASING_PATCH 2
+#define VERSION_SERVO_EASING_MINOR 3
+#define VERSION_SERVO_EASING_PATCH 0
 // The change log is at the bottom of the file
 
 /*
@@ -204,6 +204,17 @@ __attribute__((weak)) extern void handleServoTimerInterrupt();
 #endif
 
 // @formatter:on
+/*
+ * The next values are smaller and greater than the values used by the Arduino Servo library to be more versatile
+ * They are used as parameter for the Arduino Servo attach() function, to avoid clipping to 544 us (MIN_PULSE_WIDTH) and 2400 us (MAX_PULSE_WIDTH)
+ */
+#if !defined(MINIMUM_PULSE_WIDTH)
+#define MINIMUM_PULSE_WIDTH       400     // The shortest pulse which can be sent to a servo by this library
+#endif
+#if !defined(MAXIMUM_PULSE_WIDTH)
+#define MAXIMUM_PULSE_WIDTH      3500     // the longest pulse which can be sent sent to a servo by this library
+#endif
+
 // Approximately 10 microseconds per degree
 #define DEFAULT_MICROSECONDS_FOR_0_DEGREE     544
 #define DEFAULT_MICROSECONDS_FOR_45_DEGREE   (544 + ((2400 - 544) / 4)) // 1008
@@ -456,6 +467,7 @@ public:
     uint8_t attachWithTrim(int aPin, int aTrimDegreeOrMicrosecond, int aInitialDegreeOrMicrosecond,
             int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree);
 
+    uint8_t reattach();
     void detach();
     void setReverseOperation(bool aOperateServoReverse); // You should call it before using setTrim, or better use attach function with 6 parameters
 
@@ -531,6 +543,10 @@ public:
     bool update();
 
     void setTargetPositionReachedHandler(void (*aTargetPositionReachedHandler)(ServoEasing*));
+
+    // To be compatible to Servo library
+    int readMicroseconds();
+    int read();
 
     int getCurrentAngle();
     int getCurrentMicroseconds();
@@ -743,8 +759,10 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
 #endif
 
 /*
- * Version 3.2.2 - 01/2024
+ * Version 3.3.0 - 02/2024
  * - Added functions `setEaseTo()`, `setEaseToD()`, `startEaseTo()` and `startEaseToD()` with first parameter as `unsigned int` to avoid compiler errors `call of overloaded 'startEaseTo(unsigned int...`.
+ * - Added functions read() and readMicroseconds() to be compatible to Servo library.
+ * - Added function reattach() without parameters to be used after detach().
  *
  * Version 3.2.1 - 03/2023
  * - Renamed function `setDegreeForAllServos()` to `setIntegerDegreeForAllServos()` and added function `setFloatDegreeForAllServos()`.
