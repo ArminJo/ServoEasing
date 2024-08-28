@@ -1,5 +1,5 @@
 /*
- * EasyButtonAtInt01.hpp
+ * EasyButtonAtInt01.h
  *
  *  Arduino library for handling push buttons connected between ground and INT0 and / or INT1 pin.
  *  INT0 and INT1 are connected to Pin 2 / 3 on most Arduinos (ATmega328), to PB6 / PA3 on ATtiny167 and on ATtinyX5 we have only INT0 at PB2.
@@ -169,6 +169,16 @@
 #define INT1_IN_PORT  (PINB)
 #define INT1_OUT_PORT (PORTB)
 #  endif // defined(USE_BUTTON_1)
+
+#elif defined(USE_INT2_FOR_BUTTON_0) // Hack for ATmega 644
+#  if defined(USE_BUTTON_1)
+#error If USE_INT2_FOR_BUTTON_0 is defined, only USE_BUTTON_0 is allowed, USE_BUTTON_1 must be disabled!
+#  endif
+// dirty hack, but INT0 and INT1 are occupied by second USART
+#define INT0_PIN 2 // PB2 / INT2
+#define INT0_DDR_PORT (DDRB)
+#define INT0_IN_PORT  (PINB)
+#define INT0_OUT_PORT (PORTB)
 
 #elif defined(__AVR_ATtiny87__) || defined(__AVR_ATtiny167__)
 // from here we use only ATtinyCore / PAx / PBx numbers, since on Digispark board and core library there is used a strange enumeration of pins

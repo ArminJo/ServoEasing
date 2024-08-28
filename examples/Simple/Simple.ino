@@ -45,6 +45,8 @@ ServoEasing Servo1;
 
 void setup() {
     Serial.begin(115200);
+    while (!Serial)
+        ; // Wait for Serial to become available. Is optimized away for some cores.
 
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_SERVO_EASING));
@@ -53,7 +55,7 @@ void setup() {
      * Attach servo to pin and set servo to start position.
      *******************************************************/
     Serial.println(F("Attach servo at pin " STR(SERVO1_PIN)));
-    Servo1.attach(SERVO1_PIN, 45);
+    Servo1.attach(SERVO1_PIN, 45); // Attach pin and go to initial position of 45 degree
 
     delay(500); // Wait for servo to reach start position.
 }

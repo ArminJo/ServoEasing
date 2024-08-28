@@ -35,7 +35,7 @@ YouTube video of SymmetricEasing and AsymmetricEasing example
 [This example](https://github.com/ArminJo/ServoEasing/blob/master/examples/SimpleCallback/SimpleCallback.ino) shows the usage of a callback function for multiple moves independent of the main loop function.<br/>
 
 # OneServo
-[This example](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino) moves one Servo with different speeds and using blocking and interrupt commands. The internal LED blinks when using interrupt based commands.
+[This example](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino) moves one Servo in different flavors. It uses different speeds and  blocking as well as interrupt commands. The internal LED blinks when using interrupt based commands.
 
 ## PCA9685_Expander
 This [example](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino#L28) is the [OneServo](https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino) example with activated line `#define USE_PCA9685_SERVO_EXPANDER` to run it on a PCA9685 expander board.

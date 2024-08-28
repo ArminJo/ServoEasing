@@ -222,6 +222,12 @@ void EasyButton::init(bool aIsButtonAtINT0) {
     sPointerToButton0ForISR = this;
 #  if defined(USE_ATTACH_INTERRUPT)
     attachInterrupt(digitalPinToInterrupt(INT0_PIN), &handleINT0Interrupt, CHANGE);
+
+#  elif defined(USE_INT2_FOR_BUTTON_0)
+    EICRA |= _BV(ISC20);  // interrupt on any logical change
+    EIFR |= _BV(INTF2);// clear interrupt bit
+    EIMSK |= _BV(INT2);// enable interrupt on next change
+
 #  else
     EICRA |= _BV(ISC00);  // interrupt on any logical change
     EIFR |= _BV(INTF0);// clear interrupt bit
@@ -722,8 +728,8 @@ void __attribute__ ((weak)) handleINT1Interrupt() {
 // ISR for PIN PD2
 // Cannot make the vector itself weak, since the vector table is already filled by weak vectors resulting in ignoring my weak one:-(
 //ISR(INT0_vect, __attribute__ ((weak))) {
-#  if defined(USE_BUTTON_0)
-ISR(INT0_vect) {
+#  if defined(USE_INT2_FOR_BUTTON_0)
+ISR(INT2_vect) {
 #    if defined(MEASURE_EASY_BUTTON_INTERRUPT_TIMING)
     digitalWriteFast(INTERRUPT_TIMING_OUTPUT_PIN, HIGH);
 #    endif
@@ -732,6 +738,18 @@ ISR(INT0_vect) {
     digitalWriteFast(INTERRUPT_TIMING_OUTPUT_PIN, LOW);
 #    endif
 }
+#  else
+#    if defined(USE_BUTTON_0)
+ISR(INT0_vect) {
+#      if defined(MEASURE_EASY_BUTTON_INTERRUPT_TIMING)
+    digitalWriteFast(INTERRUPT_TIMING_OUTPUT_PIN, HIGH);
+#      endif
+    handleINT0Interrupt();
+#      if defined(MEASURE_EASY_BUTTON_INTERRUPT_TIMING)
+    digitalWriteFast(INTERRUPT_TIMING_OUTPUT_PIN, LOW);
+#      endif
+}
+#    endif
 #  endif
 
 #  if defined(USE_BUTTON_1)

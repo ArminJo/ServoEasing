@@ -1,9 +1,9 @@
 /*
- * OneServo.cpp
+ * DummyServoExample.cpp
  *
- *  Shows smooth linear movement from one servo position to another in different flavors.
+ *  Like OneServo example but with a dummy servo library implementation.
  *
- *  Copyright (C) 2019-2024  Armin Joachimsmeyer
+ *  Copyright (C) 2024  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -28,6 +28,7 @@
 //#define USE_PCA9685_SERVO_EXPANDER    // Activating this enables the use of the PCA9685 I2C expander chip/board.
 //#define USE_SOFT_I2C_MASTER           // Saves 1756 bytes program memory and 218 bytes RAM compared with Arduino Wire
 //#define USE_SERVO_LIB                 // If USE_PCA9685_SERVO_EXPANDER is defined, Activating this enables force additional using of regular servo library.
+#define USE_USER_PROVIDED_SERVO_LIB   // Use of your own servo library.
 //#define USE_LEIGHTWEIGHT_SERVO_LIB    // Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
 //#define PROVIDE_ONLY_LINEAR_MOVEMENT  // Activating this disables all but LINEAR movement. Saves up to 1540 bytes program memory.
 #define DISABLE_COMPLEX_FUNCTIONS     // Activating this disables the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory.

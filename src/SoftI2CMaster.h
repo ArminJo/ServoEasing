@@ -401,7 +401,11 @@ bool i2c_init(void)
   TWSR = (1<<TWPS0); // prescaler is 4
   TWBR = ((I2C_CPUFREQ/SCL_CLOCK)-16)/8;
 #endif
+#if defined(digitalReadFast)
+  return (digitalReadFast(SDA) != 0 && digitalReadFast(SCL) != 0);
+#else
   return (digitalRead(SDA) != 0 && digitalRead(SCL) != 0);
+#endif
 }
 #else // I2C_HARDWARE
         {

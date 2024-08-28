@@ -70,7 +70,15 @@
 //#define USE_PIN_CHANGE_INTERRUPT_D0_TO_D7  // using PCINT2_vect - PORT D
 //#define USE_PIN_CHANGE_INTERRUPT_D8_TO_D13 // using PCINT0_vect - PORT B - Pin 13 is feedback output
 //#define USE_PIN_CHANGE_INTERRUPT_A0_TO_A5  // using PCINT1_vect - PORT C
+#if __has_include("digitalWriteFast.h")
 #include "digitalWriteFast.h"
+#else
+#define pinModeFast             pinMode
+#define digitalReadFast         digitalRead
+#define digitalWriteFast        digitalWrite
+#define digitalToggleFast(P)    digitalWrite(P, ! digitalRead(P))
+#endif
+
 #include "HCSR04.h"
 
 //#define DEBUG
@@ -132,6 +140,7 @@ void initUSDistancePin(uint8_t aTriggerOutEchoInPin) {
 #if !defined (TRIGGER_OUT_PIN)
     sTriggerOutPin = aTriggerOutEchoInPin;
 #endif
+    (void) aTriggerOutEchoInPin;
     sHCSR04Mode = HCSR04_MODE_USE_1_PIN;
 }
 

@@ -59,6 +59,14 @@
 //#define USE_SERVO_LIB
 
 /*
+ * If you have a different servo implementation, e.g. this M5Stack Servo expander https://shop.m5stack.com/products/8-channel-servo-driver-unit-stm32f030
+ * you can provide your own servo library by activating USE_USER_PROVIDED_SERVO_LIB
+ * You then also must modify "#include <DummyServo.h>" according to your library.
+ * The library must define a class "Servo" and implement: attach(pin, min, max), detach() and writeMicroseconds(value).
+ */
+//#define USE_USER_PROVIDED_SERVO_LIB
+
+/*
  * If you have only one or two servos at pin 9 and/or 10 and an ATmega328, then you can save program memory by defining symbol `USE_LEIGHTWEIGHT_SERVO_LIB`.
  * This saves 742 bytes program memory and 42 bytes RAM.
  * Using Lightweight Servo library (or PCA9685 servo expander) makes the servo pulse generating immune
@@ -90,7 +98,15 @@ __attribute__((weak)) extern void handleServoTimerInterrupt();
  * Include of the appropriate Servo.h file
  */
 #if !defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_SERVO_LIB)
-#  if defined(ESP32)
+#  if defined(USE_USER_PROVIDED_SERVO_LIB)
+/*
+ * Change the #include <DummyServo.h> to the name of your servo library include file below.
+ * This library must be like Servo.h, i.e. it must define a class "Servo" and implement: attach(pin, min, max), detach() and writeMicroseconds(value).
+ * As example see DummyServo.h, ESP32Servo.h and Servo_megaTinyCore.h
+ */
+#include <DummyServo.h>
+
+#  elif defined(ESP32)
 // This does not work in Arduino IDE for step "Generating function prototypes..."
 //#    if ! __has_include("ESP32Servo.h")
 //#error This ServoEasing library requires the "ESP32Servo" library for running on an ESP32. Please install it via the Arduino library manager.
@@ -759,10 +775,11 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
 #endif
 
 /*
- * Version 3.3.0 - 02/2024
+ * Version 3.3.0 - 08/2024
  * - Added functions `setEaseTo()`, `setEaseToD()`, `startEaseTo()` and `startEaseToD()` with first parameter as `unsigned int` to avoid compiler errors `call of overloaded 'startEaseTo(unsigned int...`.
  * - Added functions read() and readMicroseconds() to be compatible to Servo library.
  * - Added function reattach() without parameters to be used after detach().
+ * - Added `USE_USER_PROVIDED_SERVO_LIB` macro.
  *
  * Version 3.2.1 - 03/2023
  * - Renamed function `setDegreeForAllServos()` to `setIntegerDegreeForAllServos()` and added function `setFloatDegreeForAllServos()`.

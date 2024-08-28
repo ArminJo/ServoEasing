@@ -29,6 +29,7 @@
 // Must specify this before the include of "ServoEasing.hpp"
 //#define USE_PCA9685_SERVO_EXPANDER    // Activating this enables the use of the PCA9685 I2C expander chip/board.
 //#define USE_SERVO_LIB                 // If USE_PCA9685_SERVO_EXPANDER is defined, Activating this enables force additional using of regular servo library.
+//#define USE_USER_PROVIDED_SERVO_LIB   // Use of your own servo library.
 #define USE_LEIGHTWEIGHT_SERVO_LIB    // Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
 //#define PROVIDE_ONLY_LINEAR_MOVEMENT  // Activating this disables all but LINEAR movement. Saves up to 1540 bytes program memory.
 #define DISABLE_COMPLEX_FUNCTIONS     // Activating this disables the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory.
@@ -66,7 +67,11 @@ void blinkLED();
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
-#if defined(__AVR_ATmega32U4__) || defined(SERIAL_PORT_USBVIRTUAL) || defined(SERIAL_USB) /*stm32duino*/|| defined(USBCON) /*STM32_stm32*/|| defined(SERIALUSB_PID) || defined(ARDUINO_attiny3217)
+    while (!Serial)
+        ; // Wait for Serial to become available. Is optimized away for some cores.
+
+#if defined(__AVR_ATmega32U4__) || defined(SERIAL_PORT_USBVIRTUAL) || defined(SERIAL_USB) /*stm32duino*/|| defined(USBCON) /*STM32_stm32*/ \
+    || defined(SERIALUSB_PID)  || defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_attiny3217)
     delay(4000); // To be able to connect Serial monitor after reset or power up and before first print out. Do not wait for an attached Serial Monitor!
 #endif
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
@@ -155,6 +160,7 @@ void loop() {
      * Just let the LED blink until servos stop.
      */
     while (ServoEasing::areInterruptsActive()) {
+        // Here you can insert your own code
         blinkLED();
     }
 
@@ -173,13 +179,12 @@ void loop() {
      */
     ServoEasing::ServoEasingNextPositionArray[0] = 0.0f;
     ServoEasing::ServoEasingNextPositionArray[1] = 90.0f;
-    setEaseToForAllServosSynchronizeAndStartInterrupt(90);
+    setEaseToForAllServosSynchronizeAndStartInterrupt(90); // Set speed and start interrupt here, we check the end with areInterruptsActive()
 
     // Call yield for the ESP boards must be handled in areInterruptsActive()
     while (ServoEasing::areInterruptsActive()) {
-        ;
+        ; // Here you can insert your own code
     }
-    Servo1.setEasingType(EASE_LINEAR);
 
     delay(300);
 
@@ -189,10 +194,13 @@ void loop() {
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
     Serial.println(F("Move independently to -90/0 degree with 60/80 degree per second using interrupts"));
 #endif
+    Servo1.setEasingType(EASE_LINEAR);
     Servo1.setEaseTo(-90.0f, 60);
-    Servo2.startEaseTo(0.0f, 80); // This start interrupt for all servos
+    Servo2.startEaseTo(0.0f, 80); // This start interrupt for all servos, we check the end with areInterruptsActive()
+
     // blink until both servos stop
     while (ServoEasing::areInterruptsActive()) {
+        // Here you can insert your own code
         blinkLED();
     }
 
