@@ -61,10 +61,11 @@
 /*
  * If you have a different servo implementation, e.g. this M5Stack Servo expander https://shop.m5stack.com/products/8-channel-servo-driver-unit-stm32f030
  * you can provide your own servo library by activating USE_USER_PROVIDED_SERVO_LIB
- * You then also must modify "#include <DummyServo.h>" according to your library.
+ * You must also include the .h file of your library e.g. `#include "DummyServo.h"`.
  * The library must define a class "Servo" and implement: attach(pin, min, max), detach() and writeMicroseconds(value).
  */
 //#define USE_USER_PROVIDED_SERVO_LIB
+//#include <DummyServo.h>
 
 /*
  * If you have only one or two servos at pin 9 and/or 10 and an ATmega328, then you can save program memory by defining symbol `USE_LEIGHTWEIGHT_SERVO_LIB`.
@@ -97,16 +98,8 @@ __attribute__((weak)) extern void handleServoTimerInterrupt();
 /*
  * Include of the appropriate Servo.h file
  */
-#if !defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_SERVO_LIB)
-#  if defined(USE_USER_PROVIDED_SERVO_LIB)
-/*
- * Change the #include <DummyServo.h> to the name of your servo library include file below.
- * This library must be like Servo.h, i.e. it must define a class "Servo" and implement: attach(pin, min, max), detach() and writeMicroseconds(value).
- * As example see DummyServo.h, ESP32Servo.h and Servo_megaTinyCore.h
- */
-#include <DummyServo.h>
-
-#  elif defined(ESP32)
+#if !defined(USE_USER_PROVIDED_SERVO_LIB) && (!defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_SERVO_LIB))
+#  if defined(ESP32)
 // This does not work in Arduino IDE for step "Generating function prototypes..."
 //#    if ! __has_include("ESP32Servo.h")
 //#error This ServoEasing library requires the "ESP32Servo" library for running on an ESP32. Please install it via the Arduino library manager.
