@@ -67,8 +67,7 @@ Contains the [QuadrupedControl](https://github.com/ArminJo/QuadrupedControl) exa
 - [Adding a new platform / board](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#adding-a-new-platform--board)
 - [Troubleshooting](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#troubleshooting)
 - [Revision History](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#revision-history)
-- [CI](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#ci)
-- [Requests for modifications / extensions](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#requests-for-modifications--extensions)
+- [Commercial license](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#commercial-license)
 
 <br/>
 
@@ -587,8 +586,5 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 ### Version 1.0.0
 Initial Arduino library version.
 
-# CI
-Since Travis CI is slow (5 times slower 17:43 vs. 3:15 minutes), the library examples are now tested with GitHub Actions for [this boards](.github/workflows/LibraryBuild.yml#L41).
-
-# Requests for modifications / extensions
-Please write me a PM including your motivation/problem if you need a modification or an extension.
+# Commercial license
+A commercial license is granted to "Video Ispezioni Srl" for use in a pipeline inspection and rehabilitation robot as from 10.10.2024.

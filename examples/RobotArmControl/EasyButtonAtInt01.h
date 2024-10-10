@@ -393,6 +393,7 @@ void __attribute__ ((weak)) handleINT1Interrupt();
 
 /*  Version 3.4.1 - 12/2023
  *  - Avoid wrong double press detection if calling checkForDoublePress() after release of button.
+ *  - Hack for ATmega 644.
  *
  *  Version 3.4.0 - 10/2023
  *  - Added NO_INITIALIZE_IN_CONSTRUCTOR macro to enable late initializing.

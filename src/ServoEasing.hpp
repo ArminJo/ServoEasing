@@ -1849,7 +1849,7 @@ void ServoEasing::printDynamic(Print *aSerial, bool doExtendedOutput) {
 
 /**
  * Prints values which normally does NOT change from move to move.
- * @param aSerial The Print object on which to write, for Arduino you can use &Serial.
+ * @param aSerial The Print object on which to write, for Arduino. You can use &Serial.
  */
 void ServoEasing::printStatic(Print *aSerial) {
 

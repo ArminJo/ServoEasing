@@ -15,7 +15,7 @@
  *  If you did not yet store the example as your own sketch, then with Ctrl+K you are instantly in the right library folder.
  *  *****************************************************************************************************************************
  *
- *  Copyright (C) 2019-2022  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2024  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -53,6 +53,8 @@
 #include "ServoEasing.hpp"
 #include "PinDefinitionsAndMore.h"
 
+#include "AVRUtils.h"
+
 /*
  * Pin mapping table for different platforms - used by all examples
  *
@@ -83,9 +85,6 @@
 #define NUMBER_OF_SERVOS    MAX_EASING_SERVOS
 
 void getAndAttach16ServosToPCA9685Expander(uint8_t aPCA9685I2CAddress);
-#if defined (SP)
-uint16_t getCurrentFreeHeapOrStack(void);
-#endif
 
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
@@ -131,9 +130,9 @@ void setup() {
     }
 #endif
 
-#if defined (SP)
-    Serial.print(F("Current free Heap / Stack[bytes]="));
-    Serial.println(getCurrentFreeHeapOrStack());
+#if defined(__AVR__) && defined (SPMCSR) && !(defined(__AVR_ATtiny1616__)  || defined(__AVR_ATtiny3216__) || defined(__AVR_ATtiny3217__))
+    printCurrentAvailableStackSize(&Serial);
+    printCurrentAvailableHeapSize(&Serial);
 #endif
     // Wait for servos to reach start position.
     delay(500);
@@ -198,32 +197,3 @@ void getAndAttach16ServosToPCA9685Expander(uint8_t aPCA9685I2CAddress) {
         }
     }
 }
-
-#if defined (SP)
-extern void *__brkval;
-
-/*
- * Returns actual start of free heap
- * Usage for print:
- Serial.print(F("HeapStart=0x"));
- Serial.println((uintptr_t) getHeapStart(), HEX);
- */
-uint8_t* getHeapStart(void) {
-    if (__brkval == 0) {
-        __brkval = __malloc_heap_start;
-    }
-    return (uint8_t*) __brkval;
-}
-
-/*
- * Get amount of free RAM = current stackpointer - heap end
- */
-uint16_t getCurrentFreeHeapOrStack(void) {
-    uint16_t tHeapStart = (uint16_t) getHeapStart();
-    if (tHeapStart >= SP) {
-        return 0;
-    }
-    return (SP - (uint16_t) getHeapStart());
-}
-
-#endif
