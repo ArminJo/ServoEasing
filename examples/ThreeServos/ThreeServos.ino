@@ -4,7 +4,7 @@
  *  Shows smooth movement from one servo position to another for 3 servos synchronously.
  *  Demonstrates the use of ServoEasingArray and ServoEasingNextPositionArray.
  *
- *  Copyright (C) 2019-2022  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2024  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -30,13 +30,15 @@
 //#define USE_SERVO_LIB                 // If USE_PCA9685_SERVO_EXPANDER is defined, Activating this enables force additional using of regular servo library.
 #define PROVIDE_ONLY_LINEAR_MOVEMENT  // Activating this disables all but LINEAR movement. Saves up to 1540 bytes program memory.
 //#define DISABLE_COMPLEX_FUNCTIONS     // Activating this disables the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory.
-//#define MAX_EASING_SERVOS 3
 //#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
-//#define DISABLE_MIN_AND_MAX_CONSTRAINTS    // Activating this disables constraints. Saves 4 bytes RAM per servo but strangely enough no program memory.
+//#define ENABLE_MIN_AND_MAX_CONSTRAINTS     // Activating this enables constraint checking. Requires 4 bytes RAM per servo and 36 bytes program memory.
 //#define DISABLE_PAUSE_RESUME               // Activating this disables pause and resume functions. Saves 5 bytes RAM per servo.
-//#define DEBUG                              // Activating this enables generate lots of lovely debug output for this library.
 
+//#define MAX_EASING_SERVOS 3
+
+//#define DEBUG                              // Activating this enables generate lots of lovely debug output for this library.
 //#define PRINT_FOR_SERIAL_PLOTTER           // Activating this enables generate the Arduino plotter output from ServoEasing.hpp.
+
 #include "ServoEasing.hpp"
 #include "PinDefinitionsAndMore.h"
 
@@ -46,6 +48,7 @@
  * Platform         Servo1      Servo2      Servo3      Analog     Core/Pin schema
  * -------------------------------------------------------------------------------
  * (Mega)AVR + SAMD    9          10          11          A0
+ * 2560               46          45          44          A0
  * ATtiny3217         20|PA3       0|PA4       1|PA5       2|PA6   MegaTinyCore
  * ESP8266            14|D5       12|D6       13|D7        0
  * ESP32               5          18          19          A0
@@ -150,10 +153,10 @@ void loop() {
     // this speed is changed for the first 2 servos below by synchronizing to the longest duration
     setSpeedForAllServos(tSpeed);
 
-    ServoEasing::ServoEasingArray[0]->setEaseTo(90);    // This servo uses effectively 10 degrees per second, since it is synchronized to Servo3
+    ServoEasing::ServoEasingArray[0]->setEaseTo(90); // This servo uses effectively 10 degrees per second, since it is synchronized to Servo3
     ServoEasing::ServoEasingArray[1]->setEaseTo(135);   // "ServoEasing::ServoEasingArray[1]->" can be used instead of "Servo2."
     Servo3.setEaseTo(180);                              // This servo has the longest distance -> it uses 20 degrees per second
-    synchronizeAllServosAndStartInterrupt(false);       // Do not start interrupt, because we use updateAllServos() every 20 ms below
+    synchronizeAllServosAndStartInterrupt(false);      // Do not start interrupt, because we use updateAllServos() every 20 ms below
 
     do {
         // Here you can insert your own code

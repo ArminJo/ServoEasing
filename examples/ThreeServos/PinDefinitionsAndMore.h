@@ -30,6 +30,7 @@
  * Platform         Servo1      Servo2      Servo3      Analog     Core/Pin schema
  * -------------------------------------------------------------------------------
  * (Mega)AVR + SAMD    9          10          11          A0
+ * 2560               46          45          44          A0
  * ATtiny3217         20|PA3       0|PA4       1|PA5       2|PA6   MegaTinyCore
  * ESP8266            14|D5       12|D6       13|D7        0
  * ESP32               5          18          19          A0
@@ -43,6 +44,13 @@
 #define SERVO2_PIN      0
 #define SERVO3_PIN      1
 #define SPEED_IN_PIN    2 // A6
+
+#elif defined(__AVR_ATmega2560__) // Default as for ATmega328 like on Uno, Nano etc.
+#define SERVO1_PIN 46 // For ATmega2560 pins 44 to 46 are connected to timer 5 and can therefore be used also by the Lightweight Servo library
+#define SERVO2_PIN 45
+#define SERVO3_PIN 44 // Channel of pin 44 is also used for generation of internal ServoEasing timing
+#define SPEED_IN_PIN A0
+#define MODE_ANALOG_INPUT_PIN A1
 
 #elif defined(__AVR__) // Default as for ATmega328 like on Uno, Nano etc.
 #define SERVO1_PIN 9 // For ATmega328 pins 9 + 10 are connected to timer 2 and can therefore be used also by the Lightweight Servo library

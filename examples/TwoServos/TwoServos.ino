@@ -5,7 +5,7 @@
  *  It operates the first servo from -90 to +90 degree using setTrim(90).
  *  This example uses the LightweightServo library. This saves 640 bytes program memory compared to using Arduino Servo library.
  *
- *  Copyright (C) 2019-2021  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2024  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -32,13 +32,16 @@
 #define USE_LEIGHTWEIGHT_SERVO_LIB    // Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
 //#define PROVIDE_ONLY_LINEAR_MOVEMENT  // Activating this disables all but LINEAR movement. Saves up to 1540 bytes program memory.
 #define DISABLE_COMPLEX_FUNCTIONS     // Activating this disables the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory.
-//#define MAX_EASING_SERVOS 2
 //#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
-//#define DISABLE_MIN_AND_MAX_CONSTRAINTS    // Activating this disables constraints. Saves 4 bytes RAM per servo but strangely enough no program memory.
+#define ENABLE_MIN_AND_MAX_CONSTRAINTS     // Activating this enables constraint checking. Requires 4 bytes RAM per servo and 36 bytes program memory.
 //#define DISABLE_PAUSE_RESUME               // Activating this disables pause and resume functions. Saves 5 bytes RAM per servo.
-//#define DEBUG                              // Activating this enables generate lots of lovely debug output for this library.
 
+//#define MAX_EASING_SERVOS 2
+
+//#define TRACE
+//#define DEBUG                              // Activating this enables generate lots of lovely debug output for this library.
 //#define PRINT_FOR_SERIAL_PLOTTER           // Activating this enables generate the Arduino plotter output from ServoEasing.hpp.
+
 #include "ServoEasing.hpp"
 #include "PinDefinitionsAndMore.h"
 
@@ -48,6 +51,7 @@
  * Platform         Servo1      Servo2      Servo3      Analog     Core/Pin schema
  * -------------------------------------------------------------------------------
  * (Mega)AVR + SAMD    9          10          11          A0
+ * 2560               46          45          44          A0
  * ATtiny3217         20|PA3       0|PA4       1|PA5       2|PA6   MegaTinyCore
  * ESP8266            14|D5       12|D6       13|D7        0
  * ESP32               5          18          19          A0
@@ -90,14 +94,22 @@ void setup() {
     /*
      * Operate Servo1 from -90 to +90 degree
      * Instead of specifying a trim you can use:
-     *    Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, -90, 90);
+     *    Servo1.attach(SERVO1_PIN, START_DEGREE_VALUE, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, -90, 90);
      */
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
     Serial.println(F("Operate servo 1 from -90 to + 90 degree by using attachWithTrim()"));
 #endif
-    Servo1.attachWithTrim(SERVO1_PIN, 90, START_DEGREE_VALUE, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
+    Servo1.attachWithTrim(SERVO1_PIN, 90, START_DEGREE_VALUE - 90, DEFAULT_MICROSECONDS_FOR_0_DEGREE,
+    DEFAULT_MICROSECONDS_FOR_180_DEGREE);
     // alternative way to get the same result
-//    Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, -90, 90);
+//    Servo1.attach(SERVO1_PIN, START_DEGREE_VALUE, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, -90, 90);
+
+#if defined(ENABLE_MIN_AND_MAX_CONSTRAINTS)
+    /*
+     * Just for demonstration of constraint usage, especially for servo with trim
+     */
+    Servo1.setMinMaxConstraint(-50, +50);
+#endif
 
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
     /*
@@ -105,7 +117,8 @@ void setup() {
      */
     Serial.println(F("Attach servo at pin " STR(SERVO2_PIN)));
 #endif
-    if (Servo2.attach(SERVO2_PIN, START_DEGREE_VALUE, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE) == INVALID_SERVO) {
+    if (Servo2.attach(SERVO2_PIN, START_DEGREE_VALUE, DEFAULT_MICROSECONDS_FOR_0_DEGREE,
+    DEFAULT_MICROSECONDS_FOR_180_DEGREE) == INVALID_SERVO) {
         Serial.println(F("Error attaching servo"));
         while (true) {
             blinkLED();
@@ -118,8 +131,13 @@ void setup() {
 #endif
     setSpeedForAllServos(30);
 
+#if defined(DEBUG)
+    Servo1.printStatic(&Serial);
+    Servo2.printStatic(&Serial);
+#endif
+
     // Just wait for servos to reach position.
-    delay(500);
+    delay(1000);
 }
 
 void blinkLED() {
@@ -146,14 +164,14 @@ void loop() {
      * Now continue faster.
      */
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
-    Serial.println(F("Move to 90/10 degree with up to 60 degree per second using interrupts"));
+    Serial.println(F("Move to 90/180 degree with up to 60 degree per second using interrupts"));
 #endif
     Servo1.setEaseTo(90.0f, 60);
     /*
      * An alternative method to synchronize and start
      * Synchronize by simply using the same duration
      */
-    Servo2.startEaseToD(10, Servo1.mMillisForCompleteMove); // This starts interrupt for all servos
+    Servo2.startEaseToD(180, Servo1.mMillisForCompleteMove); // This starts interrupt for all servos
     /*
      * Now you can run your program while the servos are moving.
      * Just let the LED blink until servos stop.
@@ -204,5 +222,4 @@ void loop() {
     }
 
     delay(500);
-
 }
