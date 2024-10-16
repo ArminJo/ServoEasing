@@ -29,7 +29,7 @@
  *    90 degree 220 ms
  *    45 degree 115 ms
  *
- *  Copyright (C) 2019-2023  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2024  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -52,16 +52,19 @@
 
 #define VERSION_EXAMPLE "1.0"
 
-#if defined(__AVR__)
+//#if defined(__AVR__)
 #include "ADCUtils.hpp" // for get getVCCVoltageMillivolt
 /*
  * By using LightweightServo library we can change the refresh period.
  * ... and discover that at least SG90 and MG90 servos accept a refresh period down to 2.5 ms!
  */
-//#define USE_LEIGHTWEIGHT_SERVO_LIB  // Only available for ATmega328
-#if defined(USE_LEIGHTWEIGHT_SERVO_LIB) && (defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__))
+//#define USE_LEIGHTWEIGHT_SERVO_LIB
+#if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#  if (defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__) || defined (__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__))
 #include "LightweightServo.hpp"
-#endif
+#  else
+#error USE_LEIGHTWEIGHT_SERVO_LIB can only be activated for the Atmega328 or ATmega2560 CPU
+#  endif
 #endif
 
 #if defined(ESP32)
@@ -77,6 +80,7 @@
  * Platform         Servo1      Servo2      Servo3      Analog     Core/Pin schema
  * -------------------------------------------------------------------------------
  * (Mega)AVR + SAMD    9          10          11          A0
+ * 2560               46          45          44          A0
  * ATtiny3217         20|PA3       0|PA4       1|PA5       2|PA6   MegaTinyCore
  * ESP8266            14|D5       12|D6       13|D7        0
  * ESP32               5          18          19          A0
@@ -118,10 +122,14 @@ void setup() {
 #endif
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
+    Serial.println(F("Attach servo at pin " STR(SERVO1_PIN) " and wait 3 seconds"));
 
 #if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-    // Enable servo refresh period potentiometer between A1 and A5
-    // initialize the analog pins as an digital outputs.
+    /*
+     * Layout especially for breadboards.
+     * Position the servo refresh period potentiometer between A1 and A5, so that the potentiometer output is at A3 :-)
+     */
+    // initialize the analog pins as an digital outputs to supply the potentiometer.
     pinMode(A1, OUTPUT);
     pinMode(A5, OUTPUT);
     digitalWrite(A1, LOW);
@@ -148,7 +156,7 @@ void setup() {
      * Set the servo to 90 degree for 3 seconds and show this by lighting the internal LED.
      */
 #if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-    write9(90);
+    writeLightweightServoPin(90, SERVO1_PIN);
 #else
     ServoUnderTest.attach(SERVO_UNDER_TEST_PIN, ZERO_DEGREE_VALUE_MICROS, AT_180_DEGREE_VALUE_MICROS);
     ServoUnderTest.write(90);
@@ -210,7 +218,7 @@ void loop() {
     case 0:
         // direct position from 0 to 180 degree. We choose bigger range just to be sure both ends are reached.
 #if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-        writeMicroseconds9(tPulseMicros);
+        writeMicrosecondsLightweightServoPin(tPulseMicros,SERVO1_PIN);
 #else
         ServoUnderTest.writeMicroseconds(tPulseMicros);
 #endif
@@ -315,7 +323,7 @@ void doSwipe(uint8_t aDegreePerStep) {
     uint8_t tDegree = 0;
     while (tDegree < 180) {
 #if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-        write9(tDegree);
+        writeLightweightServoPin(tDegree, SERVO1_PIN);
 #else
         ServoUnderTest.write(tDegree); // starts with 0
 #endif
@@ -325,7 +333,7 @@ void doSwipe(uint8_t aDegreePerStep) {
     }
     while (tDegree > 0) {
 #if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-        write9(tDegree);
+        writeLightweightServoPin(tDegree, SERVO1_PIN);
 #else
         ServoUnderTest.write(tDegree);
 #endif

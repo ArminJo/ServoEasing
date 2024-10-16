@@ -34,11 +34,14 @@
 //#define USE_LEIGHTWEIGHT_SERVO_LIB    // Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
 //#define PROVIDE_ONLY_LINEAR_MOVEMENT  // Activating this disables all but LINEAR movement. Saves up to 1540 bytes program memory.
 //#define DISABLE_COMPLEX_FUNCTIONS     // Activating this disables the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory.
-#define MAX_EASING_SERVOS 1
 //#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
-//#define DEBUG                         // Activating this enables generate lots of lovely debug output for this library.
+//#define ENABLE_MIN_AND_MAX_CONSTRAINTS     // Activating this enables constraint checking. Requires 4 bytes RAM per servo and 36 bytes program memory.
 
+#define MAX_EASING_SERVOS 1
+
+//#define DEBUG                         // Activating this enables generate lots of lovely debug output for this library.
 //#define PRINT_FOR_SERIAL_PLOTTER      // Activating this enables generate the Arduino plotter output from ServoEasing.hpp.
+
 #include "ServoEasing.hpp"
 #include "PinDefinitionsAndMore.h"
 /*
@@ -47,6 +50,7 @@
  * Platform         Servo1      Servo2      Servo3      Analog     Core/Pin schema
  * -------------------------------------------------------------------------------
  * (Mega)AVR + SAMD    9          10          11          A0
+ * 2560               46          45          44          A0
  * ATtiny3217         20|PA3       0|PA4       1|PA5       2|PA6   MegaTinyCore
  * ESP8266            14|D5       12|D6       13|D7        0
  * ESP32               5          18          19          A0
@@ -63,7 +67,6 @@ ServoEasing Servo1;
 
 #define START_DEGREE_VALUE  0 // The degree value written to the servo at time of attach.
 //#define USE_MICROSECONDS      // Use microseconds instead degrees as parameter
-//#define USE_CONSTRAINTS       // Use constraints to limit the servo movements
 
 /*
  * Arrays for the parameter of movements controlled by callback
@@ -137,7 +140,7 @@ void setup() {
     Servo1.setSpeed(90);  // This speed is taken if no further speed argument is given.
 #endif
 
-#if defined(USE_CONSTRAINTS)
+#if defined(ENABLE_MIN_AND_MAX_CONSTRAINTS)
     Servo1.setMinMaxConstraint(5, 175);
 #endif
 
@@ -150,7 +153,7 @@ void setup() {
 
 void loop() {
 
-    if (Servo1.mCurrentMicrosecondsOrUnits != Servo1.mEndMicrosecondsOrUnits) {
+    if (Servo1.mLastTargetMicrosecondsOrUnits != Servo1.mEndMicrosecondsOrUnits) {
         // real moving here
         digitalWrite(LED_BUILTIN, HIGH);
     } else {

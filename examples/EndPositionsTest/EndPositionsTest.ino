@@ -51,6 +51,7 @@
  * Platform         Servo1      Servo2      Servo3      Analog     Core/Pin schema
  * -------------------------------------------------------------------------------
  * (Mega)AVR + SAMD    9          10          11          A0
+ * 2560               46          45          44          A0
  * ATtiny3217         20|PA3       0|PA4       1|PA5       2|PA6   MegaTinyCore
  * ESP8266            14|D5       12|D6       13|D7        0
  * ESP32               5          18          19          A0

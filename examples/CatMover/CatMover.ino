@@ -147,7 +147,7 @@ uint8_t getRandomValue(ServoControlStruct *aServoControlStruct, ServoEasing *aSe
     uint8_t tNewTargetAngle;
     do {
         tNewTargetAngle = random(aServoControlStruct->minDegree, aServoControlStruct->maxDegree);
-    } while (tNewTargetAngle == aServoEasing->MicrosecondsOrUnitsToDegree(aServoEasing->mCurrentMicrosecondsOrUnits)); // do not accept current angle as new value
+    } while (tNewTargetAngle == aServoEasing->MicrosecondsOrUnitsToDegree(aServoEasing->mLastTargetMicrosecondsOrUnits)); // do not accept current angle as new value
     return tNewTargetAngle;
 }
 

@@ -63,7 +63,7 @@ jobs:
           - esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
           - esp32:esp32:featheresp32:FlashFreq=80
           - STMicroelectronics:stm32:GenF1:pnum=BLUEPILL_F103C8
-          - stm32duino:STM32F1:genericSTM32F103C
+#          - stm32duino:STM32F1:genericSTM32F103C # dial tcp 45.32.207.136:443: connect: connection refused
           - SparkFun:apollo3:sfe_artemis_nano
 
         # Specify parameters for each board.
@@ -87,7 +87,8 @@ jobs:
 
           - arduino-boards-fqbn: arduino:avr:mega
             required-libraries: Servo
-            sketches-exclude: TwoServos # No LightweightServoLib available
+            build-properties: # the flags were put in compiler.cpp.extra_flags
+              ThreeServos: -DUSE_LEIGHTWEIGHT_SERVO_LIB
 
           - arduino-boards-fqbn: arduino:megaavr:nona4809:mode=off
             required-libraries: Servo
@@ -157,10 +158,10 @@ jobs:
             required-libraries: Servo
             sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl
 
-          - arduino-boards-fqbn: stm32duino:STM32F1:genericSTM32F103C # Roger Clark version
-            platform-url: http://dan.drown.org/stm32duino/package_STM32duino_index.json
-            required-libraries: Servo
-            sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl
+#          - arduino-boards-fqbn: stm32duino:STM32F1:genericSTM32F103C # Roger Clark version
+#            platform-url: http://dan.drown.org/stm32duino/package_STM32duino_index.json
+#            required-libraries: Servo
+#            sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl
 
 #
 # Others

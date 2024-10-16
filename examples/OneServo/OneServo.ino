@@ -31,13 +31,11 @@
 //#define USE_LEIGHTWEIGHT_SERVO_LIB    // Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
 //#define PROVIDE_ONLY_LINEAR_MOVEMENT  // Activating this disables all but LINEAR movement. Saves up to 1540 bytes program memory.
 #define DISABLE_COMPLEX_FUNCTIONS     // Activating this disables the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory.
-#define MAX_EASING_SERVOS 1
 //#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
 //#define DISABLE_MIN_AND_MAX_CONSTRAINTS    // Activating this disables constraints. Saves 4 bytes RAM per servo but strangely enough no program memory.
 //#define DISABLE_PAUSE_RESUME               // Activating this disables pause and resume functions. Saves 5 bytes RAM per servo.
-//#define DEBUG                              // Activating this enables generate lots of lovely debug output for this library.
 
-//#define PRINT_FOR_SERIAL_PLOTTER           // Activating this enables generate the Arduino plotter output from ServoEasing.hpp.
+#define MAX_EASING_SERVOS 1
 
 /*
  * Specify which easings types should be available.
@@ -55,6 +53,9 @@
 //#define ENABLE_EASE_PRECISION
 //#define ENABLE_EASE_USER
 
+//#define DEBUG                              // Activating this enables generate lots of lovely debug output for this library.
+//#define PRINT_FOR_SERIAL_PLOTTER           // Activating this enables generate the Arduino plotter output from ServoEasing.hpp.
+
 #include "ServoEasing.hpp"
 #include "PinDefinitionsAndMore.h"
 
@@ -64,6 +65,7 @@
  * Platform         Servo1      Servo2      Servo3      Analog     Core/Pin schema
  * -------------------------------------------------------------------------------
  * (Mega)AVR + SAMD    9          10          11          A0
+ * 2560               46          45          44          A0
  * ATtiny3217         20|PA3       0|PA4       1|PA5       2|PA6   MegaTinyCore
  * ESP8266            14|D5       12|D6       13|D7        0
  * ESP32               5          18          19          A0
@@ -124,7 +126,7 @@ void setup() {
     }
 
     // Wait for servo to reach start position.
-    delay(500);
+    delay(2000);
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
     // Legend for Arduino Serial plotter
     Serial.println(); // end of line of attach values
@@ -253,7 +255,8 @@ void loop() {
     // resume movement using interrupts
     Servo1.resumeWithInterrupts();
 #endif
-    while (Servo1.isMoving()); // wait for servo to stop
+    while (Servo1.isMoving())
+        ; // wait for servo to stop
 
 #  if !defined(PRINT_FOR_SERIAL_PLOTTER)
     Serial.println(F("Detach the servo for 5 seconds. During this time you can move the servo manually."));
