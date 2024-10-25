@@ -1,7 +1,10 @@
 /*
  *  LightweightServo.hpp
  *
- *  Lightweight Servo implementation only for pin 9 and 10 using only timer1 hardware and no interrupts or other overhead.
+ *  Lightweight Servo implementation timer hardware and no interrupts or other overhead.
+ *  Supported pins:
+ *  ATmega328: pin 44 = OC5C/PL5, 45 = OC5B/PL4 and 46 = OC5A/PL3 using only timer5 hardware
+ *  ATmega2560 pin 9 = OC1A and 10 = OC1B on 328 using only timer1 hardware
  *  Provides auto initialization.
  *  300 bytes code size / 4 bytes RAM including auto initialization compared to 700 / 48 bytes for Arduino Servo library.
  *  8 bytes for each call to setLightweightServoPulse...
@@ -26,11 +29,11 @@
  *
  */
 
-#ifndef _LIGHTWEIGHT_SERVO_HPP
-#define _LIGHTWEIGHT_SERVO_HPP
-
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__) || defined (__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__)
 #include "LightweightServo.h"
+
+#ifndef _LIGHTWEIGHT_SERVO_HPP
+#define _LIGHTWEIGHT_SERVO_HPP
 
 #if defined(DEBUG)
 #define LOCAL_DEBUG
@@ -213,7 +216,9 @@ void writeMicroseconds10Direct(int aMicroseconds) {
  * Attention - both pins are set to OUTPUT here!
  * 32 bytes code size
  * Assume, that PRR1 PRTIM5 bit is low, which enables timer 5
- * Currently only pin 44 = OC5C/PL5, 45 = OC5B/PL4 + 46 = OC5A/PL3 on 2560 and pin 9 = OC1A + 10 = OC1B on 328
+ *  Supported pins:
+ *  ATmega328: pin 44 = OC5C/PL5, 45 = OC5B/PL4 and 46 = OC5A/PL3 using only timer5 hardware
+ *  ATmega2560 pin 9 = OC1A and 10 = OC1B on 328 using only timer1 hardware
  */
 void initLightweightServoPins() {
 #if defined(__AVR_ATmega2560__)
@@ -246,17 +251,17 @@ void checkAndInitLightweightServoPin(uint8_t aPin) {
     // Mask all other bits to zero!
 #if defined(__AVR_ATmega2560__)
     uint8_t tNewTCCR5A = TCCR5A & (_BV(COM5A1) | _BV(COM5B1) | _BV(COM5C1) | _BV(WGM51));
-    if (aPin == LEIGHTWEIGHT_SERVO_CHANNEL_A_PIN && !(TCCR5A & (_BV(COM5A1)))) {
+    if (aPin == LIGHTWEIGHT_SERVO_CHANNEL_A_PIN && !(TCCR5A & (_BV(COM5A1)))) {
         OCR5A = UINT16_MAX;
         DDRL |= (_BV(DDL3));
         tNewTCCR5A |= (_BV(COM5A1)) | _BV(WGM51); // FastPWM Mode mode TOP (20 ms) determined by ICR
         tPinWasNotInitialized = true;
-    } else if (aPin == LEIGHTWEIGHT_SERVO_CHANNEL_B_PIN && !(TCCR5A & (_BV(COM5B1)))) {
+    } else if (aPin == LIGHTWEIGHT_SERVO_CHANNEL_B_PIN && !(TCCR5A & (_BV(COM5B1)))) {
         OCR5B = UINT16_MAX;
         DDRL |= (_BV(DDL4));
         tNewTCCR5A |= (_BV(COM5B1)) | _BV(WGM51);
         tPinWasNotInitialized = true;
-    } else if (aPin == LEIGHTWEIGHT_SERVO_CHANNEL_C_PIN && !(TCCR5A & (_BV(COM5C1)))) {
+    } else if (aPin == LIGHTWEIGHT_SERVO_CHANNEL_C_PIN && !(TCCR5A & (_BV(COM5C1)))) {
         OCR5C = UINT16_MAX;
         DDRL |= (_BV(DDL5));
         tNewTCCR5A |= (_BV(COM5C1)) | _BV(WGM51);
@@ -264,12 +269,12 @@ void checkAndInitLightweightServoPin(uint8_t aPin) {
     }
 #else
     uint8_t tNewTCCR1A = TCCR1A & (_BV(COM1A1) | _BV(COM1B1)); // keep existing COM1A1 and COM1B1 settings
-    if (aPin == LEIGHTWEIGHT_SERVO_CHANNEL_A_PIN && !(TCCR1A & (_BV(COM1A1)))) {
+    if (aPin == LIGHTWEIGHT_SERVO_CHANNEL_A_PIN && !(TCCR1A & (_BV(COM1A1)))) {
         OCR1A = UINT16_MAX;
         DDRB |= _BV(DDB1);                          // set OC1A = PortB1 -> PIN 9 to output direction
         tNewTCCR1A |= (_BV(COM1A1)) | _BV(WGM11);       // FastPWM Mode mode TOP (20 ms) determined by ICR1
         tPinWasNotInitialized = true;
-    } else if (aPin == LEIGHTWEIGHT_SERVO_CHANNEL_B_PIN && !(TCCR1A & (_BV(COM1B1)))) {
+    } else if (aPin == LIGHTWEIGHT_SERVO_CHANNEL_B_PIN && !(TCCR1A & (_BV(COM1B1)))) {
         OCR1B = UINT16_MAX;
         DDRB |= _BV(DDB2);                          // set OC1B = PortB2 -> PIN 10 to output direction
         tNewTCCR1A |= (_BV(COM1B1)) | _BV(WGM11);
@@ -305,13 +310,14 @@ void checkAndInitLightweightServoPin(uint8_t aPin) {
 
 /*
  * Set pin to input and disable non-inverting Compare Output mode
+ * Init state is reflected by COMXX1 register bit
  */
 void deinitLightweightServoPin(uint8_t aPin) {
 #if defined(__AVR_ATmega2560__)
-    if (aPin == LEIGHTWEIGHT_SERVO_CHANNEL_A_PIN) {
+    if (aPin == LIGHTWEIGHT_SERVO_CHANNEL_A_PIN) {
         DDRL &= ~(_BV(DDL3));
         TCCR5A &= ~(_BV(COM5A1));
-    } else if (aPin == LEIGHTWEIGHT_SERVO_CHANNEL_B_PIN) {
+    } else if (aPin == LIGHTWEIGHT_SERVO_CHANNEL_B_PIN) {
         DDRL &= ~(_BV(DDL4));
         TCCR5A &= ~(_BV(COM5B1));
     } else {
@@ -319,10 +325,10 @@ void deinitLightweightServoPin(uint8_t aPin) {
         TCCR5A &= ~(_BV(COM5C1));
     }
 #else
-    if (aPin == LEIGHTWEIGHT_SERVO_CHANNEL_A_PIN) {
+    if (aPin == LIGHTWEIGHT_SERVO_CHANNEL_A_PIN) {
         DDRB &= ~(_BV(DDB1));           // set OC1A = PortB1 -> PIN 9 to input direction
         TCCR1A &= ~(_BV(COM1A1));       // disable non-inverting Compare Output mode OC1A
-    } else if (aPin == LEIGHTWEIGHT_SERVO_CHANNEL_B_PIN) {
+    } else if (aPin == LIGHTWEIGHT_SERVO_CHANNEL_B_PIN) {
         DDRB &= ~(_BV(DDB2));           // set OC1B = PortB2 -> PIN 10 to input direction
         TCCR1A &= ~(_BV(COM1B1));       // disable non-inverting Compare Output mode OC1B
     }
@@ -343,7 +349,7 @@ int writeLightweightServoPin(int aDegree, uint8_t aPin, bool aUpdateFast) {
     return aDegree;
 }
 
-void writeMicrosecondsLightweightServoPin(int aMicroseconds, uint8_t aPin, bool aUpdateFast) {
+void writeMicrosecondsLightweightServoPin(int aMicroseconds, uint8_t aPin, bool aUpdateFast, bool aDoAutoInit) {
 #if defined(LOCAL_DEBUG)
     Serial.print(F(" Micros=")); // trailing space required if called by _writeMicrosecondsOrUnits()
     Serial.print(aMicroseconds);
@@ -351,29 +357,31 @@ void writeMicrosecondsLightweightServoPin(int aMicroseconds, uint8_t aPin, bool 
     Serial.println(aPin);
 #endif
 #if !defined(DISABLE_SERVO_TIMER_AUTO_INITIALIZE)
-    checkAndInitLightweightServoPin(aPin);
+    if (aDoAutoInit) {
+        checkAndInitLightweightServoPin(aPin);
+    }
 #endif
-    // since the resolution is 1/2 of microsecond for 16 MHz CPU clock and prescaler of 8
+// since the resolution is 1/2 of microsecond for 16 MHz CPU clock and prescaler of 8
 #if (F_CPU == 16000000L)
     aMicroseconds *= 2;
 #elif (F_CPU < 8000000L) // for 8 MHz resolution is exactly 1 microsecond :-)
-    aMicroseconds /= (8000000L / F_CPU);
+aMicroseconds /= (8000000L / F_CPU);
 #endif
 #if defined(__AVR_ATmega2560__)
-    if (aUpdateFast) {
-        uint16_t tTimerCount = TCNT5;
-        if (tTimerCount > ISR_COUNT_FOR_2_5_MILLIS) {
-            // more than 2.5 ms since last pulse -> start a new one
-            TCNT5 = ICR5 - 1;
-        }
+if (aUpdateFast) {
+    uint16_t tTimerCount = TCNT5;
+    if (tTimerCount > ISR_COUNT_FOR_2_5_MILLIS) {
+        // more than 2.5 ms since last pulse -> start a new one
+        TCNT5 = ICR5 - 1;
     }
-    if (aPin == LEIGHTWEIGHT_SERVO_CHANNEL_A_PIN) {
-        OCR5A = aMicroseconds;
-    } else if (aPin == LEIGHTWEIGHT_SERVO_CHANNEL_B_PIN) {
-        OCR5B = aMicroseconds;
-    } else {
-        OCR5C = aMicroseconds;
-    }
+}
+if (aPin == LIGHTWEIGHT_SERVO_CHANNEL_A_PIN) {
+    OCR5A = aMicroseconds;
+} else if (aPin == LIGHTWEIGHT_SERVO_CHANNEL_B_PIN) {
+    OCR5B = aMicroseconds;
+} else {
+    OCR5C = aMicroseconds;
+}
 #else
     if (aUpdateFast) {
         uint16_t tTimerCount = TCNT1;
@@ -382,7 +390,7 @@ void writeMicrosecondsLightweightServoPin(int aMicroseconds, uint8_t aPin, bool 
             TCNT1 = ICR1 - 1;
         }
     }
-    if (aPin == LEIGHTWEIGHT_SERVO_CHANNEL_A_PIN) {
+    if (aPin == LIGHTWEIGHT_SERVO_CHANNEL_A_PIN) {
         OCR1A = aMicroseconds;
     } else {
         OCR1B = aMicroseconds;
@@ -395,7 +403,11 @@ void writeMicrosecondsLightweightServoPin(int aMicroseconds, uint8_t aPin, bool 
  * No parameter checking is done here!
  */
 void setLightweightServoRefreshRate(unsigned int aRefreshPeriodMicroseconds) {
+#if defined(__AVR_ATmega2560__)
+    ICR5 = aRefreshPeriodMicroseconds * 2;
+#else
     ICR1 = aRefreshPeriodMicroseconds * 2;
+#endif
 }
 /*
  * Set the mapping pulse width values for 0 and 180 degree
@@ -416,8 +428,46 @@ int MicrosecondsToDegreeLightweightServo(int aMicroseconds) {
     return map(aMicroseconds, sMicrosecondsForServo0Degree, sMicrosecondsForServo180Degree, 0, 180);
 }
 
+/*
+ * LightweightServo class functions
+ */
+uint8_t LightweightServo::attach(int aPin) {
+    LightweightServoPin = aPin;
+    checkAndInitLightweightServoPin(aPin);
+    return aPin;
+}
+
+/*
+ * do not use parameters aMicrosecondsForServo0Degree and aMicrosecondsForServo180Degree
+ */
+uint8_t LightweightServo::attach(int aPin, int aMicrosecondsForServo0Degree, int aMicrosecondsForServo180Degree) {
+    LightweightServoPin = aPin;
+    MicrosecondsForServo0Degree = aMicrosecondsForServo0Degree;
+    MicrosecondsForServo180Degree = aMicrosecondsForServo180Degree;
+    checkAndInitLightweightServoPin(aPin);
+    return aPin;
+}
+
+void LightweightServo::detach() {
+    deinitLightweightServoPin(LightweightServoPin);
+}
+
+void LightweightServo::write(int aTargetDegreeOrMicrosecond) {
+    if (aTargetDegreeOrMicrosecond <= 180) {
+        aTargetDegreeOrMicrosecond = (map(aTargetDegreeOrMicrosecond, 0, 180, MicrosecondsForServo0Degree,
+                MicrosecondsForServo180Degree));
+    }
+    // The last false parameter requires 8 byte more than DISABLE_SERVO_TIMER_AUTO_INITIALIZE, but saves around 60 bytes anyway
+    writeMicrosecondsLightweightServoPin(aTargetDegreeOrMicrosecond, LightweightServoPin, false, false);
+}
+
+void LightweightServo::writeMicroseconds(int aTargetMicrosecond){
+    // The last false parameter requires 8 byte more than DISABLE_SERVO_TIMER_AUTO_INITIALIZE, but saves around 60 bytes anyway
+    writeMicrosecondsLightweightServoPin(aTargetMicrosecond, LightweightServoPin, false, false);
+}
+
 #if defined(LOCAL_DEBUG)
 #undef LOCAL_DEBUG
 #endif
-#endif // defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__) || defined(__AVR_ATmega2560__)
 #endif // _LIGHTWEIGHT_SERVO_HPP
+#endif // defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__) || defined(__AVR_ATmega2560__)

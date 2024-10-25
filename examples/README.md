@@ -1,6 +1,6 @@
 # ServoEasing examples
 All examples with up to 2 Servos can be used without modifications with the [Lightweight Servo library](https://github.com/ArminJo/LightweightServo)
-for AVR by by [activating the line `#define USE_LEIGHTWEIGHT_SERVO_LIB`](https://github.com/ArminJo/ServoEasing#using-the-included-lightweight-servo-library).
+for AVR by by [activating the line `#define USE_LIGHTWEIGHT_SERVO_LIB`](https://github.com/ArminJo/ServoEasing#using-the-included-lightweight-servo-library).
 
 YouTube video of SymmetricEasing and AsymmetricEasing example
 

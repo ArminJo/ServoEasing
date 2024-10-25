@@ -31,7 +31,7 @@
 //#define USE_PCA9685_SERVO_EXPANDER    // Activate this to enables the use of the PCA9685 I2C expander chip/board.
 //#define USE_SOFT_I2C_MASTER           // Saves 1756 bytes program memory and 218 bytes RAM compared with Arduino Wire
 //#define USE_SERVO_LIB                 // Activate this to force additional using of regular servo library.
-//#define USE_LEIGHTWEIGHT_SERVO_LIB    // Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
+//#define USE_LIGHTWEIGHT_SERVO_LIBRARY // Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
 //#define PROVIDE_ONLY_LINEAR_MOVEMENT  // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes program memory.
 //#define DISABLE_COMPLEX_FUNCTIONS     // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory.
 #define MAX_EASING_SERVOS 4
@@ -95,53 +95,53 @@
 #define CLAW_HEIGHT_OVER_GROUND_PLANE          20 // Height of claw position over ground if first parts of claw touches the ground
 
 // Values for my MG90 clones. They differ from default values :-(
-// operate pivot servo from -90° to +90°
-#define PIVOT_MICROS_AT_PLUS_70_DEGREE        2400 // Left the MG90 servos are not capable of full 180°
+// operate pivot servo from -90ï¿½ to +90ï¿½
+#define PIVOT_MICROS_AT_PLUS_70_DEGREE        2400 // Left the MG90 servos are not capable of full 180ï¿½
 #define PIVOT_MICROS_AT_MINUS_70_DEGREE        700 // Right
 
-// operate lift servo from 30° to -90°
+// operate lift servo from 30ï¿½ to -90ï¿½
 #define LIFT_MICROS_AT_0_NEUTRAL              1670 // 2. arm is horizontal forward
 #define LIFT_MICROS_AT_MINUS_90_DEGREE         690 // 2. arm is vertical down
 #define LIFT_MINIMUM_DEGREE                    -90 // 2. arm is vertical down
 #define LIFT_MAXIMUM_DEGREE                     30 // Mechanic has contact with bottom plate - not used yet
 
-// operate horizontal servo from -50° to 90°
+// operate horizontal servo from -50ï¿½ to 90ï¿½
 #define HORIZONTAL_MICROS_AT_0_NEUTRAL        1180 // 1. arm is vertical up
 #define HORIZONTAL_MICROS_AT_90_DEGREE        2240 // 1. arm is vertical forward
 #define HORIZONTAL_MAXIMUM_DEGREE               90 // 1. arm is vertical forward
 #define HORIZONTAL_MINIMUM_DEGREE              -50 // Mechanic is folded
 
-// operate claw servo from 0° to 180°
+// operate claw servo from 0ï¿½ to 180ï¿½
 #define CLAW_MICROS_AT_CLOSE                  1080 // The higher this value, the lower the degree / the closer the claw
-#define CLAW_MICROS_AT_180_DEGREE              750 // Value for 180° open claw (each side has 90°)
+#define CLAW_MICROS_AT_180_DEGREE              750 // Value for 180ï¿½ open claw (each side has 90ï¿½)
 #define CLAW_MAXIMUM_DEGREE                    180
-#define CLAW_CLOSE_DEGREE                        0 // 0° is close by definition
+#define CLAW_CLOSE_DEGREE                        0 // 0ï¿½ is close by definition
 
 #elif defined(ROBOT_ARM_2)
 #define ORIGIN_HEIGHT_OVER_GROUND_PLANE        68 // Height of Z=0 over ground, depends of the screw length used and the bumper attached on the base plate
 #define CLAW_HEIGHT_OVER_GROUND_PLANE          18 // Height of claw position over ground if first parts of claw touches the ground
 
-// operate pivot servo from -90° to +90°
-#define PIVOT_MICROS_AT_PLUS_70_DEGREE        2400 // Left the MG90 servos are not capable of full 180°
+// operate pivot servo from -90ï¿½ to +90ï¿½
+#define PIVOT_MICROS_AT_PLUS_70_DEGREE        2400 // Left the MG90 servos are not capable of full 180ï¿½
 #define PIVOT_MICROS_AT_MINUS_70_DEGREE        700 // Right
 
-// operate lift servo from 30° to -90°
+// operate lift servo from 30ï¿½ to -90ï¿½
 #define LIFT_MICROS_AT_0_NEUTRAL              1700 // 2. arm is horizontal forward
 #define LIFT_MICROS_AT_MINUS_90_DEGREE         630 // 2. arm is vertical down
 #define LIFT_MINIMUM_DEGREE                    -90 // 2. arm is vertical down
 #define LIFT_MAXIMUM_DEGREE                     30 // Mechanic has contact with bottom plate - not used yet
 
-// operate horizontal servo from -50° to 90°
+// operate horizontal servo from -50ï¿½ to 90ï¿½
 #define HORIZONTAL_MICROS_AT_0_NEUTRAL        1170 // 1. arm is vertical up
 #define HORIZONTAL_MICROS_AT_90_DEGREE        2210 // 1. arm is vertical forward
 #define HORIZONTAL_MAXIMUM_DEGREE               90 // 1. arm is vertical forward
 #define HORIZONTAL_MINIMUM_DEGREE              -50 // Mechanic is folded
 
-// operate claw servo from 0° to 180°
+// operate claw servo from 0ï¿½ to 180ï¿½
 #define CLAW_MICROS_AT_CLOSE                  1700
-#define CLAW_MICROS_AT_180_DEGREE              300 // Computed value for 180" open claw (each side has 90°) since my claw cannot really open to 180°
+#define CLAW_MICROS_AT_180_DEGREE              300 // Computed value for 180" open claw (each side has 90ï¿½) since my claw cannot really open to 180ï¿½
 #define CLAW_MAXIMUM_DEGREE                    180
-#define CLAW_CLOSE_DEGREE                        0 // 0° is close by definition
+#define CLAW_CLOSE_DEGREE                        0 // 0ï¿½ is close by definition
 
 #else
 /*
@@ -150,27 +150,27 @@
 #define ORIGIN_HEIGHT_OVER_GROUND_PLANE         68 // Height of Z=0 over ground, depends of the screw length used and the bumper attached on the base plate
 #define CLAW_HEIGHT_OVER_GROUND_PLANE           20 // Height of claw position over ground if first parts of claw touches the ground
 
-// operate pivot servo from -90° to +90°
-#define PIVOT_MICROS_AT_PLUS_70_DEGREE        2400 // Left the MG90 servos are not capable of full 180°
+// operate pivot servo from -90ï¿½ to +90ï¿½
+#define PIVOT_MICROS_AT_PLUS_70_DEGREE        2400 // Left the MG90 servos are not capable of full 180ï¿½
 #define PIVOT_MICROS_AT_MINUS_70_DEGREE        544 // Right
 
-// operate lift servo from 30° to -90°
+// operate lift servo from 30ï¿½ to -90ï¿½
 #define LIFT_MICROS_AT_0_NEUTRAL              1800 // 2. arm is horizontal forward
 #define LIFT_MICROS_AT_MINUS_90_DEGREE         544 // 2. arm is vertical down
 #define LIFT_MINIMUM_DEGREE                    -90 // 2. arm is vertical down
 #define LIFT_MAXIMUM_DEGREE                     30 // Mechanic has contact with bottom plate - not used yet
 
-// operate horizontal servo from -50° to 90°
+// operate horizontal servo from -50ï¿½ to 90ï¿½
 #define HORIZONTAL_MICROS_AT_0_NEUTRAL        1100 // 1. arm is vertical up
 #define HORIZONTAL_MICROS_AT_90_DEGREE        2400 // 1. arm is vertical forward
 #define HORIZONTAL_MAXIMUM_DEGREE               90 // 1. arm is vertical forward
 #define HORIZONTAL_MINIMUM_DEGREE              -50 // Mechanic is folded
 
-// operate claw servo from 0° to 180°
+// operate claw servo from 0ï¿½ to 180ï¿½
 #define CLAW_MICROS_AT_CLOSE                  1200
-#define CLAW_MICROS_AT_180_DEGREE              600 // Value for 180" open claw (each side has 90°)
+#define CLAW_MICROS_AT_180_DEGREE              600 // Value for 180" open claw (each side has 90ï¿½)
 #define CLAW_MAXIMUM_DEGREE                    180
-#define CLAW_CLOSE_DEGREE                        0 // 0° is close by definition
+#define CLAW_CLOSE_DEGREE                        0 // 0ï¿½ is close by definition
 #endif
 
 #endif // _ROBOT_ARM_SERVO_CONFIGURATION_H

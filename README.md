@@ -232,7 +232,7 @@ Values for the MG90Sservos servos at 5 volt (4.2 volt with servo active).
 
 # Minimum number of pulses for reliable servo positioning
 After disconnected, my **SG90** servo requires **4 pulses for a 180 degree turn**. It may be less, if the turn is smaller.<br/>
-After disconnected, my**MG90** servo requires **1 pulse for a 110 degree turn**. the second pulse (after 20 ms) adds around 10 degree to it, 
+After disconnected, my**MG90** servo requires **1 pulse for a 110 degree turn**. the second pulse (after 20 ms) adds around 10 degree to it,
 so it takes around 6 to 7 pulses (120 ms to 140 ms) for a complete 180 degree turn.<br/>
 These values seems to be **independent of the turn direction**.
 
@@ -291,7 +291,7 @@ Modify them by enabling / disabling them, or change the values if applicable.
 | `DISABLE_PAUSE_RESUME` | disabled | Disables pause and resume functionality. Saves 5 bytes RAM per servo. |
 | `PRINT_FOR_SERIAL_PLOTTER` | disabled | Generate serial output for Arduino Plotter (Ctrl-Shift-L). |
 | `DEBUG` | disabled | Generates lots of lovely debug output for this library. |
-| `USE_LEIGHTWEIGHT_SERVO_LIB` | disabled | Available only for ATmega328. Supports only servos at pin 9 and 10. Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple. See [below](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#using-the-included-lightweight-servo-library-for-atmega328). Saves up to 742 bytes program memory and 42 bytes RAM. |
+| `USE_LIGHTWEIGHT_SERVO_LIBRARY` | disabled | Available only for ATmega328 and ATmega2560. Supports only servos at pin 9 and 10 (44, 45, 46). Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple. See [below](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#using-the-included-lightweight-servo-library-for-atmega328). Saves up to 742 bytes program memory and 42 bytes RAM. |
 | `MINIMUM_PULSE_WIDTH` | 400 | The shortest pulse which can be sent to a servo by this library. This value is smaller than the value used by the Arduino Servo library, which is 544 us (MIN_PULSE_WIDTH), to be more versatile.
 | `MAXIMUM_PULSE_WIDTH` | 3500 | The shortest pulse which can be sent to a servo by this library. This value is greater than the value used by the Arduino Servo library, which is 2400 us (MAX_PULSE_WIDTH), to be more versatile.|
 
@@ -320,12 +320,12 @@ If you do not use any timer in your program you can increase speed up to 800 kHz
 
 <br/>
 
-# Using the included Lightweight Servo library for ATmega328
+# Using the included Lightweight Servo library for ATmega328 and ATmega2560
 This library is like the [Adafruit TiCoServo library](https://github.com/adafruit/Adafruit_TiCoServo), but more lightweight and currently only for **Uno, Nano**.
 
 Using the [Lightweight Servo library](https://github.com/ArminJo/LightweightServo) reduces sketch size and makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br/>
 Up to 2 servos are supported by this library and they must be physically attached to pin 9 and/or 10 of the Arduino board.<br/>
-To enable it, activate the line `#define USE_LEIGHTWEIGHT_SERVO_LIB` before the line `#include "LightweightServo.hpp"` [like it is done in the TwoServos example](https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServos/TwoServos.ino#L31).<br/>
+To enable it, activate the line `#define ` before the line `#include "LightweightServo.hpp"` [like it is done in the TwoServos example](https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServos/TwoServos.ino#L31).<br/>
 If you do not use the Arduino IDE, take care that Arduino Servo library sources are not compiled / included in the project.
 
 <br/>
@@ -380,7 +380,7 @@ Converting a 10 pin double row pin header with 21 mm pin length to a breadboard 
 # Internals
 The API accepts degrees or microseconds as float or integer values, but internally only microseconds (or units (= 4.88 &micro;s) if using PCA9685 expander) and not degrees are used to speed up things.<br/>
 
-If you do not specify an initial position with attach, **the first attach** moves servo to DEFAULT_PULSE_WIDTH (90 degree | 1500 us). 
+If you do not specify an initial position with attach, **the first attach** moves servo to DEFAULT_PULSE_WIDTH (90 degree | 1500 us).
 This behavior is implemented by the underlying Servo library.
 Following attaches just use the last position of this Servo.
 

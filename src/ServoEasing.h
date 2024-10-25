@@ -30,6 +30,10 @@
 #define VERSION_SERVO_EASING_PATCH 0
 // The change log is at the bottom of the file
 
+#if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#define USE_LIGHTWEIGHT_SERVO_LIBRARY // for backwards compatibility
+#endif
+
 /*
  * Macro to convert 3 version parts into an integer
  * To be used in preprocessor comparisons, such as #if VERSION_SERVO_EASING_HEX >= VERSION_HEX_VALUE(3, 0, 0)
@@ -68,17 +72,17 @@
 //#include <DummyServo.h>
 
 /*
- * If you have only one or two servos at pin 9 and/or 10 and an ATmega328, then you can save program memory by defining symbol `USE_LEIGHTWEIGHT_SERVO_LIB`.
+ * If you have only one or two servos at pin 9 and/or 10 and an ATmega328, then you can save program memory by defining symbol `USE_LIGHTWEIGHT_SERVO_LIBRARY`.
  * This saves 742 bytes program memory and 42 bytes RAM.
  * Using Lightweight Servo library (or PCA9685 servo expander) makes the servo pulse generating immune
  * to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
  * If not using the Arduino IDE take care that Arduino Servo library sources are not compiled / included in the project.
  * Use of Lightweight Servo library disables use of regular servo library.
  */
-//#define USE_LEIGHTWEIGHT_SERVO_LIB
+//#define USE_LIGHTWEIGHT_SERVO_LIBRARY
 
-#if defined(USE_LEIGHTWEIGHT_SERVO_LIB) && !(defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__) || defined (__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__))
-#error USE_LEIGHTWEIGHT_SERVO_LIB can only be activated for the Atmega328 or ATmega2560 CPU
+#if defined(USE_LIGHTWEIGHT_SERVO_LIBRARY) && !(defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__) || defined (__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__))
+#error USE_LIGHTWEIGHT_SERVO_LIBRARY can only be activated for the Atmega328 or ATmega2560 CPU
 #endif
 
 /*
@@ -117,7 +121,7 @@ __attribute__((weak)) extern void handleServoTimerInterrupt();
 #    endif
 
 #  else // defined(ESP32)
-#    if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#    if defined(USE_LIGHTWEIGHT_SERVO_LIBRARY)
 #include "LightweightServo.h"
 #      if !defined(MAX_EASING_SERVOS)
 #        if defined(__AVR_ATmega2560__)
@@ -128,7 +132,7 @@ __attribute__((weak)) extern void handleServoTimerInterrupt();
 #      endif
 #    else
 #include <Servo.h>
-#    endif // !defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#    endif // !defined(USE_LIGHTWEIGHT_SERVO_LIBRARY)
 #  endif // defined(ESP32)
 #endif // defined(USE_SERVO_LIB)
 
@@ -437,7 +441,7 @@ extern const char *const easeTypeStrings[] PROGMEM;
  * Size is 46 bytes RAM per servo
  */
 class ServoEasing
-#if (!defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_SERVO_LIB)) && !defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#if (!defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_SERVO_LIB)) && !defined(USE_LIGHTWEIGHT_SERVO_LIBRARY)
         : public Servo
 #endif
 {

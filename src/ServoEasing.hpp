@@ -34,7 +34,7 @@
  *
  * - USE_PCA9685_SERVO_EXPANDER         Enables the use of the PCA9685 I2C expander chip/board.
  * - USE_SERVO_LIB                      Use of PCA9685 normally disables use of regular servo library. You can force additional using of regular servo library by defining USE_SERVO_LIB.
- * - USE_LEIGHTWEIGHT_SERVO_LIB         Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
+ * - USE_LIGHTWEIGHT_SERVO_LIBRARY      Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.
  * - PROVIDE_ONLY_LINEAR_MOVEMENT       Disables all but LINEAR movement. Saves up to 1540 bytes program memory.
  * - DISABLE_COMPLEX_FUNCTIONS          Disables the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings.
  * - MAX_EASING_SERVOS                  Saves 4 byte RAM per servo.
@@ -49,7 +49,7 @@
 
 #include "ServoEasing.h"
 
-#if defined(USE_LEIGHTWEIGHT_SERVO_LIB) && (defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__) || defined (__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__))
+#if defined(USE_LIGHTWEIGHT_SERVO_LIBRARY) && (defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__) || defined (__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__))
 #include "LightweightServo.hpp" // include sources of LightweightServo library
 #endif
 
@@ -393,7 +393,7 @@ int ServoEasing::PCA9685UnitsToMicroseconds(int aPCA9685Units) {
 
 // Constructor without I2C address
 ServoEasing::ServoEasing() // @suppress("Class members should be properly initialized")
-#if (!defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_SERVO_LIB)) && !defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#if (!defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_SERVO_LIB)) && !defined(USE_LIGHTWEIGHT_SERVO_LIBRARY)
 :
         Servo()
 #endif
@@ -432,7 +432,7 @@ ServoEasing::ServoEasing() // @suppress("Class members should be properly initia
  * The values can be determined by the EndPositionsTest example.
  * @param   aPin    Pin number or port number of PCA9685 [0-15]
  *
- * If USE_LEIGHTWEIGHT_SERVO_LIB is enabled:
+ * If USE_LIGHTWEIGHT_SERVO_LIBRARY is enabled:
  *      Return 0/false if not pin 9 or 10 else return aPin
  *      Pin number != 9 results in using pin 10.
  * If USE_PCA9685_SERVO_EXPANDER is enabled:
@@ -529,9 +529,10 @@ uint8_t ServoEasing::reattach() {
         }
     }
 
-#if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#if defined(USE_LIGHTWEIGHT_SERVO_LIBRARY)
+    checkAndInitLightweightServoPin(mServoPin);
     return mServoPin;
-#else // We have no Servo::attach for USE_LEIGHTWEIGHT_SERVO_LIB
+#else // We have no Servo::attach for USE_LIGHTWEIGHT_SERVO_LIBRARY
     // No actions for PCA9685 required
 #  if !defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_SERVO_LIB)
     /*
@@ -549,7 +550,7 @@ uint8_t ServoEasing::reattach() {
 #  else
     return  mServoIndex;
 #  endif // defined(USE_SERVO_LIB)
-#endif // defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#endif // defined(USE_LIGHTWEIGHT_SERVO_LIBRARY)
 }
 
 /**
@@ -558,7 +559,7 @@ uint8_t ServoEasing::reattach() {
  * @param   aMicrosecondsForServoLowDegree, aMicrosecondsForServoHighDegree no units accepted, only microseconds!
  * @param   aServoLowDegree can be negative. For this case an appropriate trim value is added, since this is the only way to handle negative values.
  * @param   aServoHighDegree    The degree value for the corresponding aMicrosecondsForServoHighDegree parameter.
- * @return  If USE_LEIGHTWEIGHT_SERVO_LIB is enabled:
+ * @return  If USE_LIGHTWEIGHT_SERVO_LIBRARY is enabled:
  *             Return 0/false if not pin 9 or 10 else return aPin
  *             Pin number != 9 results in using pin 10.
  *         Else return servoIndex / internal channel number
@@ -666,8 +667,12 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
      */
     mLastTargetMicrosecondsOrUnits = DEFAULT_PULSE_WIDTH; // The start value if we forget the initial write() after attach()
 
-#  if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-    if (aPin != LEIGHTWEIGHT_SERVO_CHANNEL_A_PIN && aPin != LEIGHTWEIGHT_SERVO_CHANNEL_B_PIN) {
+#  if defined(USE_LIGHTWEIGHT_SERVO_LIBRARY)
+    if (aPin != LIGHTWEIGHT_SERVO_CHANNEL_A_PIN && aPin != LIGHTWEIGHT_SERVO_CHANNEL_B_PIN
+#if defined(LIGHTWEIGHT_SERVO_CHANNEL_C_PIN)
+            && aPin != LIGHTWEIGHT_SERVO_CHANNEL_C_PIN
+#endif
+                    ) {
         return false;
     }
     return aPin;
@@ -682,7 +687,7 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
 #    else
     return Servo::attach(aPin, MINIMUM_PULSE_WIDTH, MAXIMUM_PULSE_WIDTH); // This starts generating pulses of DEFAULT_PULSE_WIDTH
 #    endif // defined(ARDUINO_ARCH_APOLLO3)
-#  endif // defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#  endif // defined(USE_LIGHTWEIGHT_SERVO_LIBRARY)
 #endif // defined(USE_SERVO_LIB)
 }
 
@@ -703,7 +708,7 @@ void ServoEasing::detach() {
         if (mServoIsConnectedToExpander) {
             setPWM(0); // set signal fully off
         } else {
-#    if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#    if defined(USE_LIGHTWEIGHT_SERVO_LIBRARY)
         deinitLightweightServoPin(mServoPin); // disable output and change to input
 #    else
         Servo::detach();
@@ -714,7 +719,7 @@ void ServoEasing::detach() {
 #  endif // defined(USE_SERVO_LIB)
 
 #else
-#  if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#  if defined(USE_LIGHTWEIGHT_SERVO_LIBRARY)
         deinitLightweightServoPin(mServoPin);
 #  else
         Servo::detach();
@@ -936,8 +941,8 @@ void ServoEasing::_writeMicrosecondsOrUnits(int aTargetDegreeOrMicrosecond) {
     if (mServoIsConnectedToExpander) {
         setPWM(mServoPin * ((4096 - (DEFAULT_PCA9685_UNITS_FOR_180_DEGREE + 100)) / 15), aTargetDegreeOrMicrosecond); // mServoPin * 233
     } else {
-#    if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
-        writeMicrosecondsLightweightServo(aTargetDegreeOrMicrosecond, (mServoPin == LEIGHTWEIGHT_SERVO_CHANNEL_A_PIN));
+#    if defined(USE_LIGHTWEIGHT_SERVO_LIBRARY)
+        writeMicrosecondsLightweightServo(aTargetDegreeOrMicrosecond, (mServoPin == LIGHTWEIGHT_SERVO_CHANNEL_A_PIN));
 #    else
         Servo::writeMicroseconds(aTargetDegreeOrMicrosecond); // requires 7 us
 #    endif
@@ -951,7 +956,7 @@ void ServoEasing::_writeMicrosecondsOrUnits(int aTargetDegreeOrMicrosecond) {
 #  endif
 
 #else
-#  if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#  if defined(USE_LIGHTWEIGHT_SERVO_LIBRARY)
     writeMicrosecondsLightweightServoPin(aTargetDegreeOrMicrosecond, mServoPin);
 #  else
     Servo::writeMicroseconds(aTargetDegreeOrMicrosecond); // requires 7 us on Uno
@@ -1991,12 +1996,12 @@ void enableServoEasingInterrupt() {
 
     /*
      * TIMER5_COMPA_vect is used by the Servo library, so use TIMER5_COMPC_vect for ServoEasing.
-     * If USE_LEIGHTWEIGHT_SERVO_LIB is enabled, the interrupt time is determined by servo pulse setting for pin 44
+     * If USE_LIGHTWEIGHT_SERVO_LIBRARY is enabled, the interrupt time is determined by servo pulse setting for pin 44
      * Calling of enableServoEasingInterrupt() disconnects pin 44 to avoid a wrong servo signal
      */
     TIFR5 |= _BV(OCF5C);    // clear any pending interrupts;
     TIMSK5 |= _BV(OCIE5C);  // enable the output compare B interrupt
-#    if defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#    if defined(USE_LIGHTWEIGHT_SERVO_LIBRARY)
     // disable output on pin 44 to avoid a wrong servo signal by setting OCR5C
     DDRL &= ~(_BV(DDL5));
     TCCR5A &= ~(_BV(COM5C1));
@@ -2040,7 +2045,7 @@ void enableServoEasingInterrupt() {
      * because the servo interrupt is used to synchronize e.g. NeoPixel updates.
      */
     TCCR1B |= _BV(ICNC1);
-#    if !defined(USE_LEIGHTWEIGHT_SERVO_LIB)
+#    if !defined(USE_LIGHTWEIGHT_SERVO_LIBRARY)
     OCR1B = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL_MICROS) / 8) - 100; // Generate interrupt 100 us before a new servo period starts
 #    endif
 
