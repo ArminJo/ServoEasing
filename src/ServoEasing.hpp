@@ -1804,7 +1804,7 @@ void ServoEasing::printEasingType(Print *aSerial, uint_fast8_t aEasingType) {
     const char *tEaseTypeStringPtr = (char*) pgm_read_word(&easeTypeStrings[aEasingType & EASE_TYPE_MASK]);
     aSerial->print((__FlashStringHelper*) (tEaseTypeStringPtr));
 #  else
-    aSerial->print(easeTypeStrings[aEasingType]);
+    aSerial->print(easeTypeStrings[aEasingType & EASE_TYPE_MASK]);
 #  endif
     uint_fast8_t tEasingTypeCallStyle = aEasingType & CALL_STYLE_MASK;
     if (tEasingTypeCallStyle == CALL_STYLE_IN) {
