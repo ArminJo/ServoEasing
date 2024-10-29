@@ -439,6 +439,7 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 - LightweightServo support for ATmega2560.
 - Renamed `mCurrentMicrosecondsOrUnits` to `mLastTargetMicrosecondsOrUnits` to make clear, that trim and reverse is NOT applied to this value.
 - Changed `DISABLE_MIN_AND_MAX_CONSTRAINTS` to `ENABLE_MIN_AND_MAX_CONSTRAINTS`. Constraint checking is now disabled by default.
+- candorgander fixed a bug in `printEasingType()` for non AVR platforms.
 
 ### Version 3.3.0
 - Added functions `setEaseTo()`, `setEaseToD()`, `startEaseTo()` and `startEaseToD()` with first parameter as `unsigned int` to avoid compiler errors `call of overloaded 'startEaseTo(unsigned int...`.
