@@ -70,12 +70,6 @@
 
 #include <Arduino.h>
 
-#if defined(DEBUG) && !defined(LOCAL_DEBUG)
-#define LOCAL_DEBUG
-#else
-//#define LOCAL_DEBUG // This enables debug output only for this file
-#endif
-
 /*
  * Protocol selection
  */
@@ -84,7 +78,7 @@
 //#define USE_ONKYO_PROTOCOL    // Like NEC, but take the 16 bit address and command each as one 16 bit value and not as 8 bit normal and 8 bit inverted value.
 //#define USE_FAST_PROTOCOL     // Use FAST protocol instead of NEC / ONKYO.
 //#define ENABLE_NEC2_REPEATS // Instead of sending / receiving the NEC special repeat code, send / receive the original frame for repeat.
-#include "TinyIR.h" // If not defined, it defines IR_RECEIVE_PIN, IR_FEEDBACK_LED_PIN and TINY_RECEIVER_USE_ARDUINO_ATTACH_INTERRUPT
+#include "TinyIR.h"
 
 #include "digitalWriteFast.h"
 /** \addtogroup TinyReceiver Minimal receiver for NEC and FAST protocol
@@ -92,13 +86,18 @@
  */
 
 #if defined(DEBUG)
+#define LOCAL_DEBUG
 #define LOCAL_DEBUG_ATTACH_INTERRUPT
 #else
-//#define LOCAL_DEBUG_ATTACH_INTERRUPT  // to see if attachInterrupt() or static interrupt (by register tweaking) is used
+//#define LOCAL_DEBUG // This enables debug output only for this file
+//#define LOCAL_DEBUG_ATTACH_INTERRUPT  // To see if attachInterrupt() or static interrupt (by register tweaking) is used and no other debug output
 #endif
+
 #if defined(TRACE)
+#define LOCAL_TRACE
 #define LOCAL_TRACE_STATE_MACHINE
 #else
+//#define LOCAL_TRACE // This enables trace output only for this file
 //#define LOCAL_TRACE_STATE_MACHINE  // to see the state of the ISR (Interrupt Service Routine) state machine
 #endif
 
@@ -110,6 +109,8 @@ volatile TinyIRReceiverCallbackDataStruct TinyIRReceiverData;
 /*
  * Set input pin and output pin definitions etc.
  */
+//#define IR_RECEIVE_PIN          2
+//#define IR_FEEDBACK_LED_PIN     LED_BUILTIN
 #if defined(IR_INPUT_PIN)
 #warning "IR_INPUT_PIN is deprecated, use IR_RECEIVE_PIN"
 #define IR_RECEIVE_PIN  IR_INPUT_PIN
@@ -129,7 +130,7 @@ volatile TinyIRReceiverCallbackDataStruct TinyIRReceiverData;
 #endif
 
 #if !defined(IR_FEEDBACK_LED_PIN) && defined(LED_BUILTIN)
-#define IR_FEEDBACK_LED_PIN    LED_BUILTIN
+#define IR_FEEDBACK_LED_PIN     LED_BUILTIN
 #endif
 
 #if !( \
@@ -569,14 +570,19 @@ bool enablePCIInterruptForTinyReceiver() {
 
 #if defined(USE_ATTACH_INTERRUPT) || defined(USE_ATTACH_INTERRUPT_DIRECT)
 #  if defined(USE_ATTACH_INTERRUPT)
-#if defined(NOT_AN_INTERRUPT)
+#    if defined(NOT_AN_INTERRUPT) // check if IDE has defined the check of digitalPinToInterrupt
     if(digitalPinToInterrupt(IR_RECEIVE_PIN) == NOT_AN_INTERRUPT){
         return false;
     }
-#endif
+#    endif
     // costs 112 bytes program memory + 4 bytes RAM
+#    if defined(ARDUINO_ARCH_SAMD) // see https://www.arduino.cc/reference/tr/language/functions/external-interrupts/attachinterrupt/ paragraph: Syntax
+    attachInterrupt(IR_RECEIVE_PIN, IRPinChangeInterruptHandler, CHANGE); // no extra pin mapping here :-(
+#    else
     attachInterrupt(digitalPinToInterrupt(IR_RECEIVE_PIN), IRPinChangeInterruptHandler, CHANGE);
+#    endif
 #  else
+    // USE_ATTACH_INTERRUPT_DIRECT here, only defined for ATtinies *16, see above
     // 2.2 us more than version configured with macros and not compatible
     attachInterrupt(IR_RECEIVE_PIN, IRPinChangeInterruptHandler, CHANGE); // no extra pin mapping here
 #  endif
@@ -584,11 +590,11 @@ bool enablePCIInterruptForTinyReceiver() {
 #  if defined(LOCAL_DEBUG_ATTACH_INTERRUPT)
     Serial.println(F("Use attachInterrupt for pin=" STR(IR_RECEIVE_PIN)));
 #  endif
-
 #else
 #  if defined(LOCAL_DEBUG_ATTACH_INTERRUPT)
     Serial.println(F("Use static interrupt for pin=" STR(IR_RECEIVE_PIN)));
 #  endif
+
 #  if defined(USE_INT0)
     // interrupt on any logical change
     EICRA |= _BV(ISC00);

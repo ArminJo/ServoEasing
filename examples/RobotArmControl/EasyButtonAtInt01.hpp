@@ -221,7 +221,11 @@ void EasyButton::init(bool aIsButtonAtINT0) {
 #  endif
     sPointerToButton0ForISR = this;
 #  if defined(USE_ATTACH_INTERRUPT)
+#    if defined(ARDUINO_ARCH_SAMD) // see https://www.arduino.cc/reference/tr/language/functions/external-interrupts/attachinterrupt/ paragraph: Syntax
+    attachInterrupt(INT0_PIN, &handleINT1Interrupt, CHANGE);
+#    else
     attachInterrupt(digitalPinToInterrupt(INT0_PIN), &handleINT0Interrupt, CHANGE);
+#    endif
 
 #  elif defined(USE_INT2_FOR_BUTTON_0)
     EICRA |= _BV(ISC20);  // interrupt on any logical change
@@ -261,7 +265,11 @@ void EasyButton::init(bool aIsButtonAtINT0) {
     PCMSK2 = digitalPinToBitMask(INT1_PIN);
 #  else
 #    if defined(USE_ATTACH_INTERRUPT)
+#      if defined(ARDUINO_ARCH_SAMD) // see https://www.arduino.cc/reference/tr/language/functions/external-interrupts/attachinterrupt/ paragraph: Syntax
+    attachInterrupt(INT1_PIN, &handleINT1Interrupt, CHANGE);
+#      else
     attachInterrupt(digitalPinToInterrupt(INT1_PIN), &handleINT1Interrupt, CHANGE);
+#      endif
 #    else
     EICRA |= _BV(ISC10);  // interrupt on any logical change
     EIFR |= _BV(INTF1);     // clear interrupt bit
@@ -283,7 +291,11 @@ void EasyButton::init(bool aIsButtonAtINT0) {
 #  endif
         sPointerToButton0ForISR = this;
 #  if defined(USE_ATTACH_INTERRUPT)
+#    if defined(ARDUINO_ARCH_SAMD) // see https://www.arduino.cc/reference/tr/language/functions/external-interrupts/attachinterrupt/ paragraph: Syntax
+        attachInterrupt(INT1_PIN, &handleINT1Interrupt, CHANGE);
+#    else
         attachInterrupt(digitalPinToInterrupt(INT0_PIN), &handleINT0Interrupt, CHANGE);
+#    endif
 #  else
         EICRA |= _BV(ISC00);    // interrupt on any logical change
         EIFR |= _BV(INTF0);     // clear interrupt bit
@@ -331,7 +343,11 @@ void EasyButton::init(bool aIsButtonAtINT0) {
         PCMSK1 = digitalPinToBitMask(INT1_PIN);
 #  else
 #    if defined(USE_ATTACH_INTERRUPT)
+#      if defined(ARDUINO_ARCH_SAMD) // see https://www.arduino.cc/reference/tr/language/functions/external-interrupts/attachinterrupt/ paragraph: Syntax
+        attachInterrupt(INT1_PIN, &handleINT1Interrupt, CHANGE);
+#      else
         attachInterrupt(digitalPinToInterrupt(INT1_PIN), &handleINT1Interrupt, CHANGE);
+#      endif
 #    else
         // ATmega328 here
         EICRA |= _BV(ISC10);  // interrupt on any logical change
