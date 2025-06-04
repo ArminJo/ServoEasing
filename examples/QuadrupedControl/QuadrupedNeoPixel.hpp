@@ -62,8 +62,8 @@ bool sCleanPatternAfterEnd; // Do a wipe out after pattern ended
 bool sShowPatternSynchronizedWithServos; // Flag set e.g. by main loop to force to show the pattern (e.g.distance value) synchronized with servo interrupts.
 uint8_t sLastNPEvaluatedAction; // do determine changes of sCurrentlyRunningAction
 
-NeoPatterns QuadrupedNeoPixelBar = NeoPatterns(NUM_PIXELS, PIN_NEOPIXEL_TRACK, NEO_GRB + NEO_KHZ800, &QuadrupedOnPatternCompleteHandler,
-        true);
+NeoPatterns QuadrupedNeoPixelBar = NeoPatterns(NUM_PIXELS, PIN_NEOPIXEL_TRACK, NEO_GRB + NEO_KHZ800,
+        &QuadrupedOnPatternCompleteHandler, true);
 // false -> do not allow show on partial NeoPixel bar
 NeoPatterns RightNeoPixelBar = NeoPatterns(&QuadrupedNeoPixelBar, PIXEL_OFFSET_RIGHT_BAR, PIXELS_ON_ONE_BAR, false,
         &QuadrupedOnPatternCompleteHandler, true);
@@ -75,7 +75,6 @@ NeoPatterns LeftNeoPixelBar = NeoPatterns(&QuadrupedNeoPixelBar, PIXEL_OFFSET_LE
 // The color background for front distance bar
 color32_t sBarBackgroundColorArrayForDistance[PIXELS_ON_ONE_BAR] = { COLOR32_RED_QUARTER, COLOR32_RED_QUARTER, COLOR32_RED_QUARTER,
 COLOR32_YELLOW, COLOR32_YELLOW, COLOR32_GREEN_QUARTER, COLOR32_GREEN_QUARTER, COLOR32_GREEN_QUARTER };
-
 
 /*
  * @brief This function checks all patterns for update and calls show() of the underlying 24 pixel bar if required.
@@ -121,7 +120,6 @@ void handleQuadrupedNeoPixelUpdate() {
     }
 #endif
 }
-
 
 /*
  * Must be called if one pattern has ended or movement has changed
@@ -181,10 +179,10 @@ void handleAutomaticMovementPattern() {
 #if defined(INFO)
             Serial.print(F("Trot"));
 #endif
-            RightNeoPixelBar.ScannerExtended(Adafruit_NeoPixel::Color(0, NeoPixel::gamma5(sBodyHeight), 0), 3, tDelayFromSpeed,
-                    0, FLAG_SCANNER_EXT_ROCKET, sMovingDirection);
-            LeftNeoPixelBar.ScannerExtended(Adafruit_NeoPixel::Color(NeoPixel::gamma5(sBodyHeight), 0, 0), 3, tDelayFromSpeed,
-                    0, FLAG_SCANNER_EXT_ROCKET, (sMovingDirection + MOVE_DIRECTION_BACKWARD) & MOVE_DIRECTION_MASK);
+            RightNeoPixelBar.ScannerExtended(Adafruit_NeoPixel::Color(0, NeoPixel::gamma5(sBodyHeight), 0), 3, tDelayFromSpeed, 0,
+                    FLAG_SCANNER_EXT_ROCKET, sMovingDirection);
+            LeftNeoPixelBar.ScannerExtended(Adafruit_NeoPixel::Color(NeoPixel::gamma5(sBodyHeight), 0, 0), 3, tDelayFromSpeed, 0,
+                    FLAG_SCANNER_EXT_ROCKET, (sMovingDirection + MOVE_DIRECTION_BACKWARD) & MOVE_DIRECTION_MASK);
             break;
 
         case ACTION_TYPE_ATTENTION:
@@ -192,9 +190,9 @@ void handleAutomaticMovementPattern() {
 #if defined(INFO)
             Serial.print(F("Attention / Down and up"));
 #endif
-            RightNeoPixelBar.Flash(COLOR32_GREEN_HALF, 200, COLOR32_BLACK,200, 5);
-            FrontNeoPixelBar.Flash(COLOR32_BLUE_HALF, 200, COLOR32_BLACK,200, 5);
-            LeftNeoPixelBar.Flash(COLOR32_RED_HALF, 200, COLOR32_BLACK,200, 5);
+            RightNeoPixelBar.Flash(COLOR32_GREEN_HALF, 200, COLOR32_BLACK, 200, 5);
+            FrontNeoPixelBar.Flash(COLOR32_BLUE_HALF, 200, COLOR32_BLACK, 200, 5);
+            LeftNeoPixelBar.Flash(COLOR32_RED_HALF, 200, COLOR32_BLACK, 200, 5);
             break;
 
         case ACTION_TYPE_PAUSE:
@@ -215,9 +213,9 @@ void handleAutomaticMovementPattern() {
             break;
         }
 #if defined(INFO)
-            Serial.print(F(" -> "));
+        Serial.print(F(" -> "));
 #endif
-        if(RightNeoPixelBar.ActivePattern != PATTERN_NONE) {
+        if (RightNeoPixelBar.ActivePattern != PATTERN_NONE) {
             QuadrupedNeoPixelBar.stop(); // stop background pattern, since we have detail patterns
             LeftNeoPixelBar.printlnPattern();
         } else {
@@ -240,7 +238,7 @@ void QuadrupedOnPatternCompleteHandler(NeoPatterns *aLedsPtr) {
     // Reset ActivePattern if no new one will be started.
     aLedsPtr->ActivePattern = PATTERN_NONE;
 
-    if(sCurrentlyRunningAction != ACTION_TYPE_STOP){
+    if (sCurrentlyRunningAction != ACTION_TYPE_STOP) {
         // do not start stop pattern again, after it ends.
         handleAutomaticMovementPattern();
     }

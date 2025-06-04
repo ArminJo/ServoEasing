@@ -1,7 +1,7 @@
 /*
  *  TinyIRReceiver.hpp
  *
- *  Receives IR protocol data of NEC protocol using pin change interrupts.
+ *  Receives IR data of NEC protocol using pin change interrupts.
  *  NEC is the protocol of most cheap remote controls for Arduino.
  *
  *  Parity check is done for address and data.
@@ -28,7 +28,7 @@
  ************************************************************************************
  * MIT License
  *
- * Copyright (c) 2022-2024 Armin Joachimsmeyer
+ * Copyright (c) 2022-2025 Armin Joachimsmeyer
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,25 +56,21 @@
  *
  * - IR_RECEIVE_PIN         The pin number for TinyIRReceiver IR input.
  * - IR_FEEDBACK_LED_PIN    The pin number for TinyIRReceiver feedback LED.
- * - NO_LED_FEEDBACK_CODE   Disables the feedback LED function. Saves 14 bytes program memory.
- * - DISABLE_PARITY_CHECKS  Disable parity checks. Saves 48 bytes of program memory.
- * - USE_EXTENDED_NEC_PROTOCOL Like NEC, but take the 16 bit address as one 16 bit value and not as 8 bit normal and 8 bit inverted value.
+ * - NO_LED_FEEDBACK_CODE   Disables the feedback LED function for send and receive. Saves 14 bytes program memory.
+ * - NO_LED_RECEIVE_FEEDBACK_CODE Disables the LED feedback code for receive.
+ * - NO_LED_SEND_FEEDBACK_CODE    Disables the LED feedback code for send.
+ * - DISABLE_PARITY_CHECKS        Disable parity checks. Saves 48 bytes of program memory.
+ * - USE_EXTENDED_NEC_PROTOCOL    Like NEC, but take the 16 bit address as one 16 bit value and not as 8 bit normal and 8 bit inverted value.
  * - USE_ONKYO_PROTOCOL     Like NEC, but take the 16 bit address and command each as one 16 bit value and not as 8 bit normal and 8 bit inverted value.
  * - USE_FAST_PROTOCOL      Use FAST protocol (no address and 16 bit data, interpreted as 8 bit command and 8 bit inverted command) instead of NEC.
  * - ENABLE_NEC2_REPEATS    Instead of sending / receiving the NEC special repeat code, send / receive the original frame for repeat.
- * - USE_CALLBACK_FOR_TINY_RECEIVER   Call the fixed function "void handleReceivedTinyIRData()" each time a frame or repeat is received.
+ * - USE_CALLBACK_FOR_TINY_RECEIVER   Call the user provided function "void handleReceivedTinyIRData()" each time a frame or repeat is received.
  */
 
 #ifndef _TINY_IR_RECEIVER_HPP
 #define _TINY_IR_RECEIVER_HPP
 
 #include <Arduino.h>
-
-#if defined(DEBUG) && !defined(LOCAL_DEBUG)
-#define LOCAL_DEBUG
-#else
-//#define LOCAL_DEBUG // This enables debug output only for this file
-#endif
 
 /*
  * Protocol selection
@@ -84,7 +80,11 @@
 //#define USE_ONKYO_PROTOCOL    // Like NEC, but take the 16 bit address and command each as one 16 bit value and not as 8 bit normal and 8 bit inverted value.
 //#define USE_FAST_PROTOCOL     // Use FAST protocol instead of NEC / ONKYO.
 //#define ENABLE_NEC2_REPEATS // Instead of sending / receiving the NEC special repeat code, send / receive the original frame for repeat.
-#include "TinyIR.h" // If not defined, it defines IR_RECEIVE_PIN, IR_FEEDBACK_LED_PIN and TINY_RECEIVER_USE_ARDUINO_ATTACH_INTERRUPT
+
+//#define IR_RECEIVE_PIN          2
+//#define NO_LED_RECEIVE_FEEDBACK_CODE  // Disables the LED feedback code for receive.
+//#define IR_FEEDBACK_LED_PIN     12    // Use this, to disable use of LED_BUILTIN definition for IR_FEEDBACK_LED_PIN
+#include "TinyIR.h"
 
 #include "digitalWriteFast.h"
 /** \addtogroup TinyReceiver Minimal receiver for NEC and FAST protocol
@@ -92,10 +92,13 @@
  */
 
 #if defined(DEBUG)
+#define LOCAL_DEBUG
 #define LOCAL_DEBUG_ATTACH_INTERRUPT
 #else
-//#define LOCAL_DEBUG_ATTACH_INTERRUPT  // to see if attachInterrupt() or static interrupt (by register tweaking) is used
+//#define LOCAL_DEBUG // This enables debug output only for this file
+//#define LOCAL_DEBUG_ATTACH_INTERRUPT  // To see if attachInterrupt() or static interrupt (by register tweaking) is used and no other debug output
 #endif
+
 #if defined(TRACE)
 #define LOCAL_TRACE_STATE_MACHINE
 #else
@@ -128,9 +131,6 @@ volatile TinyIRReceiverCallbackDataStruct TinyIRReceiverData;
 #  endif
 #endif
 
-#if !defined(IR_FEEDBACK_LED_PIN) && defined(LED_BUILTIN)
-#define IR_FEEDBACK_LED_PIN    LED_BUILTIN
-#endif
 
 #if !( \
    (defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)) /* ATtinyX5 */ \
@@ -150,11 +150,9 @@ volatile TinyIRReceiverCallbackDataStruct TinyIRReceiverData;
  * Declaration of the callback function provided by the user application.
  * It is called every time a complete IR command or repeat was received.
  */
-extern void handleTinyReceivedIRData();
+extern void handleReceivedTinyIRData();
 
-#if defined(LOCAL_DEBUG)
-uint32_t sMicrosOfGap; // The length of the gap before the start bit
-#endif
+uint32_t sMicrosOfGap; // The length of the gap before the start bit, used for trace
 /**
  * The ISR (Interrupt Service Routine) of TinyIRRreceiver.
  * It handles the NEC protocol decoding and calls the user callback function on complete.
@@ -173,8 +171,12 @@ void IRPinChangeInterruptHandler(void) {
      */
     uint_fast8_t tIRLevel = digitalReadFast(IR_RECEIVE_PIN);
 
-#if !defined(NO_LED_FEEDBACK_CODE) && defined(IR_FEEDBACK_LED_PIN)
+#if !defined(NO_LED_RECEIVE_FEEDBACK_CODE) && defined(IR_FEEDBACK_LED_PIN)
+#  if defined(FEEDBACK_LED_IS_ACTIVE_LOW)
+    digitalWriteFast(IR_FEEDBACK_LED_PIN, tIRLevel);
+#  else
     digitalWriteFast(IR_FEEDBACK_LED_PIN, !tIRLevel);
+#  endif
 #endif
 
     /*
@@ -210,7 +212,7 @@ void IRPinChangeInterruptHandler(void) {
             // We are at the beginning of the header mark, check timing at the next transition
             tState = IR_RECEIVER_STATE_WAITING_FOR_START_SPACE;
             TinyIRReceiverControl.Flags = IRDATA_FLAGS_EMPTY; // If we do it here, it saves 4 bytes
-#if defined(LOCAL_TRACE)
+#if defined(TRACE) // Do not use LOCAL_TRACE here since sMicrosOfGap is read in a cpp file at TRACE
             sMicrosOfGap = tMicrosOfMarkOrSpace32;
 #endif
 #if defined(ENABLE_NEC2_REPEATS)
@@ -227,7 +229,7 @@ void IRPinChangeInterruptHandler(void) {
             if (tMicrosOfMarkOrSpace >= lowerValue25Percent(TINY_RECEIVER_HEADER_SPACE)
                     && tMicrosOfMarkOrSpace <= upperValue25Percent(TINY_RECEIVER_HEADER_SPACE)) {
                 /*
-                 * We have a valid data header space here -> initialize data
+                 * We had a valid data header space here -> initialize data
                  */
                 TinyIRReceiverControl.IRRawDataBitCounter = 0;
 #if (TINY_RECEIVER_BITS > 16)
@@ -455,15 +457,17 @@ bool isIRReceiverAttachedForTinyReceiver() {
 bool initPCIInterruptForTinyReceiver() {
     pinModeFast(IR_RECEIVE_PIN, INPUT);
 
-#if !defined(NO_LED_FEEDBACK_CODE) && defined(IR_FEEDBACK_LED_PIN)
+#if !defined(NO_LED_RECEIVE_FEEDBACK_CODE) && defined(IR_FEEDBACK_LED_PIN)
     pinModeFast(IR_FEEDBACK_LED_PIN, OUTPUT);
+#  if defined(FEEDBACK_LED_IS_ACTIVE_LOW)
+    digitalWriteFast(IR_FEEDBACK_LED_PIN, HIGH);
+#  endif
 #endif
     return enablePCIInterruptForTinyReceiver();
 }
 
 void printTinyReceiverResultMinimal(Print *aSerial) {
 // Print only very short output, since we are in an interrupt context and do not want to miss the next interrupts of the repeats coming soon
-    // Print only very short output, since we are in an interrupt context and do not want to miss the next interrupts of the repeats coming soon
 #if defined(USE_FAST_PROTOCOL)
     aSerial->print(F("C=0x"));
 #else
@@ -569,14 +573,19 @@ bool enablePCIInterruptForTinyReceiver() {
 
 #if defined(USE_ATTACH_INTERRUPT) || defined(USE_ATTACH_INTERRUPT_DIRECT)
 #  if defined(USE_ATTACH_INTERRUPT)
-#if defined(NOT_AN_INTERRUPT)
+#    if defined(NOT_AN_INTERRUPT) // check if IDE has defined the check of digitalPinToInterrupt
     if(digitalPinToInterrupt(IR_RECEIVE_PIN) == NOT_AN_INTERRUPT){
         return false;
     }
-#endif
+#    endif
     // costs 112 bytes program memory + 4 bytes RAM
+#    if defined(ARDUINO_ARCH_SAMD) // see https://www.arduino.cc/reference/tr/language/functions/external-interrupts/attachinterrupt/ paragraph: Syntax
+    attachInterrupt(IR_RECEIVE_PIN, IRPinChangeInterruptHandler, CHANGE); // no extra pin mapping here :-(
+#    else
     attachInterrupt(digitalPinToInterrupt(IR_RECEIVE_PIN), IRPinChangeInterruptHandler, CHANGE);
+#    endif
 #  else
+    // USE_ATTACH_INTERRUPT_DIRECT here, only defined for ATtinies *16, see above
     // 2.2 us more than version configured with macros and not compatible
     attachInterrupt(IR_RECEIVE_PIN, IRPinChangeInterruptHandler, CHANGE); // no extra pin mapping here
 #  endif
@@ -584,11 +593,11 @@ bool enablePCIInterruptForTinyReceiver() {
 #  if defined(LOCAL_DEBUG_ATTACH_INTERRUPT)
     Serial.println(F("Use attachInterrupt for pin=" STR(IR_RECEIVE_PIN)));
 #  endif
-
 #else
 #  if defined(LOCAL_DEBUG_ATTACH_INTERRUPT)
     Serial.println(F("Use static interrupt for pin=" STR(IR_RECEIVE_PIN)));
 #  endif
+
 #  if defined(USE_INT0)
     // interrupt on any logical change
     EICRA |= _BV(ISC00);

@@ -11,19 +11,35 @@ ServoEasing	KEYWORD1
 # Methods and Functions (KEYWORD2)
 #######################################
 attach	KEYWORD2
+attachWithTrim	KEYWORD2
+reattach	KEYWORD2
 detach	KEYWORD2
-setEasingType	KEYWORD2
+pause	KEYWORD2
+resumeWithInterrupts	KEYWORD2
+resumeWithoutInterrupts	KEYWORD2
+stop	KEYWORD2
+update	KEYWORD2
+write	KEYWORD2
+
+getCurrentAngle	KEYWORD2
+getCurrentMicroseconds	KEYWORD2
+getDeltaMicrosecondsOrUnits	KEYWORD2
 getEasingType	KEYWORD2
-setReverseOperation	KEYWORD2
-setTrim	KEYWORD2
-setTrimMicrosecondsOrUnits	KEYWORD2
+getEndMicrosecondsOrUnits	KEYWORD2
+getEndMicrosecondsOrUnitsWithTrim	KEYWORD2
+getMillisForCompleteMove	KEYWORD2
+getSpeed	KEYWORD2
+
+setEasingType	KEYWORD2
 setMaxConstraint	KEYWORD2
 setMinConstraint	KEYWORD2
 setMinMaxConstraint	KEYWORD2
-write	KEYWORD2
-writeMicrosecondsOrUnits	KEYWORD2
+setReverseOperation	KEYWORD2
 setSpeed	KEYWORD2
-getSpeed	KEYWORD2
+setTrim	KEYWORD2
+setTrimMicrosecondsOrUnits	KEYWORD2
+
+writeMicrosecondsOrUnits	KEYWORD2
 easeTo	KEYWORD2
 easeToD	KEYWORD2
 startEaseTo	KEYWORD2
@@ -31,59 +47,66 @@ startEaseToD	KEYWORD2
 stop	KEYWORD2
 continueWithInterrupts	KEYWORD2
 continueWithoutInterrupts	KEYWORD2
-update	KEYWORD2
-getCurrentAngle	KEYWORD2
-getEndAngle	KEYWORD2
-getEndMicrosecondsOrUnits	KEYWORD2
-getEndMicrosecondsOrUnitsWithTrim	KEYWORD2
-getDeltaMicrosecondsOrUnits	KEYWORD2
-getMillisForCompleteMove	KEYWORD2
+
 isMoving	KEYWORD2
 isMovingAndCallYield	KEYWORD2
-areInterruptsActive   KEYWORD2
 MicrosecondsToDegree	KEYWORD2
-DegreeToMicroseconds	KEYWORD2
-synchronizeServosAndStartInterrupt	KEYWORD2
+MicrosecondsOrUnitsToDegree	KEYWORD2
+MicrosecondsOrUnitsToMicroseconds	KEYWORD2
+DegreeOrMicrosecondToMicrosecondsOrUnits	KEYWORD2
+DegreeToMicrosecondsOrUnitsWithTrimAndReverse	KEYWORD2
 print	KEYWORD2
+applyTrimAndReverseToTargetMicrosecondsOrUnits	KEYWORD2
 printDynamic	KEYWORD2
 printStatic	KEYWORD2
-printEasingType	KEYWORD2
 registerUserEaseInFunction	KEYWORD2
 callEasingFunction	KEYWORD2
-QuadraticEaseIn	KEYWORD2
+
+# Static functions
+areInterruptsActive   KEYWORD2
+printEasingType	KEYWORD2
+
+BackEaseIn	KEYWORD2
+CircularEaseIn	KEYWORD2
 CubicEaseIn	KEYWORD2
+EaseOutBounce	KEYWORD2
+ElasticEaseIn	KEYWORD2
+QuadraticEaseIn	KEYWORD2
 QuarticEaseIn	KEYWORD2
 SineEaseIn	KEYWORD2
-CircularEaseIn	KEYWORD2
-BackEaseIn	KEYWORD2
-ElasticEaseIn	KEYWORD2
-EaseOutBounce	KEYWORD2
 
+#Functions for all servos
 setSpeedForAllServos	KEYWORD2
 setIntegerDegreeForAllServos	KEYWORD2
 setFloatDegreeForAllServos	KEYWORD2
 setEaseToForAllServos	KEYWORD2
 setEaseToForAllServosSynchronizeAndStartInterrupt	KEYWORD2
-synchronizeAndEaseToArrayPositions	KEYWORD2
 setEaseToForAllServosSynchronizeAndWait	KEYWORD2
+setEasingTypeForAllServos	KEYWORD2
 printArrayPositions	KEYWORD2
 isOneServoMoving	KEYWORD2
 stopAllServos	KEYWORD2
-updateAllServos	KEYWORD2
 synchronizeAllServosAndStartInterrupt	KEYWORD2
-setEasingTypeForAllServos	KEYWORD2
-updateAndWaitForAllServosToStop	KEYWORD2
 synchronizeAllServosStartAndWaitForAllServosToStop	KEYWORD2
+synchronizeAndEaseToArrayPositions	KEYWORD2
+updateAllServos	KEYWORD2
+updateAndWaitForAllServosToStop	KEYWORD2
 delayAndUpdateAndWaitForAllServosToStop	KEYWORD2
+writeAllServos	KEYWORD2
+
 enableServoEasingInterrupt	KEYWORD2
 disableServoEasingInterrupt	KEYWORD2
-areInterruptsActive	KEYWORD2
 InitializeAndCheckI2CConnection	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
 #######################################
 INVALID_SERVO	LITERAL1
+MAX_EASING_SERVOS	LITERAL1
+
+START_UPDATE_BY_INTERRUPT	LITERAL1
+DO_NOT_START_UPDATE_BY_INTERRUPT	LITERAL1
+
 EASE_LINEAR	LITERAL1
 EASE_QUADRATIC	LITERAL1
 EASE_CUBIC	LITERAL1
@@ -96,5 +119,8 @@ EASE_BOUNCE	LITERAL1
 EASE_USER	LITERAL1
 EASE_PRECISION	LITERAL1
 EASE_DUMMY_MOVE	LITERAL1
-START_UPDATE_BY_INTERRUPT	LITERAL1
-DO_NOT_START_UPDATE_BY_INTERRUPT	LITERAL1
+
+DEFAULT_MICROSECONDS_FOR_0_DEGREE	LITERAL1
+DEFAULT_MICROSECONDS_FOR_180_DEGREE	LITERAL1
+DEFAULT_PCA9685_UNITS_FOR_0_DEGREE	LITERAL1
+DEFAULT_PCA9685_UNITS_FOR_180_DEGREE	LITERAL1

@@ -354,9 +354,9 @@ public:
 #endif
 
     volatile bool isButtonAtINT0;
-    void (*ButtonPressCallback)(bool aButtonToggleState) = NULL; // If not null, is called on every button press with ButtonToggleState as parameter
+    void (*ButtonPressCallback)(bool aButtonToggleState) = nullptr; // If not null, is called on every button press with ButtonToggleState as parameter
 #if !defined(NO_BUTTON_RELEASE_CALLBACK)
-    void (*ButtonReleaseCallback)(bool aButtonToggleState, uint16_t aButtonPressDurationMillis) = NULL; // If not null, is called on every button release with ButtonPressDurationMillis as parameter
+    void (*ButtonReleaseCallback)(bool aButtonToggleState, uint16_t aButtonPressDurationMillis) = nullptr; // If not null, is called on every button release with ButtonPressDurationMillis as parameter
 #endif
 
 #if defined(USE_BUTTON_0)

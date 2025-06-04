@@ -4,11 +4,11 @@
  * Contains the kinematics functions for the meArm robot arm
  * See also: https://www.instructables.com/id/4-DOF-Mechanical-Arm-Robot-Controlled-by-Arduino
  *
- * Servo trims are chosen, so that 0°, 0°, 0° (left/right, back/front, up/down) results in the neutral position of the robot arm.
+ * Servo trims are chosen, so that 0 degree, 0 degree, 0 degree (left/right, back/front, up/down) results in the neutral position of the robot arm.
  * Neutral means: pivot direction forward, and both arms rectangular up and forward
- * Neutral position: X=0
- *                   Y=(LIFT_ARM_LENGTH_MILLIMETER + CLAW_LENGTH_MILLIMETER) - Here claw length is from wrist to hand PLUS base center to shoulder
- *                   Z=HORIZONTAL_ARM_LENGTH_MILLIMETER
+ * Neutral position: X = 0
+ *                   Y = (LIFT_ARM_LENGTH_MILLIMETER + CLAW_LENGTH_MILLIMETER) - Here claw length is from wrist to hand PLUS base center to shoulder
+ *                   Z = HORIZONTAL_ARM_LENGTH_MILLIMETER
  *
  *  Copyright (C) 2019-2022  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com

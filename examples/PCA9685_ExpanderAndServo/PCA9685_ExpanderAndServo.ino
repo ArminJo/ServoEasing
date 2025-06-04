@@ -99,8 +99,6 @@ void blinkLED();
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
-    while (!Serial)
-        ; // Wait for Serial to become available. Is optimized away for some cores.
 
 #if defined(__AVR_ATmega32U4__) || defined(SERIAL_PORT_USBVIRTUAL) || defined(SERIAL_USB) /*stm32duino*/|| defined(USBCON) /*STM32_stm32*/ \
     || defined(SERIALUSB_PID)  || defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_attiny3217)
@@ -109,7 +107,7 @@ void setup() {
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_SERVO_EASING));
 
-    if (Servo1AtPCA9685.InitializeAndCheckI2CConnection(&Serial)) {
+    if (Servo1AtPCA9685.initializeAndCheckI2CConnection(&Serial)) {
         while (true) {
             blinkLED();
         }

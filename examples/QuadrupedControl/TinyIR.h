@@ -2,7 +2,7 @@
  *  TinyIR.h
  *
  *
- *  Copyright (C) 2021-2023  Armin Joachimsmeyer
+ *  Copyright (C) 2021-2025  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of IRMP https://github.com/IRMP-org/IRMP.
@@ -218,11 +218,11 @@ struct TinyIRReceiverStruct {
 
 /*
  * Definitions for member TinyIRReceiverCallbackDataStruct.Flags
- * From IRremoteInt.h
+ * This is a copy of flags from IRremoteInt.h
  */
 #define IRDATA_FLAGS_EMPTY              0x00
 #define IRDATA_FLAGS_IS_REPEAT          0x01
-#define IRDATA_FLAGS_IS_AUTO_REPEAT     0x02 // not used here, overwritten with _IRDATA_FLAGS_IS_SHORT_REPEAT
+#define IRDATA_FLAGS_IS_AUTO_REPEAT     0x02 // not used for TinyIR
 #define IRDATA_FLAGS_PARITY_FAILED      0x04 ///< the current (autorepeat) frame violated parity check
 
 /**
@@ -262,6 +262,19 @@ void sendNECMinimal(uint8_t aSendPin, uint16_t aAddress, uint16_t aCommand, uint
         __attribute__ ((deprecated ("Renamed to sendNEC().")));
 void sendNEC(uint8_t aSendPin, uint16_t aAddress, uint16_t aCommand, uint_fast8_t aNumberOfRepeats = 0, bool aSendNEC2Repeats = false);
 void sendExtendedNEC(uint8_t aSendPin, uint16_t aAddress, uint16_t aCommand, uint_fast8_t aNumberOfRepeats = 0, bool aSendNEC2Repeats = false);
+
+#if defined(NO_LED_FEEDBACK_CODE)
+#  if !defined(NO_LED_RECEIVE_FEEDBACK_CODE)
+#define NO_LED_RECEIVE_FEEDBACK_CODE
+#  endif
+#  if !defined(NO_LED_SEND_FEEDBACK_CODE)
+#define NO_LED_SEND_FEEDBACK_CODE
+#  endif
+#endif
+
+#if !defined(IR_FEEDBACK_LED_PIN) && defined(LED_BUILTIN)
+#define IR_FEEDBACK_LED_PIN     LED_BUILTIN
+#endif
 
 /*
  *  Version 2.2.0 - 7/2024

@@ -662,7 +662,7 @@ void EasyButton::handleINT01Interrupts() {
                 digitalWriteFast(BUTTON_LED_FEEDBACK_PIN, HIGH);
 #endif
                 ButtonToggleState = !ButtonToggleState;
-                if (ButtonPressCallback != NULL) {
+                if (ButtonPressCallback != nullptr) {
                     /*
                      * Call callback function.
                      * interrupts() is required if callback function needs more time to allow millis() to proceed.
@@ -693,7 +693,7 @@ void EasyButton::handleINT01Interrupts() {
                 ButtonPressDurationMillis = tDeltaMillis;
                 ButtonReleaseMillis = tMillis;
 #if !defined(NO_BUTTON_RELEASE_CALLBACK)
-                if (ButtonReleaseCallback != NULL) {
+                if (ButtonReleaseCallback != nullptr) {
                     /*
                      * Call callback function.
                      * interrupts() is required if callback function needs more time to allow millis() to proceed.

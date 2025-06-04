@@ -98,6 +98,7 @@ EasyButton ButtonAtPin2(&changeEasingType);
 #define VCC_EMERGENCY_STOP_MILLIVOLT    3000 // Many Li-ions are specified down to 3.0 volt
 #define VCC_CHECK_PERIOD_MILLIS        10000 // Period of VCC checks
 #define VCC_CHECKS_TOO_LOW_BEFORE_STOP     6 // Shutdown after 6 times (60 seconds) VCC below VCC_STOP_THRESHOLD_MILLIVOLT or 1 time below VCC_EMERGENCY_STOP_MILLIVOLT
+#define LOCAL_INFO // For Serial output at isVCCUndervoltageMultipleTimes(). This is undefined after the include!
 #include "ADCUtils.hpp"
 void checkAndHandleVCCUndervoltage();
 
