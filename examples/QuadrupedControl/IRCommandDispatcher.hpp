@@ -59,7 +59,7 @@
 #else
 //#define LOCAL_INFO // This enables info output only for this file
 #endif
-#if defined(DEBUG) && !defined(LOCAL_DEBUG)
+#if defined(DEBUG)
 #define LOCAL_DEBUG
 // Propagate debug level
 #define LOCAL_INFO
@@ -78,7 +78,7 @@ IRCommandDispatcher IRDispatcher;
 #endif
 
 #if defined(USE_TINY_IR_RECEIVER)
-#define USE_CALLBACK_FOR_TINY_RECEIVER  // Call the fixed function "void handleReceivedTinyIRData()" each time a frame or repeat is received.
+#define USE_CALLBACK_FOR_TINY_RECEIVER  // Call the user provided function "void handleReceivedTinyIRData()" each time a frame or repeat is received.
 #include "TinyIRReceiver.hpp" // included in "IRremote" library
 
 void IRCommandDispatcher::init() {

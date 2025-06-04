@@ -47,6 +47,7 @@ Contains the [QuadrupedControl](https://github.com/ArminJo/QuadrupedControl) exa
 - [Multiple servo handling](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#multiple-servo-handling)
 - [Comparison between Quadratic, Cubic and Sine easings.](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#comparison-between-quadratic-cubic-and-sine-easings)
 - [Useful resources](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#useful-resources)
+- [Initial movement of Servo](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#initial-movement-of-servo)
 - [Resolution of servo positioning](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#resolution-of-servo-positioning)
 - [Mapping of servo positioning](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#mapping-of-servo-positioning)
 - [Speed of servo positioning](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#speed-of-servo-positioning)
@@ -88,10 +89,11 @@ For instructions how to enable these alternatives, see [Compile options / macros
 - **Linear** and 9 other ease movements are provided.
 - All servos can move **synchronized** or **independently**.
 - **Non blocking** movements are implemented by the **startEaseTo\* functions** by using a timer. This functions are not available for all platforms.
-- Degree values >= 400 is taken as microsecond values for the servo pulse to allow fine-grained control.
+- A degree value of 400 or more is taken as a microsecond value for the servo pulse, which allows for fine-grained control.
 - **Float angels** are supported to allow **fine-grained servo control** comparable to using microseconds.
 - **User-specified callback function at "servo arrived" enables movement control independent of main loop**.
 - **Stop and resume** of servo movement.
+- **Detach and reattach**. No servo signal is generated for a detached servo. Therefore, it is not blocked and can be moved manually.
 - A **trim value** can be set for any servo. Its value is internally added to each requested position.
 - **Reverse operation** of servo is possible e.g. if it is mounted head down.
 - **Constraints for minimum and maximum servo degree** can be specified. Trim and reverse are applied after constraint processing.
@@ -187,6 +189,15 @@ You can handle multiple servos simultaneously by [special functions](https://git
 
 <br/>
 
+# Initial movement of Servo
+**Servos are buld to reach the target position as fast as possible.** 
+To achieve slow movement, this library gradually adjusts the target position, 
+and the servo attempts to respond to these changes as quickly as possible.
+This creates the appearance of slow movement even when the servo reacts very quickly.<br/>
+Initially, after powering on, the software has no information about the actual servo position!<br/>
+This leads to the servo moving quickly to the start position that the software sends it. This cannot be avoided unless we can magically guess the actual position!
+<br/>
+
 # Resolution of servo positioning
 - The standard range of 544 to 2400 &micro;s per 180 &deg; results in an timing of around **10 &micro;s per degree**.
 - The **Arduino Servo library on AVR** uses an prescaler of 8 at 16 MHz clock resulting in a resolution of **0.5 &micro;s**.
@@ -241,10 +252,14 @@ These values are measured with the [UnitTest example](https://github.com/ArminJo
 
 # Why *.hpp instead of *.cpp?
 **Every \*.cpp file is compiled separately** by a call of the compiler exclusively for this cpp file. These calls are managed by the IDE / make system.
-In the Arduino IDE the calls are executed when you click on *Verify* or *Upload*.<br/>
-And now our problem with Arduino is: **How to set [compile options](#compile-options--macros-for-this-library) for all *.cpp files, especially for libraries used?**<br/>
-IDE's like [Sloeber](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#modifying-compile-options--macros-with-sloeber-ide) or [PlatformIO](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#modifying-compile-options--macros-with-platformio) support this by allowing to specify a set of options per project.
-They add these options at each compiler call e.g. `-DTRACE`.<br/>
+In the Arduino IDE the calls are executed when you click on *Verify* or *Upload*.
+
+And now **our problem with Arduino** is:<br/>
+**How to set [compile options](#compile-options--macros-for-this-library) for all *.cpp files, especially for libraries used?**<br/>
+IDE's like [Sloeber](https://github.com/Arduino-IRremote/Arduino-IRremote?tab=readme-ov-file#modifying-compile-options--macros-with-sloeber-ide) or
+[PlatformIO](https://github.com/Arduino-IRremote/Arduino-IRremote?tab=readme-ov-file#modifying-compile-options--macros-with-platformio) support this by allowing to specify a set of options per project.
+They add these options at each compiler call e.g. `-DTRACE`.
+
 But Arduino lacks this feature. So the **workaround** is not to compile all sources separately, but to concatenate them to one huge source file by including them in your source.
 This is done by e.g. `#include "ServoEasing.hpp"`.
 <br/>
@@ -294,8 +309,6 @@ Modify them by enabling / disabling them, or change the values if applicable.
 | `USE_LIGHTWEIGHT_SERVO_LIBRARY` | disabled | Available only for ATmega328 and ATmega2560. Supports only servos at pin 9 and 10 (44, 45, 46). Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple. See [below](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#using-the-included-lightweight-servo-library-for-atmega328). Saves up to 742 bytes program memory and 42 bytes RAM. |
 | `MINIMUM_PULSE_WIDTH` | 400 | The shortest pulse which can be sent to a servo by this library. This value is smaller than the value used by the Arduino Servo library, which is 544 us (MIN_PULSE_WIDTH), to be more versatile.
 | `MAXIMUM_PULSE_WIDTH` | 3500 | The shortest pulse which can be sent to a servo by this library. This value is greater than the value used by the Arduino Servo library, which is 2400 us (MAX_PULSE_WIDTH), to be more versatile.|
-
-
 
 <br/>
 

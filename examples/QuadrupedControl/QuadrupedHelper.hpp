@@ -260,7 +260,7 @@ void doUSScan() {
 void doRandomMelody() {
     sCurrentlyRunningAction = ACTION_TYPE_MELODY; // to make melody stoppable with stop command of IR
     startPlayRandomRtttlFromArrayPGMAndPrintName(PIN_BUZZER, RTTTLMelodiesSmall,
-    ARRAY_SIZE_MELODIES_SMALL, &Serial, NULL);
+    ARRAY_SIZE_MELODIES_SMALL, &Serial, nullptr);
     sAtLeastOnePatternsIsActive = false; // disable any pattern, which disturbs the melody
 }
 #endif

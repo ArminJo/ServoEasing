@@ -103,7 +103,7 @@ void setup() {
      * This is the position where the movement starts.
      *******************************************************/
 #if defined(USE_PCA9685_SERVO_EXPANDER)
-    if (Servo1.InitializeAndCheckI2CConnection(&Serial)) {
+    if (Servo1.initializeAndCheckI2CConnection(&Serial)) {
         while (true) {
             blinkLED();
         }

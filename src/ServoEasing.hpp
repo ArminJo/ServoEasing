@@ -30,7 +30,7 @@
 
 /*
  * This library can be configured at compile time by the following options / macros:
- * For more details see: https://github.com/ArminJo/ServoEasing#compile-options--macros-for-this-library
+ * For more details see: https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#compile-options--macros-for-this-library
  *
  * - USE_PCA9685_SERVO_EXPANDER         Enables the use of the PCA9685 I2C expander chip/board.
  * - USE_SERVO_LIB                      Use of PCA9685 normally disables use of regular servo library. You can force additional using of regular servo library by defining USE_SERVO_LIB.
@@ -222,10 +222,10 @@ ServoEasing::ServoEasing(uint8_t aPCA9685I2CAddress, TwoWire *aI2CClass) // @sup
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
     mEasingType = EASE_LINEAR;
 #  if defined(ENABLE_EASE_USER)
-    mUserEaseInFunction = NULL;
+    mUserEaseInFunction = nullptr;
 #  endif
 #endif
-    TargetPositionReachedHandler = NULL;
+    TargetPositionReachedHandler = nullptr;
 
 #if defined(ENABLE_MIN_AND_MAX_CONSTRAINTS)
     // initialize with some reasonable values
@@ -411,10 +411,10 @@ ServoEasing::ServoEasing() // @suppress("Class members should be properly initia
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
     mEasingType = EASE_LINEAR;
 #  if defined(ENABLE_EASE_USER)
-    mUserEaseInFunction = NULL;
+    mUserEaseInFunction = nullptr;
 #  endif
 #endif
-    TargetPositionReachedHandler = NULL;
+    TargetPositionReachedHandler = nullptr;
 
 #if defined(ENABLE_MIN_AND_MAX_CONSTRAINTS)
     // initialize with some reasonable values
@@ -511,7 +511,7 @@ uint8_t ServoEasing::attachWithTrim(int aPin, int aTrimDegreeOrMicrosecond, int 
 /*
  * Like attach, but keep end position values e.g. of last attach().
  * !!! Can only be used AFTER initial attach() and detach()!!!
- * Can be used to reverse detach() operation
+ * Can be used to reverse / undo a detach() operation
  */
 uint8_t ServoEasing::reattach() {
     /*
@@ -519,8 +519,8 @@ uint8_t ServoEasing::reattach() {
      */
     mServoIndex = INVALID_SERVO; // flag indicating an invalid servo index
     for (uint_fast8_t tServoIndex = 0; tServoIndex < MAX_EASING_SERVOS; ++tServoIndex) {
-        if (ServoEasingArray[tServoIndex] == NULL) {
-            ServoEasingArray[tServoIndex] = this;
+        if (ServoEasingArray[tServoIndex] == nullptr) {
+            ServoEasingArray[tServoIndex] = nullptr;
             mServoIndex = tServoIndex;
             if (tServoIndex > sServoArrayMaxIndex) {
                 sServoArrayMaxIndex = tServoIndex;
@@ -536,15 +536,15 @@ uint8_t ServoEasing::reattach() {
     // No actions for PCA9685 required
 #  if !defined(USE_PCA9685_SERVO_EXPANDER) || defined(USE_SERVO_LIB)
     /*
-     * Call attach() of the underlying Servo library and position to position of detach()
+     * Call attach() of the underlying Servo library and position to the position at the time of detach()
      */
 #    if defined(ARDUINO_ARCH_APOLLO3)
     Servo::attach(mServoPin, MINIMUM_PULSE_WIDTH, MAXIMUM_PULSE_WIDTH);
-    _writeMicrosecondsOrUnits (mLastTargetMicrosecondsOrUnits); // Start at the position of detach()
+    _writeMicrosecondsOrUnits (mLastTargetMicrosecondsOrUnits); // Start at the position at the time of detach()
     return mServoPin; // Sparkfun apollo3 Servo library has no return value for attach :-(
 #    else
     uint8_t tReturnValue = Servo::attach(mServoPin, MINIMUM_PULSE_WIDTH, MAXIMUM_PULSE_WIDTH);
-    _writeMicrosecondsOrUnits(mLastTargetMicrosecondsOrUnits); // Start at the position of detach()
+    _writeMicrosecondsOrUnits(mLastTargetMicrosecondsOrUnits); // Start at the position at the time of detach()
     return tReturnValue;
 #    endif // defined(ARDUINO_ARCH_APOLLO3)
 #  else
@@ -609,7 +609,7 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
      */
     mServoIndex = INVALID_SERVO; // flag indicating an invalid servo index
     for (uint_fast8_t tServoIndex = 0; tServoIndex < MAX_EASING_SERVOS; ++tServoIndex) {
-        if (ServoEasingArray[tServoIndex] == NULL) {
+        if (ServoEasingArray[tServoIndex] == nullptr) {
             ServoEasingArray[tServoIndex] = this;
             mServoIndex = tServoIndex;
             if (tServoIndex > sServoArrayMaxIndex) {
@@ -692,14 +692,15 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
 }
 
 /**
- * Mark a detached servo in the array by setting the object pointer to NULL
- * The next attach() then uses this NULL pointer position and thus gets the index of the former detached one.
+ * No servo signal is generated for a detached servo. Therefore, it is not blocked and can be moved manually.
+ * Mark a detached servo in the array by setting the object pointer to nullptr
+ * The next attach() or reattach() then uses this nullptr pointer position and thus gets the index of the former detached one.
  */
 void ServoEasing::detach() {
     if (mServoIndex != INVALID_SERVO) {
-        ServoEasingArray[mServoIndex] = NULL;
+        ServoEasingArray[mServoIndex] = nullptr;
         // If servo with highest index in array was detached, we want to find new sServoArrayMaxIndex
-        while (ServoEasingArray[sServoArrayMaxIndex] == NULL && sServoArrayMaxIndex > 0) {
+        while (ServoEasingArray[sServoArrayMaxIndex] == nullptr && sServoArrayMaxIndex > 0) {
             sServoArrayMaxIndex--;
         }
 
@@ -1498,7 +1499,7 @@ bool ServoEasing::update() {
         // end of time reached -> write end position and return true
         _writeMicrosecondsOrUnits(mEndMicrosecondsOrUnits);
         mServoMoves = false;
-        if(TargetPositionReachedHandler != NULL){
+        if(TargetPositionReachedHandler != nullptr){
             // Call end callback function
             TargetPositionReachedHandler(this);
         }
@@ -1542,7 +1543,7 @@ bool ServoEasing::update() {
         // end of time reached -> write end position and return true
         _writeMicrosecondsOrUnits(mEndMicrosecondsOrUnits);
         mServoMoves = false;
-        if (TargetPositionReachedHandler != NULL) {
+        if (TargetPositionReachedHandler != nullptr) {
             // Call end callback function
             TargetPositionReachedHandler(this);
         }
@@ -1662,7 +1663,7 @@ float ServoEasing::callEasingFunction(float aFactorOfTimeCompletion) {
 
 #  if defined(ENABLE_EASE_USER)
     case EASE_USER_DIRECT:
-        if (mUserEaseInFunction != NULL) {
+        if (mUserEaseInFunction != nullptr) {
             return mUserEaseInFunction(aFactorOfTimeCompletion, UserDataPointer);
         } else {
             return 0.0;
@@ -1818,7 +1819,7 @@ void ServoEasing::printEasingType(Print *aSerial, uint_fast8_t aEasingType) {
     }
 }
 
-int ServoEasing::applyTrimAndreverseToTargetMicrosecondsOrUnits(int aTargetMicrosecondsOrUnits) {
+int ServoEasing::applyTrimAndReverseToTargetMicrosecondsOrUnits(int aTargetMicrosecondsOrUnits) {
     aTargetMicrosecondsOrUnits += mTrimMicrosecondsOrUnits;
     if (mOperateServoReverse) {
         aTargetMicrosecondsOrUnits = mServo180DegreeMicrosecondsOrUnits
@@ -1842,14 +1843,14 @@ void ServoEasing::printDynamic(Print *aSerial, bool doExtendedOutput) {
     aSerial->print(MicrosecondsOrUnitsToDegree(mLastTargetMicrosecondsOrUnits));
     if (doExtendedOutput) {
         aSerial->print('|');
-        aSerial->print(applyTrimAndreverseToTargetMicrosecondsOrUnits(mLastTargetMicrosecondsOrUnits));
+        aSerial->print(applyTrimAndReverseToTargetMicrosecondsOrUnits(mLastTargetMicrosecondsOrUnits));
     }
 
     aSerial->print(F(" -> "));
     aSerial->print(MicrosecondsOrUnitsToDegree(mEndMicrosecondsOrUnits));
     if (doExtendedOutput) {
         aSerial->print('|');
-        aSerial->print(applyTrimAndreverseToTargetMicrosecondsOrUnits(mEndMicrosecondsOrUnits));
+        aSerial->print(applyTrimAndReverseToTargetMicrosecondsOrUnits(mEndMicrosecondsOrUnits));
     }
 
     aSerial->print(F(" = "));
@@ -2178,7 +2179,7 @@ void enableServoEasingInterrupt() {
     Timer20ms.attach(handleServoTimerInterrupt, std::chrono::microseconds(REFRESH_INTERVAL_MICROS));
 
 #elif defined(ARDUINO_ARCH_RP2040)
-    add_repeating_timer_us(REFRESH_INTERVAL_MICROS, handleServoTimerInterruptHelper, NULL, &Timer20ms);
+    add_repeating_timer_us(REFRESH_INTERVAL_MICROS, handleServoTimerInterruptHelper, nullptr, &Timer20ms);
 
 #elif defined(TEENSYDUINO)
     // common for all Teensy
@@ -2335,7 +2336,7 @@ void setEasingTypeForAllServos(uint_fast8_t aEasingType) {
  */
 void setEasingTypeForMultipleServos(uint_fast8_t aNumberOfServos, uint_fast8_t aEasingType) {
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= aNumberOfServos; ++tServoIndex) {
-        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != nullptr) {
             ServoEasing::ServoEasingArray[tServoIndex]->mEasingType = aEasingType;
         }
     }
@@ -2386,17 +2387,17 @@ void printArrayPositions(Print *aSerial) {
 // AJ 22.05.2019 This does not work with GCC 7.3.0 atmel6.3.1 and -Os
 // It drops the tServoIndex < MAX_EASING_SERVOS condition, since  MAX_EASING_SERVOS is equal to the size of sServoArray
 // This has only an effect if the whole sServoArray is filled up, i.e we have declared MAX_EASING_SERVOS ServoEasing objects.
-//    while (ServoEasing::ServoEasingArray[tServoIndex] != NULL && tServoIndex < MAX_EASING_SERVOS) {
+//    while (ServoEasing::ServoEasingArray[tServoIndex] != nullptr && tServoIndex < MAX_EASING_SERVOS) {
 //        aSerial->print(ServoEasingNextPositionArray[tServoIndex]);
 //        aSerial->print(F(" | "));
 //        tServoIndex++;
 //    }
 
 // switching conditions cures the bug
-//    while (tServoIndex < MAX_EASING_SERVOS && ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+//    while (tServoIndex < MAX_EASING_SERVOS && ServoEasing::ServoEasingArray[tServoIndex] != nullptr) {
 
 // this also does not work
-//    for (uint_fast8_t tServoIndex = 0; ServoEasing::ServoEasingArray[tServoIndex] != NULL && tServoIndex < MAX_EASING_SERVOS  ; ++tServoIndex) {
+//    for (uint_fast8_t tServoIndex = 0; ServoEasing::ServoEasingArray[tServoIndex] != nullptr && tServoIndex < MAX_EASING_SERVOS  ; ++tServoIndex) {
 //        aSerial->print(ServoEasingNextPositionArray[tServoIndex]);
 //        aSerial->print(F(" | "));
 //    }
@@ -2409,7 +2410,7 @@ void printArrayPositions(Print *aSerial) {
 
 void writeAllServos(int aDegreeOrMicrosecond) {
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
-        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != nullptr) {
             ServoEasing::ServoEasingArray[tServoIndex]->write(aDegreeOrMicrosecond);
         }
     }
@@ -2417,7 +2418,7 @@ void writeAllServos(int aDegreeOrMicrosecond) {
 
 void setSpeedForAllServos(uint_fast16_t aDegreesPerSecond) {
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
-        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != nullptr) {
             ServoEasing::ServoEasingArray[tServoIndex]->mSpeed = aDegreesPerSecond;
         }
     }
@@ -2478,7 +2479,7 @@ void setFloatDegreeForAllServos(uint_fast8_t aNumberOfServos, ...) {
 bool setEaseToForAllServos() {
     bool tOneServoIsMoving = false;
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
-        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != nullptr) {
             tOneServoIsMoving = ServoEasing::ServoEasingArray[tServoIndex]->setEaseTo(
                     ServoEasing::ServoEasingNextPositionArray[tServoIndex], ServoEasing::ServoEasingArray[tServoIndex]->mSpeed)
                     || tOneServoIsMoving;
@@ -2495,7 +2496,7 @@ bool setEaseToForAllServos() {
 bool setEaseToForAllServos(uint_fast16_t aDegreesPerSecond) {
     bool tOneServoIsMoving = false;
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
-        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != nullptr) {
             tOneServoIsMoving = ServoEasing::ServoEasingArray[tServoIndex]->setEaseTo(
                     ServoEasing::ServoEasingNextPositionArray[tServoIndex], aDegreesPerSecond) || tOneServoIsMoving;
         }
@@ -2511,7 +2512,7 @@ bool setEaseToForAllServos(uint_fast16_t aDegreesPerSecond) {
 bool setEaseToDForAllServos(uint_fast16_t aMillisForMove) {
     bool tOneServoIsMoving = false;
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
-        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != nullptr) {
             tOneServoIsMoving = ServoEasing::ServoEasingArray[tServoIndex]->setEaseToD(
                     ServoEasing::ServoEasingNextPositionArray[tServoIndex], aMillisForMove) || tOneServoIsMoving;
         }
@@ -2521,7 +2522,7 @@ bool setEaseToDForAllServos(uint_fast16_t aMillisForMove) {
 
 bool isOneServoMoving() {
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
-        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL && ServoEasing::ServoEasingArray[tServoIndex]->mServoMoves) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != nullptr && ServoEasing::ServoEasingArray[tServoIndex]->mServoMoves) {
             return true;
         }
     }
@@ -2530,7 +2531,7 @@ bool isOneServoMoving() {
 
 void stopAllServos() {
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
-        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != nullptr) {
             ServoEasing::ServoEasingArray[tServoIndex]->mServoMoves = false;
         }
     }
@@ -2543,7 +2544,7 @@ void pauseAllServos() {
 #if !defined(DISABLE_PAUSE_RESUME)
     unsigned long tMillis = millis();
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
-        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != nullptr) {
             ServoEasing::ServoEasingArray[tServoIndex]->mServoIsPaused = true;
             ServoEasing::ServoEasingArray[tServoIndex]->mMillisAtStopMove = tMillis;
         }
@@ -2553,7 +2554,7 @@ void pauseAllServos() {
 
 void resumeWithInterruptsAllServos() {
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
-        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != nullptr) {
             ServoEasing::ServoEasingArray[tServoIndex]->resumeWithInterrupts();
         }
     }
@@ -2561,7 +2562,7 @@ void resumeWithInterruptsAllServos() {
 
 void resumeWithoutInterruptsAllServos() {
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
-        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != nullptr) {
             ServoEasing::ServoEasingArray[tServoIndex]->resumeWithoutInterrupts();
         }
     }
@@ -2573,7 +2574,7 @@ void resumeWithoutInterruptsAllServos() {
 bool updateAllServos() {
     bool tAllServosStopped = true;
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
-        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != nullptr) {
             tAllServosStopped = ServoEasing::ServoEasingArray[tServoIndex]->update() && tAllServosStopped;
 
         }
@@ -2635,7 +2636,7 @@ void synchronizeAllServosAndStartInterrupt(bool aStartUpdateByInterrupt) {
     uint32_t tMillisAtStartMove = 0;
 
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
-        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL && ServoEasing::ServoEasingArray[tServoIndex]->mServoMoves) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != nullptr && ServoEasing::ServoEasingArray[tServoIndex]->mServoMoves) {
             // process servos which really moves
             tMillisAtStartMove = ServoEasing::ServoEasingArray[tServoIndex]->mMillisAtStartMove;
             if (ServoEasing::ServoEasingArray[tServoIndex]->mMillisForCompleteMove > tMaxMillisForCompleteMove) {
@@ -2658,7 +2659,7 @@ void synchronizeAllServosAndStartInterrupt(bool aStartUpdateByInterrupt) {
      * Synchronize start time to avoid race conditions at the end of movement
      */
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
-        if (ServoEasing::ServoEasingArray[tServoIndex] != NULL && ServoEasing::ServoEasingArray[tServoIndex]->mServoMoves) {
+        if (ServoEasing::ServoEasingArray[tServoIndex] != nullptr && ServoEasing::ServoEasingArray[tServoIndex]->mServoMoves) {
             ServoEasing::ServoEasingArray[tServoIndex]->mMillisAtStartMove = tMillisAtStartMove;
             ServoEasing::ServoEasingArray[tServoIndex]->mMillisForCompleteMove = tMaxMillisForCompleteMove;
         }
@@ -2850,6 +2851,14 @@ float ServoEasing::EaseOutBounce(float aFactorOfTimeCompletion) {
 bool ServoEasing::InitializeAndCheckI2CConnection(Print *aSerial) // Print instead of Stream saves 95 bytes flash
 #else
 bool ServoEasing::InitializeAndCheckI2CConnection(Stream *aSerial) // Print has no flush()
+#endif
+{
+    return initializeAndCheckI2CConnection(aSerial);
+}
+#if defined(__AVR__)
+bool ServoEasing::initializeAndCheckI2CConnection(Print *aSerial) // Print instead of Stream saves 95 bytes flash
+#else
+bool ServoEasing::initializeAndCheckI2CConnection(Stream *aSerial) // Print has no flush()
 #endif
         {
 #if !defined(USE_SOFT_I2C_MASTER)
