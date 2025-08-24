@@ -1,0 +1,6 @@
+<map id="ServoEasing::attach" name="ServoEasing::attach">
+<area shape="rect" id="node1" title="Attaches servo to pin and sets the servo timing parameters." alt="" coords="5,32,145,60"/>
+<area shape="rect" id="node2" href="$classServo.html#a70076d9a77de97241badd1f377817219" title=" " alt="" coords="224,5,324,33"/>
+<area shape="rect" id="node3" href="$classServoEasing.html#a6d11dcb885fceb6a6d0eedaae19ba5b0" title="Prints values which normally does NOT change from move to move." alt="" coords="193,57,355,85"/>
+<area shape="rect" id="node4" href="$classServoEasing.html#a4d1403dd5e0793195514e96b390aec91" title="Used to convert e.g." alt="" coords="403,49,587,93"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="isOneServoMoving" name="isOneServoMoving">
+<area shape="rect" id="node1" title=" " alt="" coords="182,5,313,33"/>
+<area shape="rect" id="node2" href="$classServoEasing.html#a0cfaef8b682e9c22933e804ee63179e4" title="This stops the servo at any position." alt="" coords="5,5,134,33"/>
+</map>

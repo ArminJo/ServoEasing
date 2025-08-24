@@ -1,0 +1,5 @@
+<map id="synchronizeAllServosStartAndWaitForAllServosToStop" name="synchronizeAllServosStartAndWaitForAllServosToStop">
+<area shape="rect" id="node1" title="Synchronize and blocking wait until all servos are stopped." alt="" coords="284,40,470,84"/>
+<area shape="rect" id="node2" href="$ServoEasing_8hpp.html#a1b5872f39331d279ca84e9c4d1eaa980" title="Synchronize and blocking wait until all servos are stopped Take the longer duration in order to move ..." alt="" coords="5,5,236,49"/>
+<area shape="rect" id="node3" href="$ServoEasing_8hpp.html#a3225cc894f78b7f8b2552561d150052c" title=" " alt="" coords="26,73,215,117"/>
+</map>

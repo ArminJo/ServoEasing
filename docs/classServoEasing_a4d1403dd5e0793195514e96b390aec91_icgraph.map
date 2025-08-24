@@ -1,0 +1,16 @@
+<map id="ServoEasing::MicrosecondsOrUnitsToDegree" name="ServoEasing::MicrosecondsOrUnitsToDegree">
+<area shape="rect" id="node1" title="Used to convert e.g." alt="" coords="713,117,898,161"/>
+<area shape="rect" id="node2" href="$classServoEasing.html#a2f85ba1133db74d1b02a4f52d32cb303" title=" " alt="" coords="468,5,665,33"/>
+<area shape="rect" id="node4" href="$classServoEasing.html#a2b8bf31336aec0daecbb790d97c9ad45" title="Only used in startEaseTo to compute target degree For PCA9685, we have stored units in mServo0DegreeM..." alt="" coords="474,57,659,101"/>
+<area shape="rect" id="node5" href="$classServoEasing.html#ae3c79612a6986920c24112bf637cbd78" title="Compute the MillisForCompleteMove parameter for use of startEaseToD() function and handle CALL_STYLE_..." alt="" coords="10,73,184,101"/>
+<area shape="rect" id="node6" href="$classServoEasing.html#a08f9f4edf145eef15a5a7d7f04858925" title="Prints values which may change from move to move." alt="" coords="476,177,657,205"/>
+<area shape="rect" id="node13" href="$classServoEasing.html#a6d11dcb885fceb6a6d0eedaae19ba5b0" title="Prints values which normally does NOT change from move to move." alt="" coords="486,229,648,257"/>
+<area shape="rect" id="node3" href="$classServoEasing.html#a75a62f162f7f3bb410b72f5ae79d5b47" title=" " alt="" coords="264,5,392,33"/>
+<area shape="rect" id="node7" href="$classServoEasing.html#a61415b921c9d15ce7aebd8425e1b4e7f" title="Do a printDynamic() and a printStatic()" alt="" coords="264,229,392,257"/>
+<area shape="rect" id="node8" href="$classServoEasing.html#a3fc76128ba052768df22ac28503a6f10" title="Sets up all the values required for a smooth move to new value Lower level function with time instead..." alt="" coords="237,177,420,205"/>
+<area shape="rect" id="node9" href="$classServoEasing.html#ab451c457f9e08ac17061cee812936912" title=" " alt="" coords="19,125,175,153"/>
+<area shape="rect" id="node10" href="$classServoEasing.html#ae373bfcaec45e822ddd0503a2eb7f269" title="stay at the position for aMillisToWait Used as delay for callback" alt="" coords="8,177,186,205"/>
+<area shape="rect" id="node11" href="$classServoEasing.html#ac5d085c2eb06b4fa2a3bdc3d914c740b" title="Sets easing parameter, but does not start." alt="" coords="9,229,185,257"/>
+<area shape="rect" id="node12" href="$classServoEasing.html#aeda1d4eb1459807f3b74554694c0ee6b" title=" " alt="" coords="5,281,189,309"/>
+<area shape="rect" id="node14" href="$classServoEasing.html#ad5a94136adadb9a7ddfc9dfda81230f7" title="Attaches servo to pin and sets the servo timing parameters." alt="" coords="259,281,398,309"/>
+</map>

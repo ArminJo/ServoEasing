@@ -1,0 +1,26 @@
+<map id="ServoEasing::setEaseToD" name="ServoEasing::setEaseToD">
+<area shape="rect" id="node1" title="Sets easing parameter, but does not start." alt="" coords="5,64,181,92"/>
+<area shape="rect" id="node2" href="$classServoEasing.html#a3fc76128ba052768df22ac28503a6f10" title="Sets up all the values required for a smooth move to new value Lower level function with time instead..." alt="" coords="229,64,412,92"/>
+<area shape="rect" id="node3" href="$classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="1406,8,1640,52"/>
+<area shape="rect" id="node4" href="$ServoEasing_8hpp.html#ad98a05e05b1349df07a2a84a6ed06ae9" title="Timer1 is used for the Arduino Servo library." alt="" coords="460,64,641,92"/>
+<area shape="rect" id="node21" href="$classServoEasing.html#a08f9f4edf145eef15a5a7d7f04858925" title="Prints values which may change from move to move." alt="" coords="460,157,641,185"/>
+<area shape="rect" id="node5" href="$ServoEasing_8hpp.html#a1ca4b9e40346b216e2333971aa83b5a3" title="Update all servos from list and check if all servos have stopped." alt="" coords="725,64,900,92"/>
+<area shape="rect" id="node6" href="$ServoEasing_8hpp.html#a0327b7f8ede3426c611701579f0ba9e9" title=" " alt="" coords="984,64,1168,92"/>
+<area shape="rect" id="node7" href="$ServoEasing_8hpp.html#a12b38a954d3061ea45838d147a7cfc08" title=" " alt="" coords="1018,116,1134,144"/>
+<area shape="rect" id="node8" href="$classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="1216,99,1358,127"/>
+<area shape="rect" id="node9" href="$classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1413,85,1633,129"/>
+<area shape="rect" id="node11" href="$classServoEasing.html#a889e7f6cefd62113ac55bef58959499b" title=" " alt="" coords="1416,240,1630,268"/>
+<area shape="rect" id="node10" href="$classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="1712,5,1884,33"/>
+<area shape="rect" id="node12" href="$classServoEasing.html#a522915dbd93915dcdf60babd7a4a07c1" title="see: https://easings.net/#easeInOutBack and https://github.com/warrenm/AHEasing/blob/master/AHEasing/..." alt="" coords="1711,57,1886,85"/>
+<area shape="rect" id="node13" href="$classServoEasing.html#a21cf52b4f9c5a9f423b6693dfcf868de" title="It is very fast in the middle! see: https://easings.net/#easeInOutCirc and https://github...." alt="" coords="1704,109,1893,137"/>
+<area shape="rect" id="node14" href="$classServoEasing.html#aabe48c77b29287c27c25998216aec1b5" title=" " alt="" coords="1709,161,1888,189"/>
+<area shape="rect" id="node15" href="$classServoEasing.html#a855a7ff6b05f3008f6f63bc141b2b260" title="The simplest non linear easing function." alt="" coords="1957,213,2157,241"/>
+<area shape="rect" id="node16" href="$classServoEasing.html#abdf4a3da017795f2c2d39a02020e472f" title="!!! ATTENTION !!! we have only the out function implemented see: https://easings.net/de#easeOutBounce..." alt="" coords="1699,265,1898,293"/>
+<area shape="rect" id="node17" href="$classServoEasing.html#a66dba734c24584d0d71b6719b1cd64df" title="see: https://easings.net/#easeInOutElastic and https://github.com/warrenm/AHEasing/blob/master/AHEasi..." alt="" coords="1706,317,1890,345"/>
+<area shape="rect" id="node18" href="$classServoEasing.html#ad8f184e2329b5bb18ff1de60d933d8be" title="PRECISION (LinearWithQuadraticBounce) is like linear, but adds a 5 degree bounce in the last 20 % of ..." alt="" coords="1688,369,1909,413"/>
+<area shape="rect" id="node19" href="$classServoEasing.html#a14bfa59cd2c5f80815fbfd09b9fa0f9f" title=" " alt="" coords="1705,437,1892,465"/>
+<area shape="rect" id="node20" href="$classServoEasing.html#a1467d7fb220fd922813f4f3d17d81efa" title="Take half of negative cosines of first quadrant Is behaves almost like QUADRATIC." alt="" coords="1713,489,1884,517"/>
+<area shape="rect" id="node22" href="$classServoEasing.html#ac38d29a080553c0c6a3e2b0678150360" title=" " alt="" coords="689,116,936,160"/>
+<area shape="rect" id="node23" href="$classServoEasing.html#a4d1403dd5e0793195514e96b390aec91" title="Used to convert e.g." alt="" coords="720,184,905,228"/>
+<area shape="rect" id="node24" href="$classServoEasing.html#a94909317b9b32832aecc7204e445e148" title=" " alt="" coords="714,252,911,280"/>
+</map>

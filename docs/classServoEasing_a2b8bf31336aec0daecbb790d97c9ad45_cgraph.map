@@ -1,0 +1,4 @@
+<map id="ServoEasing::MicrosecondsToDegree" name="ServoEasing::MicrosecondsToDegree">
+<area shape="rect" id="node1" title="Only used in startEaseTo to compute target degree For PCA9685, we have stored units in mServo0DegreeM..." alt="" coords="5,5,190,49"/>
+<area shape="rect" id="node2" href="$classServoEasing.html#a4d1403dd5e0793195514e96b390aec91" title="Used to convert e.g." alt="" coords="238,5,422,49"/>
+</map>

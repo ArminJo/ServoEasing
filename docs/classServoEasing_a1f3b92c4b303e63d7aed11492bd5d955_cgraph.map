@@ -1,0 +1,7 @@
+<map id="ServoEasing::setTrim" name="ServoEasing::setTrim">
+<area shape="rect" id="node1" title=" " alt="" coords="5,48,153,76"/>
+<area shape="rect" id="node2" href="$classServoEasing.html#a5943393ae68c437d5b5f48a235565749" title=" " alt="" coords="201,5,436,49"/>
+<area shape="rect" id="node5" href="$classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="202,73,435,117"/>
+<area shape="rect" id="node3" href="$classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="484,5,703,49"/>
+<area shape="rect" id="node4" href="$classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="751,13,924,41"/>
+</map>

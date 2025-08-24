@@ -1,11 +1,11 @@
 var searchData=
 [
-  ['getcurrentangle_92',['getCurrentAngle',['../classServoEasing.html#a2f85ba1133db74d1b02a4f52d32cb303',1,'ServoEasing']]],
-  ['getcurrentmicroseconds_93',['getCurrentMicroseconds',['../classServoEasing.html#aa74aa9bc7e610bb9b2c95500776a8736',1,'ServoEasing']]],
-  ['getdeltamicrosecondsorunits_94',['getDeltaMicrosecondsOrUnits',['../classServoEasing.html#a1b54d0b7b24cdb32ad73b2041dff706b',1,'ServoEasing']]],
-  ['geteasingtype_95',['getEasingType',['../classServoEasing.html#a8a2125a309889e14e1a3337beae74ad1',1,'ServoEasing']]],
-  ['getendmicrosecondsorunits_96',['getEndMicrosecondsOrUnits',['../classServoEasing.html#a421cf65c62e33d118e9314680e729324',1,'ServoEasing']]],
-  ['getendmicrosecondsorunitswithtrim_97',['getEndMicrosecondsOrUnitsWithTrim',['../classServoEasing.html#a331be32d567c5a3e66955a1df709393f',1,'ServoEasing']]],
-  ['getmillisforcompletemove_98',['getMillisForCompleteMove',['../classServoEasing.html#a99c8a1543b2ade92cab1ac52ab040f8f',1,'ServoEasing']]],
-  ['getspeed_99',['getSpeed',['../classServoEasing.html#af4f25a596fa54b5adbff8b7798c78ac1',1,'ServoEasing']]]
+  ['getcurrentangle_94',['getCurrentAngle',['../classServoEasing.html#a2f85ba1133db74d1b02a4f52d32cb303',1,'ServoEasing']]],
+  ['getcurrentmicroseconds_95',['getCurrentMicroseconds',['../classServoEasing.html#aa74aa9bc7e610bb9b2c95500776a8736',1,'ServoEasing']]],
+  ['getdeltamicrosecondsorunits_96',['getDeltaMicrosecondsOrUnits',['../classServoEasing.html#a1b54d0b7b24cdb32ad73b2041dff706b',1,'ServoEasing']]],
+  ['geteasingtype_97',['getEasingType',['../classServoEasing.html#a8a2125a309889e14e1a3337beae74ad1',1,'ServoEasing']]],
+  ['getendmicrosecondsorunits_98',['getEndMicrosecondsOrUnits',['../classServoEasing.html#a421cf65c62e33d118e9314680e729324',1,'ServoEasing']]],
+  ['getendmicrosecondsorunitswithtrim_99',['getEndMicrosecondsOrUnitsWithTrim',['../classServoEasing.html#a331be32d567c5a3e66955a1df709393f',1,'ServoEasing']]],
+  ['getmillisforcompletemove_100',['getMillisForCompleteMove',['../classServoEasing.html#a99c8a1543b2ade92cab1ac52ab040f8f',1,'ServoEasing']]],
+  ['getspeed_101',['getSpeed',['../classServoEasing.html#af4f25a596fa54b5adbff8b7798c78ac1',1,'ServoEasing']]]
 ];

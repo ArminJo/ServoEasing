@@ -1,0 +1,11 @@
+<map id="ServoEasing::applyTrimAndReverseToTargetMicrosecondsOrUnits" name="ServoEasing::applyTrimAndReverseToTargetMicrosecondsOrUnits">
+<area shape="rect" id="node1" title=" " alt="" coords="696,76,943,120"/>
+<area shape="rect" id="node2" href="$classServoEasing.html#a08f9f4edf145eef15a5a7d7f04858925" title="Prints values which may change from move to move." alt="" coords="468,84,648,112"/>
+<area shape="rect" id="node3" href="$classServoEasing.html#a61415b921c9d15ce7aebd8425e1b4e7f" title="Do a printDynamic() and a printStatic()" alt="" coords="264,57,392,85"/>
+<area shape="rect" id="node4" href="$classServoEasing.html#a3fc76128ba052768df22ac28503a6f10" title="Sets up all the values required for a smooth move to new value Lower level function with time instead..." alt="" coords="237,109,420,137"/>
+<area shape="rect" id="node5" href="$classServoEasing.html#ab451c457f9e08ac17061cee812936912" title=" " alt="" coords="19,5,175,33"/>
+<area shape="rect" id="node6" href="$classServoEasing.html#ae373bfcaec45e822ddd0503a2eb7f269" title="stay at the position for aMillisToWait Used as delay for callback" alt="" coords="8,57,186,85"/>
+<area shape="rect" id="node7" href="$classServoEasing.html#ac5d085c2eb06b4fa2a3bdc3d914c740b" title="Sets easing parameter, but does not start." alt="" coords="9,109,185,137"/>
+<area shape="rect" id="node8" href="$classServoEasing.html#ae3c79612a6986920c24112bf637cbd78" title="Compute the MillisForCompleteMove parameter for use of startEaseToD() function and handle CALL_STYLE_..." alt="" coords="10,161,184,189"/>
+<area shape="rect" id="node9" href="$classServoEasing.html#aeda1d4eb1459807f3b74554694c0ee6b" title=" " alt="" coords="5,213,189,241"/>
+</map>

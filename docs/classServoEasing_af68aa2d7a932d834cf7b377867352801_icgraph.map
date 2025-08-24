@@ -1,0 +1,7 @@
+<map id="ServoEasing::setEaseTo" name="ServoEasing::setEaseTo">
+<area shape="rect" id="node1" title=" " alt="" coords="490,81,655,109"/>
+<area shape="rect" id="node2" href="$ServoEasing_8hpp.html#a6e84acc192dfce2c901a25acf2744eb7" title="Sets target position using content of ServoEasingNextPositionArray." alt="" coords="284,81,442,109"/>
+<area shape="rect" id="node3" href="$ServoEasing_8hpp.html#afc99e509838b5b5cbd21942cea366e2c" title=" " alt="" coords="5,5,236,49"/>
+<area shape="rect" id="node4" href="$ServoEasing_8hpp.html#a1b5872f39331d279ca84e9c4d1eaa980" title="Synchronize and blocking wait until all servos are stopped Take the longer duration in order to move ..." alt="" coords="5,73,236,117"/>
+<area shape="rect" id="node5" href="$ServoEasing_8hpp.html#a3225cc894f78b7f8b2552561d150052c" title=" " alt="" coords="26,141,215,185"/>
+</map>

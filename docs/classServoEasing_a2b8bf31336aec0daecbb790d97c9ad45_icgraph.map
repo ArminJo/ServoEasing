@@ -1,0 +1,4 @@
+<map id="ServoEasing::MicrosecondsToDegree" name="ServoEasing::MicrosecondsToDegree">
+<area shape="rect" id="node1" title="Only used in startEaseTo to compute target degree For PCA9685, we have stored units in mServo0DegreeM..." alt="" coords="227,5,411,49"/>
+<area shape="rect" id="node2" href="$classServoEasing.html#ae3c79612a6986920c24112bf637cbd78" title="Compute the MillisForCompleteMove parameter for use of startEaseToD() function and handle CALL_STYLE_..." alt="" coords="5,13,179,41"/>
+</map>

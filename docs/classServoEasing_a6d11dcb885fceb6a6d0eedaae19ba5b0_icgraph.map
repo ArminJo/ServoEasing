@@ -1,0 +1,5 @@
+<map id="ServoEasing::printStatic" name="ServoEasing::printStatic">
+<area shape="rect" id="node1" title="Prints values which normally does NOT change from move to move." alt="" coords="193,32,355,60"/>
+<area shape="rect" id="node2" href="$classServoEasing.html#ad5a94136adadb9a7ddfc9dfda81230f7" title="Attaches servo to pin and sets the servo timing parameters." alt="" coords="5,5,145,33"/>
+<area shape="rect" id="node3" href="$classServoEasing.html#a61415b921c9d15ce7aebd8425e1b4e7f" title="Do a printDynamic() and a printStatic()" alt="" coords="11,57,139,85"/>
+</map>

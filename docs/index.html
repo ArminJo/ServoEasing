@@ -87,54 +87,57 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <div class="contents">
 <div class="textblock"><p><a class="anchor" id="md_README"></a></p><div align="center"></div><div align="center"><h1><a href="https://github.com/ArminJo/ServoEasing">ServoEasing</a></h1>
 </div><div align="center"> A library for smooth servo movements.<br  />
- It uses the standard Arduino Servo library and therefore has its restrictions regarding pins and platform support.</div><div align="center"><a href="https://www.gnu.org/licenses/gpl-3.0"><img src="https://img.shields.io/badge/License-GPLv3-brightgreen.svg" alt="Badge License: GPLv3" style="pointer-events: none;" class="inline"/></a> &#160; &#160; <a href="https://github.com/ArminJo/ServoEasing/releases/latest"><img src="https://img.shields.io/github/v/release/ArminJo/ServoEasing?include_prereleases&amp;color=yellow&amp;logo=DocuSign&amp;logoColor=white" alt="Badge Version" class="inline"/></a> &#160; &#160; <a href="https://github.com/ArminJo/ServoEasing/commits/master"><img src="https://img.shields.io/github/commits-since/ArminJo/ServoEasing/latest?color=yellow" alt="Badge Commits since latest" class="inline"/></a> &#160; &#160; <a href="https://github.com/ArminJo/ServoEasing/actions"><img src="https://github.com/ArminJo/ServoEasing/workflows/LibraryBuild/badge.svg" alt="Badge Build Status" style="pointer-events: none;" class="inline"/></a> &#160; &#160; <img src="https://visitor-badge.laobi.icu/badge?page_id=ArminJo_ServoEasing" alt="Badge Hit Counter" class="inline"/> <br  />
+ It uses the standard Arduino <a class="el" href="classServo.html">Servo</a> library and therefore has its restrictions regarding pins and platform support.</div><div align="center"><a href="https://www.gnu.org/licenses/gpl-3.0"><img src="https://img.shields.io/badge/License-GPLv3-brightgreen.svg" alt="Badge License: GPLv3" style="pointer-events: none;" class="inline"/></a> &#160; &#160; <a href="https://github.com/ArminJo/ServoEasing/releases/latest"><img src="https://img.shields.io/github/v/release/ArminJo/ServoEasing?include_prereleases&amp;color=yellow&amp;logo=DocuSign&amp;logoColor=white" alt="Badge Version" class="inline"/></a> &#160; &#160; <a href="https://github.com/ArminJo/ServoEasing/commits/master"><img src="https://img.shields.io/github/commits-since/ArminJo/ServoEasing/latest?color=yellow" alt="Badge Commits since latest" class="inline"/></a> &#160; &#160; <a href="https://github.com/ArminJo/ServoEasing/actions"><img src="https://github.com/ArminJo/ServoEasing/workflows/LibraryBuild/badge.svg" alt="Badge Build Status" style="pointer-events: none;" class="inline"/></a> &#160; &#160; <img src="https://visitor-badge.laobi.icu/badge?page_id=ArminJo_ServoEasing" alt="Badge Hit Counter" class="inline"/> <br  />
  <br  />
- <a href="https://stand-with-ukraine.pp.ua"><img src="https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg" alt="Stand With Ukraine" style="pointer-events: none;" class="inline"/></a></div><div align="center">Available as <a href="https://www.arduinolibraries.info/libraries/servo-easing">Arduino library "ServoEasing"</a>.</div><div align="center"><a href="https://www.ardu-badge.com/ServoEasing"><img src="https://img.shields.io/badge/Install-brightgreen?logoColor=white&amp;logo=GitBook" alt="Button Install" class="inline"/></a> &#160; &#160; <a href="https://arminjo.github.io/ServoEasing/classServoEasing.html"><img src="https://img.shields.io/badge/API-yellow?logoColor=white&amp;logo=OpenStreetMap" alt="Button API" class="inline"/></a> &#160; &#160; <a href="https://github.com/ArminJo/ServoEasing#revision-history"><img src="https://img.shields.io/badge/Changelog-blue?logoColor=white&amp;logo=AzureArtifacts" alt="Button Changelog" class="inline"/></a></div><div align="center"></div><p><br  />
+ <a href="https://stand-with-ukraine.pp.ua"><img src="https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg" alt="Stand With Ukraine" style="pointer-events: none;" class="inline"/></a></div><div align="center">Available as <a href="https://www.arduinolibraries.info/libraries/servo-easing">Arduino library "ServoEasing"</a>. Contains the <a href="https://github.com/ArminJo/QuadrupedControl">QuadrupedControl</a> example.</div><div align="center"><a href="https://www.ardu-badge.com/ServoEasing"><img src="https://img.shields.io/badge/Install-brightgreen?logoColor=white&amp;logo=GitBook" alt="Button Install" class="inline"/></a> &#160; &#160; <a href="https://arminjo.github.io/ServoEasing/classServoEasing.html"><img src="https://img.shields.io/badge/API-yellow?logoColor=white&amp;logo=OpenStreetMap" alt="Button API" class="inline"/></a> &#160; &#160; <a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#revision-history"><img src="https://img.shields.io/badge/Changelog-blue?logoColor=white&amp;logo=AzureArtifacts" alt="Button Changelog" class="inline"/></a></div><div align="center"></div><h4>If you find this library useful, please give it a star.</h4>
+<p>&amp;#x1F30E; <a href="https://translate.google.com/translate?sl=en&amp;u=https://github.com/ArminJo/ServoEasing">Google Translate</a></p>
+<p><br  />
 </p>
 <h4>YouTube video of <a class="el" href="classServoEasing.html">ServoEasing</a> in action</h4>
 <p><a href="https://www.youtube.com/watch?v=fC9uxdOBhfA"><img src="https://i.ytimg.com/vi/fC9uxdOBhfA/hqdefault.jpg" alt="Demonstration of different servo easings" class="inline"/></a></p>
 <h1>Table of content</h1>
 <ul>
-<li><a href="https://github.com/ArminJo/ServoEasing#servo-easing-library-for-arduino">Servo easing library for Arduino</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#features">Features</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#list-of-easing-functions">List of easing functions</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#api">API</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#usage">Usage</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#multiple-servo-handling">Multiple servo handling</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#comparison-between-quadratic-cubic-and-sine-easings">Comparison between Quadratic, Cubic and Sine easings.</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#useful-resources">Useful resources</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#resolution-of-servo-positioning">Resolution of servo positioning</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#mapping-of-servo-positioning">Mapping of servo positioning</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#speed-of-servo-positioning">Speed of servo positioning</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#why-hpp-instead-of-cpp">Why *.hpp instead of *.cpp</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#using-the-new-hpp-files">Using the new *.hpp files</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#compile-options--macros-for-this-library">Compile options / macros for this library</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#using-pca9685-16-channel-servo-expander">Using PCA9685 16-Channel Servo Expander</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#using-the-included-lightweight-servo-library-for-atmega328">Using the included Lightweight Servo library for ATmega328</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#handling-multiple-servos-with-the-internal-servoeasingarray">Handling multiple servos with the internal ServoEasingArray</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples">Description of examples</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#wokwi-online-examples">WOKWI online examples</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#servo-easing-library-for-arduino">Servo easing library for Arduino</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#features">Features</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#list-of-easing-functions">List of easing functions</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#api">API</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#usage">Usage</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#multiple-servo-handling">Multiple servo handling</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#comparison-between-quadratic-cubic-and-sine-easings">Comparison between Quadratic, Cubic and Sine easings.</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#useful-resources">Useful resources</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#initial-movement-of-servo">Initial movement of Servo</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#resolution-of-servo-positioning">Resolution of servo positioning</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#mapping-of-servo-positioning">Mapping of servo positioning</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#speed-of-servo-positioning">Speed of servo positioning</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#minimum-number-of-pulses-for-reliable-servo-positioning">Minimum number of pulses for reliable servo positioning</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#why-hpp-instead-of-cpp">Why *.hpp instead of *.cpp</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#using-the-new-hpp-files">Using the new *.hpp files</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#compile-options--macros-for-this-library">Compile options / macros for this library</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#using-pca9685-16-channel-servo-expander">Using PCA9685 16-Channel Servo Expander</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#using-the-included-lightweight-servo-library-for-atmega328">Using the included Lightweight Servo library for ATmega328</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#handling-multiple-servos-with-the-internal-servoeasingarray">Handling multiple servos with the internal ServoEasingArray</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples">Examples for this library</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#wokwi-online-examples">WOKWI online examples</a></li>
 <li><a href="https://github.com/ArminJo/ServoEasing/tree/master/examples#servo-utilities">Servo utilities</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#building-breadboard-servo-adapter">Building breadboard servo adapter</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#internals">Internals</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#supported-arduino-architectures">Supported Arduino architectures</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#timer-usage-for-interrupt-based-movement">Timer usage for interrupt based movement</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#adding-a-new-platform--board">Adding a new platform / board</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#troubleshooting">Troubleshooting</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#revision-history">Revision History</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#ci">CI</a></li>
-<li><a href="https://github.com/ArminJo/ServoEasing#requests-for-modifications--extensions">Requests for modifications / extensions</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#building-breadboard-servo-adapter">Building breadboard servo adapter</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#internals">Internals</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#supported-arduino-architectures">Supported Arduino architectures</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#timer-usage-for-interrupt-based-movement">Timer usage for interrupt based movement</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#adding-a-new-platform--board">Adding a new platform / board</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#troubleshooting">Troubleshooting</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#revision-history">Revision History</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#commercial-license">Commercial license</a></li>
 </ul>
 <p><br  />
 </p>
-<h1>Servo easing library for Arduino</h1>
+<h1><a class="el" href="classServo.html">Servo</a> easing library for Arduino</h1>
 <p>Its purpose is to interpolate the movement between two servo positions set by software.<br  />
- If your servo control data is e.g. generated by an joystick or other *"slow"* changing inputs and therefore does not change suddenly or does not jump, <b>you most likely do not need this library!</b>, you may consider to use a <b>digital low pass</b> or <b><a href="https://github.com/ArminJo/Arduino-Utils#simpleemafilterscpp">simple EMA filters</a></b> to smooth your values used to control the servos.<br  />
- <a class="el" href="classServoEasing.html">ServoEasing</a> works with the Arduino Servo library as well as with <a href="https://learn.adafruit.com/16-channel-pwm-servo-driver?view=all">PCA9685 servo expanders</a>. The expander in turn requires the Arduino Wire library or a <a href="https://github.com/felias-fogg/SoftI2CMaster">compatible one</a> and is bound to their restrictions.<br  />
+ If your servo control data is e.g. generated by an joystick or other *"slow"* changing inputs and therefore does not change suddenly or does not jump, <b>you most likely do not need this library!</b>, you may consider to use a <b>digital low pass</b> or <b><a href="https://github.com/ArminJo/Arduino-Utils?tab=readme-ov-file#simpleemafilters">simple EMA filters</a></b> to smooth your values used to control the servos.<br  />
+ <a class="el" href="classServoEasing.html">ServoEasing</a> works with the Arduino <a class="el" href="classServo.html">Servo</a> library as well as with <a href="https://learn.adafruit.com/16-channel-pwm-servo-driver?view=all">PCA9685 servo expanders</a>. The expander in turn requires the Arduino Wire library or a <a href="https://github.com/felias-fogg/SoftI2CMaster">compatible one</a> and is bound to their restrictions.<br  />
  For <b>ESP32</b> you need to install the Arduino ESP32Servo library.<br  />
  <br  />
- If you require only one or two servos, you may want to use the included <a href="https://github.com/ArminJo/LightweightServo">LightweightServo library</a> (only for <b>AVR</b>), instead of the Arduino Servo library. The LightweightServo library uses the internal Timer1 with no software overhead and therefore has no problems with <b>servo twitching</b> or interrupt blocking libraries like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br  />
- For instructions how to enable these alternatives, see <a href="https://github.com/ArminJo/ServoEasing#compile-options--macros-for-this-library">Compile options / macros</a>.</p>
+ If you require only one or two servos, you may want to use the included <a href="https://github.com/ArminJo/LightweightServo">LightweightServo library</a> which is like the <a href="https://github.com/adafruit/Adafruit_TiCoServo">Adafruit TiCoServo library</a>, but more lightweight and currently only for <b>Uno, Nano</b>, instead of the Arduino <a class="el" href="classServo.html">Servo</a> library. The LightweightServo library uses the internal Timer1 with no software overhead and therefore has no problems with <b>servo twitching</b> or interrupt blocking libraries like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br  />
+ For instructions how to enable these alternatives, see <a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#compile-options--macros-for-this-library">Compile options / macros</a>.</p>
 <p><br  />
 </p>
 <h1>Features</h1>
@@ -142,63 +145,54 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <li><b>Linear</b> and 9 other ease movements are provided.</li>
 <li>All servos can move <b>synchronized</b> or <b>independently</b>.</li>
 <li><b>Non blocking</b> movements are implemented by the <b>startEaseTo* functions</b> by using a timer. This functions are not available for all platforms.</li>
-<li>Degree values &gt;= 400 is taken as microsecond values for the servo pulse to allow fine-grained control.</li>
+<li>A degree value of 400 or more is taken as a microsecond value for the servo pulse, which allows for fine-grained control.</li>
 <li><b>Float angels</b> are supported to allow <b>fine-grained servo control</b> comparable to using microseconds.</li>
 <li><b>User-specified callback function at "servo arrived" enables movement control independent of main loop</b>.</li>
 <li><b>Stop and resume</b> of servo movement.</li>
+<li><b>Detach and reattach</b>. No servo signal is generated for a detached servo. Therefore, it is not blocked and can be moved manually.</li>
 <li>A <b>trim value</b> can be set for any servo. Its value is internally added to each requested position.</li>
 <li><b>Reverse operation</b> of servo is possible e.g. if it is mounted head down.</li>
 <li><b>Constraints for minimum and maximum servo degree</b> can be specified. Trim and reverse are applied after constraint processing.</li>
-<li>Allow to specify an <a href="https://github.com/ArminJo/ServoEasing#mapping-of-servo-positioning"><b>arbitrary mapping between degrees and microseconds</b></a> by <code>attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree)</code>.</li>
-<li><b>Servo speed</b> can be specified in <b>degree per second</b> or <b>milliseconds</b> for the complete move.</li>
-<li><b>Multiple servo handling</b> by <em>ForAllServos() functions like <code>setDegreeForAllServos(3, 135, 135, 135)</code>.</em></li>
-<li><em>All <a class="el" href="classServoEasing.html">ServoEasing</a> objects are accessible by using the <a href="https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServos/ThreeServos.ino#L104"><code>ServoEasing::ServoEasingArray[]</code></a>.</em></li>
-<li><em>Easy implementation of a <b>move list</b> - see <a href="https://github.com/ArminJo/ServoEasing/blob/master/examples/ConsecutiveEasingsWithCallback/ConsecutiveEasingsWithCallback.ino#L150">ConsecutiveEasingsWithCallback example</a>.</em></li>
+<li>Allow to specify an <a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#mapping-of-servo-positioning"><b>arbitrary mapping between degrees and microseconds</b></a> by <code>attach(int aPin, int aInitialDegreeOrMicrosecond, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree)</code>.</li>
+<li><b><a class="el" href="classServo.html">Servo</a> speed</b> can be specified in <b>degree per second</b> or <b>milliseconds</b> for the complete move.</li>
+<li><b>Multiple servo handling</b> by *ForAllServos() functions like <code>setIntegerDegreeForAllServos(3, 135, 135, 135)</code>.</li>
+<li>All <a class="el" href="classServoEasing.html">ServoEasing</a> objects are accessible by using the <a href="https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServos/ThreeServos.ino#L104"><code>ServoEasing::ServoEasingArray[]</code></a>.</li>
+<li>Easy implementation of a <b>move list</b> - see <a href="https://github.com/ArminJo/ServoEasing/blob/master/examples/ConsecutiveEasingsWithCallback/ConsecutiveEasingsWithCallback.ino#L150">ConsecutiveEasingsWithCallback example</a>.</li>
 </ul>
-<p><em></p><h1>List of easing functions</h1>
-<p></em></p>
-<p><em> <code>Linear</code> &#160; &#160; <code>Quadratic</code> &#160; &#160; <code>Cubic</code> &#160; &#160; <code>Quartic</code></em></p>
-<p><em><code>Sine</code> &#160; &#160; <code>Circular</code> &#160; &#160; <code>Back</code> &#160; &#160; <code>Elastic</code> &#160; &#160; <code>Bounce</code></em></p>
-<p><em><code>Precision</code> &#160; &#160; <code>Dummy</code> &#160; &#160; <code>User defined</code></em></p>
-<p><em></p><ul>
-<li><b>Precision</b> is like linear, but if descending, add a 5 degree negative bounce in the last 20 % of the movement time. So the target position is always approached from below. This enables it to taken out the slack/backlash of any hardware moved by the servo.</li>
+<h1>List of easing functions</h1>
+<p><code>Linear</code> &#160; &#160; <code>Quadratic</code> &#160; &#160; <code>Cubic</code> &#160; &#160; <code>Quartic</code></p>
+<p><code>Sine</code> &#160; &#160; <code>Circular</code> &#160; &#160; <code>Back</code> &#160; &#160; <code>Elastic</code> &#160; &#160; <code>Bounce</code></p>
+<p><code>Precision</code> &#160; &#160; <code>Dummy</code> &#160; &#160; <code>User defined</code></p>
+<ul>
+<li><b>Precision</b> is like linear, but if descending, add a 5 &deg; negative bounce in the last 20 % of the movement time. So the target position is always approached from below. This enables it to taken out the slack/backlash of any hardware moved by the servo.</li>
 <li><b>Dummy</b> is used for delays in callback handler.</li>
 </ul>
-<p></em></p>
-<p><em></p><h3>All easing functions can be used in the following variants:</h3>
-<p></em></p>
-<p><em> All ease functions are called internally with the value: <code>PercentageOfCompletion / 100</code> giving a call value from 0 to 1.</em></p>
-<p><em></p><ul>
+<h3>All easing functions can be used in the following variants:</h3>
+<p>All ease functions are called internally with the value: <code>PercentageOfCompletion / 100</code> giving a call value from 0 to 1.</p>
+<ul>
 <li>In: Start the function with 0 and go to 1 linear. Except for PRECISION, where we do a bounce if approaching from above (go in to origin).</li>
 <li>Out: Start the function with 1 and go to 0 linear. Except for PRECISION, where we do a bounce if approaching from below (go out from origin).</li>
 <li>InOut: Start the function with 0 go to 1 and back to 0.</li>
 <li>Bouncing: Start with OUT, then return with IN to start degree. E.g. Bouncing of the SINE function results in the upper (positive) half of the sine.</li>
 </ul>
-<p></em></p>
-<p><em></p><h4>All easing types (starting in flavor IN_OUT, then IN, OUT and BOUNCE) in one plot.<br  />
+<h4>All easing types (starting in flavor IN_OUT, then IN, OUT and BOUNCE) in one plot.<br  />
 </h4>
-<p></em></p>
-<p><em> Since the values are computed in a fixed 20 ms raster, the last degree increment or decrement in an easing may be much smaller than the increment/decrement before, resulting in some small discontinuities between adjacent movements.<br  />
- <img src="https://github.com/ArminJo/ServoEasing/blob/master/pictures/NonlinearMovements.png" alt="Arduino Plotter Output for Linear->Quadratic->Cubic->Quartic->Sine-Circular->Back->Elastic" class="inline"/></em></p>
-<p><em></p><h3>Constraints</h3>
-<p></em></p>
-<p><em> To restrict servo movements to a fixed range, you can specify constraints with <code>setMinMaxConstraint(int aMinDegreeOrMicrosecond, int aMaxDegreeOrMicrosecond)</code>.<br  />
- </p><h4>Arduino Plotter Output with constraints at 5 degree and 175 degree activated.</h4>
-<p></em></p>
-<p><em> <img src="https://github.com/ArminJo/ServoEasing/blob/master/pictures/Constraints.png" alt="Arduino Plotter Output with constraints at 5 degree and 175 degree activated" class="inline"/></em></p>
-<p><em></p><h3>Disable easing temporarily</h3>
-<p></em></p>
-<p><em> By setting speed -which is an uint16- to a real high value like e.g. 50000, you can effectively disable easing and get almost the same behavior as if using Servo.write() function directly.</em></p>
-<p><em><br  />
-</em></p>
-<p><em></p><h1>API</h1>
-<p></em></p>
-<p><em> For floating point constants, use the notation of 123.456f with <b>trailing f</b> (for a floating point constant) to avoid compiler errors. A Doxygen documentation of the sources is available <a href="https://arminjo.github.io/ServoEasing/classServoEasing.html">here</a>.</em></p>
-<p><em></p><h1>Usage</h1>
-<p></em></p>
-<p><em> See also <a href="https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples">the examples here</a>.<br  />
-</em></p>
-<p><em></p><div class="fragment"><div class="line"> {c++}</div>
+<p>Since the values are computed in a fixed 20 ms raster, the last degree increment or decrement in an easing may be much smaller than the increment/decrement before, resulting in some small discontinuities between adjacent movements.<br  />
+ <img src="https://github.com/ArminJo/ServoEasing/blob/master/pictures/NonlinearMovements.png" alt="Arduino Plotter Output for Linear->Quadratic->Cubic->Quartic->Sine-Circular->Back->Elastic" class="inline"/></p>
+<h3>Constraints</h3>
+<p>To restrict servo movements to a fixed range, you can specify constraints with <code>setMinMaxConstraint(int aMinDegreeOrMicrosecond, int aMaxDegreeOrMicrosecond)</code> like it is done in the <a href="https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServos/TwoServos.ino#L109">TwoServos example</a>.<br  />
+ </p><h4>Arduino Plotter Output with constraints at 5 &deg; and 175 &deg; activated.</h4>
+<p><img src="https://github.com/ArminJo/ServoEasing/blob/master/pictures/Constraints.png" alt="Arduino Plotter Output with constraints at 5 degree and 175 degree activated" class="inline"/></p>
+<h3>Disable easing temporarily</h3>
+<p>By setting speed -which is an uint16- to a real high value like e.g. 50000, you can effectively disable easing and get almost the same behavior as if using Servo.write() function directly.</p>
+<p><br  />
+</p>
+<h1>API</h1>
+<p>For floating point constants, use the notation of 123.456f with <b>trailing f</b> (for a floating point constant) to avoid compiler errors. A Doxygen documentation of the sources is available <a href="https://arminjo.github.io/ServoEasing/classServoEasing.html">here</a>.</p>
+<h1>Usage</h1>
+<p>See also <a href="https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples">the examples here</a>.<br  />
+</p>
+<div class="fragment"><div class="line"> {c++}</div>
 <div class="line">void setup() {</div>
 <div class="line">    Servo1.attach(SERVO1_PIN, 45);</div>
 <div class="line">}</div>
@@ -209,66 +203,60 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <div class="line">    // Now the servo is moving to the end position independently of your program.</div>
 <div class="line">    delay(5000);</div>
 <div class="line">}</div>
-</div><!-- fragment --><p></em></p>
-<p><em>Just call <code>myServo.startEaseTo()</code> instead of <code>myServo.write()</code> and you are done. Or if you want to wait (blocking) until servo has arrived, use <code>myServo.easeTo()</code>.<br  />
+</div><!-- fragment --><p>Just call <code>myServo.startEaseTo()</code> instead of <code>myServo.write()</code> and you are done. Or if you want to wait (blocking) until servo has arrived, use <code>myServo.easeTo()</code>.<br  />
 </p><ul>
-<li>Do not forget to <b>initially set the start position</b> for the Servo, since the library has <b>no knowledge about your servos initial position</b> and therefore starts at <b>0 degree</b> at the first move, which may be undesirable.<br  />
+<li>Do not forget to <b>initially set the start position</b> for the <a class="el" href="classServo.html">Servo</a>, since the library has <b>no knowledge about your servos initial position</b> and therefore starts at <b>0 &deg;</b> at the first move, which may be undesirable.<br  />
  Setting the start position of the servo can be done as the second parameter to <code>myServo.attach(int aPin, int aInitialDegree)</code> or by calling <code>myServo.write(int aDegree)</code>,</li>
-<li>And do not forget to <b>initially set the moving speed</b> (as degrees per second) with <code>myServo.setSpeed()</code> or as <b>second parameter</b> to startEaseTo() or easeTo(). Otherwise the Servo will start with the speed of 5 degrees per second, to indicate that speed was not set.<br  />
+<li>And do not forget to <b>initially set the moving speed</b> (as degrees per second) with <code>myServo.setSpeed()</code> or as <b>second parameter</b> to startEaseTo() or easeTo(). Otherwise the <a class="el" href="classServo.html">Servo</a> will start with the speed of 5 &deg; per second, to indicate that speed was not set.<br  />
 </li>
 </ul>
-<p></em></p>
-<p><em><br  />
-</em></p>
-<p><em></p><h1>Multiple servo handling</h1>
-<p></em></p>
-<p><em> You can handle multiple servos simultaneously by <a href="https://github.com/ArminJo/ServoEasing/blob/master/src/ServoEasing.h#L667">special functions</a> like <code><a class="el" href="ServoEasing_8h.html#aa4a6143d9a05e15d07bf02c335f0d248">writeAllServos()</a></code>, <code><a class="el" href="ServoEasing_8h.html#a7f5e55942347ec43e67f4445fb52f5aa">setSpeedForAllServos()</a></code>, <code>setDegreeForAllServos()</code>, <code><a class="el" href="ServoEasing_8h.html#a2d8b155cc6260a2a9adce2865df0e46a" title="Sets target position using content of ServoEasingNextPositionArray and use aMillisForMove instead of ...">setEaseToDForAllServos()</a></code>, <code><a class="el" href="ServoEasing_8h.html#a6081a17da896d37eb783459e7e8e63b0" title="Blocking wait until all servos are stopped.">updateAndWaitForAllServosToStop()</a></code>, <code><a class="el" href="ServoEasing_8h.html#a1b5872f39331d279ca84e9c4d1eaa980" title="Synchronize and blocking wait until all servos are stopped.">setEaseToForAllServosSynchronizeAndWaitForAllServosToStop()</a></code>, <code><a class="el" href="ServoEasing_8h.html#afc99e509838b5b5cbd21942cea366e2c">setEaseToForAllServosSynchronizeAndStartInterrupt()</a></code> and much more.<br  />
- <a href="https://github.com/ArminJo/ServoEasing#handling-multiple-servos-with-the-internal-servoeasingarray">See below</a>.</em></p>
-<p><em><br  />
-</em></p>
-<p><em></p><h1>Comparison between Quadratic, Cubic and Sine easings.</h1>
-<p></em></p>
-<p><em> <b>Arduino Serial Plotter</b> result of the SymmetricEasing example. <img src="pictures/ComparisonQuadraticCubicSine.png" alt="Arduino plot" class="inline"/></em></p>
-<p><em><br  />
-</em></p>
-<p><em></p><h1>Useful resources</h1>
-<p></em></p>
-<p><em></p><ul>
+<p><br  />
+</p>
+<h1>Multiple servo handling</h1>
+<p>You can handle multiple servos simultaneously by <a href="https://github.com/ArminJo/ServoEasing/blob/master/src/ServoEasing.h#L674">special functions</a> like <code><a class="el" href="ServoEasing_8h.html#aa4a6143d9a05e15d07bf02c335f0d248">writeAllServos()</a></code>, <code><a class="el" href="ServoEasing_8h.html#a7f5e55942347ec43e67f4445fb52f5aa">setSpeedForAllServos()</a></code>, <code>setIntegerDegreeForAllServos()</code>, <code><a class="el" href="ServoEasing_8h.html#a2d8b155cc6260a2a9adce2865df0e46a" title="Sets target position using content of ServoEasingNextPositionArray and use aMillisForMove instead of ...">setEaseToDForAllServos()</a></code>, <code><a class="el" href="ServoEasing_8h.html#a6081a17da896d37eb783459e7e8e63b0" title="Blocking wait until all servos are stopped.">updateAndWaitForAllServosToStop()</a></code>, <code><a class="el" href="ServoEasing_8h.html#a1b5872f39331d279ca84e9c4d1eaa980" title="Synchronize and blocking wait until all servos are stopped Take the longer duration in order to move ...">setEaseToForAllServosSynchronizeAndWaitForAllServosToStop()</a></code>, <code><a class="el" href="ServoEasing_8h.html#afc99e509838b5b5cbd21942cea366e2c">setEaseToForAllServosSynchronizeAndStartInterrupt()</a></code> and much more.<br  />
+ <a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#handling-multiple-servos-with-the-internal-servoeasingarray">See below</a>.</p>
+<p><br  />
+</p>
+<h1>Comparison between Quadratic, Cubic and Sine easings.</h1>
+<p><b>Arduino Serial Plotter</b> result of the SymmetricEasing example. <img src="pictures/ComparisonQuadraticCubicSine.png" alt="Arduino plot" class="inline"/></p>
+<p><br  />
+</p>
+<h1>Useful resources</h1>
+<ul>
 <li><a href="https://easings.net/">Easings Cheat Sheet</a></li>
 <li><a href="http://www.robertpenner.com/easing/">Robert Penner</a></li>
-<li><a href="https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c">C functions on Github</a></li>
+<li><a href="https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c">Easing C functions on Github</a></li>
 <li><a href="http://cubic-bezier.com">Interactive cubic-bezier</a></li>
-<li>Servo signal gif from <a href="https://workshop.pglu.ch/arduino-servo/">https://workshop.pglu.ch/arduino-servo/</a> <a href="https://workshop.pglu.ch/arduino-servo/"><img src="pictures/ServoFunktion_workshop.pglu.ch.gif" alt="Servo signal gif from https://workshop.pglu.ch/arduino-servo/" class="inline"/></a></li>
+<li><a class="el" href="classServo.html">Servo</a> signal gif from <a href="https://workshop.pglu.ch/arduino-servo/">https://workshop.pglu.ch/arduino-servo/</a> <a href="https://workshop.pglu.ch/arduino-servo/"><img src="pictures/ServoFunktion_workshop.pglu.ch.gif" alt="Servo signal gif from https://workshop.pglu.ch/arduino-servo/" class="inline"/></a></li>
 </ul>
-<p></em></p>
-<p><em><br  />
-</em></p>
-<p><em></p><h1>Resolution of servo positioning</h1>
-<p></em></p>
-<p><em></p><ul>
-<li>The standard range of 544 to 2400 &micro;s per 180 degree results in an timing of around <b>10 &micro;s per degree</b>.</li>
-<li>The <b>Arduino Servo library on AVR</b> uses an prescaler of 8 at 16 MHz clock resulting in a resolution of <b>0.5 &micro;s</b>.</li>
-<li>The <b>PCA9685 expander</b> has a resolution of <b>4.88 &micro;s</b> per step (@ 20 ms interval) resulting in a resolution of <b>0.5 degree</b>. Digital Servos have a <b>deadband of approximately 5 &micro;s / 0.5 degree</b> which means, that you will see a <b>stuttering movement</b> if the moving speed is slow. If you control them with a PCA9685 expander it may get worse, since one step of 4.88 &micro;s can be within the deadband, so it takes 2 steps to move the servo from its current position.</li>
+<p><br  />
+</p>
+<h1>Initial movement of <a class="el" href="classServo.html">Servo</a></h1>
+<p><b>Servos are buld to reach the target position as fast as possible.</b> To achieve slow movement, this library gradually adjusts the target position, and the servo attempts to respond to these changes as quickly as possible. This creates the appearance of slow movement even when the servo reacts very quickly.<br  />
+ Initially, after powering on, the software has no information about the actual servo position!<br  />
+ This leads to the servo moving quickly to the start position that the software sends it. This cannot be avoided unless we can magically guess the actual position!</p>
+<p><br  />
+</p>
+<h1>Resolution of servo positioning</h1>
+<ul>
+<li>The standard range of 544 to 2400 &micro;s per 180 &deg; results in an timing of around <b>10 &micro;s per degree</b>.</li>
+<li>The <b>Arduino <a class="el" href="classServo.html">Servo</a> library on AVR</b> uses an prescaler of 8 at 16 MHz clock resulting in a resolution of <b>0.5 &micro;s</b>.</li>
+<li>The <b>PCA9685 expander</b> has a resolution of <b>4.88 &micro;s</b> per step (@ 20 ms interval) resulting in a resolution of <b>0.5 &deg;</b>. Digital Servos have a <b>deadband of approximately 5 &micro;s / 0.5 &deg;</b> which means, that you will see a <b>stuttering movement</b> if the moving speed is slow. If you control them with a PCA9685 expander it may get worse, since one step of 4.88 &micro;s can be within the deadband, so it takes 2 steps to move the servo from its current position.</li>
 </ul>
-<p></em></p>
-<p><em></p><h1>Mapping of servo positioning</h1>
-<p></em></p>
-<p><em> If you want to <b>operate your servo e.g. from -90 to +90 degree</b>, you have two possibilities to specify this during attach:</p><ol type="1">
+<h1>Mapping of servo positioning</h1>
+<p>If you want to <b>operate your servo e.g. from -90 &deg; to +90 &deg;</b>, you have two possibilities to specify this during attach:</p><ol type="1">
 <li>Use <code>Servo1.attachWithTrim(SERVO1_PIN, 90, START_DEGREE_VALUE, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE)</code> like it is done in the <a href="https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServos/TwoServos.ino#L94">TwoServos example</a>.</li>
-<li>Use <code>Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, -90, 90)</code>.</li>
+<li>Use <code>Servo1.attach(SERVO1_PIN, START_DEGREE_VALUE, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, -90, 90)</code>.</li>
 </ol>
-<p></em></p>
-<p><em>If your servo has <b>other timing characteristics than the default</b> one -544 &micro;s for 0 and 2400 &micro;s for 180 degree- you have to use <code>Servo1.attach(SERVO1_PIN, &lt;MY_SERVO_MICROSECONDS_FOR_0_DEGREE&gt;, &lt;MY_SERVO_MICROSECONDS_FOR_180_DEGREE&gt;)</code>.<br  />
- You can combine this with variant 2 from above to transparently specify your servo characteristics e.g. like it is done in the <a href="https://github.com/ArminJo/ServoEasing/blob/master/examples/RobotArmControl/RobotArmServoConfiguration.h#L97">RobotArmControl example</a>:</em></p>
-<p><em></p><div class="fragment"><div class="line"> {c++}</div>
+<p>If your servo has <b>other timing characteristics than the default</b> one -544 &micro;s for 0 and 2400 &micro;s for 180 &deg; - you have to use <code>Servo1.attach(SERVO1_PIN, &lt;MY_SERVO_MICROSECONDS_FOR_0_DEGREE&gt;, &lt;MY_SERVO_MICROSECONDS_FOR_180_DEGREE&gt;)</code>.<br  />
+ You can combine this with variant 2 from above to transparently specify your servo characteristics e.g. like it is done in the <a href="https://github.com/ArminJo/ServoEasing/blob/master/examples/RobotArmControl/RobotArmServoConfiguration.h#L97">RobotArmControl example</a>:</p>
+<div class="fragment"><div class="line"> {c++}</div>
 <div class="line">#define PIVOT_MICROS_AT_PLUS_70_DEGREE        2400 // Left - the MG90 servos are not capable of full 180°</div>
 <div class="line">#define PIVOT_MICROS_AT_MINUS_70_DEGREE        700 // Right</div>
 <div class="line">BasePivotServo.attach(PIVOT_SERVO_PIN, 0, PIVOT_MICROS_AT_MINUS_70_DEGREE, PIVOT_MICROS_AT_PLUS_70_DEGREE, -70, 70);</div>
-</div><!-- fragment --><p></em></p>
-<p><em></p><h1>Speed of servo positioning</h1>
-<p></em></p>
-<p><em> These values are measured with the <a href="https://github.com/ArminJo/ServoEasing/blob/master/examples/SpeedTest/SpeedTest.ino">SpeedTest example</a>.</em></p>
-<p><em>These are the fastest values for my SG90 servos at 5 volt (4.2 volt with servo active). </p><table class="markdownTable">
+</div><!-- fragment --><h1>Speed of servo positioning</h1>
+<p>These values are measured with the <a href="https://github.com/ArminJo/ServoEasing/blob/master/examples/SpeedTest/SpeedTest.ino">SpeedTest example</a>.</p>
+<p>These are the fastest values for my SG90 servos at 5 volt (4.2 volt with servo active). </p><table class="markdownTable">
 <tr class="markdownTableHead">
 <th class="markdownTableHeadNone">Degree </th><th class="markdownTableHeadNone">Duration </th><th class="markdownTableHeadNone">Speed  </th></tr>
 <tr class="markdownTableRowOdd">
@@ -284,8 +272,7 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone">10 </td><td class="markdownTableBodyNone">80 ms </td><td class="markdownTableBodyNone">125 degree per second  </td></tr>
 </table>
-<p></em></p>
-<p><em>Values for the MG90Sservos servos at 5 volt (4.2 volt with servo active). </p><table class="markdownTable">
+<p>Values for the MG90Sservos servos at 5 volt (4.2 volt with servo active). </p><table class="markdownTable">
 <tr class="markdownTableHead">
 <th class="markdownTableHeadNone">Degree </th><th class="markdownTableHeadNone">Duration </th><th class="markdownTableHeadNone">Speed  </th></tr>
 <tr class="markdownTableRowOdd">
@@ -295,17 +282,22 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">45 </td><td class="markdownTableBodyNone">115 ms </td><td class="markdownTableBodyNone">390 degree per second  </td></tr>
 </table>
-<p></em></p>
-<p><em><br  />
-</em></p>
-<p><em></p><h1>Why *.hpp instead of *.cpp?</h1>
-<p></em></p>
-<p><em> <b>Every *.cpp file is compiled separately</b> by a call of the compiler exclusively for this cpp file. These calls are managed by the IDE / make system. In the Arduino IDE the calls are executed when you click on <em>Verify</em> or <em>Upload</em>.<br  />
- And now our problem with Arduino is: <b>How to set <a href="#compile-options--macros-for-this-library">compile options</a> for all *.cpp files, especially for libraries used?</b><br  />
- IDE's like <a href="https://github.com/ArminJo/ServoEasing#modifying-compile-options--macros-with-sloeber-ide">Sloeber</a> or <a href="https://github.com/ArminJo/ServoEasing#modifying-compile-options--macros-with-platformio">PlatformIO</a> support this by allowing to specify a set of options per project. They add these options at each compiler call e.g. <code>-DTRACE</code>.<br  />
- But Arduino lacks this feature. So the <b>workaround</b> is not to compile all sources separately, but to concatenate them to one huge source file by including them in your source. This is done by e.g. <code>#include "ServoEasing.hpp"</code>. <br  />
+<p><br  />
+</p>
+<h1>Minimum number of pulses for reliable servo positioning</h1>
+<p>After disconnected, my <b>SG90</b> servo requires <b>4 pulses for a 180 degree turn</b>. It may be less, if the turn is smaller.<br  />
+ After disconnected, my**MG90** servo requires <b>1 pulse for a 110 degree turn</b>. the second pulse (after 20 ms) adds around 10 degree to it, so it takes around 6 to 7 pulses (120 ms to 140 ms) for a complete 180 degree turn.<br  />
+ These values seems to be <b>independent of the turn direction</b>.</p>
+<p>These values are measured with the <a href="https://github.com/ArminJo/ServoEasing/blob/f6a2d7b332ff64639cc770d7ee39aa29f6fd444e/examples/UnitTests/UnitTests.ino#L278">UnitTest example</a> with <code>TEST_FIXED_PULSE_NUMBERS</code> defined. <br  />
+</p>
+<h1>Why *.hpp instead of *.cpp?</h1>
+<p><b>Every *.cpp file is compiled separately</b> by a call of the compiler exclusively for this cpp file. These calls are managed by the IDE / make system. In the Arduino IDE the calls are executed when you click on <em>Verify</em> or <em>Upload</em>.</p>
+<p>And now <b>our problem with Arduino</b> is:<br  />
+ <b>How to set <a href="#compile-options--macros-for-this-library">compile options</a> for all *.cpp files, especially for libraries used?</b><br  />
+ IDE's like <a href="https://github.com/Arduino-IRremote/Arduino-IRremote?tab=readme-ov-file#modifying-compile-options--macros-with-sloeber-ide">Sloeber</a> or <a href="https://github.com/Arduino-IRremote/Arduino-IRremote?tab=readme-ov-file#modifying-compile-options--macros-with-platformio">PlatformIO</a> support this by allowing to specify a set of options per project. They add these options at each compiler call e.g. <code>-DTRACE</code>.</p>
+<p>But Arduino lacks this feature. So the <b>workaround</b> is not to compile all sources separately, but to concatenate them to one huge source file by including them in your source. This is done by e.g. <code>#include "ServoEasing.hpp"</code>. <br  />
  But why not <code>#include "ServoEasing.cpp"</code>?<br  />
- Try it and you will see tons of errors, because each function of the *.cpp file is now compiled twice, first by compiling the huge file and second by compiling the *.cpp file separately, like described above. So using the extension *cpp</em> is not longer possible, and one solution is to use <em>hpp</em> as extension, to show that it is an included *.cpp file. Every other extension e.g. <em>cinclude</em> would do, but <em>hpp</em> seems to be common sense.</p>
+ Try it and you will see tons of errors, because each function of the *.cpp file is now compiled twice, first by compiling the huge file and second by compiling the *.cpp file separately, like described above. So using the extension <em>cpp</em> is not longer possible, and one solution is to use <em>hpp</em> as extension, to show that it is an included *.cpp file. Every other extension e.g. <em>cinclude</em> would do, but <em>hpp</em> seems to be common sense.</p>
 <h1>Using the new *.hpp files</h1>
 <p>In order to support <a href="#compile-options--macros-for-this-library">compile options</a> more easily, the line <code>#include &lt;<a class="el" href="ServoEasing_8h.html">ServoEasing.h</a>&gt;</code> must be changed to <code>#include &lt;<a class="el" href="ServoEasing_8hpp.html">ServoEasing.hpp</a>&gt;</code> in your main program (aka *.ino file with setup() and loop()).</p>
 <p>In <b>all other files</b> you must use <code>#include &lt;<a class="el" href="ServoEasing_8h.html">ServoEasing.h</a>&gt;</code>, to <b>prevent <code>multiple definitions</code> linker errors</b>:</p>
@@ -324,56 +316,64 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
  Modify them by enabling / disabling them, or change the values if applicable.</p>
 <table class="markdownTable">
 <tr class="markdownTableHead">
-<th class="markdownTableHeadNone">Name </th><th class="markdownTableHeadNone">Default value </th><th class="markdownTableHeadNone">Description  </th></tr>
+<th class="markdownTableHeadNone">Name </th><th class="markdownTableHeadRight">Default value </th><th class="markdownTableHeadNone">Description  </th></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>USE_PCA9685_SERVO_EXPANDER</code> </td><td class="markdownTableBodyNone">disabled </td><td class="markdownTableBodyNone">Enables the use of the PCA9685 I2C expander chip/board.  </td></tr>
+<td class="markdownTableBodyNone"><code>USE_PCA9685_SERVO_EXPANDER</code> </td><td class="markdownTableBodyRight">disabled </td><td class="markdownTableBodyNone">Enables the use of the PCA9685 I2C expander chip/board.  </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>PCA9685_ACTUAL_CLOCK_FREQUENCY</code> </td><td class="markdownTableBodyNone">25000000L </td><td class="markdownTableBodyNone">Change it, if your PCA9685 has another than the default 25 MHz internal clock. See chapter 2 and 5 of the PCA9685 Datasheet "25 MHz typical internal oscillator requires no external components". This value is taken for all attached PCA9685 expanders!  </td></tr>
+<td class="markdownTableBodyNone"><code>PCA9685_ACTUAL_CLOCK_FREQUENCY</code> </td><td class="markdownTableBodyRight">25000000L </td><td class="markdownTableBodyNone">Change it, if your PCA9685 has another than the default 25 MHz internal clock. See chapter 2 and 5 of the PCA9685 Datasheet "25 MHz typical internal oscillator requires no external components". This value is taken for all attached PCA9685 expanders!  </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>USE_SOFT_I2C_MASTER</code> </td><td class="markdownTableBodyNone">disabled </td><td class="markdownTableBodyNone">Saves up to 1756 bytes program memory and 218 bytes RAM for PCA9685 I2C communication compared with Arduino Wire.  </td></tr>
+<td class="markdownTableBodyNone"><code>USE_SOFT_I2C_MASTER</code> </td><td class="markdownTableBodyRight">disabled </td><td class="markdownTableBodyNone">Saves up to 1756 bytes program memory and 218 bytes RAM for PCA9685 I2C communication compared with Arduino Wire.  </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>USE_SERVO_LIB</code> </td><td class="markdownTableBodyNone">disabled </td><td class="markdownTableBodyNone">Use of PCA9685 normally disables use of regular servo library. You can force additional using of regular servo library by defining <code>USE_SERVO_LIB</code>. See <a href="https://github.com/ArminJo/ServoEasing#using-pca9685-16-channel-servo-expander">below</a>.  </td></tr>
+<td class="markdownTableBodyNone"><code>USE_SERVO_LIB</code> </td><td class="markdownTableBodyRight">disabled </td><td class="markdownTableBodyNone">Use of PCA9685 normally disables use of regular servo library. You can force additional using of regular servo library by defining <code>USE_SERVO_LIB</code>. See <a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#using-pca9685-16-channel-servo-expander">below</a>.  </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>PROVIDE_ONLY_LINEAR_MOVEMENT</code> </td><td class="markdownTableBodyNone">disabled </td><td class="markdownTableBodyNone">Disables all but LINEAR movement. Saves up to 1540 bytes program memory.  </td></tr>
+<td class="markdownTableBodyNone"><code>USE_USER_PROVIDED_SERVO_LIB</code> </td><td class="markdownTableBodyRight">disabled </td><td class="markdownTableBodyNone">If you have a different servo implementation, e.g. this <a href="https://shop.m5stack.com/products/8-channel-servo-driver-unit-stm32f030">M5Stack Servo expander</a> you can provide your own servo library by activating this macro.<br  />
+You must also include the .h file of your library e.g. <code>#include "DummyServo.h"</code>.  </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>DISABLE_COMPLEX_FUNCTIONS</code> </td><td class="markdownTableBodyNone">disabled </td><td class="markdownTableBodyNone">Disables the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory.  </td></tr>
+<td class="markdownTableBodyNone"><code>PROVIDE_ONLY_LINEAR_MOVEMENT</code> </td><td class="markdownTableBodyRight">disabled </td><td class="markdownTableBodyNone">Disables all but LINEAR movement. Saves up to 1540 bytes program memory.  </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>MAX_EASING_SERVOS</code> </td><td class="markdownTableBodyNone">12, 16(for PCA9685) </td><td class="markdownTableBodyNone">Saves 4 byte RAM per servo. If this value is smaller than the amount of servos declared, attach() will return error and other library functions will not work as expected.<br  />
-Of course all <em>AllServos</em>() functions and <a class="el" href="ServoEasing_8h.html#ad4e9a93af7f6aba0a14046a9e36dd358">isOneServoMoving()</a> can't work correctly!  </td></tr>
+<td class="markdownTableBodyNone"><code>DISABLE_COMPLEX_FUNCTIONS</code> </td><td class="markdownTableBodyRight">disabled </td><td class="markdownTableBodyNone">Disables the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory.  </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>DISABLE_MICROS_AS_DEGREE_PARAMETER</code> </td><td class="markdownTableBodyNone">disabled </td><td class="markdownTableBodyNone">Disables passing also microsecond values as (target angle) parameter (see <a href="https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino#L93">OneServo example</a>). Saves up to 128 bytes program memory.  </td></tr>
+<td class="markdownTableBodyNone"><code>MAX_EASING_SERVOS</code> </td><td class="markdownTableBodyRight">12, 16(for PCA9685) </td><td class="markdownTableBodyNone">Saves 4 byte RAM per servo. If this value is smaller than the amount of servos declared, attach() will return error and other library functions will not work as expected.<br  />
+Then of course all <em>AllServos</em>() functions and <a class="el" href="ServoEasing_8h.html#ad4e9a93af7f6aba0a14046a9e36dd358">isOneServoMoving()</a> also can't work correctly!  </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>DISABLE_MIN_AND_MAX_CONSTRAINTS</code> </td><td class="markdownTableBodyNone">disabled </td><td class="markdownTableBodyNone">Disables servo movement constraints. Saves 4 bytes RAM per servo but strangely enough no program memory.  </td></tr>
+<td class="markdownTableBodyNone"><code>DISABLE_MICROS_AS_DEGREE_PARAMETER</code> </td><td class="markdownTableBodyRight">disabled </td><td class="markdownTableBodyNone">Disables passing also microsecond values as (target angle) parameter. Saves up to 128 bytes program memory.  </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>DISABLE_PAUSE_RESUME</code> </td><td class="markdownTableBodyNone">disabled </td><td class="markdownTableBodyNone">Disables pause and resume functionality. Saves 5 bytes RAM per servo.  </td></tr>
+<td class="markdownTableBodyNone"><code>ENABLE_MIN_AND_MAX_CONSTRAINTS</code> </td><td class="markdownTableBodyRight">disabled </td><td class="markdownTableBodyNone">Enables servo movement constraints. Requires 4 bytes RAM per servo and 36 bytes program memory.  </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>PRINT_FOR_SERIAL_PLOTTER</code> </td><td class="markdownTableBodyNone">disabled </td><td class="markdownTableBodyNone">Generate serial output for Arduino Plotter (Ctrl-Shift-L).  </td></tr>
+<td class="markdownTableBodyNone"><code>DISABLE_PAUSE_RESUME</code> </td><td class="markdownTableBodyRight">disabled </td><td class="markdownTableBodyNone">Disables pause and resume functionality. Saves 5 bytes RAM per servo.  </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>DEBUG</code> </td><td class="markdownTableBodyNone">disabled </td><td class="markdownTableBodyNone">Generates lots of lovely debug output for this library.  </td></tr>
+<td class="markdownTableBodyNone"><code>PRINT_FOR_SERIAL_PLOTTER</code> </td><td class="markdownTableBodyRight">disabled </td><td class="markdownTableBodyNone">Generate serial output for Arduino Plotter (Ctrl-Shift-L).  </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>USE_LEIGHTWEIGHT_SERVO_LIB</code> </td><td class="markdownTableBodyNone">disabled </td><td class="markdownTableBodyNone">Available only for ATmega328. Supports only servos at pin 9 and 10. Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple. See <a href="https://github.com/ArminJo/ServoEasing#using-the-included-lightweight-servo-library-for-atmega328">below</a>. Saves up to 742 bytes program memory and 42 bytes RAM.  </td></tr>
+<td class="markdownTableBodyNone"><code>DEBUG</code> </td><td class="markdownTableBodyRight">disabled </td><td class="markdownTableBodyNone">Generates lots of lovely debug output for this library.  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>USE_LIGHTWEIGHT_SERVO_LIBRARY</code> </td><td class="markdownTableBodyRight">disabled </td><td class="markdownTableBodyNone">Available only for ATmega328 and ATmega2560. Supports only servos at pin 9 and 10 (44, 45, 46). Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple. See <a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#using-the-included-lightweight-servo-library-for-atmega328">below</a>. Saves up to 742 bytes program memory and 42 bytes RAM.  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>MINIMUM_PULSE_WIDTH</code> </td><td class="markdownTableBodyRight">400 </td><td class="markdownTableBodyNone">The shortest pulse which can be sent to a servo by this library. This value is smaller than the value used by the Arduino <a class="el" href="classServo.html">Servo</a> library, which is 544 us (MIN_PULSE_WIDTH), to be more versatile.  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>MAXIMUM_PULSE_WIDTH</code> </td><td class="markdownTableBodyRight">3500 </td><td class="markdownTableBodyNone">The shortest pulse which can be sent to a servo by this library. This value is greater than the value used by the Arduino <a class="el" href="classServo.html">Servo</a> library, which is 2400 us (MAX_PULSE_WIDTH), to be more versatile.  </td></tr>
 </table>
 <p><br  />
 </p>
-<h1>Using PCA9685 16-Channel Servo Expander</h1>
-<p>Using the expander makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br  />
+<h1>Using PCA9685 16-Channel <a class="el" href="classServo.html">Servo</a> Expander</h1>
+<p>Using the PCA9685 expander makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br  />
  To enable the use of the expander, activate <a href="https://github.com/ArminJo/ServoEasing/blob/master/examples/OneServo/OneServo.ino#L28">the line <code>#define USE_PCA9685_SERVO_EXPANDER</code></a> before <code>#include &lt;<a class="el" href="ServoEasing_8hpp.html">ServoEasing.hpp</a>&gt;</code>.<br  />
  In expander mode, timer1 is only required for the startEaseTo* functions and not for the blocking easeTo* functions, since no servo signal must be generated by it.</p>
 <p>The pin number parameter of the attach function determines the <b>port number of the PCA9685</b> and can be in the range from 0 to 15.</p>
 <p>Be aware that the PCA9685 expander is <b>reset</b> at the first <code>attach()</code> and <b>initialized</b> at every further <code>attach()</code>.<br  />
- To control simultaneously servos with the Arduino Servo library i.e. servos which are directly connected to the Arduino board, activate the line <code>#define USE_SERVO_LIB</code>.<br  />
- In this case you should attach the expander servos first in order to initialize the expander board correctly. And as long as no servo using the Arduino Servo library is attached, the expander servos will not move, which should not be a problem since you normally attach all servos in <code>setup()</code>.<br  />
- <b>Resolution</b> of the is PCA9685 signal is approximately <b>0.5 degree</b>.</p>
+ To control simultaneously servos with the Arduino <a class="el" href="classServo.html">Servo</a> library i.e. servos which are directly connected to the Arduino board, activate the line <code>#define USE_SERVO_LIB</code>.<br  />
+ In this case you should attach the expander servos first in order to initialize the expander board correctly. And as long as no servo using the Arduino <a class="el" href="classServo.html">Servo</a> library is attached, the expander servos will not move, which should not be a problem since you normally attach all servos in <code>setup()</code>.<br  />
+ <b>Resolution</b> of the is PCA9685 signal is approximately <b>0.5 &deg;</b>.</p>
 <p>On the <b>ESP32 the I2C library is only capable to run at 100 kHz</b>, because it interferes with the Ticker / Timer library used. Even with 100 kHz clock we have some dropouts / NAK's because of sending address again instead of first data.<br  />
- Since the raw transmission time of 32 Servo positions is 17.4 &micro;s @ 100 kHz, not more than 2 expander boards can be connected to one I2C bus on an ESP32 board, if all servos should move simultaneously.<br  />
+ Since the raw transmission time of 32 <a class="el" href="classServo.html">Servo</a> positions is 17.4 &micro;s @ 100 kHz, not more than 2 expander boards can be connected to one I2C bus on an ESP32 board, if all servos should move simultaneously.<br  />
  If you do not use any timer in your program you can increase speed up to 800 kHz. Maybe you have to attach 2 x 2.2 k pullup resistors to the I2C lines to have it working reliably.</p>
 <p><br  />
 </p>
-<h1>Using the included <a href="https://github.com/ArminJo/LightweightServo">Lightweight Servo library</a> for ATmega328</h1>
-<p>Using the <b>Lightweight Servo Library</b> reduces sketch size and makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br  />
+<h1>Using the included Lightweight <a class="el" href="classServo.html">Servo</a> library for ATmega328 and ATmega2560</h1>
+<p>This library is like the <a href="https://github.com/adafruit/Adafruit_TiCoServo">Adafruit TiCoServo library</a>, but more lightweight and currently only for <b>Uno, Nano</b>.</p>
+<p>Using the <a href="https://github.com/ArminJo/LightweightServo">Lightweight Servo library</a> reduces sketch size and makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple.<br  />
  Up to 2 servos are supported by this library and they must be physically attached to pin 9 and/or 10 of the Arduino board.<br  />
- To enable it, activate the line <code>#define USE_LEIGHTWEIGHT_SERVO_LIB</code> before the line <code>#include "LightweightServo.hpp"</code> <a href="https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServos/TwoServos.ino#L31">like it is done in the TwoServos example</a>.<br  />
- If you do not use the Arduino IDE, take care that Arduino Servo library sources are not compiled / included in the project.</p>
+ To enable it, activate the line <code>#define</code> before the line <code>#include "LightweightServo.hpp"</code> <a href="https://github.com/ArminJo/ServoEasing/blob/master/examples/TwoServos/TwoServos.ino#L31">like it is done in the TwoServos example</a>.<br  />
+ If you do not use the Arduino IDE, take care that Arduino <a class="el" href="classServo.html">Servo</a> library sources are not compiled / included in the project.</p>
 <p><br  />
 </p>
 <h1>Handling multiple servos with the internal ServoEasingArray</h1>
@@ -381,16 +381,20 @@ Of course all <em>AllServos</em>() functions and <a class="el" href="ServoEasing
 <li><code><a class="el" href="classServoEasing.html">ServoEasing</a> *ServoEasing::ServoEasingArray[MAX_EASING_SERVOS]</code></li>
 <li><code>float <a class="el" href="classServoEasing.html#a6b98d15a0fd7ecf6afd86c5425ce5419" title="Used exclusively for *ForAllServos() functions.">ServoEasing::ServoEasingNextPositionArray</a>[MAX_EASING_SERVOS]</code></li>
 </ul>
-<p>Every <a class="el" href="classServoEasing.html">ServoEasing</a> object is appended to the ServoEasingArray by the attach() function. <b>Only the order of the attach() statements determines the position in the array.</b> So you can access your servo, which you attached secondly, also by <code><a class="el" href="classServoEasing.html#ab4d854e4f0d7611e9030676108594acc">ServoEasing::ServoEasingArray</a>[1]-&gt;setEaseTo(135)</code> as it is done <a href="https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServos/ThreeServos.ino#L144">here</a>.<br  />
+<p>Every <a class="el" href="classServoEasing.html">ServoEasing</a> object is appended to the ServoEasingArray by the attach() function. <b>Only the order of the attach() statements determines the position in the array.</b> So you can access your servo, which you attached secondly, also by <code><a class="el" href="classServoEasing.html#ab4d854e4f0d7611e9030676108594acc">ServoEasing::ServoEasingArray</a>[1]-&gt;setEaseTo(135)</code> as it is done <a href="https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServos/ThreeServos.ino#L149">here</a>.<br  />
  There are also many other <code>*AllServos*</code> functions like <code><a class="el" href="ServoEasing_8h.html#ae4e8110f66924ab0d9000a380d75fc94">stopAllServos()</a></code>.</p>
 <p>To move multiple servo, you can fill up the <code><a class="el" href="classServoEasing.html#a6b98d15a0fd7ecf6afd86c5425ce5419" title="Used exclusively for *ForAllServos() functions.">ServoEasing::ServoEasingNextPositionArray</a></code> with the desired positions and then use e.g. the function <code><a class="el" href="ServoEasing_8h.html#a6e84acc192dfce2c901a25acf2744eb7" title="Sets target position using content of ServoEasingNextPositionArray.">setEaseToForAllServos()</a></code>. Then you must enable interrupt with <code><a class="el" href="ServoEasing_8h.html#ad98a05e05b1349df07a2a84a6ed06ae9" title="Timer1 is used for the Arduino Servo library.">enableServoEasingInterrupt()</a></code> or call <code><a class="el" href="ServoEasing_8h.html#a12b38a954d3061ea45838d147a7cfc08">updateAllServos()</a></code> in your main loop until it returns true.<br  />
- If you want to move all your servos synchronized, i.e. they all stop at the same time, you can use the <code><a class="el" href="ServoEasing_8h.html#a1b5872f39331d279ca84e9c4d1eaa980" title="Synchronize and blocking wait until all servos are stopped.">setEaseToForAllServosSynchronizeAndWaitForAllServosToStop()</a></code> or <code>setEaseToForAllServosSynchronizeAndStartInterrupt</code> function.<br  />
- An example can be found <a href="https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServos/ThreeServos.ino#L162">here</a>.<br  />
+ If you want to move all your servos synchronized, i.e. they all stop at the same time, you can use the <code><a class="el" href="ServoEasing_8h.html#a1b5872f39331d279ca84e9c4d1eaa980" title="Synchronize and blocking wait until all servos are stopped Take the longer duration in order to move ...">setEaseToForAllServosSynchronizeAndWaitForAllServosToStop()</a></code> or <code>setEaseToForAllServosSynchronizeAndStartInterrupt</code> function.<br  />
+ An example can be found <a href="https://github.com/ArminJo/ServoEasing/blob/master/examples/ThreeServos/ThreeServos.ino#L174">here</a>.<br  />
  The <a href="https://github.com/ArminJo/ServoEasing/blob/master/examples/QuadrupedControl/QuadrupedServoControl.hpp#L32">Quadruped example</a> makes heavy use of the <code>*AllServos*</code> functions.</p>
 <p>If you <b>detach</b> a servo and then attach another one, the latter will get the index of the former detached one.</p>
 <p><br  />
 </p>
-<h1>Description of <a href="https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples">examples</a></h1>
+<h1>Examples for this library</h1>
+<p><a href="https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples">The examples</a> are available at File &gt; Examples &gt; Examples from Custom Libraries / <a class="el" href="classServoEasing.html">ServoEasing</a>.<br  />
+</p>
+<h2>DummyServoExample</h2>
+<p>This is an example for a user provided servo library, which is activated by <code>#define USE_USER_PROVIDED_SERVO_LIB</code>.</p>
 <p><br  />
 </p>
 <h1>WOKWI online examples</h1>
@@ -399,7 +403,11 @@ Of course all <em>AllServos</em>() functions and <a class="el" href="ServoEasing
 </ul>
 <p><br  />
 </p>
-<h1><a href="https://github.com/ArminJo/ServoEasing/tree/master/examples#servo-utilities">Servo utilities</a></h1>
+<h1><a class="el" href="classServo.html">Servo</a> utilities</h1>
+<ul>
+<li><a href="https://github.com/ArminJo/ServoEasing/blob/master/examples#endpositionstest">EndPositionsTest</a></li>
+<li><a href="https://github.com/ArminJo/ServoEasing/blob/master/examples#speedtest">SpeedTest</a></li>
+</ul>
 <p><br  />
 </p>
 <h1>Building breadboard servo adapter</h1>
@@ -409,18 +417,19 @@ Of course all <em>AllServos</em>() functions and <a class="el" href="ServoEasing
 <h1>Internals</h1>
 <p>The API accepts degrees or microseconds as float or integer values, but internally only microseconds (or units (= 4.88 &micro;s) if using PCA9685 expander) and not degrees are used to speed up things.<br  />
 </p>
+<p>If you do not specify an initial position with attach, <b>the first attach</b> moves servo to DEFAULT_PULSE_WIDTH (90 degree | 1500 us). This behavior is implemented by the underlying <a class="el" href="classServo.html">Servo</a> library. Following attaches just use the last position of this <a class="el" href="classServo.html">Servo</a>.</p>
 <p><br  />
 </p>
 <h1>Supported Arduino architectures</h1>
-<p><b>Every Arduino architecture with a Servo library</b> will work without any modifications in blocking mode.<br  />
- Non blocking behavior can always be achieved manually by calling <code>update()</code> in a loop - see last movement in <a href="examples/Simple/Simple.ino">Simple example</a>.<br  />
+<p><b>Every Arduino architecture with a <a class="el" href="classServo.html">Servo</a> library</b> will work without any modifications in blocking mode.<br  />
+ Non blocking behavior can always be achieved manually by calling <code>update()</code> or <code><a class="el" href="ServoEasing_8h.html#a12b38a954d3061ea45838d147a7cfc08">updateAllServos()</a></code> in a loop - see <a href="examples/ThreeServos/ThreeServos.ino#L153">ThreeServos example</a>.<br  />
  Interrupt based movement (movement without calling <code>update()</code> manually in a loop) is supported for the following Arduino architectures:<br  />
  <b>avr, megaavr, sam, samd, esp8266, esp32, stm32, STM32F1 and apollo3.</b><br  />
- <b>It is not planned to support the ATtiny architecture, but you are invited to <a href="https://github.com/ArminJo/ServoEasing#adding-a-new-platform--board">do it by yourself</a> and send a pull request.</b></p>
+ <b>It is not planned to support the ATtiny architecture, but you are invited to <a href="https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#adding-a-new-platform--board">do it by yourself</a> and send a pull request.</b></p>
 <p><br  />
 </p>
 <h1>Timer usage for interrupt based movement</h1>
-<p>On <b>AVR</b> Timer1 is used for the Arduino Servo library. To have non blocking easing functions its unused <b>Channel B</b> is used to generate an interrupt <a href="https://github.com/ArminJo/ServoEasing/blob/13a9ae3f93c0ae75e7ac381216abe1154dd0a7e4/src/ServoEasing.hpp#L1915">100 &micro;s before the end of the 20 ms Arduino Servo refresh period</a>. This interrupt then updates all servo values for the next servo signal refresh period. </p><table class="markdownTable">
+<p>On <b>AVR</b> Timer1 is used for the Arduino <a class="el" href="classServo.html">Servo</a> library. To have non blocking easing functions its unused <b>Channel B</b> is used to generate an interrupt <a href="https://github.com/ArminJo/ServoEasing/blob/13a9ae3f93c0ae75e7ac381216abe1154dd0a7e4/src/ServoEasing.hpp#L1915">100 &micro;s before the end of the 20 ms Arduino Servo refresh period</a>. This interrupt then updates all servo values for the next servo signal refresh period. </p><table class="markdownTable">
 <tr class="markdownTableHead">
 <th class="markdownTableHeadNone">Platform </th><th class="markdownTableHeadNone">Timer </th><th class="markdownTableHeadNone">Library providing the timer  </th></tr>
 <tr class="markdownTableRowOdd">
@@ -446,14 +455,14 @@ Of course all <em>AllServos</em>() functions and <a class="el" href="ServoEasing
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">Mbed </td><td class="markdownTableBodyNone">mbed::Ticker </td><td class="markdownTableBodyNone">Ticker.h  </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone">[RP2040 / Pi Pico](<a href="https://github.com/earlephilhower/arduino-pico">https://github.com/earlephilhower/arduino-pico</a> </td><td class="markdownTableBodyNone"><a href="https://raspberrypi.github.io/pico-sdk-doxygen/group__repeating__timer.html">default alarm pool</a> </td><td class="markdownTableBodyNone">time.h  </td></tr>
+<td class="markdownTableBodyNone"><a href="https://github.com/earlephilhower/arduino-pico">RP2040 / Pi Pico</a> </td><td class="markdownTableBodyNone"><a href="https://raspberrypi.github.io/pico-sdk-doxygen/group__repeating__timer.html">default alarm pool</a> </td><td class="markdownTableBodyNone">time.h  </td></tr>
 </table>
 <p><br  />
 </p>
 <h1>Adding a new platform / board</h1>
 <p>If timer support is available for a platform the library can be ported by adding code for the Timer20ms like is was done for ESP and STM.<br  />
  To add a new platform, the following steps have to be performed:</p><ol type="1">
-<li>If the new platform has an <b>Arduino compatible Servo library</b>, fine, otherwise include the one required for this platform like it is done for ESP32 <a href="src/ServoEasing.h#L98">here</a>.</li>
+<li>If the new platform has an <b>Arduino compatible <a class="el" href="classServo.html">Servo</a> library</b>, fine, otherwise include the one required for this platform like it is done for ESP32 <a href="src/ServoEasing.h#L98">here</a>.</li>
 <li>You need a <b>20ms interrupt source</b> providing the functions <a class="el" href="ServoEasing_8h.html#ad98a05e05b1349df07a2a84a6ed06ae9" title="Timer1 is used for the Arduino Servo library.">enableServoEasingInterrupt()</a> and (optional) <a class="el" href="ServoEasing_8h.html#a0327b7f8ede3426c611701579f0ba9e9">disableServoEasingInterrupt()</a>. Extend these functions with code for the new platform. Place includes and timer definitions at top of <em><a class="el" href="ServoEasing_8hpp.html">ServoEasing.hpp</a></em>.</li>
 <li>If your interrupt source requires an ISR (Interrupt Service Routine) place it after <a class="el" href="ServoEasing_8h.html#a0327b7f8ede3426c611701579f0ba9e9">disableServoEasingInterrupt()</a> where all the other ISR are located.</li>
 <li>To test the new platform, you may want to enable <b>TRACE output</b> by activating the line <code>#define TRACE</code> in <em><a class="el" href="ServoEasing_8hpp.html">ServoEasing.hpp</a></em> and enabling <b>interrupt timing feedback</b> by activating the line <code>#define MEASURE_SERVO_EASING_INTERRUPT_TIMING</code> in <em><a class="el" href="ServoEasing_8hpp.html">ServoEasing.hpp</a></em>.</li>
@@ -467,13 +476,31 @@ Of course all <em>AllServos</em>() functions and <a class="el" href="ServoEasing
 <p><br  />
 </p>
 <h1>Revision History</h1>
+<h3>Version 3.4.0</h3>
+<ul>
+<li>LightweightServo support for ATmega2560.</li>
+<li>Renamed <code>mCurrentMicrosecondsOrUnits</code> to <code>mLastTargetMicrosecondsOrUnits</code> to make clear, that trim and reverse is NOT applied to this value.</li>
+<li>Changed <code>DISABLE_MIN_AND_MAX_CONSTRAINTS</code> to <code>ENABLE_MIN_AND_MAX_CONSTRAINTS</code>. Constraint checking is now disabled by default.</li>
+<li>candorgander fixed a bug in <code>printEasingType()</code> for non AVR platforms.</li>
+</ul>
+<h3>Version 3.3.0</h3>
+<ul>
+<li>Added functions <code>setEaseTo()</code>, <code>setEaseToD()</code>, <code>startEaseTo()</code> and <code>startEaseToD()</code> with first parameter as <code>unsigned int</code> to avoid compiler errors <code>call of overloaded 'startEaseTo(unsigned int...</code>.</li>
+<li>Added functions read() and readMicroseconds() to be compatible to <a class="el" href="classServo.html">Servo</a> library.</li>
+<li>Added function reattach() without parameters to be used after detach().</li>
+<li>Added <code>USE_USER_PROVIDED_SERVO_LIB</code> macro.</li>
+</ul>
+<h3>Version 3.2.1</h3>
+<ul>
+<li>Renamed function <code>setDegreeForAllServos()</code> to <code>setIntegerDegreeForAllServos()</code> and added function <code>setFloatDegreeForAllServos()</code>.</li>
+</ul>
 <h3>Version 3.2.0</h3>
 <ul>
 <li>ATmega4808 support added.</li>
 <li>Added function <code>getCurrentMicroseconds()</code>.</li>
 <li>Improved many and added workaround for ESP32 bug in while loops in examples.</li>
 <li>Added <code>PCA9685_ACTUAL_CLOCK_FREQUENCY</code> macro.</li>
-<li>Renamed function <code><a class="el" href="ServoEasing_8h.html#a67c818d8be5b5821a394906346bcd048">synchronizeAndEaseToArrayPositions()</a></code> to <code><a class="el" href="ServoEasing_8h.html#a1b5872f39331d279ca84e9c4d1eaa980" title="Synchronize and blocking wait until all servos are stopped.">setEaseToForAllServosSynchronizeAndWaitForAllServosToStop()</a></code>.</li>
+<li>Renamed function <code><a class="el" href="ServoEasing_8h.html#a67c818d8be5b5821a394906346bcd048">synchronizeAndEaseToArrayPositions()</a></code> to <code><a class="el" href="ServoEasing_8h.html#a1b5872f39331d279ca84e9c4d1eaa980" title="Synchronize and blocking wait until all servos are stopped Take the longer duration in order to move ...">setEaseToForAllServosSynchronizeAndWaitForAllServosToStop()</a></code>.</li>
 </ul>
 <h3>Version 3.1.0</h3>
 <ul>
@@ -613,7 +640,7 @@ Of course all <em>AllServos</em>() functions and <a class="el" href="ServoEasing
 <h3>Version 1.3.0</h3>
 <ul>
 <li>Added <b>ESP32</b> support by using <em>ESP32Servo.h</em> and <em>Ticker.h</em> instead of <em>Servo.h</em> timer interrupts.</li>
-<li>Changed degree parameter and values from uint8_t to integer to support operating a servo from -90 to + 90 degree with 90 degree trim.</li>
+<li>Changed degree parameter and values from uint8_t to integer to support operating a servo from -90 &deg; to + 90 &deg; with 90 &deg; trim.</li>
 <li><code>RobotArmControl</code> + <code>QuadrupedControl</code> examples refactored.</li>
 <li>Changed "while" to "for" loops to avoid a gcc 7.3.0 atmel6.3.1 bug.</li>
 <li>Extended <code>SpeedTest</code> example. Now also able to change the width of the refresh period.</li>
@@ -635,18 +662,15 @@ Of course all <em>AllServos</em>() functions and <a class="el" href="ServoEasing
 </ul>
 <h3>Version 1.0.0</h3>
 <p>Initial Arduino library version.</p>
-<h1>CI</h1>
-<p>Since Travis CI is slow (5 times slower 17:43 vs. 3:15 minutes), the library examples are now tested with GitHub Actions for <a href=".github/workflows/LibraryBuild.yml#L41">this boards</a>.</p>
-<h1>Requests for modifications / extensions</h1>
-<p>Please write me a PM including your motivation/problem if you need a modification or an extension.</p>
-<h4>If you find this library useful, please give it a star.</h4>
+<h1>Commercial license</h1>
+<p>A commercial license is granted to "Video Ispezioni Srl" for use in a pipeline inspection and rehabilitation robot as from 10.10.2024. </p>
 </div></div><!-- PageDoc -->
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Thu Feb 16 2023 21:55:49 for ServoEasing by
+    <li class="footer">Generated on Sun Aug 24 2025 18:03:50 for ServoEasing by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.18 </li>
   </ul>

@@ -1,0 +1,8 @@
+<map id="ServoEasing::attach" name="ServoEasing::attach">
+<area shape="rect" id="node1" title="The microseconds values at aServoLowDegree and aServoHighDegree are used to compute the microseconds ..." alt="" coords="5,32,145,60"/>
+<area shape="rect" id="node2" href="$classServoEasing.html#aa2bbc3d405836ba6a1b466caaa349a27" title="Specify the microseconds values for 0 and 180 degree for the servo." alt="" coords="193,5,332,33"/>
+<area shape="rect" id="node3" href="$classServoEasing.html#a04d5810d2c64ebbf6d366f1aec177300" title=" " alt="" coords="197,57,328,85"/>
+<area shape="rect" id="node4" href="$classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="387,15,606,59"/>
+<area shape="rect" id="node6" href="$classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="380,83,613,127"/>
+<area shape="rect" id="node5" href="$classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="661,23,834,51"/>
+</map>

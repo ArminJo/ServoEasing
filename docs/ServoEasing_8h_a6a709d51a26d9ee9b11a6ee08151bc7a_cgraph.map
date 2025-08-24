@@ -1,0 +1,4 @@
+<map id="setEasingTypeForAllServos" name="setEasingTypeForAllServos">
+<area shape="rect" id="node1" title="60 us for single servo + 160 us per servo if using I2C e.g.for PCA9685 expander at 400 kHz or + 100 a..." alt="" coords="5,13,188,41"/>
+<area shape="rect" id="node2" href="$ServoEasing_8hpp.html#a34d8d10f7e8ed301e16761017b7e8d3d" title="Sets easing type aEasingType for the first aNumberOfServos in ServoEasingArray[]." alt="" coords="236,5,407,49"/>
+</map>

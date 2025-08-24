@@ -1,0 +1,19 @@
+<map id="ServoEasing::easeTo" name="ServoEasing::easeTo">
+<area shape="rect" id="node1" title="Blocking move without interrupt." alt="" coords="5,215,151,243"/>
+<area shape="rect" id="node2" href="$classServoEasing.html#a90c8018913929af305f4d5f4a82e51ef" title=" " alt="" coords="199,188,372,216"/>
+<area shape="rect" id="node3" href="$ServoEasing_8hpp.html#a12b38a954d3061ea45838d147a7cfc08" title=" " alt="" coords="227,240,344,268"/>
+<area shape="rect" id="node4" href="$classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="420,240,562,268"/>
+<area shape="rect" id="node5" href="$classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="617,72,837,116"/>
+<area shape="rect" id="node7" href="$classServoEasing.html#a889e7f6cefd62113ac55bef58959499b" title=" " alt="" coords="620,240,834,268"/>
+<area shape="rect" id="node17" href="$classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="610,292,844,336"/>
+<area shape="rect" id="node6" href="$classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="916,5,1088,33"/>
+<area shape="rect" id="node8" href="$classServoEasing.html#a522915dbd93915dcdf60babd7a4a07c1" title="see: https://easings.net/#easeInOutBack and https://github.com/warrenm/AHEasing/blob/master/AHEasing/..." alt="" coords="915,57,1090,85"/>
+<area shape="rect" id="node9" href="$classServoEasing.html#a21cf52b4f9c5a9f423b6693dfcf868de" title="It is very fast in the middle! see: https://easings.net/#easeInOutCirc and https://github...." alt="" coords="908,109,1097,137"/>
+<area shape="rect" id="node10" href="$classServoEasing.html#aabe48c77b29287c27c25998216aec1b5" title=" " alt="" coords="913,161,1092,189"/>
+<area shape="rect" id="node11" href="$classServoEasing.html#a855a7ff6b05f3008f6f63bc141b2b260" title="The simplest non linear easing function." alt="" coords="1161,213,1361,241"/>
+<area shape="rect" id="node12" href="$classServoEasing.html#abdf4a3da017795f2c2d39a02020e472f" title="!!! ATTENTION !!! we have only the out function implemented see: https://easings.net/de#easeOutBounce..." alt="" coords="903,265,1102,293"/>
+<area shape="rect" id="node13" href="$classServoEasing.html#a66dba734c24584d0d71b6719b1cd64df" title="see: https://easings.net/#easeInOutElastic and https://github.com/warrenm/AHEasing/blob/master/AHEasi..." alt="" coords="910,317,1094,345"/>
+<area shape="rect" id="node14" href="$classServoEasing.html#ad8f184e2329b5bb18ff1de60d933d8be" title="PRECISION (LinearWithQuadraticBounce) is like linear, but adds a 5 degree bounce in the last 20 % of ..." alt="" coords="892,369,1113,413"/>
+<area shape="rect" id="node15" href="$classServoEasing.html#a14bfa59cd2c5f80815fbfd09b9fa0f9f" title=" " alt="" coords="909,437,1096,465"/>
+<area shape="rect" id="node16" href="$classServoEasing.html#a1467d7fb220fd922813f4f3d17d81efa" title="Take half of negative cosines of first quadrant Is behaves almost like QUADRATIC." alt="" coords="917,489,1088,517"/>
+</map>

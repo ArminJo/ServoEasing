@@ -1,0 +1,27 @@
+<map id="ServoEasing::startEaseTo" name="ServoEasing::startEaseTo">
+<area shape="rect" id="node1" title="Compute the MillisForCompleteMove parameter for use of startEaseToD() function and handle CALL_STYLE_..." alt="" coords="5,73,179,101"/>
+<area shape="rect" id="node2" href="$classServoEasing.html#a4d1403dd5e0793195514e96b390aec91" title="Used to convert e.g." alt="" coords="719,5,904,49"/>
+<area shape="rect" id="node3" href="$classServoEasing.html#a2b8bf31336aec0daecbb790d97c9ad45" title="Only used in startEaseTo to compute target degree For PCA9685, we have stored units in mServo0DegreeM..." alt="" coords="227,65,411,109"/>
+<area shape="rect" id="node4" href="$classServoEasing.html#a3fc76128ba052768df22ac28503a6f10" title="Sets up all the values required for a smooth move to new value Lower level function with time instead..." alt="" coords="227,156,410,184"/>
+<area shape="rect" id="node5" href="$classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="1405,183,1639,227"/>
+<area shape="rect" id="node6" href="$ServoEasing_8hpp.html#ad98a05e05b1349df07a2a84a6ed06ae9" title="Timer1 is used for the Arduino Servo library." alt="" coords="459,245,640,273"/>
+<area shape="rect" id="node23" href="$classServoEasing.html#a08f9f4edf145eef15a5a7d7f04858925" title="Prints values which may change from move to move." alt="" coords="460,131,640,159"/>
+<area shape="rect" id="node7" href="$ServoEasing_8hpp.html#a1ca4b9e40346b216e2333971aa83b5a3" title="Update all servos from list and check if all servos have stopped." alt="" coords="724,253,899,281"/>
+<area shape="rect" id="node8" href="$ServoEasing_8hpp.html#a0327b7f8ede3426c611701579f0ba9e9" title=" " alt="" coords="983,305,1167,333"/>
+<area shape="rect" id="node9" href="$ServoEasing_8hpp.html#a12b38a954d3061ea45838d147a7cfc08" title=" " alt="" coords="1017,253,1133,281"/>
+<area shape="rect" id="node10" href="$classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="1215,255,1357,283"/>
+<area shape="rect" id="node11" href="$classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1412,251,1632,295"/>
+<area shape="rect" id="node13" href="$classServoEasing.html#a889e7f6cefd62113ac55bef58959499b" title=" " alt="" coords="1415,405,1629,433"/>
+<area shape="rect" id="node12" href="$classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="1711,171,1884,199"/>
+<area shape="rect" id="node14" href="$classServoEasing.html#a522915dbd93915dcdf60babd7a4a07c1" title="see: https://easings.net/#easeInOutBack and https://github.com/warrenm/AHEasing/blob/master/AHEasing/..." alt="" coords="1710,223,1884,251"/>
+<area shape="rect" id="node15" href="$classServoEasing.html#a21cf52b4f9c5a9f423b6693dfcf868de" title="It is very fast in the middle! see: https://easings.net/#easeInOutCirc and https://github...." alt="" coords="1703,275,1892,303"/>
+<area shape="rect" id="node16" href="$classServoEasing.html#aabe48c77b29287c27c25998216aec1b5" title=" " alt="" coords="1708,379,1886,407"/>
+<area shape="rect" id="node17" href="$classServoEasing.html#a855a7ff6b05f3008f6f63bc141b2b260" title="The simplest non linear easing function." alt="" coords="1956,379,2156,407"/>
+<area shape="rect" id="node18" href="$classServoEasing.html#abdf4a3da017795f2c2d39a02020e472f" title="!!! ATTENTION !!! we have only the out function implemented see: https://easings.net/de#easeOutBounce..." alt="" coords="1698,483,1896,511"/>
+<area shape="rect" id="node19" href="$classServoEasing.html#a66dba734c24584d0d71b6719b1cd64df" title="see: https://easings.net/#easeInOutElastic and https://github.com/warrenm/AHEasing/blob/master/AHEasi..." alt="" coords="1705,535,1890,563"/>
+<area shape="rect" id="node20" href="$classServoEasing.html#ad8f184e2329b5bb18ff1de60d933d8be" title="PRECISION (LinearWithQuadraticBounce) is like linear, but adds a 5 degree bounce in the last 20 % of ..." alt="" coords="1687,587,1908,631"/>
+<area shape="rect" id="node21" href="$classServoEasing.html#a14bfa59cd2c5f80815fbfd09b9fa0f9f" title=" " alt="" coords="1704,431,1890,459"/>
+<area shape="rect" id="node22" href="$classServoEasing.html#a1467d7fb220fd922813f4f3d17d81efa" title="Take half of negative cosines of first quadrant Is behaves almost like QUADRATIC." alt="" coords="1712,655,1882,683"/>
+<area shape="rect" id="node24" href="$classServoEasing.html#ac38d29a080553c0c6a3e2b0678150360" title=" " alt="" coords="688,73,935,117"/>
+<area shape="rect" id="node25" href="$classServoEasing.html#a94909317b9b32832aecc7204e445e148" title=" " alt="" coords="713,141,910,169"/>
+</map>

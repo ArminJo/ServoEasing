@@ -1,0 +1,12 @@
+<map id="ServoEasing::callEasingFunction" name="ServoEasing::callEasingFunction">
+<area shape="rect" id="node1" title=" " alt="" coords="5,213,219,241"/>
+<area shape="rect" id="node2" href="$classServoEasing.html#a522915dbd93915dcdf60babd7a4a07c1" title="see: https://easings.net/#easeInOutBack and https://github.com/warrenm/AHEasing/blob/master/AHEasing/..." alt="" coords="290,5,464,33"/>
+<area shape="rect" id="node3" href="$classServoEasing.html#a21cf52b4f9c5a9f423b6693dfcf868de" title="It is very fast in the middle! see: https://easings.net/#easeInOutCirc and https://github...." alt="" coords="283,57,472,85"/>
+<area shape="rect" id="node4" href="$classServoEasing.html#aabe48c77b29287c27c25998216aec1b5" title=" " alt="" coords="288,109,466,137"/>
+<area shape="rect" id="node5" href="$classServoEasing.html#a855a7ff6b05f3008f6f63bc141b2b260" title="The simplest non linear easing function." alt="" coords="536,161,736,189"/>
+<area shape="rect" id="node6" href="$classServoEasing.html#abdf4a3da017795f2c2d39a02020e472f" title="!!! ATTENTION !!! we have only the out function implemented see: https://easings.net/de#easeOutBounce..." alt="" coords="278,213,476,241"/>
+<area shape="rect" id="node7" href="$classServoEasing.html#a66dba734c24584d0d71b6719b1cd64df" title="see: https://easings.net/#easeInOutElastic and https://github.com/warrenm/AHEasing/blob/master/AHEasi..." alt="" coords="285,265,470,293"/>
+<area shape="rect" id="node8" href="$classServoEasing.html#ad8f184e2329b5bb18ff1de60d933d8be" title="PRECISION (LinearWithQuadraticBounce) is like linear, but adds a 5 degree bounce in the last 20 % of ..." alt="" coords="267,317,488,361"/>
+<area shape="rect" id="node9" href="$classServoEasing.html#a14bfa59cd2c5f80815fbfd09b9fa0f9f" title=" " alt="" coords="284,385,470,413"/>
+<area shape="rect" id="node10" href="$classServoEasing.html#a1467d7fb220fd922813f4f3d17d81efa" title="Take half of negative cosines of first quadrant Is behaves almost like QUADRATIC." alt="" coords="292,437,462,465"/>
+</map>
