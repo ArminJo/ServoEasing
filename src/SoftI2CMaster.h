@@ -216,7 +216,7 @@ void i2c_write_byte_to_register(uint8_t addr, uint8_t register_number, uint8_t b
 // If I2C_PULLUP is set to 1, then the internal pull-up resistors are used.
 // This does not conform with the I2C specs, since the bus lines will be
 // temporarily in high-state and the internal resistors have roughly 50k.
-// With low bus speeds und short buses it usually works, though (hopefully).
+// With low bus speeds and short buses it usually works, though (hopefully).
 #if !defined(I2C_PULLUP)
 #define I2C_PULLUP 0
 #endif

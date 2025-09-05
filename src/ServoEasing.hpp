@@ -9,7 +9,7 @@
  *
  *  The AVR Servo library supports only one timer, which means not more than 12 servos are supported using this library.
  *
- *  Copyright (C) 2019-2023  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2025  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -244,7 +244,7 @@ void ServoEasing::I2CInit() {
     i2c_init(); // Initialize everything and check for bus lockup
 #else
     mI2CClass->begin();
-    mI2CClass->setClock(I2C_CLOCK_FREQUENCY); // 1000000 does not work for me, maybe because of parasitic breadboard capacities
+    mI2CClass->setClock(I2C_CLOCK_FREQUENCY); // .8 MHz - 1 MHz from datasheet does not work for my Arduino Nano, maybe because of parasitic breadboard capacities
 #  if defined (ARDUINO_ARCH_AVR) // Other platforms do not have this new function
     mI2CClass->setWireTimeout(); // Sets default timeout of 25 ms.
 #  endif
@@ -1977,7 +1977,7 @@ void handleServoTimerInterrupt()
 #endif // !defined(ENABLE_EXTERNAL_SERVO_TIMER_HANDLER)
 
 // The eclipse formatter has problems with // comments in undefined code blocks
-// !!! Must be without comment and closed by @formatter:on
+// !!! Must be without trailing comment and closed by @formatter:on
 // @formatter:off
 /**
  * Timer1 is used for the Arduino Servo library.
@@ -2927,7 +2927,7 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial) // Print has no fl
 #endif // defined(USE_SOFT_I2C_MASTER)
 
     if (tRetValue) {
-        aSerial->println(F("PCA9685 expander not connected"));
+        aSerial->println(F("PCA9685 expander not connected. Try to reduce I2C clock (I2C_CLOCK_FREQUENCY in ServoEasing.h)"));
     }
     return tRetValue;
 }

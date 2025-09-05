@@ -44,7 +44,7 @@
 #define MILLIS_IN_ONE_SECOND 1000L
 
 // The eclipse formatter has problems with // comments in undefined code blocks
-// !!! Must be without comment and closed by @formatter:on
+// !!! Must be without trailing comment and closed by @formatter:on
 // @formatter:off
 #define START_EASE_TO_SPEED 5 // If not specified use 5 degree per second. It is chosen so low in order to signal that it was forgotten to specify by program.
 
@@ -140,25 +140,24 @@ __attribute__((weak)) extern void handleServoTimerInterrupt();
 #include "mbed.h"
 #endif
 
-
-
 #if defined(USE_PCA9685_SERVO_EXPANDER)
 #  if !defined(MAX_EASING_SERVOS)
 #define MAX_EASING_SERVOS 16 // One PCA9685 has 16 outputs. You must MODIFY this, if you have more than one PCA9685 attached!
 #  endif // defined(USE_PCA9685_SERVO_EXPANDER)
    #include <Wire.h>
-// PCA9685 works with up to 1 MHz I2C frequency
-#  if defined(ESP32)
+// PCA9685 works with up to 1 MHz I2C frequency according to the datasheet
+#  if !defined(I2C_CLOCK_FREQUENCY)
+#    if defined(ESP32)
 // The ESP32 I2C interferes with the Ticker / Timer library used.
 // Even with 100 kHz clock we have some dropouts / NAK's because of sending address again instead of first data.
 # define I2C_CLOCK_FREQUENCY 100000 // 200000 does not work for my ESP32 module together with the timer even with external pullups :-(
-#  elif defined(ESP8266)
+#    elif defined(ESP8266)
 #define I2C_CLOCK_FREQUENCY 400000 // 400000 is the maximum for 80 MHz clocked ESP8266 (I measured real 330000 Hz for this setting)
-#  else
-#define I2C_CLOCK_FREQUENCY 800000 // 1000000 does not work for my Arduino Nano, maybe because of parasitic breadboard capacities
+#    else
+#define I2C_CLOCK_FREQUENCY 800000 // 1 MHz from datasheet does not work for my Arduino Nano, maybe because of parasitic breadboard capacities
+#    endif
 #  endif
 #endif // defined(USE_PCA9685_SERVO_EXPANDER)
-
 
 /*****************************************************************************************
  * Important definition of MAX_EASING_SERVOS !!!
@@ -393,7 +392,7 @@ __attribute__((weak)) extern void handleServoTimerInterrupt();
 #define EASE_PRECISION_OUT      0x4D // Positive bounce for movings from below (go out from origin)
 #endif
 
-// !!! Must be without comment and closed by @formatter:on !!!
+// !!! Must be without trailing comment and closed by @formatter:on
 // @formatter:off
 extern const char easeTypeLinear[]     PROGMEM;
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
