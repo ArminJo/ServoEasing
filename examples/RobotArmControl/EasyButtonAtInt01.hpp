@@ -96,7 +96,7 @@ EasyButton *EasyButton::sPointerToButton1ForISR;
 #endif
 
 // The eclipse formatter has problems with // comments in undefined code blocks
-// !!! Must be without comment and closed by @formatter:on
+// !!! Must be without trailing comment and closed by @formatter:on
 // @formatter:off
 
 /*

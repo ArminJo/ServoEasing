@@ -9,7 +9,7 @@
  *
  *  The AVR Servo library supports only one timer, which means not more than 12 servos are supported using this library.
  *
- *  Copyright (C) 2019-2023  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2025  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -1977,7 +1977,7 @@ void handleServoTimerInterrupt()
 #endif // !defined(ENABLE_EXTERNAL_SERVO_TIMER_HANDLER)
 
 // The eclipse formatter has problems with // comments in undefined code blocks
-// !!! Must be without comment and closed by @formatter:on
+// !!! Must be without trailing comment and closed by @formatter:on
 // @formatter:off
 /**
  * Timer1 is used for the Arduino Servo library.
@@ -2893,6 +2893,9 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial) // Print has no fl
         i2c_stop();
         aSerial->print(F(" I2C device attached at address: 0x"));
         aSerial->println(aI2CAddress, HEX);
+        if(tRetValue){
+            aSerial->println(F("Maybe 10 k pull-up resistors on I2C are missing or try with \"#define I2C_PULLUP 0\""));
+        }
     } else {
         aSerial->println(F("I2C init failed"));
     }
@@ -2924,6 +2927,9 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial) // Print has no fl
     }
     aSerial->print(F(" I2C device attached at address: 0x"));
     aSerial->println(aI2CAddress, HEX);
+    if(tRetValue){
+        aSerial->println(F("Maybe 10 k pull-up resistors on I2C are missing"));
+    }
 #endif // defined(USE_SOFT_I2C_MASTER)
 
     if (tRetValue) {
