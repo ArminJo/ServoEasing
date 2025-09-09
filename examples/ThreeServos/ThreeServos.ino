@@ -62,6 +62,7 @@ ServoEasing Servo2;
 ServoEasing Servo3;
 
 #define START_DEGREE_VALUE  0 // The degree value written to the servo at time of attach.
+#define DELAY_BETWEEN_ACTIONS_MILLIS    1000
 
 void blinkLED();
 
@@ -162,7 +163,7 @@ void loop() {
         delay(REFRESH_INTERVAL_MILLIS); // Optional 20ms delay. Can be less.
     } while (!updateAllServos());
 
-    delay(1000);
+    delay(DELAY_BETWEEN_ACTIONS_MILLIS);
 
     /*
      * Move three servos synchronously with interrupt handler
@@ -188,7 +189,7 @@ void loop() {
         blinkLED();
     }
 
-    delay(1000);
+    delay(DELAY_BETWEEN_ACTIONS_MILLIS);
 
     /*
      * Move first and second servo synchronously with interrupt handler
@@ -209,7 +210,7 @@ void loop() {
         blinkLED();
     }
 
-    delay(1000);
+    delay(DELAY_BETWEEN_ACTIONS_MILLIS);
 
     // Move only third servo
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
@@ -217,7 +218,7 @@ void loop() {
 #endif
     Servo3.easeTo(90, 80);
 
-    delay(1000);
+    delay(DELAY_BETWEEN_ACTIONS_MILLIS);
 
     /*
      * Move all 3 servos independently
@@ -235,5 +236,5 @@ void loop() {
         blinkLED();
     }
 
-    delay(2000);
+    delay(2 * DELAY_BETWEEN_ACTIONS_MILLIS);
 }

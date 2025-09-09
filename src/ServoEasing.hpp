@@ -515,14 +515,14 @@ uint8_t ServoEasing::attachWithTrim(int aPin, int aTrimDegreeOrMicrosecond, int 
  */
 uint8_t ServoEasing::reattach() {
     /*
-     * Just put this servo instance into list of servos
+     * Just put this servo instance into list of servos at first free position
      */
     mServoIndex = INVALID_SERVO; // flag indicating an invalid servo index
     for (uint_fast8_t tServoIndex = 0; tServoIndex < MAX_EASING_SERVOS; ++tServoIndex) {
         if (ServoEasingArray[tServoIndex] == nullptr) {
-            ServoEasingArray[tServoIndex] = nullptr;
+            ServoEasingArray[tServoIndex] = this;
             mServoIndex = tServoIndex;
-            if (tServoIndex > sServoArrayMaxIndex) {
+            if (sServoArrayMaxIndex < tServoIndex) {
                 sServoArrayMaxIndex = tServoIndex;
             }
             break;
@@ -612,7 +612,7 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
         if (ServoEasingArray[tServoIndex] == nullptr) {
             ServoEasingArray[tServoIndex] = this;
             mServoIndex = tServoIndex;
-            if (tServoIndex > sServoArrayMaxIndex) {
+            if (sServoArrayMaxIndex < tServoIndex) {
                 sServoArrayMaxIndex = tServoIndex;
             }
             break;
@@ -692,14 +692,14 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
 }
 
 /**
- * No servo signal is generated for a detached servo. Therefore, it is not blocked and can be moved manually.
- * Mark a detached servo in the array by setting the object pointer to nullptr
+ * No servo signal is generated for a detached servo / the output is constant LOW. Therefore, it is not blocked and can be moved manually.
+ * Mark a detached servo by setting mServoIndex to INVALID_SERVO and mark it in the array by setting the object pointer to nullptr.
  * The next attach() or reattach() then uses this nullptr pointer position and thus gets the index of the former detached one.
  */
 void ServoEasing::detach() {
-    if (mServoIndex != INVALID_SERVO) {
+    if (mServoIndex != INVALID_SERVO) { // check if attached
         ServoEasingArray[mServoIndex] = nullptr;
-        // If servo with highest index in array was detached, we want to find new sServoArrayMaxIndex
+        // If servo with highest index in array was detached, we need to find new sServoArrayMaxIndex
         while (ServoEasingArray[sServoArrayMaxIndex] == nullptr && sServoArrayMaxIndex > 0) {
             sServoArrayMaxIndex--;
         }
@@ -1524,6 +1524,10 @@ bool ServoEasing::update() {
 #else // PROVIDE_ONLY_LINEAR_MOVEMENT
 bool ServoEasing::update() {
 
+#if defined(LOCAL_TRACE)
+//        Serial.print('u');
+#endif
+
     if (!mServoMoves) {
 #  if defined(PRINT_FOR_SERIAL_PLOTTER)
         // call it always for serial plotter to output one servo value
@@ -1536,6 +1540,10 @@ bool ServoEasing::update() {
     if (mServoIsPaused) {
         return false; // do not really move but still request next update
     }
+#endif
+
+#if defined(LOCAL_TRACE)
+//        Serial.print('p');
 #endif
 
     uint32_t tMillisSinceStart = millis() - mMillisAtStartMove;
@@ -1936,6 +1944,13 @@ void ServoEasing::printStatic(Print *aSerial) {
     aSerial->println((uint_fast16_t) this, HEX);
 }
 
+void ServoEasing::printExtra(Print *aSerial) {
+    aSerial->print(F("ServoArrayMaxIndex="));
+    aSerial->print(sServoArrayMaxIndex);
+    aSerial->print(F(" InterruptsAreActive="));
+    aSerial->println(sInterruptsAreActive);
+}
+
 /**
  * Clips the unsigned degree value and handles unsigned underflow.
  * @return 0 if aDegreeToClip >= 218 and 180 if 180 <= aDegreeToClip < 218
@@ -1986,6 +2001,9 @@ void handleServoTimerInterrupt()
  * First interrupt is triggered not directly, but after 20 ms, since we are often called here at the time of the last interrupt of the preceding servo move.
  */
 void enableServoEasingInterrupt() {
+#if defined(LOCAL_TRACE)
+    Serial.println(F("enableServoEasingInterrupt"));
+#endif
 #if defined(__AVR__)
 #  if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
 #    if defined(USE_PCA9685_SERVO_EXPANDER) && !defined(USE_SERVO_LIB)
@@ -2202,6 +2220,9 @@ void setTimer1InterruptMarginMicros(uint16_t aInterruptMarginMicros){
 #endif
 
 void disableServoEasingInterrupt() {
+#if defined(LOCAL_TRACE)
+    Serial.println(F("disableServoEasingInterrupt"));
+#endif
 #if defined(__AVR__)
 #  if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
     TIMSK5 &= ~(_BV(OCIE5C)); // disable the output compare C interrupt
@@ -2572,11 +2593,14 @@ void resumeWithoutInterruptsAllServos() {
  * @return true if all Servos reached endAngle / stopped
  */
 bool updateAllServos() {
+#if defined(LOCAL_TRACE)
+//    Serial.print(F("ua "));
+#endif
+
     bool tAllServosStopped = true;
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
         if (ServoEasing::ServoEasingArray[tServoIndex] != nullptr) {
             tAllServosStopped = ServoEasing::ServoEasingArray[tServoIndex]->update() && tAllServosStopped;
-
         }
     }
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
@@ -2876,7 +2900,7 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial) // Print has no fl
         {
 
     bool tRetValue = false;
-    aSerial->print(F("Try to communicate with I2C device at address=0x"));
+    aSerial->print(F("Try to communicate with " STR(I2C_CLOCK_FREQUENCY) " Hz with I2C device at address=0x"));
     aSerial->println(aI2CAddress, HEX);
     aSerial->flush();
 
@@ -2927,7 +2951,7 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial) // Print has no fl
 #endif // defined(USE_SOFT_I2C_MASTER)
 
     if (tRetValue) {
-        aSerial->println(F("PCA9685 expander not connected. Try to reduce I2C clock (I2C_CLOCK_FREQUENCY in ServoEasing.h)"));
+        aSerial->println(F("PCA9685 expander not connected. Check power supply, try to reduce I2C clock of " STR(I2C_CLOCK_FREQUENCY) " Hz (I2C_CLOCK_FREQUENCY in ServoEasing.h) or pull-up resistor values."));
     }
     return tRetValue;
 }

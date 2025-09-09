@@ -64,6 +64,7 @@ ServoEasing Servo1;
 ServoEasing Servo2;
 
 #define START_DEGREE_VALUE  0 // The degree value written to the servo at time of attach.
+#define DELAY_BETWEEN_ACTIONS_MILLIS    1000
 
 void blinkLED();
 
@@ -135,7 +136,7 @@ void setup() {
 #endif
 
     // Just wait for servos to reach position.
-    delay(1000);
+    delay(DELAY_BETWEEN_ACTIONS_MILLIS);
 }
 
 void blinkLED() {
@@ -201,7 +202,7 @@ void loop() {
         ; // Here you can insert your own code
     }
 
-    delay(300);
+    delay(DELAY_BETWEEN_ACTIONS_MILLIS);
 
     /*
      * Move both servos independently
@@ -219,5 +220,5 @@ void loop() {
         blinkLED();
     }
 
-    delay(500);
+    delay(DELAY_BETWEEN_ACTIONS_MILLIS);
 }

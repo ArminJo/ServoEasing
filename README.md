@@ -93,7 +93,7 @@ For instructions how to enable these alternatives, see [Compile options / macros
 - **Float angels** are supported to allow **fine-grained servo control** comparable to using microseconds.
 - **User-specified callback function at "servo arrived" enables movement control independent of main loop**.
 - **Stop and resume** of servo movement.
-- **Detach and reattach**. No servo signal is generated for a detached servo. Therefore, it is not blocked and can be moved manually.
+- **Detach and reattach**. No servo signal is generated for a detached servo / the output is constant LOW. Therefore, it is not blocked and can be moved manually.
 - A **trim value** can be set for any servo. Its value is internally added to each requested position.
 - **Reverse operation** of servo is possible e.g. if it is mounted head down.
 - **Constraints for minimum and maximum servo degree** can be specified. Trim and reverse are applied after constraint processing.
@@ -190,8 +190,8 @@ You can handle multiple servos simultaneously by [special functions](https://git
 <br/>
 
 # Initial movement of Servo
-**Servos are buld to reach the target position as fast as possible.** 
-To achieve slow movement, this library gradually adjusts the target position, 
+**Servos are build to reach the target position as fast as possible.**
+To achieve slow movement, this library gradually adjusts the target position,
 and the servo attempts to respond to these changes as quickly as possible.
 This creates the appearance of slow movement even when the servo reacts very quickly.<br/>
 Initially, after powering on, the software has no information about the actual servo position!<br/>
@@ -448,6 +448,12 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 <br/>
 
 # Revision History
+### Version 3.5.0
+- Fixed serious bug in reattach();
+- Renamed InitializeAndCheckI2CConnection() to initializeAndCheckI2CConnection().
+- Renamed applyTrimAndreverseToTargetMicrosecondsOrUnits() to applyTrimAndReverseToTargetMicrosecondsOrUnits().
+- Housekeeping.
+
 ### Version 3.4.0
 - LightweightServo support for ATmega2560.
 - Renamed `mCurrentMicrosecondsOrUnits` to `mLastTargetMicrosecondsOrUnits` to make clear, that trim and reverse is NOT applied to this value.

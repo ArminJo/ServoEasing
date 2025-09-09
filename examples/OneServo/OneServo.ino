@@ -3,7 +3,7 @@
  *
  *  Shows smooth linear movement from one servo position to another in different flavors.
  *
- *  Copyright (C) 2019-2024  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2025  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -81,6 +81,7 @@ ServoEasing Servo1;
 #endif
 
 #define START_DEGREE_VALUE  0 // The degree value written to the servo at time of attach.
+#define DELAY_BETWEEN_ACTIONS_MILLIS    1000
 void blinkLED();
 
 void setup() {
@@ -124,7 +125,7 @@ void setup() {
     }
 
     // Wait for servo to reach start position.
-    delay(2000);
+    delay(DELAY_BETWEEN_ACTIONS_MILLIS);
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
     // Legend for Arduino Serial plotter
     Serial.println(); // end of line of attach values
@@ -158,13 +159,13 @@ void loop() {
     } while (!Servo1.update());
 #endif
 
-    delay(1000);
+    delay(DELAY_BETWEEN_ACTIONS_MILLIS);
 
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
     Serial.println(F("Move to 45 degree in one second using interrupts"));
     Serial.flush(); // Just in case interrupts do not work
 #endif
-    Servo1.startEaseToD(45, 1000);
+    Servo1.startEaseToD(45, MILLIS_IN_ONE_SECOND);
 //    Servo1.startEaseToD((544 + ((2400 - 544) / 4)), 1000); // Alternatively you can specify the target as microsecond value
     // Blink until servo stops
     while (Servo1.isMoving()) {
@@ -174,7 +175,7 @@ void loop() {
         blinkLED();
     }
 
-    delay(2000); // wait one second after servo has arrived at target position
+    delay(DELAY_BETWEEN_ACTIONS_MILLIS);
 
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
     Serial.println(F("Move to 135 degree and back nonlinear in one second each using interrupts"));
@@ -182,7 +183,7 @@ void loop() {
     Servo1.setEasingType(EASE_CUBIC_IN_OUT); // EASE_LINEAR is default
 
     for (int i = 0; i < 2; ++i) {
-        Servo1.startEaseToD(135, 1000);
+        Servo1.startEaseToD(135, MILLIS_IN_ONE_SECOND);
 //        Servo1.startEaseToD((544 + (((2400 - 544) / 4) * 3)), 1000); // Alternatively you can specify the target as microsecond value
         // isMoving() calls yield for the ESP8266 boards
         while (Servo1.isMoving()) {
@@ -207,7 +208,7 @@ void loop() {
     }
     Servo1.setEasingType(EASE_LINEAR);
 
-    delay(2000); // wait one second after servo has arrived at target position
+    delay(DELAY_BETWEEN_ACTIONS_MILLIS);
 
     /*
      * The LED goes on if servo reaches 120 degree
@@ -227,7 +228,7 @@ void loop() {
         ; // Here you can insert your own code
     }
 
-    delay(1000);
+    delay(DELAY_BETWEEN_ACTIONS_MILLIS);
 
     /*
      * The LED goes off when servo theoretical reaches 90 degree
@@ -238,7 +239,7 @@ void loop() {
     Servo1.startEaseTo(0, 90, START_UPDATE_BY_INTERRUPT);
 //    Servo1.startEaseTo(DEFAULT_MICROSECONDS_FOR_0_DEGREE, 360, true); // Alternatively you can specify the target as microsecond value
     // Wait. The servo should have moved 90 degree.
-    delay(1000);
+    delay(MILLIS_IN_ONE_SECOND);
     digitalWrite(LED_BUILTIN, LOW);
 
 #if !defined(DISABLE_PAUSE_RESUME)
@@ -249,7 +250,7 @@ void loop() {
      * Demonstrate pause and resume in the middle of a movement
      */
     Servo1.pause();
-    delay(1000);
+    delay(MILLIS_IN_ONE_SECOND);
     // resume movement using interrupts
     Servo1.resumeWithInterrupts();
 #endif
@@ -257,16 +258,22 @@ void loop() {
         ; // wait for servo to stop
 
 #  if !defined(PRINT_FOR_SERIAL_PLOTTER)
-    Serial.println(F("Detach the servo for 5 seconds. During this time you can move the servo manually."));
+    Serial.println(F("Detach the servo for 10 seconds. During this time you can move the servo manually."));
 #  endif
 
     Servo1.detach();
     /*
-     * After detach the servo is "not powered" for 5 seconds, i.e. no servo signal is generated.
+     * After detach the servo is "not powered" for 10 seconds, i.e. no servo signal is generated.
      * This allows you to easily move the servo manually.
      */
-    delay(5000); // wait 5 seconds
-    Servo1.attach(SERVO1_PIN, 0);
+    delay(10000); // wait 10 seconds
+
+#  if !defined(PRINT_FOR_SERIAL_PLOTTER)
+    Serial.println(F("Reattach the servo and wait for 3 seconds."));
+#  endif
+    Servo1.reattach();
+
+    delay(3000); // wait extra 3 seconds after reattach()
 }
 
 void blinkLED() {

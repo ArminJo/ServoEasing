@@ -1,7 +1,7 @@
 /*
  * ServoEasing.h
  *
- *  Copyright (C) 2019-2023  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2025  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -24,9 +24,9 @@
 #ifndef _SERVO_EASING_H
 #define _SERVO_EASING_H
 
-#define VERSION_SERVO_EASING "3.4.0"
+#define VERSION_SERVO_EASING "3.5.0"
 #define VERSION_SERVO_EASING_MAJOR 3
-#define VERSION_SERVO_EASING_MINOR 4
+#define VERSION_SERVO_EASING_MINOR 5
 #define VERSION_SERVO_EASING_PATCH 0
 // The change log is at the bottom of the file
 
@@ -41,7 +41,9 @@
 #define VERSION_HEX_VALUE(major, minor, patch) ((major << 16) | (minor << 8) | (patch))
 #define VERSION_SERVO_EASING_HEX  VERSION_HEX_VALUE(VERSION_SERVO_EASING_MAJOR, VERSION_SERVO_EASING_MINOR, VERSION_SERVO_EASING_PATCH)
 
+#if !defined(MILLIS_IN_ONE_SECOND)
 #define MILLIS_IN_ONE_SECOND 1000L
+#endif
 
 // The eclipse formatter has problems with // comments in undefined code blocks
 // !!! Must be without trailing comment and closed by @formatter:on
@@ -485,7 +487,7 @@ public:
             int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree, int aServoHighDegree);
 
     uint8_t reattach();
-    void detach();
+    void detach(); // No servo signal is generated for a detached servo / the output is constant LOW.
     void setReverseOperation(bool aOperateServoReverse); // You should call it before using setTrim, or better use attach function with 6 parameters
 
     void setTrim(int aTrimDegreeOrMicrosecond, bool aDoWrite = false);
@@ -586,6 +588,7 @@ public:
     void print(Print *aSerial, bool doExtendedOutput = true); // Print dynamic and static info
     void printDynamic(Print *aSerial, bool doExtendedOutput = true);
     void printStatic(Print *aSerial);
+    void printExtra(Print *aSerial);
 
     static void printEasingType(Print *aSerial, uint_fast8_t aEasingType);
 
@@ -779,7 +782,9 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
 #endif
 
 /*
- * Version 3.4.1 - 10/2024
+ *
+ * Version 3.5.0 - 9/2025
+ * - Fixed serious bug in reattach();
  * - Renamed InitializeAndCheckI2CConnection() to initializeAndCheckI2CConnection().
  * - Renamed applyTrimAndreverseToTargetMicrosecondsOrUnits() to applyTrimAndReverseToTargetMicrosecondsOrUnits().
  * - Housekeeping.

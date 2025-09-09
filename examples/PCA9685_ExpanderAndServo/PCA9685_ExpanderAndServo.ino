@@ -16,7 +16,7 @@
  *  If you did not yet store the example as your own sketch, then with Ctrl+K you are instantly in the right library folder.
  *  *****************************************************************************************************************************
  *
- *  Copyright (C) 2019-2022  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2025  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -94,6 +94,7 @@ ServoEasing Servo1AtPCA9685(PCA9685_DEFAULT_ADDRESS); // If you use more than on
 ServoEasing Servo1;
 
 #define START_DEGREE_VALUE  0 // The degree value written to the servo at time of attach.
+#define DELAY_BETWEEN_ACTIONS_MILLIS    1000
 
 void blinkLED();
 
@@ -136,7 +137,7 @@ void setup() {
     }
 
     // Wait for servos to reach start position.
-    delay(500);
+    delay(DELAY_BETWEEN_ACTIONS_MILLIS);
 }
 
 void blinkLED() {
@@ -171,19 +172,19 @@ void loop() {
         blinkLED();
     }
 
-    delay(1000);
+    delay(DELAY_BETWEEN_ACTIONS_MILLIS);
 
 #if defined(INFO)
     Serial.println(F("Move to 135/45 degree in one second using interrupts"));
 #endif
-    Servo1.startEaseToD(135, 1000);
-    Servo1AtPCA9685.startEaseToD(45, 1000);
+    Servo1.startEaseToD(135, MILLIS_IN_ONE_SECOND);
+    Servo1AtPCA9685.startEaseToD(45, MILLIS_IN_ONE_SECOND);
     // Blink until servo stops
     while (ServoEasing::areInterruptsActive()) {
         blinkLED();
     }
 
-    delay(1000);
+    delay(DELAY_BETWEEN_ACTIONS_MILLIS);
 
 #if defined(INFO)
     Serial.println(F("Move to 45/135 degree and back to 135/45 degree nonlinear in one second each using interrupts"));
@@ -195,14 +196,14 @@ void loop() {
      * Move both servos in opposite directions
      */
     for (int i = 0; i < 2; ++i) {
-        Servo1.startEaseToD(45, 1000);
-        Servo1AtPCA9685.startEaseToD(135, 1000);
+        Servo1.startEaseToD(45, MILLIS_IN_ONE_SECOND);
+        Servo1AtPCA9685.startEaseToD(135, MILLIS_IN_ONE_SECOND);
         // Call yield for the ESP boards must be handled in areInterruptsActive()
         while (ServoEasing::areInterruptsActive()) {
             ; // no delays here to avoid break between forth and back movement
         }
-        Servo1.startEaseToD(135, 1000);
-        Servo1AtPCA9685.startEaseToD(45, 1000);
+        Servo1.startEaseToD(135, MILLIS_IN_ONE_SECOND);
+        Servo1AtPCA9685.startEaseToD(45, MILLIS_IN_ONE_SECOND);
         while (ServoEasing::areInterruptsActive()) {
             ; // no delays here to avoid break between forth and back movement
         }
@@ -210,7 +211,7 @@ void loop() {
     Servo1.setEasingType(EASE_LINEAR);
     Servo1AtPCA9685.setEasingType(EASE_LINEAR);
 
-    delay(1000);
+    delay(DELAY_BETWEEN_ACTIONS_MILLIS);
 
     /*
      * The LED goes on if servo reaches 120 degree
@@ -228,7 +229,7 @@ void loop() {
         ; // wait for servo to stop
     }
 
-    delay(1000);
+    delay(DELAY_BETWEEN_ACTIONS_MILLIS);
 
     /*
      * Very fast move. The LED goes off when servo theoretical reaches 90 degree
@@ -242,5 +243,24 @@ void loop() {
     delay(250);
     digitalWrite(LED_BUILTIN, LOW);
 
-    delay(1000);
+    delay(DELAY_BETWEEN_ACTIONS_MILLIS);
+
+#  if !defined(PRINT_FOR_SERIAL_PLOTTER)
+    Serial.println(F("Detach the servos for 10 seconds. During this time you can move the servos manually."));
+#  endif
+
+    Servo1.detach();
+    Servo1AtPCA9685.detach();
+    /*
+     * After detach the servo is "not powered" for 10 seconds, i.e. no servo signal is generated.
+     * This allows you to easily move the servo manually.
+     */
+    delay(10000); // wait 10 seconds
+#  if !defined(PRINT_FOR_SERIAL_PLOTTER)
+    Serial.println(F("Reattach the servos and wait for 3 seconds."));
+#  endif
+    Servo1.reattach();
+    Servo1AtPCA9685.reattach();
+
+    delay(3000); // wait extra 3 seconds after reattach()
 }
