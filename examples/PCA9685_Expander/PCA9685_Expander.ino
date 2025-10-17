@@ -78,7 +78,7 @@
  */
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
-ServoEasing Servo1(PCA9685_DEFAULT_ADDRESS); // If you use more than one PCA9685 you probably must modify MAX_EASING_SERVOS
+ServoEasing Servo1(PCA9685_DEFAULT_ADDRESS); // Marked as 0 on Expander. If you use more than one PCA9685 you probably must modify MAX_EASING_SERVOS
 #else
 ServoEasing Servo1;
 #endif

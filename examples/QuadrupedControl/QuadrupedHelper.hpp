@@ -57,7 +57,7 @@ uint32_t sLastVolageMeasurementMillis;
 
 #include "QuadrupedServoControl.h"
 
-#if !defined(STR_HELPER)
+#if !defined(STR_HELPER) && !defined(STR)
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 #endif

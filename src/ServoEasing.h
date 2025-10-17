@@ -179,6 +179,9 @@ __attribute__((weak)) extern void handleServoTimerInterrupt();
 #if !defined(DEFAULT_PULSE_WIDTH)
 #define DEFAULT_PULSE_WIDTH 1500     // default pulse width when servo is attached (from Servo.h)
 #endif
+#if !defined(REFRESH_INTERVAL) && defined(REFRESH_USEC)
+#define REFRESH_INTERVAL REFRESH_USEC   // // minimum time to refresh servos in microseconds (from ESP32Servo.h)
+#endif
 #if !defined(REFRESH_INTERVAL)
 #define REFRESH_INTERVAL 20000   // // minimum time to refresh servos in microseconds (from Servo.h)
 #endif
@@ -224,13 +227,15 @@ __attribute__((weak)) extern void handleServoTimerInterrupt();
 // @formatter:on
 /*
  * The next values are smaller and greater than the values used by the Arduino Servo library to be more versatile
- * They are used as parameter for the Arduino Servo attach() function, to avoid clipping to 544 us (MIN_PULSE_WIDTH) and 2400 us (MAX_PULSE_WIDTH)
+ * They are used as parameter for the Arduino Servo attach() function, to avoid that the underlying Arduino writeMicroseconds()
+ * clips its parameter value to 544 us (MIN_PULSE_WIDTH) and 2400 us (MAX_PULSE_WIDTH)
+ * We do not use the Arduino write() function, which interprets this values as values for 0 and 180 degrees (and clips at 0 and 180 degrees).
  */
 #if !defined(MINIMUM_PULSE_WIDTH)
-#define MINIMUM_PULSE_WIDTH       400     // The shortest pulse which can be sent to a servo by this library
+#define MINIMUM_PULSE_WIDTH   400 // The shortest pulse which can be sent to a servo by this library. Checked by underlying Arduino writeMicroseconds().
 #endif
 #if !defined(MAXIMUM_PULSE_WIDTH)
-#define MAXIMUM_PULSE_WIDTH      3500     // the longest pulse which can be sent sent to a servo by this library
+#define MAXIMUM_PULSE_WIDTH  3500 // the longest pulse which can be sent sent to a servo by this library. Checked by underlying Arduino writeMicroseconds().
 #endif
 
 // Approximately 10 microseconds per degree
@@ -513,23 +518,23 @@ public:
 #endif
 
     void write(int aTargetDegreeOrMicrosecond);     // Apply trim and reverse to the value and write it direct to the Servo library.
-    void _writeMicrosecondsOrUnits(int aTargetDegreeOrMicrosecond);
+    void _writeMicrosecondsOrUnits(int aTargetMicrosecondsOrUnits);
 
     void easeTo(int aTargetDegreeOrMicrosecond);                                   // blocking move to new position using mLastSpeed
     void easeTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);  // blocking move to new position using speed
     void easeToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove);    // blocking move to new position using duration
 
-    bool setEaseTo(int aTargetDegreeOrMicrosecond);                                     // shortcut for startEaseTo(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
-    bool setEaseTo(unsigned int aTargetDegreeOrMicrosecond);                                     // shortcut for startEaseTo(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
-    bool setEaseTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);    // shortcut for startEaseTo(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
-    bool startEaseTo(int aTargetDegreeOrMicrosecond);                             // shortcut for startEaseTo(aDegree, mSpeed, START_UPDATE_BY_INTERRUPT)
-    bool startEaseTo(unsigned int aTargetDegreeOrMicrosecond);                             // shortcut for startEaseTo(aDegree, mSpeed, START_UPDATE_BY_INTERRUPT)
+    bool setEaseTo(int aTargetDegreeOrMicrosecond);              // shortcut for startEaseTo(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
+    bool setEaseTo(unsigned int aTargetDegreeOrMicrosecond);     // shortcut for startEaseTo(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
+    bool setEaseTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond); // shortcut for startEaseTo(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
+    bool startEaseTo(int aTargetDegreeOrMicrosecond);        // shortcut for startEaseTo(aDegree, mSpeed, START_UPDATE_BY_INTERRUPT)
+    bool startEaseTo(unsigned int aTargetDegreeOrMicrosecond); // shortcut for startEaseTo(aDegree, mSpeed, START_UPDATE_BY_INTERRUPT)
     bool startEaseTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt =
     START_UPDATE_BY_INTERRUPT);
     bool startEaseTo(unsigned int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt =
     START_UPDATE_BY_INTERRUPT);
-    bool setEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);   // shortcut for startEaseToD(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
-    bool setEaseToD(unsigned int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);   // shortcut for startEaseToD(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
+    bool setEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond); // shortcut for startEaseToD(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
+    bool setEaseToD(unsigned int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond); // shortcut for startEaseToD(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
     bool startEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt =
     START_UPDATE_BY_INTERRUPT);
     bool startEaseToD(unsigned int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt =
@@ -541,12 +546,12 @@ public:
     void easeTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);  // blocking move to new position using speed
     void easeToD(float aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove);    // blocking move to new position using duration
 
-    bool setEaseTo(float aTargetDegreeOrMicrosecond);                                     // shortcut for startEaseTo(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
-    bool setEaseTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);    // shortcut for startEaseTo(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
-    bool startEaseTo(float aTargetDegreeOrMicrosecond);                           // shortcut for startEaseTo(aDegree, mSpeed, START_UPDATE_BY_INTERRUPT)
+    bool setEaseTo(float aTargetDegreeOrMicrosecond);            // shortcut for startEaseTo(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
+    bool setEaseTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond); // shortcut for startEaseTo(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
+    bool startEaseTo(float aTargetDegreeOrMicrosecond);      // shortcut for startEaseTo(aDegree, mSpeed, START_UPDATE_BY_INTERRUPT)
     bool startEaseTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt =
     START_UPDATE_BY_INTERRUPT);
-    bool setEaseToD(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);   // shortcut for startEaseToD(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
+    bool setEaseToD(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond); // shortcut for startEaseToD(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
     bool startEaseToD(float aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt =
     START_UPDATE_BY_INTERRUPT);
 
@@ -574,7 +579,8 @@ public:
     int getEndMicrosecondsOrUnitsWithTrim();
     int getMillisForCompleteMove();
     bool isMoving();
-    bool isMovingAndCallYield() __attribute__ ((deprecated ("Replaced by isMoving(). Often better to use areInterruptsActive() instead.")));
+    bool isMovingAndCallYield()
+            __attribute__ ((deprecated ("Replaced by isMoving(). Often better to use areInterruptsActive() instead.")));
 
     int MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits);
     int MicrosecondsToDegree(int aMicroseconds);
@@ -686,8 +692,8 @@ public:
      * Values contain always microseconds except for servos connected to a PCA9685 expander, where they contain PWM units.
      * Values are set exclusively by attach(), and here it is determined if they contain microseconds or PWM units.
      */
-    int mServo0DegreeMicrosecondsOrUnits;
-    int mServo180DegreeMicrosecondsOrUnits;
+    int mServo0DegreeMicrosecondsOrUnits;   // default is DEFAULT_MICROSECONDS_FOR_0_DEGREE (544)
+    int mServo180DegreeMicrosecondsOrUnits; // default is DEFAULT_MICROSECONDS_FOR_180_DEGREE (2400)
 
     void (*TargetPositionReachedHandler)(ServoEasing*);  ///< Is called any time when target servo position is reached
 
@@ -726,7 +732,8 @@ void setIntegerDegreeForAllServos(uint_fast8_t aNumberOfValues, va_list *aDegree
 void setFloatDegreeForAllServos(uint_fast8_t aNumberOfValues, va_list *aDegreeValues);
 #endif
 #if defined(va_start)
-void setDegreeForAllServos(uint_fast8_t aNumberOfValues, ...) __attribute__ ((deprecated ("Please use setIntegerDegreeForAllServos().")));
+void setDegreeForAllServos(uint_fast8_t aNumberOfValues, ...)
+        __attribute__ ((deprecated ("Please use setIntegerDegreeForAllServos().")));
 void setIntegerDegreeForAllServos(uint_fast8_t aNumberOfValues, ...);
 void setFloatDegreeForAllServos(uint_fast8_t aNumberOfValues, ...);
 #endif
@@ -749,7 +756,8 @@ bool delayAndUpdateAndWaitForAllServosToStop(unsigned long aMillisDelay, bool aT
 void setEaseToForAllServosSynchronizeAndWaitForAllServosToStop();
 void setEaseToForAllServosSynchronizeAndWaitForAllServosToStop(uint_fast16_t aDegreesPerSecond);
 void synchronizeAndEaseToArrayPositions() __attribute__ ((deprecated ("Please use setEaseToForAllServosSynchronizeAndWait().")));
-void synchronizeAndEaseToArrayPositions(uint_fast16_t aDegreesPerSecond) __attribute__ ((deprecated ("Please use setEaseToForAllServosSynchronizeAndWait().")));
+void synchronizeAndEaseToArrayPositions(uint_fast16_t aDegreesPerSecond)
+        __attribute__ ((deprecated ("Please use setEaseToForAllServosSynchronizeAndWait().")));
 void synchronizeAllServosStartAndWaitForAllServosToStop();
 
 void printArrayPositions(Print *aSerial);
@@ -776,7 +784,7 @@ bool checkI2CConnection(uint8_t aI2CAddress, Print *aSerial); // Using Print cla
 bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class has no flush() here
 #endif
 
-#if !defined(STR_HELPER)
+#if !defined(STR_HELPER) && !defined(STR)
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 #endif

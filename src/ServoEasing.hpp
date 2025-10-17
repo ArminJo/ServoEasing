@@ -338,6 +338,7 @@ void ServoEasing::setPWM(uint16_t aPWMOffValueAsUnits) {
  * Is used by _writeMicrosecondsOrUnits() with onValue as mServoPin * 235
  * Requires 550 us to send data => 8.8 ms for 16 Servos, 17.6 ms for 32 servos. => more than 2 expander boards
  * cannot be connected to one I2C bus, if all servos must be able to move simultaneously.
+ * Resolution of 4.88 us per unit.
  */
 void ServoEasing::setPWM(uint16_t aPWMOnStartValueAsUnits, uint16_t aPWMPulseDurationAsUnits) {
 #if defined(USE_SOFT_I2C_MASTER)
@@ -823,6 +824,7 @@ void ServoEasing::setUserDataPointer(void *aUserDataPointer) {
 #endif // !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
 
 /**
+ * Tested value of 400 for my PCA9685 expander 10/25 (was effectively 382 us / - 2 %, maybe due to deviation of internal clock frequency)
  * @param aTargetDegreeOrMicrosecond treat values less than 400 as angles in degrees, others are handled as microseconds
  */
 void ServoEasing::write(int aTargetDegreeOrMicrosecond) {
@@ -867,7 +869,7 @@ void ServoEasing::write(float aTargetDegreeOrMicrosecond) {
  * Internal function
  * Before sending the value to the underlying Servo library, trim and reverse is applied
  */
-void ServoEasing::_writeMicrosecondsOrUnits(int aTargetDegreeOrMicrosecond) {
+void ServoEasing::_writeMicrosecondsOrUnits(int aTargetMicrosecondsOrUnits) {
     /*
      * Check for valid initialization of servo.
      */
@@ -878,58 +880,58 @@ void ServoEasing::_writeMicrosecondsOrUnits(int aTargetDegreeOrMicrosecond) {
         return;
     }
 #if defined(ENABLE_MIN_AND_MAX_CONSTRAINTS)
-    if (aTargetDegreeOrMicrosecond > mMaxMicrosecondsOrUnits) {
+    if (aTargetMicrosecondsOrUnits > mMaxMicrosecondsOrUnits) {
 #if defined(LOCAL_TRACE)
-        Serial.print(aTargetDegreeOrMicrosecond);
+        Serial.print(aTargetMicrosecondsOrUnits);
         Serial.print(F(" > "));
         Serial.print(mMaxMicrosecondsOrUnits);
         Serial.print(F(" | "));
 #endif
-        aTargetDegreeOrMicrosecond = mMaxMicrosecondsOrUnits;
-    } else if (aTargetDegreeOrMicrosecond < mMinMicrosecondsOrUnits) {
+        aTargetMicrosecondsOrUnits = mMaxMicrosecondsOrUnits;
+    } else if (aTargetMicrosecondsOrUnits < mMinMicrosecondsOrUnits) {
 #if defined(LOCAL_TRACE)
-        Serial.print(aTargetDegreeOrMicrosecond);
+        Serial.print(aTargetMicrosecondsOrUnits);
         Serial.print(F(" < "));
         Serial.print(mMinMicrosecondsOrUnits);
         Serial.print(F(" | "));
 #endif
-        aTargetDegreeOrMicrosecond = mMinMicrosecondsOrUnits;
+        aTargetMicrosecondsOrUnits = mMinMicrosecondsOrUnits;
     }
 #endif
-    mLastTargetMicrosecondsOrUnits = aTargetDegreeOrMicrosecond;
+    mLastTargetMicrosecondsOrUnits = aTargetMicrosecondsOrUnits;
 
 #if defined(LOCAL_TRACE)
     Serial.print(mServoIndex);
     Serial.print('/');
     Serial.print(mServoPin);
     Serial.print(F(" us/u="));
-    Serial.print(aTargetDegreeOrMicrosecond);
+    Serial.print(aTargetMicrosecondsOrUnits);
     if (mTrimMicrosecondsOrUnits != 0) {
         Serial.print(" +trim=");
-        Serial.print(aTargetDegreeOrMicrosecond + mTrimMicrosecondsOrUnits);
+        Serial.print(aTargetMicrosecondsOrUnits + mTrimMicrosecondsOrUnits);
     }
 #endif // TRACE
 
     /*
      * Trim added - this is the only place mTrimMicrosecondsOrUnits is evaluated
      */
-    aTargetDegreeOrMicrosecond += mTrimMicrosecondsOrUnits;
+    aTargetMicrosecondsOrUnits += mTrimMicrosecondsOrUnits;
     /*
      * Reverse applied, values for 0 to 180 are swapped if reverse - this is the only place mOperateServoReverse is evaluated
      *  (except in the DegreeToMicrosecondsOrUnitsWithTrimAndReverse() function for external testing purposes)
      */
     if (mOperateServoReverse) {
-        aTargetDegreeOrMicrosecond = mServo180DegreeMicrosecondsOrUnits
-                - (aTargetDegreeOrMicrosecond - mServo0DegreeMicrosecondsOrUnits);
+        aTargetMicrosecondsOrUnits = mServo180DegreeMicrosecondsOrUnits
+                - (aTargetMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits);
 #if defined(LOCAL_TRACE)
         Serial.print(F(" +reverse="));
-        Serial.print(aTargetDegreeOrMicrosecond);
+        Serial.print(aTargetMicrosecondsOrUnits);
 #endif
     }
 
 #if defined(PRINT_FOR_SERIAL_PLOTTER) && !defined(LOCAL_TRACE)
     Serial.print(' '); // leading separator to separate multiple servo values
-    Serial.print(aTargetDegreeOrMicrosecond);
+    Serial.print(aTargetMicrosecondsOrUnits);
 #endif
 
 #if defined(USE_PCA9685_SERVO_EXPANDER)
@@ -940,12 +942,12 @@ void ServoEasing::_writeMicrosecondsOrUnits(int aTargetDegreeOrMicrosecond) {
 #  endif
 #  if defined(USE_SERVO_LIB)
     if (mServoIsConnectedToExpander) {
-        setPWM(mServoPin * ((4096 - (DEFAULT_PCA9685_UNITS_FOR_180_DEGREE + 100)) / 15), aTargetDegreeOrMicrosecond); // mServoPin * 233
+        setPWM(mServoPin * ((4096 - (DEFAULT_PCA9685_UNITS_FOR_180_DEGREE + 100)) / 15), aTargetMicrosecondsOrUnits); // First parameter is: mServoPin * 233
     } else {
 #    if defined(USE_LIGHTWEIGHT_SERVO_LIBRARY)
-        writeMicrosecondsLightweightServo(aTargetDegreeOrMicrosecond, (mServoPin == LIGHTWEIGHT_SERVO_CHANNEL_A_PIN));
+        writeMicrosecondsLightweightServo(aTargetMicrosecondsOrUnits, (mServoPin == LIGHTWEIGHT_SERVO_CHANNEL_A_PIN));
 #    else
-        Servo::writeMicroseconds(aTargetDegreeOrMicrosecond); // requires 7 us
+        Servo::writeMicroseconds(aTargetMicrosecondsOrUnits); // requires 7 us
 #    endif
     }
 #  else
@@ -953,14 +955,14 @@ void ServoEasing::_writeMicrosecondsOrUnits(int aTargetDegreeOrMicrosecond) {
      * Distribute the servo start time over the 20 ms period.
      * Unexpectedly this even saves 20 bytes Flash for an ATmega328P
      */
-    setPWM(mServoPin * ((4096 - (DEFAULT_PCA9685_UNITS_FOR_180_DEGREE + 100)) / 15), aTargetDegreeOrMicrosecond); // mServoPin * 233
+    setPWM(mServoPin * ((4096 - (DEFAULT_PCA9685_UNITS_FOR_180_DEGREE + 100)) / 15), aTargetMicrosecondsOrUnits); // mServoPin * 233
 #  endif
 
 #else
 #  if defined(USE_LIGHTWEIGHT_SERVO_LIBRARY)
-    writeMicrosecondsLightweightServoPin(aTargetDegreeOrMicrosecond, mServoPin);
+    writeMicrosecondsLightweightServoPin(aTargetMicrosecondsOrUnits, mServoPin);
 #  else
-    Servo::writeMicroseconds(aTargetDegreeOrMicrosecond); // requires 7 us on Uno
+    Servo::writeMicroseconds(aTargetMicrosecondsOrUnits); // requires 7 us on Uno
 #  endif
 #endif
 
@@ -1047,10 +1049,11 @@ int ServoEasing::MicrosecondsOrUnitsToMicroseconds(int aMicrosecondsOrUnits) {
  */
 int ServoEasing::DegreeOrMicrosecondToMicrosecondsOrUnits(int aDegreeOrMicrosecond) {
 #if defined(DISABLE_MICROS_AS_DEGREE_PARAMETER)
+    // Only degrees allowed here
     return ((int32_t) (aDegreeOrMicrosecond * (int32_t) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))
             / 180) + mServo0DegreeMicrosecondsOrUnits;
 #else // defined(DISABLE_MICROS_AS_DEGREE_PARAMETER)
-    if (aDegreeOrMicrosecond < THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
+    if (aDegreeOrMicrosecond <= THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
         /*
          * Here aDegreeOrMicrosecond contains degree
          */
@@ -1077,7 +1080,7 @@ int ServoEasing::DegreeOrMicrosecondToMicrosecondsOrUnits(float aDegreeOrMicrose
     return ((int32_t) (aDegreeOrMicrosecond * ((float) (mServo180DegreeMicrosecondsOrUnits - mServo0DegreeMicrosecondsOrUnits))))
             / 180 + mServo0DegreeMicrosecondsOrUnits; // return microseconds here
 #else
-    if (aDegreeOrMicrosecond < THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
+    if (aDegreeOrMicrosecond <= THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
         /*
          * Here aDegreeOrMicrosecond contains degree
          */
@@ -1237,7 +1240,7 @@ bool ServoEasing::startEaseTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDeg
      tTargetDegree = aTargetDegreeOrMicrosecond; // no conversion required here
 #else
 // Convert aDegreeOrMicrosecond to target degree
-    if (aTargetDegreeOrMicrosecond >= THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
+    if (aTargetDegreeOrMicrosecond > THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
         tTargetDegree = MicrosecondsToDegree(aTargetDegreeOrMicrosecond);
     }
 #endif
@@ -1279,7 +1282,7 @@ bool ServoEasing::startEaseTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aD
      tTargetDegree = aTargetDegreeOrMicrosecond; // no conversion required here
 #else
 // Convert aDegreeOrMicrosecond to target degree
-    if (aTargetDegreeOrMicrosecond >= THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
+    if (aTargetDegreeOrMicrosecond > THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS) {
         tTargetDegree = MicrosecondsToDegree(aTargetDegreeOrMicrosecond);
     }
 #endif

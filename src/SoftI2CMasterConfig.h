@@ -3,7 +3,7 @@
  * SoftI2CMasterConfig.h
  *
  * This contains a sample configuration setting for SoftI2CMaster.h
- * The existence of this file can trigger the use of SoftI2CMaster by usage of "#if __has_include("SoftI2CMasterConfig.h")",
+ * The existence of this file can trigger the use of SoftI2CMaster by usage of #if __has_include("SoftI2CMasterConfig.h"),
  * which saves 2110 bytes program memory and 200 bytes RAM compared with Arduino Wire.
  *
  * Copyright (C) 2022, Armin Joachimsmeyer

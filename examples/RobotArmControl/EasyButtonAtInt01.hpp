@@ -73,12 +73,6 @@
  *
  */
 
-#if defined(TRACE)
-#define LOCAL_TRACE
-#else
-//#define LOCAL_TRACE // This enables trace output only for this file
-#endif
-
 // For external measurement of code timing
 //#define MEASURE_EASY_BUTTON_INTERRUPT_TIMING
 #if defined(MEASURE_EASY_BUTTON_INTERRUPT_TIMING) || defined(BUTTON_LED_FEEDBACK)
@@ -93,6 +87,13 @@ EasyButton *EasyButton::sPointerToButton1ForISR;
 #endif
 #if !defined(USE_BUTTON_0) && !defined(USE_BUTTON_1)
 #error One of USE_BUTTON_0 or USE_BUTTON_1 must be defined
+#endif
+
+// After all includes
+#if defined(TRACE)
+#define LOCAL_TRACE
+#else
+//#define LOCAL_TRACE // This enables trace output only for this file
 #endif
 
 // The eclipse formatter has problems with // comments in undefined code blocks

@@ -243,8 +243,8 @@ Values for the MG90Sservos servos at 5 volt (4.2 volt with servo active).
 
 # Minimum number of pulses for reliable servo positioning
 After disconnected, my **SG90** servo requires **4 pulses for a 180 degree turn**. It may be less, if the turn is smaller.<br/>
-After disconnected, my**MG90** servo requires **1 pulse for a 110 degree turn**. the second pulse (after 20 ms) adds around 10 degree to it,
-so it takes around 6 to 7 pulses (120 ms to 140 ms) for a complete 180 degree turn.<br/>
+After disconnected, my**MG90** servo requires **1 pulse for a 110 degree turn**.
+The second pulse (after 20 ms) adds around 10 degree to it, so it takes around 6 to 7 pulses (120 ms to 140 ms) for a complete 180 degree turn.<br/>
 These values seems to be **independent of the turn direction**.
 
 These values are measured with the [UnitTest example](https://github.com/ArminJo/ServoEasing/blob/f6a2d7b332ff64639cc770d7ee39aa29f6fd444e/examples/UnitTests/UnitTests.ino#L278) with `TEST_FIXED_PULSE_NUMBERS` defined.
@@ -306,9 +306,11 @@ Modify them by enabling / disabling them, or change the values if applicable.
 | `DISABLE_PAUSE_RESUME` | disabled | Disables pause and resume functionality. Saves 5 bytes RAM per servo. |
 | `PRINT_FOR_SERIAL_PLOTTER` | disabled | Generate serial output for Arduino Plotter (Ctrl-Shift-L). |
 | `DEBUG` | disabled | Generates lots of lovely debug output for this library. |
-| `USE_LIGHTWEIGHT_SERVO_LIBRARY` | disabled | Available only for ATmega328 and ATmega2560. Supports only servos at pin 9 and 10 (44, 45, 46). Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple. See [below](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#using-the-included-lightweight-servo-library-for-atmega328). Saves up to 742 bytes program memory and 42 bytes RAM. |
+| `USE_LIGHTWEIGHT_SERVO_LIBRARY` | disabled | Available only for ATmega328 and ATmega2560. Supports only servos at pin 9 and 10 (plus pin 44, 45, 46 on ATmega2560). Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple. See [below](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#using-the-included-lightweight-servo-library-for-atmega328). Saves up to 742 bytes program memory and 42 bytes RAM. |
 | `MINIMUM_PULSE_WIDTH` | 400 | The shortest pulse which can be sent to a servo by this library. This value is smaller than the value used by the Arduino Servo library, which is 544 us (MIN_PULSE_WIDTH), to be more versatile.
-| `MAXIMUM_PULSE_WIDTH` | 3500 | The shortest pulse which can be sent to a servo by this library. This value is greater than the value used by the Arduino Servo library, which is 2400 us (MAX_PULSE_WIDTH), to be more versatile.|
+| `MAXIMUM_PULSE_WIDTH` | 3500 | The longest pulse which can be sent to a servo by this library. This value is greater than the value used by the Arduino Servo library, which is 2400 us (MAX_PULSE_WIDTH), to be more versatile.|
+| `THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS` | 360 | Values above 360 are interpreted as microseconds in all functions accepting degree as parameter. |
+
 
 <br/>
 
