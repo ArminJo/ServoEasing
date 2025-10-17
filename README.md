@@ -306,9 +306,11 @@ Modify them by enabling / disabling them, or change the values if applicable.
 | `DISABLE_PAUSE_RESUME` | disabled | Disables pause and resume functionality. Saves 5 bytes RAM per servo. |
 | `PRINT_FOR_SERIAL_PLOTTER` | disabled | Generate serial output for Arduino Plotter (Ctrl-Shift-L). |
 | `DEBUG` | disabled | Generates lots of lovely debug output for this library. |
-| `USE_LIGHTWEIGHT_SERVO_LIBRARY` | disabled | Available only for ATmega328 and ATmega2560. Supports only servos at pin 9 and 10 (44, 45, 46). Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple. See [below](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#using-the-included-lightweight-servo-library-for-atmega328). Saves up to 742 bytes program memory and 42 bytes RAM. |
+| `USE_LIGHTWEIGHT_SERVO_LIBRARY` | disabled | Available only for ATmega328 and ATmega2560. Supports only servos at pin 9 and 10 (plus pin 44, 45, 46 on ATmega2560). Makes the servo pulse generating immune to other libraries blocking interrupts for a longer time like SoftwareSerial, Adafruit_NeoPixel and DmxSimple. See [below](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#using-the-included-lightweight-servo-library-for-atmega328). Saves up to 742 bytes program memory and 42 bytes RAM. |
 | `MINIMUM_PULSE_WIDTH` | 400 | The shortest pulse which can be sent to a servo by this library. This value is smaller than the value used by the Arduino Servo library, which is 544 us (MIN_PULSE_WIDTH), to be more versatile.
-| `MAXIMUM_PULSE_WIDTH` | 3500 | The shortest pulse which can be sent to a servo by this library. This value is greater than the value used by the Arduino Servo library, which is 2400 us (MAX_PULSE_WIDTH), to be more versatile.|
+| `MAXIMUM_PULSE_WIDTH` | 3500 | The longest pulse which can be sent to a servo by this library. This value is greater than the value used by the Arduino Servo library, which is 2400 us (MAX_PULSE_WIDTH), to be more versatile.|
+| `THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS` | 360 | Values above 360 are interpreted as microseconds in all functions accepting degree as parameter. |
+
 
 <br/>
 

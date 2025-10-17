@@ -29,12 +29,13 @@
  *
  */
 
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__) || defined (__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__)
-#include "LightweightServo.h"
-
 #ifndef _LIGHTWEIGHT_SERVO_HPP
 #define _LIGHTWEIGHT_SERVO_HPP
 
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__) || defined (__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__)
+#include "LightweightServo.h"
+
+// After all includes
 #if defined(DEBUG)
 #define LOCAL_DEBUG
 #else
@@ -461,7 +462,7 @@ void LightweightServo::write(int aTargetDegreeOrMicrosecond) {
     writeMicrosecondsLightweightServoPin(aTargetDegreeOrMicrosecond, LightweightServoPin, false, false);
 }
 
-void LightweightServo::writeMicroseconds(int aTargetMicrosecond){
+void LightweightServo::writeMicroseconds(int aTargetMicrosecond) {
     // The last false parameter requires 8 byte more than DISABLE_SERVO_TIMER_AUTO_INITIALIZE, but saves around 60 bytes anyway
     writeMicrosecondsLightweightServoPin(aTargetMicrosecond, LightweightServoPin, false, false);
 }
