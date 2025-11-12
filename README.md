@@ -301,6 +301,7 @@ Modify them by enabling / disabling them, or change the values if applicable.
 | `PROVIDE_ONLY_LINEAR_MOVEMENT` | disabled | Disables all but LINEAR movement. Saves up to 1540 bytes program memory. |
 | `DISABLE_COMPLEX_FUNCTIONS` | disabled | Disables the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory. |
 | `MAX_EASING_SERVOS` | 12, 16(for PCA9685) | Saves 4 byte RAM per servo. If this value is smaller than the amount of servos declared, attach() will return error and other library functions will not work as expected.<br/>Then of course all *AllServos*() functions and isOneServoMoving() also can't work correctly! |
+| `SERVO_REFRESH_INTERVAL_MICROS` | 20000 | This value determines the update rate for writing new servo values. If not defined, its value is taken from `REFRESH_INTERVAL` of Servo.h or `REFRESH_USEC` from ESP32Servo.h. This enables the setting of ServoEasing refresh period by just changing one of these values. |
 | `DISABLE_MICROS_AS_DEGREE_PARAMETER` | disabled | Disables passing also microsecond values as (target angle) parameter. Saves up to 128 bytes program memory. |
 | `ENABLE_MIN_AND_MAX_CONSTRAINTS` | disabled | Enables servo movement constraints. Requires 4 bytes RAM per servo and 36 bytes program memory. |
 | `DISABLE_PAUSE_RESUME` | disabled | Disables pause and resume functionality. Saves 5 bytes RAM per servo. |

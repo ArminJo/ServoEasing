@@ -379,7 +379,7 @@ int ServoEasing::MicrosecondsToPCA9685Units(int aMicroseconds) {
         return aMicroseconds; // we must return microseconds here
     }
 #endif
-    return ((4096L * aMicroseconds) / REFRESH_INTERVAL_MICROS);
+    return ((4096L * aMicroseconds) / SERVO_REFRESH_INTERVAL_MICROS);
 }
 
 int ServoEasing::PCA9685UnitsToMicroseconds(int aPCA9685Units) {
@@ -387,7 +387,7 @@ int ServoEasing::PCA9685UnitsToMicroseconds(int aPCA9685Units) {
      * 4096 units per 20 milliseconds => aPCA9685Units * 4.8828
      * (aPCA9685Units * 625) / 128 use int32_t to avoid overflow
      */
-    return ((int32_t) aPCA9685Units * (REFRESH_INTERVAL_MICROS / 32)) / (4096 / 32);
+    return ((int32_t) aPCA9685Units * (SERVO_REFRESH_INTERVAL_MICROS / 32)) / (4096 / 32);
 }
 
 #endif // defined(USE_PCA9685_SERVO_EXPANDER)
@@ -1130,7 +1130,7 @@ void ServoEasing::easeTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesP
     startEaseTo(aTargetDegreeOrMicrosecond, aDegreesPerSecond, DO_NOT_START_UPDATE_BY_INTERRUPT); // no interrupts
     do {
         // First do the delay, then check for update, since we are probably called directly after start and there is nothing to move yet
-        delay(REFRESH_INTERVAL_MILLIS); // 20 ms
+        delay(SERVO_REFRESH_INTERVAL_MILLIS); // 20 ms
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
     } while (!updateAllServos()); // Update all servos in order to always create a complete plotter data set
 #else
@@ -1142,7 +1142,7 @@ void ServoEasing::easeTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegree
     startEaseTo(aTargetDegreeOrMicrosecond, aDegreesPerSecond, DO_NOT_START_UPDATE_BY_INTERRUPT); // no interrupts
     do {
         // First do the delay, then check for update, since we are probably called directly after start and there is nothing to move yet
-        delay(REFRESH_INTERVAL_MILLIS); // 20 ms
+        delay(SERVO_REFRESH_INTERVAL_MILLIS); // 20 ms
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
     } while (!updateAllServos());
 #else
@@ -1153,7 +1153,7 @@ void ServoEasing::easeTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegree
 void ServoEasing::easeToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove) {
     startEaseToD(aTargetDegreeOrMicrosecond, aMillisForMove, DO_NOT_START_UPDATE_BY_INTERRUPT);
     do {
-        delay(REFRESH_INTERVAL_MILLIS); // 20 ms
+        delay(SERVO_REFRESH_INTERVAL_MILLIS); // 20 ms
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
     } while (!updateAllServos());
 #else
@@ -1164,7 +1164,7 @@ void ServoEasing::easeToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisF
 void ServoEasing::easeToD(float aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove) {
     startEaseToD(aTargetDegreeOrMicrosecond, aMillisForMove, DO_NOT_START_UPDATE_BY_INTERRUPT);
     do {
-        delay(REFRESH_INTERVAL_MILLIS); // 20 ms
+        delay(SERVO_REFRESH_INTERVAL_MILLIS); // 20 ms
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
     } while (!updateAllServos());
 #else
@@ -2013,7 +2013,7 @@ void enableServoEasingInterrupt() {
 // set timer 5 to 20 ms, since the servo library does not do this for us
     TCCR5A = _BV(WGM11);// FastPWM Mode mode TOP (20 ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
     TCCR5B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);// set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
-    ICR5 = (F_CPU / 8) / REFRESH_FREQUENCY; // 40000 - set period to 50 Hz / 20 ms
+    ICR5 = (F_CPU / 8) / SERVO_REFRESH_FREQUENCY; // 40000 - set period to 50 Hz / 20 ms
 #    endif
 
     /*
@@ -2028,7 +2028,7 @@ void enableServoEasingInterrupt() {
     DDRL &= ~(_BV(DDL5));
     TCCR5A &= ~(_BV(COM5C1));
 #    endif
-    OCR5C = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL_MICROS) / 8) - 100;// update values 100 us before the new servo period starts
+    OCR5C = ((clockCyclesPerMicrosecond() * SERVO_REFRESH_INTERVAL_MICROS) / 8) - 100;// update values 100 us before the new servo period starts
 
 #  elif defined(__AVR_ATmega4808__) || defined(__AVR_ATmega4809__) || defined(__AVR_ATtiny3217__) // Thinary Nano Every with MegaCoreX, Uno WiFi Rev 2, Nano Every, Tiny Core 32 Dev Board
     // For MegaTinyCore:
@@ -2038,7 +2038,7 @@ void enableServoEasingInterrupt() {
     // Must use TCA0, since TCBx have only prescaler %2. Use single (16bit) mode, because it seems to be easier :-)
     TCA0.SINGLE.CTRLD = 0; // Single mode - required at least for MegaTinyCore
     TCA0.SINGLE.CTRLB = TCA_SINGLE_WGMODE_NORMAL_gc;                        // Normal mode, top = PER
-    TCA0.SINGLE.PER =  (((F_CPU / 1000000) * REFRESH_INTERVAL_MICROS) / 8); // 40000 at 16 MHz
+    TCA0.SINGLE.PER =  (((F_CPU / 1000000) * SERVO_REFRESH_INTERVAL_MICROS) / 8); // 40000 at 16 MHz
     TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV8_gc | TCA_SINGLE_ENABLE_bm;   // set prescaler to 8 and enable timer
     TCA0.SINGLE.INTCTRL = TCA_SINGLE_OVF_bm;                                // Enable overflow interrupt
 
@@ -2056,7 +2056,7 @@ void enableServoEasingInterrupt() {
 //    // set timer 1 to 20 ms, since the servo library or lightweight_servo library does not do this for us
     TCCR1A = _BV(WGM11);     // FastPWM Mode mode TOP (20 ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
     TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);     // set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
-    ICR1 = (F_CPU / 8) / REFRESH_FREQUENCY; // 40000 - set period to 50 Hz / 20 ms
+    ICR1 = (F_CPU / 8) / SERVO_REFRESH_FREQUENCY; // 40000 - set period to 50 Hz / 20 ms
 #    endif
 
     TIFR1 |= _BV(OCF1B);    // clear any pending interrupts;
@@ -2068,7 +2068,7 @@ void enableServoEasingInterrupt() {
      */
     TCCR1B |= _BV(ICNC1);
 #    if !defined(USE_LIGHTWEIGHT_SERVO_LIBRARY)
-    OCR1B = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL_MICROS) / 8) - 100; // Generate interrupt 100 us before a new servo period starts
+    OCR1B = ((clockCyclesPerMicrosecond() * SERVO_REFRESH_INTERVAL_MICROS) / 8) - 100; // Generate interrupt 100 us before a new servo period starts
 #    endif
 
 #  else
@@ -2080,18 +2080,18 @@ void enableServoEasingInterrupt() {
         Timer20ms.detach();     // otherwise the ESP32 kernel at least will crash and reboot
     }
     // The callback is called by a RTOS task not an ISR, which allows us to have the callback without the IRAM attribute
-    Timer20ms.attach_ms(REFRESH_INTERVAL_MILLIS, handleServoTimerInterrupt);
+    Timer20ms.attach_ms(SERVO_REFRESH_INTERVAL_MILLIS, handleServoTimerInterrupt);
 
 // BluePill in 2 flavors
 #elif defined(STM32F1xx)   // for "STMicroelectronics:stm32" from STM32 Boards from STM32 cores of Arduino Board manager
     Timer20ms.setMode(LL_TIM_CHANNEL_CH1, TIMER_OUTPUT_COMPARE, NC);    // used for generating only interrupts, no pin specified
-    Timer20ms.setOverflow(REFRESH_INTERVAL_MICROS, MICROSEC_FORMAT);    // microsecond period
+    Timer20ms.setOverflow(SERVO_REFRESH_INTERVAL_MICROS, MICROSEC_FORMAT);    // microsecond period
     Timer20ms.attachInterrupt(handleServoTimerInterrupt);               // this sets update interrupt enable
     Timer20ms.resume();     // Start or resume HardwareTimer: all channels are resumed, interrupts are enabled if necessary
 
 #elif defined(__STM32F1__)  // for "stm32duino:STM32F1 Generic STM32F103C series" from STM32F1 Boards (Roger Clark STM32duino.com)
     Timer20ms.setMode(TIMER_CH1, TIMER_OUTPUT_COMPARE);
-    Timer20ms.setPeriod(REFRESH_INTERVAL_MICROS);   // 20000 microsecond period
+    Timer20ms.setPeriod(SERVO_REFRESH_INTERVAL_MICROS);   // 20000 microsecond period
     Timer20ms.attachInterrupt(TIMER_CH1, handleServoTimerInterrupt);
     Timer20ms.refresh();    // Set the timer's count to 0 and update the prescaler and overflow values.
 
@@ -2103,7 +2103,7 @@ void enableServoEasingInterrupt() {
 
     // TIMER_CLOCK3 is MCK/32. MCK is 84MHz Set up the Timer in waveform mode which creates a PWM in UP mode with automatic trigger on RC Compare
     TC_Configure(TC_FOR_20_MS_TIMER, CHANNEL_FOR_20_MS_TIMER, TC_CMR_TCCLKS_TIMER_CLOCK3 | TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC);
-    TC_SetRC(TC_FOR_20_MS_TIMER, CHANNEL_FOR_20_MS_TIMER, (F_CPU / 32) / REFRESH_FREQUENCY); // =52500 -> 20ms
+    TC_SetRC(TC_FOR_20_MS_TIMER, CHANNEL_FOR_20_MS_TIMER, (F_CPU / 32) / SERVO_REFRESH_FREQUENCY); // =52500 -> 20ms
 
     TC_Start(TC_FOR_20_MS_TIMER, CHANNEL_FOR_20_MS_TIMER); // Enables the timer clock stopped by TC_Configure() and performs a software reset to start the counting
 
@@ -2139,7 +2139,7 @@ void enableServoEasingInterrupt() {
     while (TC->SYNCBUSY.bit.SWRST); // CTRL.SWRST will be cleared by hardware when the peripheral has been reset.
 
     // SAMD51 has F_CPU = 120 MHz
-    TC->CC[0].reg = ((F_CPU / (256 * REFRESH_FREQUENCY)) - 1);  //  (9375 - 1) at 120 MHz and 256 prescaler. With prescaler 64 we get 37500-1.
+    TC->CC[0].reg = ((F_CPU / (256 * SERVO_REFRESH_FREQUENCY)) - 1);  //  (9375 - 1) at 120 MHz and 256 prescaler. With prescaler 64 we get 37500-1.
     /*
      * Set timer counter mode to 16 bits, set mode as match frequency, prescaler is DIV256, start counter
      */
@@ -2163,7 +2163,7 @@ void enableServoEasingInterrupt() {
     // When writing a '1' to the CTRLA.SWRST bit it will immediately read as '1'.
     while (TC->CTRLA.bit.SWRST); // CTRL.SWRST will be cleared by hardware when the peripheral has been reset.
 
-    TC->CC[0].reg = ((F_CPU  / (64 * REFRESH_FREQUENCY)) - 1);    // (15000 - 1) at 48 Mhz and 64 prescaler.
+    TC->CC[0].reg = ((F_CPU  / (64 * SERVO_REFRESH_FREQUENCY)) - 1);    // (15000 - 1) at 48 Mhz and 64 prescaler.
     /*
      * Set timer counter mode to 16 bits, set mode as match frequency, prescaler is DIV64 => 750 kHz clock, start counter
      */
@@ -2189,7 +2189,7 @@ void enableServoEasingInterrupt() {
 //    // only AM_HAL_CTIMER_FN_REPEAT resets counter after match (CTC mode)
 //    am_hal_ctimer_config_single(3, AM_HAL_CTIMER_TIMERA,
 //            (AM_HAL_CTIMER_INT_ENABLE | AM_HAL_CTIMER_HFRC_12KHZ | AM_HAL_CTIMER_FN_REPEAT));
-//    am_hal_ctimer_compare_set(3, AM_HAL_CTIMER_TIMERA, 0, 12000 / REFRESH_FREQUENCY);
+//    am_hal_ctimer_compare_set(3, AM_HAL_CTIMER_TIMERA, 0, 12000 / SERVO_REFRESH_FREQUENCY);
 //    am_hal_ctimer_start(3, AM_HAL_CTIMER_TIMERA);
 //
 //    am_hal_ctimer_int_register(AM_HAL_CTIMER_INT_TIMERA3, handleServoTimerInterrupt);
@@ -2197,14 +2197,14 @@ void enableServoEasingInterrupt() {
 //    NVIC_EnableIRQ(CTIMER_IRQn);
 
 #elif defined(ARDUINO_ARCH_MBED)
-    Timer20ms.attach(handleServoTimerInterrupt, std::chrono::microseconds(REFRESH_INTERVAL_MICROS));
+    Timer20ms.attach(handleServoTimerInterrupt, std::chrono::microseconds(SERVO_REFRESH_INTERVAL_MICROS));
 
 #elif defined(ARDUINO_ARCH_RP2040)
-    add_repeating_timer_us(REFRESH_INTERVAL_MICROS, handleServoTimerInterruptHelper, nullptr, &Timer20ms);
+    add_repeating_timer_us(SERVO_REFRESH_INTERVAL_MICROS, handleServoTimerInterruptHelper, nullptr, &Timer20ms);
 
 #elif defined(TEENSYDUINO)
     // common for all Teensy
-    Timer20ms.begin(handleServoTimerInterrupt, REFRESH_INTERVAL_MICROS);
+    Timer20ms.begin(handleServoTimerInterrupt, SERVO_REFRESH_INTERVAL_MICROS);
 
 #else
 #warning Board / CPU is not covered by definitions using pre-processor symbols -> no timer available. Please extend ServoEasing.cpp.
@@ -2218,7 +2218,7 @@ void enableServoEasingInterrupt() {
  */
 void setTimer1InterruptMarginMicros(uint16_t aInterruptMarginMicros){
     // Generate interrupt aInterruptMarginMicros us before a new servo period starts
-    OCR1B = ((clockCyclesPerMicrosecond() * REFRESH_INTERVAL_MICROS) / 8) - aInterruptMarginMicros;
+    OCR1B = ((clockCyclesPerMicrosecond() * SERVO_REFRESH_INTERVAL_MICROS) / 8) - aInterruptMarginMicros;
 }
 #endif
 
@@ -2618,7 +2618,7 @@ bool updateAllServos() {
 void updateAndWaitForAllServosToStop() {
     do {
         // First do the delay, then check for update, since we are probably called directly after start and there is nothing to move yet
-        delay(REFRESH_INTERVAL_MILLIS); // 20 ms
+        delay(SERVO_REFRESH_INTERVAL_MILLIS); // 20 ms
     } while (!updateAllServos());
 }
 
@@ -2630,9 +2630,9 @@ void updateAndWaitForAllServosToStop() {
 bool delayAndUpdateAndWaitForAllServosToStop(unsigned long aMillisDelay, bool aTerminateDelayIfAllServosStopped) {
     while (true) {
         // First do the delay, then check for update, since we are probably called directly after start and there is nothing to move yet
-        if (aMillisDelay > REFRESH_INTERVAL_MILLIS) {
-            aMillisDelay -= REFRESH_INTERVAL_MILLIS;
-            delay(REFRESH_INTERVAL_MILLIS); // 20 ms
+        if (aMillisDelay > SERVO_REFRESH_INTERVAL_MILLIS) {
+            aMillisDelay -= SERVO_REFRESH_INTERVAL_MILLIS;
+            delay(SERVO_REFRESH_INTERVAL_MILLIS); // 20 ms
             if (updateAllServos() && aTerminateDelayIfAllServosStopped) {
                 // terminate delay here and return
                 return true;

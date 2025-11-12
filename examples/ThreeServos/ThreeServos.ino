@@ -160,7 +160,7 @@ void loop() {
     do {
         // Here you can insert your own code
         /*         */
-        delay(REFRESH_INTERVAL_MILLIS); // Optional 20ms delay. Can be less.
+        delay(SERVO_REFRESH_INTERVAL_MILLIS); // Optional 20ms delay. Can be less.
     } while (!updateAllServos());
 
     delay(DELAY_BETWEEN_ACTIONS_MILLIS);

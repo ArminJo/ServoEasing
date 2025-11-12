@@ -58,7 +58,7 @@ void setupRobotArmServos() {
      * Attach servos to Arduino Pins and set to start position. Must be done with write().
      * Set pivot servo first
      */
-    // Operate from 90° (left) to -90° (right), this is an initial trim
+    // Operate from 90ï¿½ (left) to -90ï¿½ (right), this is an initial trim
     BasePivotServo.attach(PIVOT_SERVO_PIN, 0, PIVOT_MICROS_AT_MINUS_70_DEGREE, PIVOT_MICROS_AT_PLUS_70_DEGREE, -70, 70);
     BasePivotServo.write(0);
     // Register function for smooth moving with inverse kinematics
@@ -83,7 +83,7 @@ void setupRobotArmServos() {
     LiftServo.registerUserEaseInFunction(&moveInverseKinematic, &sCurrentPosition.DownUpDegree);
 
     /*
-     * Operate claw from 0° (close) to 180° (open), this is an initial trim
+     * Operate claw from 0ï¿½ (close) to 180ï¿½ (open), this is an initial trim
      */
     ClawServo.attach(CLAW_SERVO_PIN, 0, CLAW_MICROS_AT_180_DEGREE, CLAW_MICROS_AT_CLOSE, CLAW_MAXIMUM_DEGREE, CLAW_CLOSE_DEGREE);
 
@@ -391,7 +391,7 @@ void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, float aDegree, uint16
     ServoEasing::ServoEasingArray[aServoIndex]->startEaseTo(aDegree, aDegreesPerSecond, false);
     do {
 #if defined(ROBOT_ARM_HAS_IR_CONTROL)
-        DELAY_AND_RETURN_IF_STOP(REFRESH_INTERVAL_MILLIS); // 20 ms - REFRESH_INTERVAL is in Microseconds
+        DELAY_AND_RETURN_IF_STOP(SERVO_REFRESH_INTERVAL_MILLIS); // 20 ms - REFRESH_INTERVAL is in Microseconds
 #endif
     } while (!ServoEasing::ServoEasingArray[aServoIndex]->update());
 }
@@ -399,7 +399,7 @@ void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, float aDegree, uint16
 void updateAndCheckInputAndWaitForAllServosToStop() {
     do {
 #if defined(ROBOT_ARM_HAS_IR_CONTROL)
-        DELAY_AND_RETURN_IF_STOP(REFRESH_INTERVAL_MILLIS); // 20 ms - REFRESH_INTERVAL is in Microseconds
+        DELAY_AND_RETURN_IF_STOP(SERVO_REFRESH_INTERVAL_MILLIS); // 20 ms - REFRESH_INTERVAL is in Microseconds
 #endif
     } while (!updateAllServos());
 }

@@ -179,18 +179,20 @@ __attribute__((weak)) extern void handleServoTimerInterrupt();
 #if !defined(DEFAULT_PULSE_WIDTH)
 #define DEFAULT_PULSE_WIDTH 1500     // default pulse width when servo is attached (from Servo.h)
 #endif
-#if !defined(REFRESH_INTERVAL) && defined(REFRESH_USEC)
-#define REFRESH_INTERVAL REFRESH_USEC   // // minimum time to refresh servos in microseconds (from ESP32Servo.h)
+#if !defined(SERVO_REFRESH_INTERVAL) && defined(REFRESH_INTERVAL)
+#define SERVO_REFRESH_INTERVAL_MICROS REFRESH_INTERVAL   // // minimum time to refresh servos in microseconds (from Servo.h)
 #endif
-#if !defined(REFRESH_INTERVAL)
-#define REFRESH_INTERVAL 20000   // // minimum time to refresh servos in microseconds (from Servo.h)
+#if !defined(SERVO_REFRESH_INTERVAL) && defined(REFRESH_USEC)
+#define SERVO_REFRESH_INTERVAL_MICROS REFRESH_USEC   // // minimum time to refresh servos in microseconds (from ESP32Servo.h)
+#endif
+#if !defined(SERVO_REFRESH_INTERVAL_MICROS)
+#define SERVO_REFRESH_INTERVAL_MICROS 20000   // // minimum time to refresh servos in microseconds (from Servo.h)
 #endif
 #if !defined(INVALID_SERVO)
 #define INVALID_SERVO    255     // flag indicating an invalid servo index (from Servo.h)
 #endif
-#define REFRESH_INTERVAL_MICROS REFRESH_INTERVAL         // 20000
-#define REFRESH_INTERVAL_MILLIS (REFRESH_INTERVAL/1000)  // 20 - used for delay()
-#define REFRESH_FREQUENCY (MILLIS_IN_ONE_SECOND/REFRESH_INTERVAL_MILLIS) // 50
+#define SERVO_REFRESH_INTERVAL_MILLIS (SERVO_REFRESH_INTERVAL_MICROS/1000)  // 20 - used for delay()
+#define SERVO_REFRESH_FREQUENCY (MILLIS_IN_ONE_SECOND/SERVO_REFRESH_INTERVAL_MILLIS) // 50
 
 /*
  * Define `DISABLE_COMPLEX_FUNCTIONS` if space (1850 bytes) matters.

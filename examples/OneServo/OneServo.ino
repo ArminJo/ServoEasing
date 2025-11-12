@@ -151,7 +151,7 @@ void loop() {
         // Here you can insert your own code
 
         // First do the optional delay, then check for update, since we are probably called directly after start and there is nothing to move yet
-        delay(REFRESH_INTERVAL_MILLIS);  // Optional 20ms delay. Can be less.
+        delay(SERVO_REFRESH_INTERVAL_MILLIS);  // Optional 20ms delay. Can be less.
 
 #if defined(PRINT_FOR_SERIAL_PLOTTER)
     } while (!updateAllServos()); // this outputs a value plus a newline, whilst Servo1.update() would not output the newline
