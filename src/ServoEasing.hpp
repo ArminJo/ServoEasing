@@ -278,6 +278,23 @@ void ServoEasing::PCA9685Init() {
     delay(2); // > 500 us according to datasheet
 }
 
+/**
+ * Specify the actual internal  PCA9685 clock frequency to get a correct 20m ms period.
+ * See https://github.com/adafruit/Adafruit-PWM-Servo-Driver-Library/blob/master/examples/oscillator/oscillator.ino
+ *
+ * Set expander to 20 ms period for 4096-part cycle and wait 2 milliseconds
+ * This results in a resolution of 4.88 us per step.
+ * This must be called AFTER the last attach, because PCA9685Init() using 25 MHz is internally called at every attach.
+ */
+void ServoEasing::PCA9685Init(uint32_t aActualPCA9685ClockFrequency) {
+    // Set expander to 20 ms period
+    I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_MODE_1_SLEEP)); // go to sleep
+    // #define PCA9685_PRESCALER_FOR_20_MS ((PCA9685_ACTUAL_CLOCK_FREQUENCY /(4096L * 50)) - 1) // = 121 / 0x79 at 50 Hz
+    I2CWriteByte(PCA9685_PRESCALE_REGISTER, (aActualPCA9685ClockFrequency / (4096L * 50)) -1); // set the prescaler
+    I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_MODE_1_AUTOINCREMENT)); // reset sleep and enable auto increment
+    delay(2); // > 500 us according to datasheet
+}
+
 void ServoEasing::I2CWriteByte(uint8_t aAddress, uint8_t aData) {
 #if defined(USE_SOFT_I2C_MASTER)
     i2c_start(mPCA9685I2CAddress << 1);

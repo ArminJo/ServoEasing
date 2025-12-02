@@ -15,7 +15,7 @@
  *  If you did not yet store the example as your own sketch, then with Ctrl+K you are instantly in the right library folder.
  *  *****************************************************************************************************************************
  *
- *  Copyright (C) 2019-2024  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2025  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -110,12 +110,20 @@ void setup() {
 #endif
     checkI2CConnection(FIRST_PCA9685_EXPANDER_ADDRESS, &Serial);
     getAndAttach16ServosToPCA9685Expander(FIRST_PCA9685_EXPANDER_ADDRESS);
+    // To change the PCA9685 prescaler to reflect the actual PCA9685 internal frequency for the first expander just set PCA9685_ACTUAL_CLOCK_FREQUENCY
 
 #if !defined(USE_ONLY_ONE_EXPANDER)
     if (checkI2CConnection(SECOND_PCA9685_EXPANDER_ADDRESS, &Serial)) {
         Serial.println(F("Second PCA9685 expander not connected -> only 16 servos initialized"));
     } else {
         getAndAttach16ServosToPCA9685Expander(SECOND_PCA9685_EXPANDER_ADDRESS);
+        /*
+         * Optionally change the PCA9685 prescaler of the second expander to reflect the actual PCA9685 internal frequency. Standard frequency is 25 MHz
+         * See https://github.com/adafruit/Adafruit-PWM-Servo-Driver-Library/blob/master/examples/oscillator/oscillator.ino
+         * for calibrating this frequency.
+         * This must be called AFTER the last attach, because PCA9685Init() using 25 MHz is internally called at every attach.
+         */
+//         ServoEasing::ServoEasingArray[16]->PCA9685Init(29000000); // Correct for internal frequency which is 29 MHz here
     }
 #endif
 
@@ -185,7 +193,7 @@ void getAndAttach16ServosToPCA9685Expander(uint8_t aPCA9685I2CAddress) {
     Serial.print(F("Get ServoEasing objects and attach servos to PCA9685 expander at address=0x"));
     Serial.println(aPCA9685I2CAddress, HEX);
     for (uint_fast8_t i = 0; i < PCA9685_MAX_CHANNELS; ++i) {
-        tServoEasingObjectPtr = new ServoEasing(aPCA9685I2CAddress);
+        tServoEasingObjectPtr = new ServoEasing(aPCA9685I2CAddress); // Get the ServoEasing object
         if (tServoEasingObjectPtr->attach(i) == INVALID_SERVO) {
             Serial.print(F("Address=0x"));
             Serial.print(aPCA9685I2CAddress, HEX);

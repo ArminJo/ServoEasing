@@ -271,7 +271,7 @@ Every other extension e.g. *cinclude* would do, but *hpp* seems to be common sen
 
 # Using the new *.hpp files
 In order to support [compile options](#compile-options--macros-for-this-library) more easily,
-the line `#include <ServoEasing.h>` must be changed to  `#include <ServoEasing.hpp>`
+the line `#include <ServoEasing.h>` **must** be changed to  `#include <ServoEasing.hpp>`
 in your main program (aka *.ino file with setup() and loop()).
 
 In **all other files** you must use `#include <ServoEasing.h>`, to **prevent `multiple definitions` linker errors**:
@@ -294,7 +294,7 @@ Modify them by enabling / disabling them, or change the values if applicable.
 | Name | Default value | Description |
 |-|-:|-|
 | `USE_PCA9685_SERVO_EXPANDER` | disabled | Enables the use of the PCA9685 I2C expander chip/board. |
-| `PCA9685_ACTUAL_CLOCK_FREQUENCY` | 25000000L | Change it, if your PCA9685 has another than the default 25 MHz internal clock. See chapter 2 and 5 of the PCA9685 Datasheet "25 MHz typical internal oscillator requires no external components". This value is taken for all attached PCA9685 expanders! |
+| `PCA9685_ACTUAL_CLOCK_FREQUENCY` | 25000000L | Change it, if your PCA9685 has another than the default 25 MHz internal clock. See chapter 2 and 5 of the PCA9685 Datasheet "25 MHz typical internal oscillator requires no external components". This value is taken for all attached PCA9685 expanders! To specify it for each PCA9685 expander individually, use `PCA9685Init(uint32_t aActualPCA9685ClockFrequency)` after the last `attach()`. Adafruit provides a [library example](https://github.com/adafruit/Adafruit-PWM-Servo-Driver-Library/blob/master/examples/oscillator/oscillator.ino) to get the PCA9685 actual internal frequency. |
 | `USE_SOFT_I2C_MASTER` | disabled | Saves up to 1756 bytes program memory and 218 bytes RAM for PCA9685 I2C communication compared with Arduino Wire. |
 | `USE_SERVO_LIB` | disabled | Use of PCA9685 normally disables use of regular servo library. You can force additional using of regular servo library by defining `USE_SERVO_LIB`. See [below](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#using-pca9685-16-channel-servo-expander). |
 | `USE_USER_PROVIDED_SERVO_LIB` | disabled | If you have a different servo implementation, e.g. this [M5Stack Servo expander](https://shop.m5stack.com/products/8-channel-servo-driver-unit-stm32f030) you can provide your own servo library by activating this macro.<br/>You must also include the .h file of your library e.g. `#include "DummyServo.h"`. |

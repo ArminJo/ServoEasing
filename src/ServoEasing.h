@@ -468,6 +468,7 @@ public:
     void I2CInit();
     void PCA9685Reset();
     void PCA9685Init();
+    void PCA9685Init(uint32_t aActualPCA9685ClockFrequency);
     void I2CWriteByte(uint8_t aAddress, uint8_t aData);
     void setPWM(uint16_t aPWMOffValueAsUnits);
     void setPWM(uint16_t aPWMOnStartValueAsUnits, uint16_t aPWMPulseDurationAsUnits);
