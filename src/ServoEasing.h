@@ -431,6 +431,7 @@ extern const char *const easeTypeStrings[] PROGMEM;
 #define PCA9685_MODE_1_RESTART          7
 #define PCA9685_MODE_1_AUTOINCREMENT    5
 #define PCA9685_MODE_1_SLEEP            4
+#define PCA9685_MODE1_EXTCLK            6  // Use EXTCLK pin clock
 #define PCA9685_FIRST_PWM_REGISTER   0x06
 #define PCA9685_PRESCALE_REGISTER    0xFE
 #if !defined(PCA9685_ACTUAL_CLOCK_FREQUENCY)
@@ -438,7 +439,7 @@ extern const char *const easeTypeStrings[] PROGMEM;
 #define PCA9685_ACTUAL_CLOCK_FREQUENCY   25000000L // 25 MHz this is the default frequency
 #endif
 
-#define PCA9685_PRESCALER_FOR_20_MS ((PCA9685_ACTUAL_CLOCK_FREQUENCY /(4096L * 50)) - 1) // = 121 / 0x79 at 50 Hz
+#define PCA9685_PRESCALER_FOR_20_MS ((PCA9685_ACTUAL_CLOCK_FREQUENCY /(4096L * 50)) - 1) //for 25 MHz it is: 121 / 0x79 for 20 ms or 50 Hz
 
 // to be used as values for parameter bool aStartUpdateByInterrupt
 #define START_UPDATE_BY_INTERRUPT           true
@@ -468,7 +469,8 @@ public:
     void I2CInit();
     void PCA9685Reset();
     void PCA9685Init();
-    void PCA9685Init(uint32_t aActualPCA9685ClockFrequency);
+    void PCA9685Init(uint32_t aActualPCA9685ClockFrequencyHertz);
+    void PCA9685InitWithExternalClock(uint32_t aExternalClockFrequencyHertz);
     void I2CWriteByte(uint8_t aAddress, uint8_t aData);
     void setPWM(uint16_t aPWMOffValueAsUnits);
     void setPWM(uint16_t aPWMOnStartValueAsUnits, uint16_t aPWMPulseDurationAsUnits);
@@ -793,6 +795,10 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
 #endif
 
 /*
+ *
+ * Version 3.5.1 - 12/2025
+ * - Renamed macro REFRESH_INTERVAL_MILLIS to SERVO_REFRESH_INTERVAL_MICROS.
+ * - Added new functions PCA9685Init(uint32_t aActualPCA9685ClockFrequencyHertz) and PCA9685InitWithExternalClock(uint32_t aExternalClockFrequencyHertz).
  *
  * Version 3.5.0 - 9/2025
  * - Fixed serious bug in reattach();

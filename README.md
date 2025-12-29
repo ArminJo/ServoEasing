@@ -294,7 +294,7 @@ Modify them by enabling / disabling them, or change the values if applicable.
 | Name | Default value | Description |
 |-|-:|-|
 | `USE_PCA9685_SERVO_EXPANDER` | disabled | Enables the use of the PCA9685 I2C expander chip/board. |
-| `PCA9685_ACTUAL_CLOCK_FREQUENCY` | 25000000L | Change it, if your PCA9685 has another than the default 25 MHz internal clock. See chapter 2 and 5 of the PCA9685 Datasheet "25 MHz typical internal oscillator requires no external components". This value is taken for all attached PCA9685 expanders! To specify it for each PCA9685 expander individually, use `PCA9685Init(uint32_t aActualPCA9685ClockFrequency)` after the last `attach()`. Adafruit provides a [library example](https://github.com/adafruit/Adafruit-PWM-Servo-Driver-Library/blob/master/examples/oscillator/oscillator.ino) to get the PCA9685 actual internal frequency. |
+| `PCA9685_ACTUAL_CLOCK_FREQUENCY` | 25000000L | Change and activate it, if your PCA9685 has another than the default 25 MHz internal clock. See chapter 2 and 5 of the PCA9685 Datasheet "25 MHz typical internal oscillator requires no external components". This value is taken for all attached PCA9685 expanders! To specify it for each PCA9685 expander individually, use `PCA9685Init(uint32_t aActualPCA9685ClockFrequency)` after the last `attach()`. Adafruit provides a [library example](https://github.com/adafruit/Adafruit-PWM-Servo-Driver-Library/blob/master/examples/oscillator/oscillator.ino) to get the PCA9685 actual internal frequency. |
 | `USE_SOFT_I2C_MASTER` | disabled | Saves up to 1756 bytes program memory and 218 bytes RAM for PCA9685 I2C communication compared with Arduino Wire. |
 | `USE_SERVO_LIB` | disabled | Use of PCA9685 normally disables use of regular servo library. You can force additional using of regular servo library by defining `USE_SERVO_LIB`. See [below](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#using-pca9685-16-channel-servo-expander). |
 | `USE_USER_PROVIDED_SERVO_LIB` | disabled | If you have a different servo implementation, e.g. this [M5Stack Servo expander](https://shop.m5stack.com/products/8-channel-servo-driver-unit-stm32f030) you can provide your own servo library by activating this macro.<br/>You must also include the .h file of your library e.g. `#include "DummyServo.h"`. |
@@ -323,6 +323,8 @@ In expander mode, timer1 is only required for the startEaseTo* functions and not
 The pin number parameter of the attach function determines the **port number of the PCA9685** and can be in the range from 0 to 15.
 
 Be aware that the PCA9685 expander is **reset** at the first `attach()` and **initialized** at every further `attach()`.<br/>
+If you have a PCA9685 expander using external clock input, you must call `PCA9685InitWithExternalClock(uint32_t aExternalClockFrequencyHertz)` once after the last attach() for this PCA9685 expander. It does not matter which servo of the PCA9685 expander is used as object for this call.
+
 To control simultaneously servos with the Arduino Servo library i.e. servos which are directly connected to the Arduino board, activate the line `#define USE_SERVO_LIB`.<br/>
 In this case you should attach the expander servos first in order to initialize the expander board correctly.
 And as long as no servo using the Arduino Servo library is attached, the expander servos will not move,
@@ -451,10 +453,14 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 <br/>
 
 # Revision History
+### Version 3.5.1
+- Renamed macro `REFRESH_INTERVAL_MILLIS` to `SERVO_REFRESH_INTERVAL_MICROS`.
+- Added new functions` PCA9685Init(uint32_t aActualPCA9685ClockFrequencyHertz)` and `PCA9685InitWithExternalClock(uint32_t aExternalClockFrequencyHertz)`.
+
 ### Version 3.5.0
-- Fixed serious bug in reattach();
-- Renamed InitializeAndCheckI2CConnection() to initializeAndCheckI2CConnection().
-- Renamed applyTrimAndreverseToTargetMicrosecondsOrUnits() to applyTrimAndReverseToTargetMicrosecondsOrUnits().
+- Fixed serious bug in `reattach()`;
+- Renamed `InitializeAndCheckI2CConnection()` to `initializeAndCheckI2CConnection()`.
+- Renamed `applyTrimAndreverseToTargetMicrosecondsOrUnits()` to `applyTrimAndReverseToTargetMicrosecondsOrUnits()`.
 - Housekeeping.
 
 ### Version 3.4.0

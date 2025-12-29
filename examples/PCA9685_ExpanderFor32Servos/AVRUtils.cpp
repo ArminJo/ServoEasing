@@ -42,9 +42,9 @@
 
 uint8_t* getStartOfAvailableHeap(void) {
     if (__brkval == 0) {
-        // __brkval is 0 if no malloc() has happened before
+// __brkval is 0 if no malloc() has happened before
 //        __brkval = __malloc_heap_start;
-        __brkval = &__heap_start;
+        __brkval = &__heap_start; // = __bss_end, the linker address of heap start
     }
     return (uint8_t*) __brkval;
 }
@@ -87,7 +87,7 @@ int16_t getStackMaxUsedAndUnusedSizes(uint16_t *aStackUnusedSizePointer) {
         tStackUnused++;
     }
 
-    int16_t tStackMaxUsedSize = (RAMEND + 1) - (uint16_t) tHeapPtr;
+    int16_t tStackMaxUsedSize = (RAMEND + 1) - (int16_t) tHeapPtr;
 
     *aStackUnusedSizePointer = tStackUnused;
     if (tStackUnused == 0) {
@@ -109,16 +109,24 @@ void printStackMaxUsedAndUnusedSizes(Print *aSerial) {
     aSerial->print(F(", unused="));
     aSerial->print(tStackUnusedBytes);
     aSerial->print(F(" of current total "));
-    aSerial->println((RAMEND + 1) - (uint16_t) getStartOfAvailableHeap());
+    aSerial->println((RAMEND + 1) - (int16_t) getStartOfAvailableHeap());
 }
 
 /*
  * Search upwards the first two HEAP_STACK_UNTOUCHED_VALUE values after current begin of heap
+ * If stack uses total heap, we see the current available stack size here :-(
  */
-uint16_t getHeapMaxUsedSize() {
+int16_t getHeapMaxUsedSize() {
     uint8_t *tHeapPtr = getStartOfAvailableHeap();
     while (*tHeapPtr != HEAP_STACK_UNTOUCHED_VALUE && *(tHeapPtr + 1) != HEAP_STACK_UNTOUCHED_VALUE && tHeapPtr <= (uint8_t*) SP) {
         tHeapPtr++;
+    }
+//    Serial.print(F("tHeapPtr=0x"));
+//    Serial.print((uint16_t)tHeapPtr, HEX);
+//    Serial.print(F(" SP=0x"));
+//    Serial.println((uint16_t)SP, HEX);
+    if ((tHeapPtr-1) == (uint8_t*) SP) {
+        return -1;
     }
     // tHeapPtr points now to lowest untouched stack position or to lowest current stack byte
     return tHeapPtr - (uint8_t*) __malloc_heap_start;
@@ -185,7 +193,7 @@ uint16_t getTheoreticalMaximumAvailableHeapSize(void) {
     if (RAMEND <= __malloc_margin) {
         return 0;
     }
-    return (RAMEND - RAMSTART) -__malloc_margin; // (128)
+    return (RAMEND - RAMSTART) - __malloc_margin; // (128)
 }
 
 /*
@@ -202,11 +210,11 @@ void printCurrentAvailableHeapSize(Print *aSerial) {
  */
 void printCurrentAvailableHeapSizeSimple(Print *aSerial) {
     aSerial->print(F("available="));
-    aSerial->println(SP - (uint16_t) __brkval + 1 - ((uint16_t) __malloc_margin));
+    aSerial->println(SP - (int16_t) __brkval + 1 - ((int16_t) __malloc_margin));
 }
 
 // This define is in AVRUtils.h
-//#define PRINT_AVAILABLE_HEAP   Serial.print(F("available="));Serial.println(SP - (uint16_t) __brkval + 1 - HEURISTIC_ADDITIONAL_MALLOC_MARGIN - ((uint16_t) __malloc_margin))
+//#define PRINT_AVAILABLE_HEAP   Serial.print(F("available="));Serial.println(SP - (int16_t) __brkval + 1 - HEURISTIC_ADDITIONAL_MALLOC_MARGIN - ((int16_t) __malloc_margin))
 
 void printBaseRAMData(Print *aSerial) {
     // __malloc_heap_end seems to be 0
@@ -259,31 +267,35 @@ void printBaseRAMData(Print *aSerial) {
  * Heap available + __malloc_margin (128) = Stack available
  * Data+BSS + Heap max used + Stack unused + Stack max used = RAMSIZE
  */
-void printRAMInfo(Print *aSerial) {
+void printRAMAndStackInfo(Print *aSerial) {
 
     aSerial->print(F("Data+BSS="));
-    aSerial->print((uint16_t) &__heap_start - RAMSTART);
+    aSerial->print((int16_t) &__heap_start - RAMSTART);
 
     aSerial->print(F(". Heap: used="));
-    aSerial->print((uint16_t) getStartOfAvailableHeap() - (uint16_t) &__heap_start);
-    aSerial->print(F(", max written=")); // if Stack uses total heap, we see the stack size here :-(
+    aSerial->print((uint16_t) getStartOfAvailableHeap() - (int16_t) &__heap_start);
+    aSerial->print(F(", max written=")); // If stack uses total heap, we see the stack size here :-(
     aSerial->print(getHeapMaxUsedSize());
     aSerial->print(F(", max available="));
-    aSerial->print(RAMEND - (uint16_t) getStartOfAvailableHeap() + 1 - (uint16_t) __malloc_margin);
+    aSerial->print(RAMEND - (int16_t) getStartOfAvailableHeap() + 1 - (int16_t) __malloc_margin);
 
     aSerial->print(F(". Stack: available="));
-    aSerial->print(SP - (uint16_t) getStartOfAvailableHeap() + 1);
+    aSerial->print((SP + 1) - (int16_t) getStartOfAvailableHeap());
     aSerial->print(F(", used="));
     aSerial->print(RAMEND - SP);
+
     uint16_t tStackUnusedBytes;
     aSerial->print(F(", max used="));
     aSerial->print(getStackMaxUsedAndUnusedSizes(&tStackUnusedBytes));
     aSerial->print(F(", unused="));
     aSerial->print(tStackUnusedBytes);
     aSerial->print(F(" of current total "));
-    aSerial->print((RAMEND + 1) - (uint16_t) getStartOfAvailableHeap()); // getStartOfAvailableHeap()
+    aSerial->print((RAMEND + 1) - (int16_t) getStartOfAvailableHeap()); // getStartOfAvailableHeap()
 
     aSerial->println();
+}
+void printRAMInfo(Print *aSerial) {
+    printRAMAndStackInfo(aSerial);
 }
 
 /*
@@ -317,9 +329,9 @@ void testCallocSizesAndPrint(Print *aSerial) {
         aSerial->print(F("SP=0x"));
         aSerial->print(SP, HEX);
         aSerial->print(F(" available="));
-        aSerial->print(SP - (uint16_t) __brkval + 1 - ((uint16_t) __malloc_margin)- HEURISTIC_ADDITIONAL_MALLOC_MARGIN);
+        aSerial->print(SP - (int16_t) __brkval + 1 - ((int16_t) __malloc_margin) - HEURISTIC_ADDITIONAL_MALLOC_MARGIN);
         aSerial->print(F(" max available="));
-        aSerial->print(RAMEND - (uint16_t) __brkval + 1 - ((uint16_t) __malloc_margin));
+        aSerial->print(RAMEND - (int16_t) __brkval + 1 - ((int16_t) __malloc_margin));
         uint8_t *tMallocPtr = (uint8_t*) calloc(tMallocSize, 1);
 
         aSerial->print(F(" -> calloc("));
@@ -377,7 +389,7 @@ void initSleep(uint8_t tSleepMode) {
 }
 
 /*
- * Watchdog wakes CPU periodically and all we have to do is call sleep_cpu();
+ * Watchdog wakes CPU periodically and all we have to do is call sleep_cpu() - see AVRUtilsDemo
  * aWatchdogPrescaler (see wdt.h) can be one of
  * WDTO_15MS, 30, 60, 120, 250, WDTO_500MS
  * WDTO_1S to WDTO_8S
@@ -386,6 +398,27 @@ void initPeriodicSleepWithWatchdog(uint8_t tSleepMode, uint8_t aWatchdogPrescale
     sleep_enable()
     ;
     set_sleep_mode(tSleepMode);
+    MCUSR = ~_BV(WDRF); // Clear WDRF in MCUSR
+
+#if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__) \
+    || defined(__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__) \
+    || defined(__AVR_ATtiny87__) || defined(__AVR_ATtiny167__)
+#define WDTCSR  WDTCR
+#endif
+    // Watchdog interrupt enable + reset interrupt flag -> needs ISR(WDT_vect)
+    uint8_t tWDTCSR = _BV(WDIE) | _BV(WDIF) | (aWatchdogPrescaler & 0x08 ? _WD_PS3_MASK : 0x00) | (aWatchdogPrescaler & 0x07); // handles that the WDP3 bit is in bit 5 of the WDTCSR register,
+    WDTCSR = _BV(WDCE) | _BV(WDE); // clear lock bit for 4 cycles by writing 1 to WDCE AND WDE
+    WDTCSR = tWDTCSR; // set final Value
+}
+
+/*
+ * Watchdog interrupts CPU periodically and ISR can be used to handle timeout  - see AVRUtilsDemo
+ * The reason for timeout is NOT removed, i.e. an endless loop will not be exited.
+ * aWatchdogPrescaler (see wdt.h) can be one of
+ * WDTO_15MS, 30, 60, 120, 250, WDTO_500MS
+ * WDTO_1S to WDTO_8S
+ */
+void initTimeoutWithWatchdog(uint8_t aWatchdogPrescaler) {
     MCUSR = ~_BV(WDRF); // Clear WDRF in MCUSR
 
 #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__) \
@@ -455,6 +488,15 @@ void sleepWithWatchdog(uint8_t aWatchdogPrescaler, bool aAdjustMillis) {
     }
 }
 
+/*
+ * Sample ISR for Watchdog
+ * This interrupt prints the timeout message
+ */
+//ISR(WDT_vect) {
+//    wdt_reset();
+//    myLCD.setCursor(0, 3);
+//    myLCD.print(F("No voltage detected "));
+//}
 /*
  * 0 -> %1
  * _BV(CLKPS0) -> %2

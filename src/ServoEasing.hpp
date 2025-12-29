@@ -279,18 +279,31 @@ void ServoEasing::PCA9685Init() {
 }
 
 /**
- * Specify the actual internal  PCA9685 clock frequency to get a correct 20m ms period.
+ * Uses the external clock input. This can only be reset by a software reset or a power cycle.
+ * !!!This must be called AFTER the last attach, because PCA9685Init() using 25 MHz is internally called at every attach!!!
+ */
+void ServoEasing::PCA9685InitWithExternalClock(uint32_t aExternalClockFrequencyHertz) {
+    // Set expander to 20 ms period
+    I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_MODE_1_SLEEP)); // go to sleep
+    I2CWriteByte(PCA9685_MODE1_REGISTER, (_BV(PCA9685_MODE1_EXTCLK) | _BV(PCA9685_MODE_1_SLEEP))); // switch to external clock input
+    I2CWriteByte(PCA9685_PRESCALE_REGISTER, (aExternalClockFrequencyHertz / (4096L * 50)) -1); // set the prescaler
+    I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_MODE_1_AUTOINCREMENT)); // reset sleep and enable auto increment
+    delay(2); // > 500 us according to datasheet
+}
+
+/**
+ * Specify the actual internal PCA9685 clock frequency to get a correct 20m ms period.
+ * 25 MHz is the default clock frequency of the PCA9685.
  * See https://github.com/adafruit/Adafruit-PWM-Servo-Driver-Library/blob/master/examples/oscillator/oscillator.ino
  *
  * Set expander to 20 ms period for 4096-part cycle and wait 2 milliseconds
  * This results in a resolution of 4.88 us per step.
- * This must be called AFTER the last attach, because PCA9685Init() using 25 MHz is internally called at every attach.
+ * !!!This must be called AFTER the last attach, because PCA9685Init() using 25 MHz is internally called at every attach!!!
  */
-void ServoEasing::PCA9685Init(uint32_t aActualPCA9685ClockFrequency) {
+void ServoEasing::PCA9685Init(uint32_t aActualPCA9685ClockFrequencyHertz) {
     // Set expander to 20 ms period
     I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_MODE_1_SLEEP)); // go to sleep
-    // #define PCA9685_PRESCALER_FOR_20_MS ((PCA9685_ACTUAL_CLOCK_FREQUENCY /(4096L * 50)) - 1) // = 121 / 0x79 at 50 Hz
-    I2CWriteByte(PCA9685_PRESCALE_REGISTER, (aActualPCA9685ClockFrequency / (4096L * 50)) -1); // set the prescaler
+    I2CWriteByte(PCA9685_PRESCALE_REGISTER, (aActualPCA9685ClockFrequencyHertz / (4096L * 50)) -1); // set the prescaler
     I2CWriteByte(PCA9685_MODE1_REGISTER, _BV(PCA9685_MODE_1_AUTOINCREMENT)); // reset sleep and enable auto increment
     delay(2); // > 500 us according to datasheet
 }
