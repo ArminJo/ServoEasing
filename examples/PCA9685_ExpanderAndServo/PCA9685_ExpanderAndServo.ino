@@ -39,7 +39,7 @@
 
 // Must specify this before the include of "ServoEasing.hpp"
 #define USE_PCA9685_SERVO_EXPANDER    // Activating this enables the use of the PCA9685 I2C expander chip/board.
-//#define PCA9685_ACTUAL_CLOCK_FREQUENCY 26000000L // Change it, if your PCA9685 has another than the default 25 MHz internal clock.
+//#define PCA9685_ACTUAL_CLOCK_FREQUENCY 26000000L // Change and activate it, if your PCA9685 has another than the default 25 MHz internal clock.
 //#define I2C_CLOCK_FREQUENCY 400000    // According to the datasheet the PCA9685 runs the I2C up to 1MHz, but due to parasitic capacitance it can be necessary to lower the frequency
 //#define USE_SOFT_I2C_MASTER           // Saves 1756 bytes program memory and 218 bytes RAM compared with Arduino Wire
 #define USE_SERVO_LIB                 // If USE_PCA9685_SERVO_EXPANDER is defined, Activating this enables force additional using of regular servo library.
