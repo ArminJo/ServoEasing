@@ -74,6 +74,7 @@ void setLiftServos(int aBodyHeightAngle);
 void setLiftServoHeight(ServoEasing & aLiftServo, uint8_t aHeightPercent);
 
 void printBodyHeight();
+
 uint8_t convertLegPercentHeightToAngle(uint8_t aLegHeightPercent);
 
 

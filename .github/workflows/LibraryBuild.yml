@@ -80,6 +80,7 @@ jobs:
               PCA9685_ExpanderFor32Servos: -DTRACE -DDISABLE_MICROS_AS_DEGREE_PARAMETER
               PCA9685_ExpanderAndServo: -DUSE_SOFT_I2C_MASTER
               QuadrupedControl: -DQUADRUPED_1_WITH_DVD_REMOTE -mrelax
+              RobotArmControl: -DROBOT_ARM_DRAWS_RTC_TIME
 
           - arduino-boards-fqbn: arduino:avr:leonardo
             required-libraries: Servo
@@ -89,14 +90,15 @@ jobs:
             required-libraries: Servo
             build-properties: # the flags were put in compiler.cpp.extra_flags
               ThreeServos: -DUSE_LIGHTWEIGHT_SERVO_LIB
+              RobotArmControl: -DROBOT_ARM_HAS_IR_CONTROL
 
           - arduino-boards-fqbn: arduino:megaavr:nona4809:mode=off
             required-libraries: Servo
-            sketches-exclude: TwoServos,SpeedTest,EndPositionsTest,QuadrupedControl,RobotArmControl # No getVCCVoltageMillivolt(), no EasyButton
+            sketches-exclude: TwoServos,SpeedTest,EndPositionsTest,QuadrupedControl#,RobotArmControl # No getVCCVoltageMillivolt(), no EasyButton
 
           - arduino-boards-fqbn: arduino:sam:arduino_due_x
             required-libraries: Servo
-            sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl # QuadrupedControl RobotArmControl because of missing EEprom
+            sketches-exclude: TwoServos,QuadrupedControl#,RobotArmControl # QuadrupedControl RobotArmControl because of missing EEprom
 
           - arduino-boards-fqbn: arduino:samd:arduino_zero_native
             required-libraries: Servo
@@ -105,26 +107,26 @@ jobs:
           - arduino-boards-fqbn: arduino:mbed:nano33ble
             arduino-platform: arduino:mbed@1.3.2 # the 2.0.0 is incompatible with Servo library
             required-libraries: Servo
-            sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl,PCA9685_ExpanderFor32Servos,PCA9685_Expander,PCA9685_ExpanderAndServo  # No Wire
+            sketches-exclude: TwoServos,QuadrupedControl#,RobotArmControl,PCA9685_ExpanderFor32Servos,PCA9685_Expander,PCA9685_ExpanderAndServo  # No Wire
 
 #
 # RP2040
 #
           - arduino-boards-fqbn: arduino:mbed_rp2040:pico
             required-libraries: Servo
-            sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl # Comma separated list of example names to exclude in build
+            sketches-exclude: TwoServos,QuadrupedControl#,RobotArmControl # Comma separated list of example names to exclude in build
 
           - arduino-boards-fqbn: rp2040:rp2040:arduino_nano_connect
             platform-url: https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
             required-libraries: Servo
-            sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl # Comma separated list of example names to exclude in build
+            sketches-exclude: TwoServos,QuadrupedControl#,RobotArmControl # Comma separated list of example names to exclude in build
 
 #
 # megaTinyCore
 #
 #         https://github.com/SpenceKonde/megaTinyCore/issues/935
 #          - arduino-boards-fqbn: megaTinyCore:megaavr:atxy7:chip=3217,clock=16internal
-#            platform-url: http://drazzy.com/package_drazzy.com_index.json
+#            platform-url: https://felias-fogg.github.io/downloads/package_debug_enabled_index.json
 #            required-libraries: Servo
 #            sketches-exclude: TwoServos,SpeedTest,EndPositionsTest,QuadrupedControl,RobotArmControl # No getVCCVoltageMillivolt(), no EasyButton
 
@@ -148,7 +150,7 @@ jobs:
           - arduino-boards-fqbn: esp32:esp32:featheresp32:FlashFreq=80
             platform-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
             required-libraries: ESP32Servo
-            sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl # Comma separated list of example names to exclude in build
+            sketches-exclude: TwoServos,QuadrupedControl#,RobotArmControl # Comma separated list of example names to exclude in build
 
 #
 # STM
@@ -156,7 +158,7 @@ jobs:
           - arduino-boards-fqbn: STMicroelectronics:stm32:GenF1:pnum=BLUEPILL_F103C8 # STM version
             platform-url: https://raw.githubusercontent.com/stm32duino/BoardManagerFiles/main/package_stmicroelectronics_index.json
             required-libraries: Servo
-            sketches-exclude: TwoServos,QuadrupedControl,RobotArmControl
+            sketches-exclude: TwoServos,QuadrupedControl#,RobotArmControl
 
 #          - arduino-boards-fqbn: stm32duino:STM32F1:genericSTM32F103C # Roger Clark version
 #            platform-url: http://dan.drown.org/stm32duino/package_STM32duino_index.json

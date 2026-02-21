@@ -17,8 +17,8 @@ It uses the standard Arduino Servo library and therefore has its restrictions re
 <br/>
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
 
-Available as [Arduino library "ServoEasing"](https://www.arduinolibraries.info/libraries/servo-easing).
-Contains the [QuadrupedControl](https://github.com/ArminJo/QuadrupedControl) example.
+Available as [Arduino library "ServoEasing"](https://www.arduinolibraries.info/libraries/servo-easing).<br/>
+Contains the [RobotArmControl](https://github.com/ArminJo/ServoEasing/tree/master/examples/RobotArmControl) and the [QuadrupedControl](https://github.com/ArminJo/QuadrupedControl) example.
 
 [![Button Install](https://img.shields.io/badge/Install-brightgreen?logoColor=white&logo=GitBook)](https://www.ardu-badge.com/ServoEasing)
  &nbsp; &nbsp;
@@ -38,7 +38,7 @@ Contains the [QuadrupedControl](https://github.com/ArminJo/QuadrupedControl) exa
 
 [![Demonstration of different servo easings](https://i.ytimg.com/vi/fC9uxdOBhfA/hqdefault.jpg)](https://www.youtube.com/watch?v=fC9uxdOBhfA)
 
-# Table of content
+# Table of contents
 - [Servo easing library for Arduino](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#servo-easing-library-for-arduino)
 - [Features](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#features)
 - [List of easing functions](https://github.com/ArminJo/ServoEasing?tab=readme-ov-file#list-of-easing-functions)
@@ -370,10 +370,27 @@ If you **detach** a servo and then attach another one, the latter will get the i
 <br/>
 
 # Examples for this library
-[The examples](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples) are available at File > Examples > Examples from Custom Libraries / ServoEasing.<br/>
 
-## DummyServoExample
-This is an example for a user provided servo library, which is activated by `#define USE_USER_PROVIDED_SERVO_LIB`.
+# QuadrupedControl
+[This example](https://github.com/ArminJo/ServoEasing/blob/master/examples/QuadrupedControl/QuadrupedControl.ino) controls 8 servos to move a Quadruped robot.
+It is documented [here](https://github.com/ArminJo/QuadrupedControl).
+
+## YouTube Videos
+| MeArm robot | Control board |
+|-|-|
+| [![mePed V2 in action](https://i.ytimg.com/vi/MsIjTRRUyGU/hqdefault.jpg)](https://youtu.be/MsIjTRRUyGU) | [![Another implementation](https://i.ytimg.com/vi/CSodffeebyg/hqdefault.jpg)](https://youtu.be/CSodffeebyg) |
+
+# RobotArmControl
+[This example](https://github.com/ArminJo/ServoEasing/tree/master/examples/RobotArmControl#robotarmcontrol-for-a-mearm-v04-robot) controls a MeArm robot arm with 4 servos using 4 potentiometers and/or an IR Remote.<br/>
+It is documented [here](https://github.com/ArminJo/ServoEasing/tree/master/examples/RobotArmControl#robotarmcontrol-for-a-mearm-v04-robot).
+
+| MeArm robot | Control board |
+|-|-|
+| ![RobotArmBlack](https://github.com/ArminJo/RobotArmControl/raw/master/pictures/RobotArmBlack.jpg) | ![RobotArmControlBoard](https://github.com/ArminJo/RobotArmControl/raw/master/pictures/RobotArmControlBoard.jpg) |
+
+
+# All examples
+... are documented [here](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples) and are available at the Arduino IDE at *File > Examples > Examples from Custom Libraries / ServoEasing*.<br/>
 
 <br/>
 

@@ -52,7 +52,7 @@ For lifting the legs, the lift servos just use the ServoEasing easing type EASE_
 
 # Installation
 - Install **[ServoEasing library](https://github.com/ArminJo/ServoEasing)** with *Tools > Manage Libraries...* or *Ctrl+Shift+I*. Use "ServoEasing" as filter string.<br/>
-- Open the example **[QuadrupedControl](https://github.com/ArminJo/ServoEasing/tree/master/examples/QuadrupedControl)**, available at File > Examples > Examples from Custom Libraries / ServoEasing.
+- Open the example **[QuadrupedControl](https://github.com/ArminJo/ServoEasing/tree/master/examples/QuadrupedControl)**, available at *File > Examples > Examples from Custom Libraries > ServoEasing*.
 
 <br/>
 
@@ -77,5 +77,5 @@ Modify them by enabling / disabling them in the file *QuadrupedConfiguration.h*,
 | Remote front | Remote back |
 |-|-|
 | ![Remote front](https://github.com/ArminJo/QuadrupedControl/blob/master/pictures/IRRemoteFront.jpg) | ![Remote back](https://github.com/ArminJo/QuadrupedControl/blob/master/pictures/IRRemoteBack.jpg) |
-| Bottom view of my mePed. You can see the two lipos connected parallel resulting in a 4.2 to 3.6 volt supply. | Using a PCA9685 expander for the servos, gaining pins for other purposes. |
+| Bottom view of my mePed. You can see the two lipos connected parallel resulting in a 4.2 to 3.6 volt supply. | If you require additional pins for other purposes you can use a PCA9685 expander for the servos to free up pins 5 to 12. |
 | ![Bottom view](https://github.com/ArminJo/QuadrupedControl/blob/master/pictures/mePed_bottom.jpg) | ![PCA9685 expander](https://github.com/ArminJo/QuadrupedControl/blob/master/pictures/mePedWithPCA9685.jpg) |

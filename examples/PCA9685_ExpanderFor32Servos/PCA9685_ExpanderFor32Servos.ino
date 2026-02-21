@@ -55,7 +55,9 @@
 #include "ServoEasing.hpp"
 #include "PinDefinitionsAndMore.h"
 
+#if defined(__AVR__) && defined (SPMCSR) && !(defined(__AVR_ATtiny1616__)  || defined(__AVR_ATtiny3216__) || defined(__AVR_ATtiny3217__))
 #include "AVRUtils.h"
+#endif
 
 /*
  * Pin mapping table for different platforms - used by all examples

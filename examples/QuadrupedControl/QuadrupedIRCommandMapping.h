@@ -16,7 +16,7 @@
 
 #include <Arduino.h>
 
-#include "IRCommandDispatcher.h" // IR_COMMAND_FLAG_BLOCKING etc. are defined here
+#include "IRCommandDispatcher.h" // IRToCommandMappingStruct, IR_COMMAND_FLAG_BLOCKING etc. are defined here
 #include "QuadrupedControlCommands.h" // contains the command definitions used in the mapping table below
 #include "QuadrupedHelper.h"    // for additional commands
 #if defined(QUADRUPED_HAS_NEOPIXEL)
@@ -296,7 +296,7 @@
 #define HAS_ADDITIONAL_REMOTE_COMMANDS
 
 // Codes for white remote control for an old DVD Player
-#define IR_ADDRESS 0x7B80
+#define IR_ADDRESS 0x80 // The real address is 0x7B80 so we get an parity error but we ignore it :-)
 
 #define IR_ON_OFF 0x13
 
@@ -450,56 +450,54 @@ const struct IRToCommandMappingStruct IRMapping[] = {
  * Commands, which must run exclusively and therefore must first stop other commands running.
  */
 #if defined(QUADRUPED_HAS_IR_CONTROL) && !defined(USE_USER_DEFINED_MOVEMENTS)
-        { COMMAND_CALIBRATE, IR_COMMAND_FLAG_BLOCKING, &doCalibration, calibration}, /**/
+        { COMMAND_CALIBRATE, IR_COMMAND_FLAG_BLOCKING, &doCalibration, COMMAND_STRING(calibration) }, /**/
 #endif
-        { COMMAND_DANCE, IR_COMMAND_FLAG_BLOCKING, &doDance, dance }, /**/
-        { COMMAND_TWIST, IR_COMMAND_FLAG_BLOCKING, &doTwist, twistString }, /**/
-        { COMMAND_WAVE, IR_COMMAND_FLAG_BLOCKING, &doWave, wave }, /**/
-        { COMMAND_TROT, IR_COMMAND_FLAG_BLOCKING, &doTrot, trot }, /**/
-        { COMMAND_AUTO, IR_COMMAND_FLAG_BLOCKING, &doQuadrupedAutoMove, autoMove }, /**/
-        { COMMAND_TEST, IR_COMMAND_FLAG_BLOCKING, &doTest, test }, /**/
-        { COMMAND_CENTER, IR_COMMAND_FLAG_BLOCKING, &doCenterServos, center }, /**/
+        { COMMAND_DANCE, IR_COMMAND_FLAG_BLOCKING, &doDance, COMMAND_STRING(dance)}, /**/
+    { COMMAND_TWIST, IR_COMMAND_FLAG_BLOCKING, &doTwist, COMMAND_STRING(twistString)}, /**/
+{ COMMAND_WAVE, IR_COMMAND_FLAG_BLOCKING, &doWave, COMMAND_STRING(wave)}, /**/
+{ COMMAND_TROT, IR_COMMAND_FLAG_BLOCKING, &doTrot, COMMAND_STRING(trot)}, /**/
+{ COMMAND_AUTO, IR_COMMAND_FLAG_BLOCKING, &doQuadrupedAutoMove, COMMAND_STRING(autoMove)}, /**/
+{ COMMAND_TEST, IR_COMMAND_FLAG_BLOCKING, &doTest, COMMAND_STRING(test)}, /**/
+{ COMMAND_CENTER, IR_COMMAND_FLAG_BLOCKING, &doCenterServos, COMMAND_STRING(center)}, /**/
 
-        /*
-         * Basic movements
-         */
-        { COMMAND_FORWARD, IR_COMMAND_FLAG_NON_BLOCKING, &doSetDirectionForward, dirForward }, /**/
-        { COMMAND_BACKWARD, IR_COMMAND_FLAG_NON_BLOCKING, &doSetDirectionBack, dirBack }, /**/
-        { COMMAND_RIGHT, IR_COMMAND_FLAG_NON_BLOCKING, &doSetDirectionRight, dirRight }, /**/
-        { COMMAND_LEFT, IR_COMMAND_FLAG_NON_BLOCKING, &doSetDirectionLeft, dirLeft }, /**/
-        { COMMAND_CREEP, IR_COMMAND_FLAG_BLOCKING, &doCreep, creep }, /* dummy IR command */
-        { COMMAND_TURN, IR_COMMAND_FLAG_BLOCKING, &doTurn, turn }, /* dummy IR command */
+/*
+ * Basic movements which can be executed always
+ */
+{ COMMAND_FORWARD, IR_COMMAND_FLAG_NON_BLOCKING, &doSetDirectionForward, COMMAND_STRING(dirForward)}, /**/
+{ COMMAND_BACKWARD, IR_COMMAND_FLAG_NON_BLOCKING, &doSetDirectionBack, COMMAND_STRING(dirBack)}, /**/
+{ COMMAND_RIGHT, IR_COMMAND_FLAG_NON_BLOCKING, &doSetDirectionRight, COMMAND_STRING(dirRight)}, /**/
+{ COMMAND_LEFT, IR_COMMAND_FLAG_NON_BLOCKING, &doSetDirectionLeft, COMMAND_STRING(dirLeft)}, /**/
+{ COMMAND_CREEP, IR_COMMAND_FLAG_BLOCKING, &doCreep, COMMAND_STRING(creep)}, /* dummy IR command */
+{ COMMAND_TURN, IR_COMMAND_FLAG_BLOCKING, &doTurn, COMMAND_STRING(turn)}, /* dummy IR command */
 
-        /*
-         * Commands, which can be executed always, since they are short and repeats are allowed
-         */
-        { COMMAND_INCREASE_SPEED, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doIncreaseSpeed, speedIncrease }, /**/
-        { COMMAND_DECREASE_SPEED, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doDecreaseSpeed, speedDecrease }, /**/
-        { COMMAND_INCREASE_HEIGHT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doIncreaseHeight, heighIncrease }, /**/
-        { COMMAND_DECREASE_HEIGHT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doDecreaseHeight, heighDecrease }, /**/
+/*
+ * Commands, which can be executed always, since they are short and repeats are allowed
+ */
+{ COMMAND_INCREASE_SPEED, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doIncreaseSpeed, COMMAND_STRING(speedIncrease)}, /**/
+{ COMMAND_DECREASE_SPEED, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doDecreaseSpeed, COMMAND_STRING(speedDecrease)}, /**/
+{ COMMAND_INCREASE_HEIGHT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doIncreaseHeight, COMMAND_STRING(heighIncrease)}, /**/
+{ COMMAND_DECREASE_HEIGHT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doDecreaseHeight, COMMAND_STRING(heighDecrease)}, /**/
+
 #if !defined(HAS_ADDITIONAL_REMOTE_COMMANDS)
-        { COMMAND_PAUSE_RESUME, IR_COMMAND_FLAG_BLOCKING, &doStop, stop }
-#endif
-
-#if defined(HAS_ADDITIONAL_REMOTE_COMMANDS)
+        { COMMAND_PAUSE_RESUME, IR_COMMAND_FLAG_BLOCKING, &doStop, COMMAND_STRING(stop)}
+#else
         /*
          * Commands not accessible by simple remote because of lack of keys
          */
-#if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
-        { COMMAND_US_RIGHT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doUSRight, ultrasonicServoRight }, /**/
-        { COMMAND_US_LEFT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doUSLeft, ultrasonicServoLeft }, /**/
-        { COMMAND_US_SCAN, IR_COMMAND_FLAG_NON_BLOCKING, &doUSScan, ultrasonicServoScan }, /**/
-#endif
-        { COMMAND_STOP, IR_COMMAND_FLAG_BLOCKING, &doStop, stop },
-        { COMMAND_PAUSE_RESUME, IR_COMMAND_FLAG_NON_BLOCKING, &doPauseResume, pauseResume }, /**/
-        { COMMAND_DEMO, IR_COMMAND_FLAG_BLOCKING, &doQuadrupedDemoMove, demo }, /**/
-        { COMMAND_PATTERN_1, IR_COMMAND_FLAG_NON_BLOCKING, &doPattern1, pattern }, /**/
-        { COMMAND_PATTERN_2, IR_COMMAND_FLAG_NON_BLOCKING, &doPattern2, pattern }, /**/
-        { COMMAND_PATTERN_4, IR_COMMAND_FLAG_NON_BLOCKING, &doPatternHeartbeat, pattern }, /**/
-        { COMMAND_PATTERN_5, IR_COMMAND_FLAG_NON_BLOCKING, &doPatternFire, pattern }, /**/
-        { COMMAND_PATTERN_6, IR_COMMAND_FLAG_NON_BLOCKING, &doWipeOutPatterns, pattern }, /**/
-        { COMMAND_PATTERN_0, IR_COMMAND_FLAG_NON_BLOCKING, &doRandomMelody, melody }
-
+# if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
+        { COMMAND_US_RIGHT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doUSRight, COMMAND_STRING(ultrasonicServoRight) }, /**/
+        { COMMAND_US_LEFT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doUSLeft, COMMAND_STRING(ultrasonicServoLeft) }, /**/
+        { COMMAND_US_SCAN, IR_COMMAND_FLAG_NON_BLOCKING, &doUSScan, COMMAND_STRING(ultrasonicServoScan) }, /**/
+#  endif
+        { COMMAND_STOP, IR_COMMAND_FLAG_BLOCKING, &doStop, COMMAND_STRING(stop) },
+        { COMMAND_PAUSE_RESUME, IR_COMMAND_FLAG_NON_BLOCKING, &doPauseResume, COMMAND_STRING(pauseResume) }, /**/
+        { COMMAND_DEMO, IR_COMMAND_FLAG_BLOCKING, &doQuadrupedDemoMove, COMMAND_STRING(demo) }, /**/
+        { COMMAND_PATTERN_1, IR_COMMAND_FLAG_NON_BLOCKING, &doPattern1, COMMAND_STRING(pattern) }, /**/
+        { COMMAND_PATTERN_2, IR_COMMAND_FLAG_NON_BLOCKING, &doPattern2, COMMAND_STRING(pattern) }, /**/
+        { COMMAND_PATTERN_4, IR_COMMAND_FLAG_NON_BLOCKING, &doPatternHeartbeat, COMMAND_STRING(pattern) }, /**/
+        { COMMAND_PATTERN_5, IR_COMMAND_FLAG_NON_BLOCKING, &doPatternFire, COMMAND_STRING(pattern) }, /**/
+        { COMMAND_PATTERN_6, IR_COMMAND_FLAG_NON_BLOCKING, &doWipeOutPatterns, COMMAND_STRING(pattern) }, /**/
+        { COMMAND_PATTERN_0, IR_COMMAND_FLAG_NON_BLOCKING, &doRandomMelody, COMMAND_STRING(melody) }
 #endif
         };
 

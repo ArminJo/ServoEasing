@@ -6,7 +6,7 @@ YouTube video of SymmetricEasing and AsymmetricEasing example
 
 [![Demonstration of different servo easings](https://i.ytimg.com/vi/fC9uxdOBhfA/hqdefault.jpg)](https://www.youtube.com/watch?v=fC9uxdOBhfA)
 
-# Table of content
+# Table of contents
 - [Simple](#simple)
 - [SimpleCallback](#simplecallback)
 - [OneServo](#oneservo)
@@ -19,8 +19,8 @@ YouTube video of SymmetricEasing and AsymmetricEasing example
 - [ContinuousRotatingServo](#continuousrotatingservo)
 - [LightweightServoExample](#lightweightservoexample)
 - [CatMover](#catmover)
-- [QuadrupedControl](#quadrupedcontrol)
-- [RobotArmControl](#robotarmcontrol)
+- [QuadrupedControl](https://github.com/ArminJo/QuadrupedControl?tab=readme-ov-file#quadrupedcontrol-a-quadruped--meped-v2-spider-robot-control-library)
+- [RobotArmControl](https://github.com/ArminJo/ServoEasing/tree/master/examples/RobotArmControl#robotarmcontrol-for-a-mearm-v04-robot)
 - [PCA9685_ExpanderAndServo](#pca9685_expanderandservo)
 - [PCA9685_ExpanderFor32Servos](#pca9685_expanderfor32servos)
 - [Servo utilities](#servo-utilities)
@@ -83,19 +83,6 @@ Then it does this again with `EASE_PRECISION_IN`, doing a bounce on moving down/
 # CatMover
 [Demo](https://github.com/ArminJo/ServoEasing/blob/master/examples/CatMover/CatMover.ino) of using two servos in a pan tilt housing to move a laser pointer.
 
-# QuadrupedControl
-[This example](https://github.com/ArminJo/ServoEasing/blob/master/examples/QuadrupedControl/QuadrupedControl.ino) controls 8 servos to move a Quadruped robot.<br/>
-It is documented [here](https://github.com/ArminJo/QuadrupedControl).
-
-## YouTube Videos
-[![mePed V2 in actions](https://i.ytimg.com/vi/MsIjTRRUyGU/hqdefault.jpg)](https://youtu.be/MsIjTRRUyGU)
-[![Another implementation](https://i.ytimg.com/vi/CSodffeebyg/hqdefault.jpg)](https://youtu.be/CSodffeebyg)
-
-# RobotArmControl
-[Program](https://github.com/ArminJo/ServoEasing/blob/master/examples/RobotArmControl/RobotArmControl.ino) for controlling a [robot arm with 4 servos](https://www.instructables.com/id/4-DOF-Mechanical-Arm-Robot-Controlled-by-Arduino) using 4 potentiometers and/or an IR Remote.<br/>
-To calibrate your robot arm, open the Serial Monitor, move the arm manually and change the microsecond values for the `PIVOT_MICROS_AT_*`, `LIFT_MICROS_AT_*`, `HORIZONTAL_MICROS_AT_*` and `CLAW_MICROS_AT_*` positions in *RobotArmServoConfiguration.h*.
-The example uses the `EASE_USER_DIRECT` easing type for all servos except the claw to implement **movements by inverse kinematics**.
-
 # PCA9685_ExpanderAndServo
 [This example](https://github.com/ArminJo/ServoEasing/blob/master/examples/PCA9685_ExpanderAndServo/PCA9685_ExpanderAndServo.ino) is a combination of OneServo example and PCA9685_Expander example. Move one servo attached to the Arduino board and one servo attached to the PCA9685 expander board **simultaneously**.
 
@@ -111,6 +98,9 @@ On the ESP32, the I2C library interferes with the 29 millisecond timer and there
 | Front view | Back view |
 |-|-|
 | ![mePed V2 with PCA9685 expander](https://github.com/ArminJo/ServoEasing/blob/master/pictures/mePedWithPCA9685.jpg) | ![mePed V2 with PCA9685 expander](https://github.com/ArminJo/ServoEasing/blob/master/pictures/mePed_topWithPCA9685.jpg) |
+
+### DummyServoExample
+[This example](https://github.com/ArminJo/ServoEasing/blob/master/examples/PCA9685_ExpanderAndServo/DummyServoExample.ino) shows how to create and use a user provided servo library, which is activated by `#define USE_USER_PROVIDED_SERVO_LIB`.
 
 <br/>
 

@@ -198,6 +198,9 @@ init(BUTTON_AT_INT1_OR_PCINT); // 2. button
 }
 #endif // NO_BUTTON_RELEASE_CALLBACK
 
+#if !defined(CHANGE)
+#define CHANGE 1 // For those crappy cores which did not define it. Is used as 3. Parameter for attachInterrupt() below.
+#endif
 /*
  * Sets pin mode to INPUT_PULLUP if not defined(BUTTON_IS_ACTIVE_HIGH) and enables INT0 Interrupt on any logical change.
  * @param aIsButtonAtINT0   true if this button is connected to INT0 i.e. is button 0

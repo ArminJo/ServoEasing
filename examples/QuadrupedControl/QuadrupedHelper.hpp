@@ -3,7 +3,7 @@
  *
  *  Contains miscellaneous function for the quadruped
  *
- *  Copyright (C) 2022  Armin Joachimsmeyer
+ *  Copyright (C) 2022-2026  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of QuadrupedControl https://github.com/ArminJo/QuadrupedControl.
@@ -56,6 +56,10 @@
 uint32_t sLastVolageMeasurementMillis;
 
 #include "QuadrupedServoControl.h"
+
+// This block must be located after the includes of other *.hpp files
+//#define LOCAL_INFO  // This enables info output only for this file
+#include "LocalDebugLevelStart.h"
 
 #if !defined(STR_HELPER) && !defined(STR)
 #define STR_HELPER(x) #x
@@ -135,7 +139,8 @@ void checkForVCCUnderVoltageAndShutdown() {
  * It returns prematurely if requestToStopReceived is set
  * @return  true - if stop received
  */
-bool delayAndCheckForStopByIR(uint16_t aDelayMillis) {
+#define APPLICATION_DELAY_AND_CHECK_AVAILABLE
+bool delayAndCheckByApplication(uint16_t aDelayMillis) {
 #if defined(QUADRUPED_HAS_US_DISTANCE)
     // adjust delay value
     // we know, that delay is <= 10 and aDelayMillis is > =19
@@ -148,7 +153,6 @@ bool delayAndCheckForStopByIR(uint16_t aDelayMillis) {
         sCurrentlyRunningAction = ACTION_TYPE_STOP;
         return true;
     }
-
 #else
     delay(aDelayMillis);
 #endif
@@ -292,10 +296,8 @@ void doCalibration() {
     resetServosTo90Degree();
     delay(500);
     signalLeg(tPivotServoIndex);
-#      if defined(INFO)
-    Serial.println(F("Entered calibration. Use the forward/backward right/left buttons to set the servo position to 90 degree."));
-    Serial.println(F("Use enter/OK button to go to next leg. Values are stored at receiving a different button or after 4th leg."));
-#      endif
+    INFO_PRINTLN(F("Entered calibration. Use the forward/backward right/left buttons to set the servo position to 90 degree."));
+    INFO_PRINTLN(F("Use enter/OK button to go to next leg. Values are stored at receiving a different button or after 4th leg."));
 
     IRDispatcher.doNotUseDispatcher = true; // disable dispatcher by mapping table
     while (!tGotExitCommand) {
@@ -305,7 +307,7 @@ void doCalibration() {
         IRDispatcher.IRReceivedData.isAvailable = false;
 
         unsigned long tIRCode = IRDispatcher.IRReceivedData.command;
-#      if defined(INFO)
+#      if defined(LOCAL_INFO)
         Serial.print(F("IRCommand="));
         IRDispatcher.printIRCommandString(&Serial);
 #      endif
@@ -351,16 +353,14 @@ void doCalibration() {
             tGotExitCommand = true;
             break;
         }
-#      if defined(INFO)
-        Serial.print(F("ServoTrimAngles["));
-        Serial.print(tPivotServoIndex);
-        Serial.print(F("]="));
-        Serial.print(sServoTrimAngles[tPivotServoIndex]);
-        Serial.print(F(" ["));
-        Serial.print(tPivotServoIndex + LIFT_SERVO_OFFSET);
-        Serial.print(F("]="));
-        Serial.println(sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET]);
-#      endif
+        INFO_PRINT(F("ServoTrimAngles["));
+        INFO_PRINT(tPivotServoIndex);
+        INFO_PRINT(F("]="));
+        INFO_PRINT(sServoTrimAngles[tPivotServoIndex]);
+        INFO_PRINT(F(" ["));
+        INFO_PRINT(tPivotServoIndex + LIFT_SERVO_OFFSET);
+        INFO_PRINT(F("]="));
+        INFO_PRINTLN(sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET]);
         ServoEasing::ServoEasingArray[tPivotServoIndex]->print(&Serial);
         ServoEasing::ServoEasingArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->print(&Serial);
         delay(200);
@@ -376,5 +376,7 @@ void doBeep() {
     delay(400);
     tone(PIN_BUZZER, 2000, 200);
 }
+
+#include "LocalDebugLevelEnd.h"
 
 #endif // _QUADRUPED_HELPER_HPP

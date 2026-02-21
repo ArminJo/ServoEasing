@@ -34,7 +34,9 @@
 #include "QuadrupedServoControl.h"  // Contains macros to configure the ServoEasing library
 #include "ServoEasing.hpp"          // include source
 
-//#define INFO // activate this to see serial info output
+// This block must be located after the includes of other *.hpp files
+//#define LOCAL_INFO  // This enables info output only for this file
+#include "LocalDebugLevelStart.h"
 
 ServoEasing frontLeftPivotServo;    // 0 - Front Left Pivot Servo
 ServoEasing frontLeftLiftServo;     // 1 - Front Left Lift Servo
@@ -95,15 +97,13 @@ void initializeAllQuadrupedServos(uint_fast16_t aQuadrupedServoSpeed) {
     resetServosTo90Degree();
     setLiftServosToBodyHeight();
 
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     printBodyHeight();
 #endif
 }
 
 void shutdownServos() {
-#if defined(INFO)
-    Serial.println(F("Shutdown servos"));
-#endif
+    INFO_PRINTLN(F("Shutdown servos"));
     auto tOriginalRequestedBodyHeightAngle = sRequestedBodyHeightAngle;
     sRequestedBodyHeightAngle = LIFT_HIGHEST_ANGLE;
     centerServos();
@@ -126,20 +126,16 @@ void setQuadrupedServoSpeed(uint_fast16_t aQuadrupedServoSpeed) {
 }
 
 void printQuadrupedServoSpeed() {
-#if defined(INFO)
-    Serial.print(F(" Speed="));
-    Serial.println(sQuadrupedServoSpeed);
-#endif
+    INFO_PRINT(F(" Speed="));
+    INFO_PRINTLN(sQuadrupedServoSpeed);
 }
 
 void printAndSetTrimAngles() {
     for (uint_fast8_t i = 0; i < NUMBER_OF_LEG_SERVOS; ++i) {
-#if defined(INFO)
-        Serial.print(F("ServoTrimAngle["));
-        Serial.print(i);
-        Serial.print(F("]="));
-        Serial.println(sServoTrimAngles[i]);
-#endif
+        INFO_PRINT(F("ServoTrimAngle["));
+        INFO_PRINT(i);
+        INFO_PRINT(F("]="));
+        INFO_PRINTLN(sServoTrimAngles[i]);
         ServoEasing::ServoEasingArray[i]->setTrim(sServoTrimAngles[i], true);
     }
 }
@@ -155,9 +151,7 @@ void resetServosTo90Degree() {
  * Copy calibration array from EEPROM to RAM and set uninitialized values to 0
  */
 void eepromReadAndSetServoTrim() {
-#  if defined(INFO)
-    Serial.println(F("eepromReadAndSetServoTrim()"));
-#  endif
+    INFO_PRINTLN(F("eepromReadAndSetServoTrim()"));
     eeprom_read_block((void*) &sServoTrimAngles, &sServoTrimAnglesEEPROM, NUMBER_OF_LEG_SERVOS);
     printAndSetTrimAngles();
 }
@@ -370,11 +364,11 @@ void setLiftServosToBodyHeight() {
 void printBodyHeight() {
     sBodyHeight = map(sRequestedBodyHeightAngle, LIFT_HIGHEST_ANGLE, LIFT_LOWEST_ANGLE, 0, 255);
     sBodyHeightPercent = map(sRequestedBodyHeightAngle, LIFT_HIGHEST_ANGLE, LIFT_LOWEST_ANGLE, 0, 100);
-    Serial.print(F("BodyHeight="));
-    Serial.print(sBodyHeight);
-    Serial.print(F(" -> "));
-    Serial.print(sBodyHeightPercent);
-    Serial.println('%');
+    INFO_PRINT(F("BodyHeight="));
+    INFO_PRINT(sBodyHeight);
+    INFO_PRINT(F(" -> "));
+    INFO_PRINT(sBodyHeightPercent);
+    INFO_PRINTLN('%');
 }
 
 /*
@@ -405,17 +399,25 @@ void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree) {
 void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree, uint16_t aDegreesPerSecond) {
     ServoEasing::ServoEasingArray[aServoIndex]->startEaseTo(aDegree, aDegreesPerSecond, false);
     do {
-        if (delayAndCheckForStopByIR(SERVO_REFRESH_INTERVAL_MILLIS - 1)) { // 19 ms - REFRESH_INTERVAL is in Microseconds
+#if defined(_QUADRUPED_HELPER_HPP)
+        if (delayAndCheckByApplication(SERVO_REFRESH_INTERVAL_MILLIS - 1)) { // 19 ms - REFRESH_INTERVAL is in Microseconds
             return;
         }
-    } while (!ServoEasing::ServoEasingArray[aServoIndex]->update());
+#else
+        delay(SERVO_REFRESH_INTERVAL_MILLIS - 1);
+#endif
+        } while (!ServoEasing::ServoEasingArray[aServoIndex]->update());
 }
 
 void updateAndCheckInputAndWaitForAllServosToStop() {
     do {
-        if (delayAndCheckForStopByIR(SERVO_REFRESH_INTERVAL_MILLIS - 1)) { // 19 ms - REFRESH_INTERVAL is in Microseconds
+#if defined(_QUADRUPED_HELPER_HPP)
+        if (delayAndCheckByApplication(SERVO_REFRESH_INTERVAL_MILLIS - 1)) { // 19 ms - REFRESH_INTERVAL is in Microseconds
             return;
         }
+#else
+        delay(SERVO_REFRESH_INTERVAL_MILLIS - 1);
+#endif
     } while (!updateAllServos() || sCurrentlyRunningAction == ACTION_TYPE_PAUSE); // sCurrentlyRunningAction = ACTION_TYPE_PAUSE -> supports pause / resume
 }
 
@@ -424,5 +426,7 @@ void synchronizeMoveAllServosAndCheckInputAndWait() {
     synchronizeAllServosAndStartInterrupt(false); // do not start interrupt
     updateAndCheckInputAndWaitForAllServosToStop();
 }
+
+#include "LocalDebugLevelEnd.h"
 
 #endif // _QUADRUPED_SERVO_CONTROL_HPP

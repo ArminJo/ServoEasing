@@ -30,7 +30,9 @@
 #include "QuadrupedBasicMovements.h"
 #include "QuadrupedServoControl.h"
 
-//#define INFO // activate this to see serial info output
+// This block must be located after the includes of other *.hpp files
+//#define LOCAL_INFO  // This enables info output only for this file
+#include "LocalDebugLevelStart.h"
 
 volatile uint8_t sMovingDirection = MOVE_DIRECTION_FORWARD; // controls the direction of the basic moves
 
@@ -39,11 +41,11 @@ uint8_t sCurrentlyRunningAction = ACTION_TYPE_STOP; // A change on this action t
 uint8_t sLastRunningAction = ACTION_TYPE_STOP;      // To enable pause / resume
 
 /*
+ * Interruptible movement
  * Gait variations
  * 1. Creep: Move one leg forward and down, then move body with all 4 legs down, then move diagonal leg.
  * 2. Trot: Move 2 diagonal legs up and forward
  */
-
 void moveTrot(uint8_t aNumberOfTrots) {
     sCurrentlyRunningAction = ACTION_TYPE_TROT;
     setEasingTypeForMoving();
@@ -82,7 +84,7 @@ void setActionToStop() {
 
 void basicTwist(int8_t aTwistAngle, bool aTurnLeft) {
     sCurrentlyRunningAction = ACTION_TYPE_TWIST;
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.print(F("Twist angle="));
     Serial.print(aTwistAngle);
     if (aTurnLeft) {
@@ -149,7 +151,7 @@ void moveTurn(uint8_t aNumberOfBasicTurns) {
  * @param aLiftLegIndex from 0 FRONT_LEFT to 3 FRONT_RIGHT
  */
 void basicTurn(uint8_t aLiftLegIndex, bool aTurnLeft) {
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.print(F("Lift leg="));
     Serial.print(aLiftLegIndex);
     if (aTurnLeft) {
@@ -195,7 +197,7 @@ void basicTurn(uint8_t aLiftLegIndex, bool aTurnLeft) {
  * Y position with right legs closed and left legs open
  */
 void goToYPosition(uint8_t aDirection) {
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.print(F("goToYPosition direction="));
     Serial.println(aDirection);
 #endif
@@ -232,7 +234,7 @@ void moveCreep(uint8_t aNumberOfCreeps) {
  * moves one leg forward and down, then moves body, then moves diagonal leg.
  */
 void basicHalfCreep(uint8_t aDirection, bool doMirror) {
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.print(F("BasicHalfCreep Direction="));
     Serial.print(aDirection);
     Serial.print(F(" doMirror="));
@@ -260,7 +262,7 @@ void basicHalfCreep(uint8_t aDirection, bool doMirror) {
     tRequestedBodyHeightAngle = sRequestedBodyHeightAngle; // sRequestedBodyHeightAngle maybe changed by remote
 
 // 2. Move body forward by CREEP_BODY_MOVE_ANGLE
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.println(F("2. move body"));
 #endif
     transformAndSetAllServos(180 - Y_POSITION_CLOSE_ANGLE, Y_POSITION_OPEN_ANGLE + CREEP_BODY_MOVE_ANGLE,
@@ -271,7 +273,7 @@ void basicHalfCreep(uint8_t aDirection, bool doMirror) {
     tRequestedBodyHeightAngle = sRequestedBodyHeightAngle; // sRequestedBodyHeightAngle maybe changed by remote
 
 // 3. Move back right leg up, forward and down
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.println(F("3. move back leg to close position"));
 #endif
 // Move to Y position with other side legs together
@@ -284,7 +286,7 @@ void basicHalfCreep(uint8_t aDirection, bool doMirror) {
  * Just as an unused example to see the principle of movement
  */
 void basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.print(F("LeftLegIndex="));
     Serial.print(aLeftLegIndex);
 #endif
@@ -292,7 +294,7 @@ void basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
     uint8_t tLeftLegPivotServoIndex;
 
     if (aMoveMirrored) {
-#if defined(INFO)
+#if defined(LOCAL_INFO)
         Serial.print(F(" mirrored=true"));
 #endif
 // get index of pivot servo of mirrored leg
@@ -300,14 +302,14 @@ void basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
     } else {
         tLeftLegPivotServoIndex = aLeftLegIndex * SERVOS_PER_LEG;
     }
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.println();
 #endif
 //    printArrayPositions(&Serial);
     uint8_t tEffectiveAngle;
 
 // 1. Move front left leg up, forward and down
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.println(F("1. move front leg"));
 #endif
     moveOneServoAndCheckInputAndWait(tLeftLegPivotServoIndex + LIFT_SERVO_OFFSET, LIFT_HIGHEST_ANGLE);
@@ -324,7 +326,7 @@ void basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
     QUADRUPED_RETURN_IF_STOP;
 
 // 2. Move body forward
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.println(F("2. move body"));
 #endif
     uint8_t tIndex = tLeftLegPivotServoIndex;
@@ -364,7 +366,7 @@ void basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
     synchronizeMoveAllServosAndCheckInputAndWait();
 
 // 3. Move back right leg up, forward and down
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.println(F("3. move back leg to close position"));
 #endif
 // Move to Y position with right legs together / 120, 60, 180, 0
@@ -380,7 +382,7 @@ void basicSimpleHalfCreep(uint8_t aLeftLegIndex, bool aMoveMirrored) {
 }
 
 void lean(uint8_t aDirection) {
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.print(F("lean direction="));
     Serial.println(aDirection);
 #endif
@@ -416,4 +418,7 @@ void downAndUp(uint8_t aNumberOfDownAndUps) {
     setLiftServos(sRequestedBodyHeightAngle);
     setActionToStop();
 }
+
+#include "LocalDebugLevelEnd.h"
+
 #endif // _QUADRUPED_BASIC_MOVEMENTS_HPP

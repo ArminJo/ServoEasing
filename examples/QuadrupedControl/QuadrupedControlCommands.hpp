@@ -33,14 +33,16 @@
 #include "QuadrupedServoControl.hpp"
 #include "QuadrupedBasicMovements.hpp"
 
-//#define INFO // activate this to see serial info output
+// This block must be located after the includes of other *.hpp files
+//#define LOCAL_INFO  // This enables info output only for this file
+#include "LocalDebugLevelStart.h"
 
 /******************************************
  * The Commands to execute
  ******************************************/
 void __attribute__((weak)) doTest() {
     // to be overwritten by user function
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.print(F("Test TableMove"));
     printQuadrupedServoSpeed();
 #endif
@@ -52,7 +54,7 @@ void __attribute__((weak)) doTest() {
 }
 
 void __attribute__((weak)) doCenterServos() {
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.print(F("Center"));
     printQuadrupedServoSpeed();
 #endif
@@ -60,7 +62,7 @@ void __attribute__((weak)) doCenterServos() {
 }
 
 void __attribute__((weak)) doTwist() {
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.print(F("Twist"));
     printQuadrupedServoSpeed();
 #endif
@@ -68,7 +70,7 @@ void __attribute__((weak)) doTwist() {
 }
 
 void __attribute__((weak)) doTrot() {
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.print(F("Trot"));
     printQuadrupedServoSpeed();
 #endif
@@ -76,7 +78,7 @@ void __attribute__((weak)) doTrot() {
 }
 
 void __attribute__((weak)) doCreep() {
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.print(F("Creep"));
     printQuadrupedServoSpeed();
 #endif
@@ -84,7 +86,7 @@ void __attribute__((weak)) doCreep() {
 }
 
 void __attribute__((weak)) doTurn() {
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.print(F("Turn"));
     printQuadrupedServoSpeed();
 #endif
@@ -96,7 +98,7 @@ void __attribute__((weak)) doTurn() {
  * Move down and up and back to starting height
  */
 void __attribute__((weak)) doAttention() {
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.println(F("Start attention"));
 #endif
 //    sCurrentlyRunningAction = ACTION_TYPE_ATTENTION;
@@ -107,7 +109,7 @@ void __attribute__((weak)) doAttention() {
 void __attribute__((weak)) doWave() {
     sCurrentlyRunningAction = ACTION_TYPE_WAVE;
 
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.print(F("Wave 3 times with right leg"));
     printQuadrupedServoSpeed();
 #endif
@@ -121,8 +123,12 @@ void __attribute__((weak)) doWave() {
     // move all legs up, except front left -> front right lifts from the ground
     setLiftServos(LIFT_LOWEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_HIGHEST_ANGLE);
 
-    delayAndCheckForStopByIR(1000);
+#if defined(APPLICATION_DELAY_AND_CHECK_AVAILABLE)
+    delayAndCheckByApplication(1000);
     QUADRUPED_RETURN_IF_STOP;
+#else
+    delay(1000); // wait 2 second then start new move
+#endif
 
     ServoEasing::ServoEasingArray[FRONT_RIGHT_PIVOT]->setEasingType(EASE_QUADRATIC_IN_OUT);
 
@@ -136,8 +142,12 @@ void __attribute__((weak)) doWave() {
     }
     ServoEasing::ServoEasingArray[FRONT_RIGHT_PIVOT]->setEasingType(EASE_LINEAR);
 
-    delayAndCheckForStopByIR(1000);
+#if defined(APPLICATION_DELAY_AND_CHECK_AVAILABLE)
+    delayAndCheckByApplication(1000);
     QUADRUPED_RETURN_IF_STOP;
+#else
+    delay(1000); // wait 2 second then start new move
+#endif
 
     centerServos();
     setActionToStop();
@@ -148,7 +158,7 @@ void __attribute__((weak)) doWave() {
  */
 void __attribute__((weak)) doDance() {
     sCurrentlyRunningCombinedAction = ACTION_TYPE_DANCE;
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.print(F("Dance"));
     printQuadrupedServoSpeed();
 #endif
@@ -194,7 +204,7 @@ void __attribute__((weak)) doDance() {
 void __attribute__((weak)) doQuadrupedDemoMove() {
     uint16_t tOriginalSpeed = sQuadrupedServoSpeed;
 
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.println(F("Start demo move sequence"));
 #endif
     sCurrentlyRunningCombinedAction = ACTION_TYPE_DEMO_MOVE;
@@ -265,7 +275,7 @@ void __attribute__((weak)) doQuadrupedDemoMove() {
 void __attribute__((weak)) doQuadrupedAutoMove() {
     uint16_t tOriginalSpeed = sQuadrupedServoSpeed;
 
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.println(F("Start auto move sequence"));
 #endif
     sCurrentlyRunningCombinedAction = ACTION_TYPE_AUTO_MOVE;
@@ -295,8 +305,12 @@ void __attribute__((weak)) doQuadrupedAutoMove() {
     // creep left fast
     sMovingDirection = MOVE_DIRECTION_LEFT;
     moveCreep(4);
-    delayAndCheckForStopByIR(2000);
+#if defined(APPLICATION_DELAY_AND_CHECK_AVAILABLE)
+    delayAndCheckByApplication(2000);
     QUADRUPED_RETURN_IF_STOP;
+#else
+    delay(2000); // wait 2 second then start new move
+#endif
 
     // Dance
     setQuadrupedServoSpeed(200);
@@ -319,14 +333,22 @@ void __attribute__((weak)) doQuadrupedAutoMove() {
     // trot back
     sMovingDirection = MOVE_DIRECTION_BACKWARD;
     moveTrot(8);
-    delayAndCheckForStopByIR(2000);
+#if defined(APPLICATION_DELAY_AND_CHECK_AVAILABLE)
+    delayAndCheckByApplication(2000);
     QUADRUPED_RETURN_IF_STOP;
+#else
+    delay(2000); // wait 2 second then start new move
+#endif
 
     // trot right
     sMovingDirection = MOVE_DIRECTION_RIGHT;
     moveTrot(8);
-    delayAndCheckForStopByIR(2000);
+#if defined(APPLICATION_DELAY_AND_CHECK_AVAILABLE)
+    delayAndCheckByApplication(2000);
     QUADRUPED_RETURN_IF_STOP;
+#else
+    delay(2000); // wait 2 second then start new move
+#endif
 
     // turn left
     centerServos();
@@ -352,7 +374,7 @@ void __attribute__((weak)) doStop() {
 void __attribute__((weak)) doPauseResume() {
     if (sCurrentlyRunningAction != ACTION_TYPE_STOP) {
         if (sCurrentlyRunningAction == ACTION_TYPE_PAUSE) {
-#if defined(INFO)
+#if defined(LOCAL_INFO)
             Serial.print(F("Resume with action="));
             Serial.println(sLastRunningAction);
 #endif
@@ -360,7 +382,7 @@ void __attribute__((weak)) doPauseResume() {
             resumeWithoutInterruptsAllServos();
 //        resumeWithInterruptsAllServos();  // start the interrupts for NeoPatterns if disabled.
         } else {
-#if defined(INFO)
+#if defined(LOCAL_INFO)
             Serial.println(F("Pause"));
 #endif
             pauseAllServos(); // this does not stop the interrupts for NeoPatterns.
@@ -378,7 +400,7 @@ void __attribute__((weak)) doPauseResume() {
  */
 void __attribute__((weak)) doSetDirectionForward() {
     sMovingDirection = MOVE_DIRECTION_FORWARD;
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     Serial.print(F("Forward"));
     printQuadrupedServoSpeed();
 #endif
@@ -431,7 +453,7 @@ void __attribute__((weak)) doIncreaseSpeed() {
         sQuadrupedServoSpeed = SERVO_MAX_SPEED;
     }
     setSpeedForAllServos(sQuadrupedServoSpeed);
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     printQuadrupedServoSpeed();
 #endif
 }
@@ -445,7 +467,7 @@ void __attribute__((weak)) doDecreaseSpeed() {
         sQuadrupedServoSpeed = SERVO_MIN_SPEED;
     }
     setSpeedForAllServos(sQuadrupedServoSpeed);
-#if defined(INFO)
+#if defined(LOCAL_INFO)
     printQuadrupedServoSpeed();
 #endif
 }
@@ -457,7 +479,7 @@ void __attribute__((weak)) doDecreaseSpeed() {
 void __attribute__((weak)) doIncreaseHeight() {
     if (sRequestedBodyHeightAngle > (LIFT_LOWEST_ANGLE + 2)) {
         sRequestedBodyHeightAngle -= 2;
-#if defined(INFO)
+#if defined(LOCAL_INFO)
         printBodyHeight();
 #endif
         if (sCurrentlyRunningAction == ACTION_TYPE_STOP) {
@@ -469,7 +491,7 @@ void __attribute__((weak)) doIncreaseHeight() {
 void __attribute__((weak)) doDecreaseHeight() {
     if (sRequestedBodyHeightAngle < (LIFT_HIGHEST_ANGLE - 2)) {
         sRequestedBodyHeightAngle += 2;
-#if defined(INFO)
+#if defined(LOCAL_INFO)
         printBodyHeight();
 #endif
         if (sCurrentlyRunningAction == ACTION_TYPE_STOP) {
@@ -477,5 +499,7 @@ void __attribute__((weak)) doDecreaseHeight() {
         }
     }
 }
+
+#include "LocalDebugLevelEnd.h"
 
 #endif // _QUADRUPED_CONTROL_COMMANDS_HPP

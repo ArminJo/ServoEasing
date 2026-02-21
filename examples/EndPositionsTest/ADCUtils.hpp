@@ -29,7 +29,8 @@
 #if defined(ADC_UTILS_ARE_AVAILABLE) // set in ADCUtils.h, if supported architecture was detected
 #define ADC_UTILS_ARE_INCLUDED
 
-#if !defined(STR)
+// Helper macro for getting a macro definition as string
+#if !defined(STR_HELPER) && !defined(STR)
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 #endif
@@ -42,7 +43,7 @@
  * with INTERNAL you can calibrate your ADC readout. For my Nanos I measured e.g. 1060 mV and 1093 mV.
  */
 #if !defined(ADC_INTERNAL_REFERENCE_MILLIVOLT)
-#define ADC_INTERNAL_REFERENCE_MILLIVOLT    1100UL // Change to value measured at the AREF pin. If value > real AREF voltage, measured values are > real values
+#define ADC_INTERNAL_REFERENCE_MILLIVOLT    1100 // Change to value measured at the AREF pin. If value > real AREF voltage, measured values are > real values
 #endif
 
 // Union to speed up the combination of low and high bytes to a word
@@ -541,7 +542,7 @@ float getVCCVoltageSimple(void) {
 uint16_t getVCCVoltageMillivoltSimple(void) {
     // use AVCC with external capacitor at AREF pin as reference
     uint16_t tVCC = readADCChannelMultiSamplesWithReference(ADC_1_1_VOLT_CHANNEL_MUX, DEFAULT, 4);
-    return ((READING_FOR_AREF * ADC_INTERNAL_REFERENCE_MILLIVOLT * 4) / tVCC);
+    return (((uint32_t)READING_FOR_AREF * ADC_INTERNAL_REFERENCE_MILLIVOLT * 4) / tVCC);
 }
 
 /*
@@ -553,7 +554,7 @@ uint16_t getVCCVoltageReadingFor1_1VoltReference(void) {
     /*
      * Do not switch back ADMUX to enable checkAndWaitForReferenceAndChannelToSwitch() to work correctly for the next measurement
      */
-    return ((READING_FOR_AREF * READING_FOR_AREF) / tVCC);
+    return (((uint32_t)READING_FOR_AREF * READING_FOR_AREF) / tVCC);
 }
 
 /*
@@ -577,7 +578,7 @@ uint16_t getVCCVoltageMillivolt(void) {
     /*
      * Do not switch back ADMUX to enable checkAndWaitForReferenceAndChannelToSwitch() to work correctly for the next measurement
      */
-    return ((READING_FOR_AREF * ADC_INTERNAL_REFERENCE_MILLIVOLT) / tVCC);
+    return (((uint32_t)READING_FOR_AREF * ADC_INTERNAL_REFERENCE_MILLIVOLT) / tVCC);
 }
 
 /*
@@ -616,7 +617,7 @@ void readVCCVoltageSimple(void) {
 void readVCCVoltageMillivoltSimple(void) {
     // use AVCC with external capacitor at AREF pin as reference
     uint16_t tVCCVoltageMillivoltRaw = readADCChannelMultiSamplesWithReference(ADC_1_1_VOLT_CHANNEL_MUX, DEFAULT, 4);
-    sVCCVoltageMillivolt = (READING_FOR_AREF * ADC_INTERNAL_REFERENCE_MILLIVOLT * 4) / tVCCVoltageMillivoltRaw;
+    sVCCVoltageMillivolt = ((uint32_t)READING_FOR_AREF * ADC_INTERNAL_REFERENCE_MILLIVOLT * 4) / tVCCVoltageMillivoltRaw;
 }
 
 /*
@@ -637,7 +638,7 @@ void readVCCVoltageMillivolt(void) {
     /*
      * Do not switch back ADMUX to enable checkAndWaitForReferenceAndChannelToSwitch() to work correctly for the next measurement
      */
-    sVCCVoltageMillivolt = (READING_FOR_AREF * ADC_INTERNAL_REFERENCE_MILLIVOLT) / tVCCVoltageMillivoltRaw;
+    sVCCVoltageMillivolt = ((uint32_t)READING_FOR_AREF * ADC_INTERNAL_REFERENCE_MILLIVOLT) / tVCCVoltageMillivoltRaw;
 }
 
 /*
@@ -694,12 +695,12 @@ bool isVCCUSBPowered(Print *aSerial) {
 }
 
 /*
- * It checks every 10 seconds for 6 times, and then returns true if the undervoltage condition ( <3.4V ) still applies.
+ * It checks every 10 seconds for 6 times, and then returns once true if the undervoltage condition ( <3.4V ) still applies.
  * @ return true only once, when VCC_UNDERVOLTAGE_CHECKS_BEFORE_STOP (6) times voltage too low -> shutdown
  */
 bool isVCCUndervoltageMultipleTimes() {
     /*
-     * Check VCC every VCC_CHECK_PERIOD_MILLIS (10) seconds
+     * Check VCC every VCC_CHECK_PERIOD_MILLIS - default is 10 seconds
      */
     if (millis() - sLastVCCCheckMillis >= VCC_CHECK_PERIOD_MILLIS) {
         sLastVCCCheckMillis = millis();
@@ -732,7 +733,7 @@ bool isVCCUndervoltageMultipleTimes() {
                     sVCCTooLowCounter++;
 #  if defined(LOCAL_INFO)
                     Serial.print(sVCCVoltageMillivolt);
-                    Serial.print(F(" mV < " STR(VCC_UNDERVOLTAGE_THRESHOLD_MILLIVOLT) " mV undervoltage detected: "));
+                    Serial.print(F(" mV < " STR(VCC_UNDERVOLTAGE_THRESHOLD_MILLIVOLT) " mV -> undervoltage detected: "));
 
                     Serial.print(VCC_UNDERVOLTAGE_CHECKS_BEFORE_STOP - sVCCTooLowCounter);
                     Serial.println(F(" attempts left"));

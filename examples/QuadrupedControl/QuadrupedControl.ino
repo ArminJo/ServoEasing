@@ -83,16 +83,19 @@ uint8_t sShutdownCount = 0;
 #include "HCSR04.hpp"
 #endif
 
-#include "QuadrupedHelper.hpp"              // for checkForLowVoltage() and playShutdownMelody()
-
 #if defined(QUADRUPED_HAS_IR_CONTROL)
+#  if defined(INFO) || defined(DEBUG)
+#define USE_DISPATCHER_COMMAND_STRINGS  // Activate this if need the printing of command strings. Requires additional 2 bytes RAM for each command mapping. Requires program memory for strings, but saves snprintf() code (1.5k) if INFO or DEBUG is activated, which has no effect if snprintf() is also used in other parts of your program / libraries.
+#  endif
 // Include the header only IRCommandDispatcher library in the main program
-#include "QuadrupedIRCommandMapping.h"      // Must be included before IRCommandDispatcher.hpp to define IR_ADDRESS and IRMapping and string "unknown".
+#include "QuadrupedIRCommandMapping.h"  // Must be included before IRCommandDispatcher.hpp to define IR_ADDRESS and IRMapping and string "unknown".
 #include "IRCommandDispatcher.hpp"
 #define QUADRUPED_MOVEMENT_BREAK_FLAG (IRDispatcher.requestToStopReceived)
 #else
 #define QUADRUPED_MOVEMENT_BREAK_FLAG false
 #endif
+
+#include "QuadrupedHelper.hpp"          // For checkForLowVoltage() and playShutdownMelody(). Must be after USE_DISPATCHER_COMMAND_STRINGS
 
 #define USE_NO_RTX_EXTENSIONS // Disables RTX format definitions `'s'` (style) and `'l'` (loop). Saves up to 332 bytes program memory
 #if defined(QUADRUPED_HAS_NEOPIXEL)
