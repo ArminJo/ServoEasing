@@ -9,7 +9,7 @@
  *
  *  The AVR Servo library supports only one timer, which means not more than 12 servos are supported using this library.
  *
- *  Copyright (C) 2019-2025  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2026  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -2002,7 +2002,8 @@ int clipDegreeSpecial(uint_fast8_t aDegreeToClip) {
  * Update all servos from list and check if all servos have stopped.
  * Guarded by an macro in order to be able to overwrite it, e.g. for synchronizing with NeoPixel updates,
  * which otherwise leads to servo twitching. See QuadrupedNeoPixel.cpp of QuadrupedControl example.
- * We have 100 us before the next servo period starts.
+ * We have (at least on Uno, Nano etc.) 100 us before the next servo period starts.
+ * See also setTimer1InterruptMarginMicros();
  */
 #if !defined(ENABLE_EXTERNAL_SERVO_TIMER_HANDLER)
 #  if defined(STM32F1xx) && STM32_CORE_VERSION_MAJOR == 1 &&  STM32_CORE_VERSION_MINOR <= 8 // for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
@@ -2023,6 +2024,17 @@ void handleServoTimerInterrupt()
     }
 }
 #endif // !defined(ENABLE_EXTERNAL_SERVO_TIMER_HANDLER)
+
+
+#if defined(OCR1B)
+/**
+ * To have more time for overwritten interrupt routine to handle its task.
+ */
+void setTimer1InterruptMarginMicros(uint16_t aInterruptMarginMicros){
+    // Generate interrupt aInterruptMarginMicros us before a new servo period starts
+    OCR1B = ((clockCyclesPerMicrosecond() * SERVO_REFRESH_INTERVAL_MICROS) / 8) - aInterruptMarginMicros;
+}
+#endif
 
 // The eclipse formatter has problems with // comments in undefined code blocks
 // !!! Must be without trailing comment and closed by @formatter:on
@@ -2241,16 +2253,6 @@ void enableServoEasingInterrupt() {
 #endif
     ServoEasing::sInterruptsAreActive = true;
 }
-
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__) || defined (__AVR_ATmega328PB__)
-/**
- * To have more time for overwritten interrupt routine to handle its task.
- */
-void setTimer1InterruptMarginMicros(uint16_t aInterruptMarginMicros){
-    // Generate interrupt aInterruptMarginMicros us before a new servo period starts
-    OCR1B = ((clockCyclesPerMicrosecond() * SERVO_REFRESH_INTERVAL_MICROS) / 8) - aInterruptMarginMicros;
-}
-#endif
 
 void disableServoEasingInterrupt() {
 #if defined(LOCAL_TRACE)
@@ -2683,32 +2685,43 @@ void synchronizeAllServosStartAndWaitForAllServosToStop() {
 }
 
 /**
- * Take the longer duration in order to move all servos synchronously
+ * Take the longest duration in order to move all servos synchronously
+ * @param aSynchronizeToMinimumDuration - Take the shortest duration for synchronizing
  */
-void synchronizeAllServosAndStartInterrupt(bool aStartUpdateByInterrupt) {
+void synchronizeAllServosAndStartInterrupt(bool aStartUpdateByInterrupt, bool aSynchronizeToMinimumDuration) {
     /*
      * Find maximum duration and one start time
      */
-    uint_fast16_t tMaxMillisForCompleteMove = 0;
+    uint_fast16_t tMillisForCompleteMove = 0;
+    if (aSynchronizeToMinimumDuration) {
+        tMillisForCompleteMove = __UINT16_MAX__;
+    }
     uint32_t tMillisAtStartMove = 0;
 
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
         if (ServoEasing::ServoEasingArray[tServoIndex] != nullptr && ServoEasing::ServoEasingArray[tServoIndex]->mServoMoves) {
-            // process servos which really moves
-            tMillisAtStartMove = ServoEasing::ServoEasingArray[tServoIndex]->mMillisAtStartMove;
-            if (ServoEasing::ServoEasingArray[tServoIndex]->mMillisForCompleteMove > tMaxMillisForCompleteMove) {
-                tMaxMillisForCompleteMove = ServoEasing::ServoEasingArray[tServoIndex]->mMillisForCompleteMove;
+            // Here we process only servos which really moves
+            if (aSynchronizeToMinimumDuration) {
+                if (tMillisForCompleteMove > ServoEasing::ServoEasingArray[tServoIndex]->mMillisForCompleteMove) {
+                    tMillisForCompleteMove = ServoEasing::ServoEasingArray[tServoIndex]->mMillisForCompleteMove;
+                }
+            } else {
+                if (tMillisForCompleteMove < ServoEasing::ServoEasingArray[tServoIndex]->mMillisForCompleteMove) {
+                    tMillisForCompleteMove = ServoEasing::ServoEasingArray[tServoIndex]->mMillisForCompleteMove;
+                }
             }
+            // Any value is OK, but it must be of an active servo
+            tMillisAtStartMove = ServoEasing::ServoEasingArray[tServoIndex]->mMillisAtStartMove;
         }
     }
 
 #if defined(LOCAL_TRACE)
-    Serial.print(F("Number of servos="));
-    Serial.print(ServoEasing::sServoArrayMaxIndex);
-    Serial.print(F(" MillisAtStartMove="));
+    Serial.print(ServoEasing::sServoArrayMaxIndex + 1);
+    Serial.print(F(" servos, MillisAtStartMove="));
     Serial.print(tMillisAtStartMove);
-    Serial.print(F(" MaxMillisForCompleteMove="));
-    Serial.println(tMaxMillisForCompleteMove);
+    Serial.print(F(", MillisForCompleteMove="));
+    Serial.println(tMillisForCompleteMove);
+    Serial.flush();
 #endif
 
     /*
@@ -2717,8 +2730,8 @@ void synchronizeAllServosAndStartInterrupt(bool aStartUpdateByInterrupt) {
      */
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
         if (ServoEasing::ServoEasingArray[tServoIndex] != nullptr && ServoEasing::ServoEasingArray[tServoIndex]->mServoMoves) {
-            ServoEasing::ServoEasingArray[tServoIndex]->mMillisAtStartMove = tMillisAtStartMove;
-            ServoEasing::ServoEasingArray[tServoIndex]->mMillisForCompleteMove = tMaxMillisForCompleteMove;
+            ServoEasing::ServoEasingArray[tServoIndex]->mMillisAtStartMove = tMillisAtStartMove; // let them all start at the same time
+            ServoEasing::ServoEasingArray[tServoIndex]->mMillisForCompleteMove = tMillisForCompleteMove;
         }
     }
 

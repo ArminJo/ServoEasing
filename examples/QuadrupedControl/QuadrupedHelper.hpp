@@ -7,8 +7,9 @@
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of QuadrupedControl https://github.com/ArminJo/QuadrupedControl.
+ *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
  *
- *  QuadrupedControl is free software: you can redistribute it and/or modify
+ *  QuadrupedControl and ServoEasing are free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
@@ -27,6 +28,12 @@
 
 #include <Arduino.h>
 
+// This block must be located after the includes of other *.hpp files
+//#define LOCAL_INFO  // This enables info output only for this file
+#include "LocalDebugLevelStart.h"
+
+#include "QuadrupedConfiguration.h" // is mainly included here for the eclipse auto formatter
+
 #include "digitalWriteFast.h"
 
 #include "QuadrupedHelper.h"
@@ -38,35 +45,15 @@
 #include "QuadrupedNeoPixel.h"
 #endif
 
-#if defined(QUADRUPED_ENABLE_RTTTL)
-#define SUPPRESS_HPP_WARNING
-#include <PlayRtttl.h>
-#endif
-
 #if defined(QUADRUPED_HAS_IR_CONTROL)
 #include "IRCommandDispatcher.h"
 #endif
-
-//#if defined(QUADRUPED_HAS_US_DISTANCE)
-//uint32_t sLastDistanceMeasurementMillis;
-//uint8_t sCurrentDistance;
-//uint8_t sLastDistance;
-//#endif
 
 uint32_t sLastVolageMeasurementMillis;
 
 #include "QuadrupedServoControl.h"
 
-// This block must be located after the includes of other *.hpp files
-//#define LOCAL_INFO  // This enables info output only for this file
-#include "LocalDebugLevelStart.h"
-
-#if !defined(STR_HELPER) && !defined(STR)
-#define STR_HELPER(x) #x
-#define STR(x) STR_HELPER(x)
-#endif
-
-bool isShutDown = false;
+bool isShutDownByUndervoltage = false;
 
 void playShutdownMelody() {
 #if defined(QUADRUPED_ENABLE_RTTTL)
@@ -82,6 +69,16 @@ void playShutdownMelody() {
 #endif
 }
 
+#if defined(QUADRUPED_ENABLE_RTTTL)
+void doRandomMelody() {
+    randomSeed(millis());
+    sCurrentlyRunningAction = ACTION_TYPE_MELODY; // to make melody stoppable with stop command of IR
+    startPlayRandomRtttlFromArrayPGMAndPrintName(PIN_BUZZER, RTTTLMelodiesSmall, ARRAY_SIZE_MELODIES_SMALL, &Serial, nullptr);
+    sAtLeastOnePatternsIsActive = false; // disable any pattern, which disturbs the melody
+}
+#endif
+
+#if defined(ADC_UTILS_ARE_AVAILABLE)
 /*
  * Stop servos if voltage gets low
  * @return  true - if voltage too low
@@ -100,15 +97,17 @@ void checkForVCCUnderVoltageAndShutdown() {
     }
 
     // Reset shutdown and enable new check, if a new command is running
-    if (sCurrentlyRunningAction != ACTION_TYPE_STOP) {
-        isShutDown = false;
+    if (isShutDownByUndervoltage && sCurrentlyRunningAction != ACTION_TYPE_STOP) {
+        isShutDownByUndervoltage = false;
         sShutdownCount = 0;
+        Serial.println(F("Command is running, reset shutdown flag"));
+
     }
 
     if (!checkForVCCUnderVoltage()) {
-        isShutDown = false;
+        isShutDownByUndervoltage = false;
         sShutdownCount--;
-    } else if (!isShutDown) {
+    } else if (!isShutDownByUndervoltage) {
         sShutdownCount++;
         if (sShutdownCount == NUMBER_OF_VOLTAGE_LOW_FOR_SHUTDOWN) {
             /*
@@ -117,22 +116,23 @@ void checkForVCCUnderVoltageAndShutdown() {
             // print message
             Serial.print(F("VCC "));
             Serial.print(sVCCVoltageMillivolt);
-            Serial.println(F(" below " STR(VCC_STOP_THRESHOLD_MILLIVOLT) " Millivolt"));
+            Serial.println(F(" is below " STR(VCC_STOP_THRESHOLD_MILLIVOLT) " Millivolt"));
 
 #if defined(QUADRUPED_HAS_NEOPIXEL)
-        doWipeOutPatterns(); // to save power
+            doWipeOutPatterns(); // to save power
 #endif
 
 #if defined(QUADRUPED_HAS_IR_CONTROL)
-        IRDispatcher.setRequestToStopReceived(false); // This enables shutdown move and new moves
+            IRDispatcher.setRequestToStopReceived(false); // This enables shutdown move and new moves
 #endif
 
             shutdownServos();
             playShutdownMelody();
-            isShutDown = true; // Do it only once. Next (IR) command resets this flag
+            isShutDownByUndervoltage = true; // Do it only once. Next (IR) command resets this flag
         }
     }
 }
+#endif
 
 /*
  * Special delay function for the quadruped control.
@@ -142,15 +142,13 @@ void checkForVCCUnderVoltageAndShutdown() {
 #define APPLICATION_DELAY_AND_CHECK_AVAILABLE
 bool delayAndCheckByApplication(uint16_t aDelayMillis) {
 #if defined(QUADRUPED_HAS_US_DISTANCE)
-    // adjust delay value
-    // we know, that delay is <= 10 and aDelayMillis is > =19
-     handleUSSensor();
-     aDelayMillis -= sUsedMillisForMeasurement;
+    handleUSDistanceSensor();
+    // adjust delay value. we know, that delay is <= 10 and aDelayMillis is > =19, so we have no underflow
+    aDelayMillis -= sUsedMillisForUSDistanceMeasurement;
 #endif
 #if defined(QUADRUPED_HAS_IR_CONTROL)
     if (IRDispatcher.delayAndCheckForStop(aDelayMillis)) {
         Serial.println(F("Stop requested"));
-        sCurrentlyRunningAction = ACTION_TYPE_STOP;
         return true;
     }
 #else
@@ -158,87 +156,6 @@ bool delayAndCheckByApplication(uint16_t aDelayMillis) {
 #endif
     return false;
 }
-
-#if defined(QUADRUPED_HAS_US_DISTANCE)
-/**
- * Get US distance and display it on front bar
- * Can introduce a delay up to 10 ms
- * @return ms of delay, that was introduced
- */
-void handleUSSensor() {
-#  if defined(QUADRUPED_ENABLE_RTTTL)
-    // 2 measurements per second even when melody is playing
-    if (isPlayRtttlRunning() && (millis() - sLastUSDistanceMeasurementMillis) <= MILLIS_BETWEEN_DISTANCE_MEASUREMENTS_FOR_MELODY) {
-        return; // showPatternSynchronizedWithServos() disturbs the melody
-    }
-#  endif
-
-    if (isShutDown) {
-        return; // no measurement required
-    }
-
-    if(getUSDistanceAsCentimeterWithCentimeterTimeoutPeriodicallyAndPrintIfChanged( MAX_DISTANCE_TIMEOUT_CM,
-            MILLIS_BETWEEN_DISTANCE_MEASUREMENTS, &Serial)){
-#  if defined(QUADRUPED_HAS_NEOPIXEL)
-        // Show distance bar if no other pattern is active
-        if (FrontNeoPixelBar.ActivePattern == PATTERN_NONE && QuadrupedNeoPixelBar.ActivePattern == PATTERN_NONE) {
-            /*
-             * The first 3 pixel represent a distance of each 5 cm
-             * The 4. pixel is active if distance is >= 20 cm and < 30 cm
-             * The 7. pixel is active if distance is >= 80 cm and < 120 cm
-             * The 8. pixel is active if distance is >= 1.2 meter
-             */
-            uint8_t tBarLength;
-            if (sUSDistanceCentimeter < 20) {
-                tBarLength = sUSDistanceCentimeter / 5;
-            } else if (sUSDistanceCentimeter < 30) {
-                tBarLength = 4;
-            } else if (sUSDistanceCentimeter < 50) {
-                tBarLength = 5;
-            } else if (sUSDistanceCentimeter < 80) {
-                tBarLength = 6;
-            } else if (sUSDistanceCentimeter < 120) {
-                tBarLength = 7;
-            } else {
-                tBarLength = 8;
-            }
-            FrontNeoPixelBar.drawBarFromColorArray(tBarLength, sBarBackgroundColorArrayForDistance);
-            showPatternSynchronizedWithServos();
-        }
-#  endif
-        if (sCurrentlyRunningAction == ACTION_TYPE_STOP && sCurrentlyRunningCombinedAction == ACTION_TYPE_STOP){
-#  if defined(QUADRUPED_ENABLE_RTTTL)
-            /*
-             * Play melody if distance is below 10 cm and above 3 cm
-             */
-            if (sCurrentlyRunningAction == ACTION_TYPE_STOP && sUSDistanceCentimeter >= 3 && sUSDistanceCentimeter <= MIN_DISTANCE_FOR_MELODY_CM && !isPlayRtttlRunning()) {
-                randomSeed(millis());
-                doRandomMelody();
-                return; // do not check for wave!
-            }
-#  endif
-            /*
-             * Do wave if distance is between 35 cm and 25 cm
-             * Fist wave can be done 10 seconds after boot
-             */
-            if (sCurrentlyRunningAction == ACTION_TYPE_STOP && sUSDistanceCentimeter >= MIN_DISTANCE_FOR_WAVE_CM && sUSDistanceCentimeter <= MAX_DISTANCE_FOR_WAVE_CM
-#if defined(QUADRUPED_HAS_IR_CONTROL)
-                && (millis() - IRDispatcher.IRReceivedData.MillisOfLastCode) > MILLIS_BETWEEN_WAVES
-#else
-                && (millis() - sMillisOfLastSpecialAction) > MILLIS_BETWEEN_WAVES
-#endif
-            ) {
-                doWave();
-#if defined(QUADRUPED_HAS_IR_CONTROL)
-                IRDispatcher.IRReceivedData.MillisOfLastCode = millis(); // disable next auto move, next attention in 2 minutes
-#else
-                sMillisOfLastSpecialAction = millis(); // disable next auto move, next attention in 2 minutes
-#endif
-            }
-        }
-    }
-}
-#endif // #if defined(QUADRUPED_HAS_US_DISTANCE)
 
 #if defined(QUADRUPED_HAS_IR_CONTROL)
 #  if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
@@ -258,16 +175,7 @@ void doUSLeft() {
 void doUSScan() {
     USServo.write(90);
 }
-#  endif
-
-#if defined(QUADRUPED_ENABLE_RTTTL)
-void doRandomMelody() {
-    sCurrentlyRunningAction = ACTION_TYPE_MELODY; // to make melody stoppable with stop command of IR
-    startPlayRandomRtttlFromArrayPGMAndPrintName(PIN_BUZZER, RTTTLMelodiesSmall,
-    ARRAY_SIZE_MELODIES_SMALL, &Serial, nullptr);
-    sAtLeastOnePatternsIsActive = false; // disable any pattern, which disturbs the melody
-}
-#endif
+#  endif // defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
 
 #  if !defined(USE_USER_DEFINED_MOVEMENTS)
 // Disable doCalibration() also for user defined movements, since just testing the remote may lead to accidental wrong calibration
@@ -289,7 +197,7 @@ void signalLeg(uint8_t aPivotServoIndex) {
  * Is only available if IR control is attached
  */
 void doCalibration() {
-#if    E2END
+#    if E2END
 
     uint8_t tPivotServoIndex = 0; // start with front left i.e. ServoEasing::ServoEasingArray[0]
     bool tGotExitCommand = false;
@@ -309,7 +217,7 @@ void doCalibration() {
         unsigned long tIRCode = IRDispatcher.IRReceivedData.command;
 #      if defined(LOCAL_INFO)
         Serial.print(F("IRCommand="));
-        IRDispatcher.printIRCommandString(&Serial);
+        IRDispatcher.printIRCommandString(&Serial, IRDispatcher.IRReceivedData.command);
 #      endif
         switch (tIRCode) {
         case COMMAND_RIGHT:
@@ -366,7 +274,7 @@ void doCalibration() {
         delay(200);
     }
     IRDispatcher.doNotUseDispatcher = false; // re enable dispatcher by mapping table
-#    endif
+#    endif // E2END
 }
 #  endif // !defined(USE_USER_DEFINED_MOVEMENTS)
 #endif // defined(QUADRUPED_HAS_IR_CONTROL)

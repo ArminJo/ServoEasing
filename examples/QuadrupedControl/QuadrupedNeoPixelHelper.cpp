@@ -4,12 +4,13 @@
  * The NeopPixel updates must be synchronized with the ServoEasing updates in order not to interfere with the servo pulse generation.
  * Therefore we have a function handleServoTimerInterrupt() which replaces the disabled function of ServoEasing.
  *
- *  Copyright (C) 2022  Armin Joachimsmeyer
+ *  Copyright (C) 2022-2926  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of QuadrupedControl https://github.com/ArminJo/QuadrupedControl.
+ *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
  *
- *  QuadrupedControl is free software: you can redistribute it and/or modify
+ *  QuadrupedControl and ServoEasing are free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.

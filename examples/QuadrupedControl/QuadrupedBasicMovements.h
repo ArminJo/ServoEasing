@@ -1,8 +1,24 @@
 /*
  * QuadrupedBasicMovements.h
  *
- *  Created on: 21.05.2019
- *      Author: Armin
+ *  Copyright (C) 2019-2026  Armin Joachimsmeyer
+ *  armin.joachimsmeyer@gmail.com
+ *
+ *  This file is part of QuadrupedControl https://github.com/ArminJo/QuadrupedControl.
+ *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
+ *
+ *  QuadrupedControl and ServoEasing are free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program. If not, see <http://www.gnu.org/licenses/gpl.html>.
  */
 
 #ifndef _QUADRUPED_BASIC_MOVEMENTS_H
@@ -30,17 +46,21 @@ extern volatile uint8_t sMovingDirection;
 #define ACTION_TYPE_TROT        2
 #define ACTION_TYPE_TURN        3
 #define ACTION_TYPE_TWIST       4
-#define ACTION_TYPE_ATTENTION   5
+#define ACTION_TYPE_SHUTDOWN    5
 #define ACTION_TYPE_LEAN        6
 // only used by UserCommands.cpp
 #define ACTION_TYPE_DOWN_UP     7
 #define ACTION_TYPE_TEST        8
 #define ACTION_TYPE_WAVE        9
-#define ACTION_TYPE_DANCE      10 // combined action
-#define ACTION_TYPE_AUTO_MOVE  11 // combined action
-#define ACTION_TYPE_DEMO_MOVE  12 // combined action
-#define ACTION_TYPE_PAUSE      13
-#define ACTION_TYPE_MELODY     42 // to make melody stoppable with stop command of IR
+#define ACTION_TYPE_PAUSE      10
+#define ACTION_TYPE_MELODY     11
+
+#define COMBINED_ACTION_TYPE_STOP       0 // combined action
+#define COMBINED_ACTION_TYPE_DANCE      1 // combined action
+#define COMBINED_ACTION_TYPE_AUTO_MOVE  2 // combined action
+#define COMBINED_ACTION_TYPE_DEMO_MOVE  3 // combined action
+
+
 
 extern uint8_t sCurrentlyRunningCombinedAction;
 extern uint8_t sCurrentlyRunningAction; // A change on this action type triggers the generation of new neopatterns

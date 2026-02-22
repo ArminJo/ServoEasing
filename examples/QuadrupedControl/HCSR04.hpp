@@ -103,7 +103,7 @@ unsigned long sLastUSDistanceMeasurementMillis; // Only written by getUSDistance
 unsigned int sLastUSDistanceCentimeter; // Only written by getUSDistanceAsCentimeterWithCentimeterTimeoutPeriodicallyAndPrintIfChanged()
 unsigned int sUSDistanceMicroseconds;
 unsigned int sUSDistanceCentimeter;
-uint8_t sUsedMillisForMeasurement; // is optimized out if not used
+uint8_t sUsedMillisForUSDistanceMeasurement;
 
 /*
  * @param aEchoInPin - If aEchoInPin == 0 then assume 1 pin mode
@@ -199,8 +199,8 @@ unsigned int getUSDistance(unsigned int aTimeoutMicros) {
 #else
     sUSDistanceMicroseconds = pulseInLong(tEchoInPin, HIGH, aTimeoutMicros); // returns 0 (DISTANCE_TIMEOUT_RESULT) for timeout
 #endif
-    // Division takes 48 us and adds 50 bytes program space. Statement is optimized out if sUsedMillisForMeasurement is not used
-    sUsedMillisForMeasurement = (sUSDistanceMicroseconds + 550) / MICROS_IN_ONE_MILLI;
+    // Division takes 48 us and adds 50 bytes program space. Statement is optimized out if sUsedMillisForUSDistanceMeasurement is not used
+    sUsedMillisForUSDistanceMeasurement = (sUSDistanceMicroseconds + 550) / MICROS_IN_ONE_MILLI;
     return sUSDistanceMicroseconds;
 }
 
@@ -235,25 +235,37 @@ unsigned int getUSDistanceAsCentimeterWithCentimeterTimeout(unsigned int aTimeou
 }
 
 /**
- * @return  true, if US distance has changed
+ * @return  HCSR04_DISTANCE_NO_MEASUREMENT, HCSR04_MEASUREMENT_AND_DISTANCE_HAS_CHANGED or HCSR04_MEASUREMENT_AND_DISTANCE_HAS_NOT_CHANGED
  */
-bool getUSDistanceAsCentimeterWithCentimeterTimeoutPeriodicallyAndPrintIfChanged(unsigned int aTimeoutCentimeter,
+uint8_t getUSDistanceAsCentimeterWithCentimeterTimeoutPeriodicallyAndPrintIfChanged(unsigned int aTimeoutCentimeter,
         unsigned int aMillisBetweenMeasurements, Print *aSerial) {
     if ((millis() - sLastUSDistanceMeasurementMillis) >= aMillisBetweenMeasurements) {
+        sLastUSDistanceMeasurementMillis = millis();
         getUSDistanceAsCentimeterWithCentimeterTimeout(aTimeoutCentimeter);
-        if (sLastUSDistanceCentimeter != sUSDistanceCentimeter) {
+        unsigned int tDeltaDistance;
+        if (sLastUSDistanceCentimeter > sUSDistanceCentimeter) {
+            tDeltaDistance = sLastUSDistanceCentimeter - sUSDistanceCentimeter;
+        } else {
+            tDeltaDistance = sUSDistanceCentimeter - sLastUSDistanceCentimeter;
+        }
+        /*
+         * Suppress printing on 1 cm difference for each 30 cm distance.
+         * E.g. if we have 75 cm the margin is 2 cm -> do not print distances from 73 to 77
+         */
+        if (tDeltaDistance > (sLastUSDistanceCentimeter / 30)) {
             sLastUSDistanceCentimeter = sUSDistanceCentimeter;
             if (sUSDistanceCentimeter == 0) {
-                aSerial->println(F("Timeout"));
+                aSerial->println(F("Distance timeout"));
             } else {
                 aSerial->print(F("Distance="));
                 aSerial->print(sUSDistanceCentimeter);
                 aSerial->println(F("cm"));
             }
-            return true;
+            return HCSR04_MEASUREMENT_AND_DISTANCE_HAS_CHANGED;
         }
+        return HCSR04_MEASUREMENT_AND_DISTANCE_HAS_NOT_CHANGED;
     }
-    return false;
+    return HCSR04_DISTANCE_NO_MEASUREMENT;
 }
 
 /*

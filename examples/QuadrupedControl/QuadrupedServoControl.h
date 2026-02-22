@@ -1,8 +1,24 @@
 /*
  * QuadrupedServoControl.h
  *
- *  Created on: 21.05.2019
- *      Author: Armin
+ *  This file is part of QuadrupedControl https://github.com/ArminJo/QuadrupedControl.
+ *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
+ *
+ *  Copyright (C) 2019-2026  Armin Joachimsmeyer
+ *  armin.joachimsmeyer@gmail.com
+ *
+ *  QuadrupedControl and ServoEasing are free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program. If not, see <http://www.gnu.org/licenses/gpl.html>.
  */
 
 #ifndef _QUADRUPED_SERVO_CONTROL_H
@@ -53,6 +69,7 @@ void shutdownServos();
 void centerServos();
 void setEasingTypeToLinear();
 void setEasingTypeForMoving();
+void setPivotServosSpeed(uint_fast16_t aDegreesPerSecond);
 
 /*
  * Move and wait functions
@@ -66,13 +83,14 @@ void updateAndCheckInputAndWaitForAllServosToStop();
  * Set servo positions
  */
 void setLiftServosToBodyHeight();
-void setAllServos(int aFrontLeftPivot, int aBackLeftPivot, int aBackRightPivot, int aFrontRightPivot, int aFrontLeftLift,
+void moveAllServosToNextPositionsAndCheckInputAndWait(int aFrontLeftPivot, int aBackLeftPivot, int aBackRightPivot, int aFrontRightPivot, int aFrontLeftLift,
         int aBackLeftLift, int aBackRightLift, int aFrontRightLift);
-void setPivotServos(int aFrontLeftPivot, int aBackLeftPivot, int aBackRightPivot, int aFrontRightPivot);
-void setLiftServos(int aFrontLeftLift, int aBackLeftLift, int aBackRightLift, int aFrontRightLift);
-void setLiftServos(int aBodyHeightAngle);
+void movePivotServosToNextPositionsAndCheckInputAndWait(int aFrontLeftPivot, int aBackLeftPivot, int aBackRightPivot, int aFrontRightPivot);
+void moveLiftServosToNextPositionsAndCheckInputAndWait(int aFrontLeftLift, int aBackLeftLift, int aBackRightLift, int aFrontRightLift);
+void moveLiftServosToNextPositionsAndCheckInputAndWait(int aBodyHeightAngle);
 void setLiftServoHeight(ServoEasing & aLiftServo, uint8_t aHeightPercent);
 
+void setBodyHeight();
 void printBodyHeight();
 
 uint8_t convertLegPercentHeightToAngle(uint8_t aLegHeightPercent);

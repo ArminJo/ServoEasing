@@ -388,20 +388,17 @@ It is documented [here](https://github.com/ArminJo/ServoEasing/tree/master/examp
 |-|-|
 | ![RobotArmBlack](https://github.com/ArminJo/RobotArmControl/raw/master/pictures/RobotArmBlack.jpg) | ![RobotArmControlBoard](https://github.com/ArminJo/RobotArmControl/raw/master/pictures/RobotArmControlBoard.jpg) |
 
+# Servo utilities
+- [EndPositionsTest](https://github.com/ArminJo/ServoEasing/blob/master/examples#endpositionstest)
+- [SpeedTest](https://github.com/ArminJo/ServoEasing/blob/master/examples#speedtest)
 
 # All examples
-... are documented [here](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples) and are available at the Arduino IDE at *File > Examples > Examples from Custom Libraries / ServoEasing*.<br/>
+are documented [here](https://github.com/ArminJo/ServoEasing/blob/master/examples#servoeasing-examples) and are available at the Arduino IDE at *File > Examples > Examples from Custom Libraries / ServoEasing*.<br/>
 
 <br/>
 
 # WOKWI online examples
 - [ThreeServos](https://wokwi.com/projects/299552195816194570).
-
-<br/>
-
-# Servo utilities
-- [EndPositionsTest](https://github.com/ArminJo/ServoEasing/blob/master/examples#endpositionstest)
-- [SpeedTest](https://github.com/ArminJo/ServoEasing/blob/master/examples#speedtest)
 
 <br/>
 
@@ -470,7 +467,8 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 <br/>
 
 # Revision History
-### Version 3.5.1
+### Version 3.6.0
+- Added parameter bool aSynchronizeToMinimumDuration to `synchronizeAllServosAndStartInterrupt()`.
 - Renamed macro `REFRESH_INTERVAL_MILLIS` to `SERVO_REFRESH_INTERVAL_MICROS`.
 - Added new functions` PCA9685Init(uint32_t aActualPCA9685ClockFrequencyHertz)` and `PCA9685InitWithExternalClock(uint32_t aExternalClockFrequencyHertz)`.
 

@@ -42,6 +42,11 @@
 #define US_DISTANCE_TIMEOUT_MICROS_FOR_2_METER 11650 // Timeout of 11650 is 2 meter
 #define US_DISTANCE_TIMEOUT_MICROS_FOR_3_METER 17475 // Timeout of 17475 is 3 meter
 
+// Return values for getUSDistanceAsCentimeterWithCentimeterTimeoutPeriodicallyAndPrintIfChanged()
+#define HCSR04_DISTANCE_NO_MEASUREMENT                      0
+#define HCSR04_MEASUREMENT_AND_DISTANCE_HAS_CHANGED         1
+#define HCSR04_MEASUREMENT_AND_DISTANCE_HAS_NOT_CHANGED     2
+
 void initUSDistancePins(uint8_t aTriggerOutPin, uint8_t aEchoInPin = 0);
 void initUSDistancePin(uint8_t aTriggerOutEchoInPin); // Using this determines one pin mode
 void setHCSR04OnePinMode(bool aUseOnePinMode);
@@ -50,7 +55,7 @@ unsigned int getCentimeterFromUSMicroSeconds(unsigned int aDistanceMicros);
 uint8_t getMillisFromUSCentimeter(unsigned int aDistanceCentimeter);
 unsigned int getUSDistanceAsCentimeter(unsigned int aTimeoutMicros = US_DISTANCE_DEFAULT_TIMEOUT_MICROS);
 unsigned int getUSDistanceAsCentimeterWithCentimeterTimeout(unsigned int aTimeoutCentimeter);
-bool getUSDistanceAsCentimeterWithCentimeterTimeoutPeriodicallyAndPrintIfChanged(unsigned int aTimeoutCentimeter,
+uint8_t getUSDistanceAsCentimeterWithCentimeterTimeoutPeriodicallyAndPrintIfChanged(unsigned int aTimeoutCentimeter,
         unsigned int aMillisBetweenMeasurements, Print *aSerial);
 void testUSSensor(uint16_t aSecondsToTest);
 
@@ -72,6 +77,6 @@ extern unsigned long sLastUSDistanceMeasurementMillis; // Only written by getUSD
 extern unsigned int sLastUSDistanceCentimeter; // Only written by getUSDistanceAsCentimeterWithCentimeterTimeoutPeriodicallyAndPrintIfChanged()
 extern unsigned int sUSDistanceMicroseconds;
 extern unsigned int sUSDistanceCentimeter;
-extern uint8_t sUsedMillisForMeasurement; // is optimized out if not used
+extern uint8_t sUsedMillisForUSDistanceMeasurement; // is optimized out if not used
 
 #endif // _HCSR04_H

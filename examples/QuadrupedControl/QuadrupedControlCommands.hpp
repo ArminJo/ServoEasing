@@ -2,14 +2,15 @@
  * QuadrupedIRCommands.cpp
  *
  * Contains all the IR command functions available.
- * All functions have the prefix __attribute__((weak)) in order to enable easy overwriting with own functions.
+ * All functions have the prefix in order to enable easy overwriting with own functions.
  *
- *  Copyright (C) 2019-2022  Armin Joachimsmeyer
+ *  Copyright (C) 2019-2026  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of QuadrupedControl https://github.com/ArminJo/QuadrupedControl.
+ *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
  *
- *  QuadrupedControl is free software: you can redistribute it and/or modify
+ *  QuadrupedControl and ServoEasing are free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
@@ -40,10 +41,9 @@
 /******************************************
  * The Commands to execute
  ******************************************/
-void __attribute__((weak)) doTest() {
-    // to be overwritten by user function
+void doTest() {
 #if defined(LOCAL_INFO)
-    Serial.print(F("Test TableMove"));
+    Serial.print(F("Test"));
     printQuadrupedServoSpeed();
 #endif
 #if defined(QUADRUPED_ENABLE_RTTTL)
@@ -53,7 +53,7 @@ void __attribute__((weak)) doTest() {
 #endif
 }
 
-void __attribute__((weak)) doCenterServos() {
+void doCenterServos() {
 #if defined(LOCAL_INFO)
     Serial.print(F("Center"));
     printQuadrupedServoSpeed();
@@ -61,7 +61,7 @@ void __attribute__((weak)) doCenterServos() {
     centerServos();
 }
 
-void __attribute__((weak)) doTwist() {
+void doTwist() {
 #if defined(LOCAL_INFO)
     Serial.print(F("Twist"));
     printQuadrupedServoSpeed();
@@ -69,7 +69,7 @@ void __attribute__((weak)) doTwist() {
     twist(30, 2);
 }
 
-void __attribute__((weak)) doTrot() {
+void doTrot() {
 #if defined(LOCAL_INFO)
     Serial.print(F("Trot"));
     printQuadrupedServoSpeed();
@@ -77,7 +77,7 @@ void __attribute__((weak)) doTrot() {
     moveTrot();
 }
 
-void __attribute__((weak)) doCreep() {
+void doCreep() {
 #if defined(LOCAL_INFO)
     Serial.print(F("Creep"));
     printQuadrupedServoSpeed();
@@ -85,7 +85,7 @@ void __attribute__((weak)) doCreep() {
     moveCreep();
 }
 
-void __attribute__((weak)) doTurn() {
+void doTurn() {
 #if defined(LOCAL_INFO)
     Serial.print(F("Turn"));
     printQuadrupedServoSpeed();
@@ -97,7 +97,7 @@ void __attribute__((weak)) doTurn() {
  * A movement to get attention, that quadruped may be switched off
  * Move down and up and back to starting height
  */
-void __attribute__((weak)) doAttention() {
+void doAttention() {
 #if defined(LOCAL_INFO)
     Serial.println(F("Start attention"));
 #endif
@@ -106,7 +106,7 @@ void __attribute__((weak)) doAttention() {
     downAndUp(1);
 }
 
-void __attribute__((weak)) doWave() {
+void doWave() {
     sCurrentlyRunningAction = ACTION_TYPE_WAVE;
 
 #if defined(LOCAL_INFO)
@@ -116,12 +116,12 @@ void __attribute__((weak)) doWave() {
 
     uint8_t tRequestedBodyHeightAngle = sRequestedBodyHeightAngle; // sRequestedBodyHeightAngle is volatile
     // move front left and back right leg 10 degree forward to avoid falling to front if lifting the front right leg
-    setAllServos(80, 90, 100, 90, tRequestedBodyHeightAngle, tRequestedBodyHeightAngle, tRequestedBodyHeightAngle,
+    moveAllServosToNextPositionsAndCheckInputAndWait(80, 90, 100, 90, tRequestedBodyHeightAngle, tRequestedBodyHeightAngle, tRequestedBodyHeightAngle,
             tRequestedBodyHeightAngle);
     QUADRUPED_RETURN_IF_STOP;
 
     // move all legs up, except front left -> front right lifts from the ground
-    setLiftServos(LIFT_LOWEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_HIGHEST_ANGLE);
+    moveLiftServosToNextPositionsAndCheckInputAndWait(LIFT_LOWEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_HIGHEST_ANGLE, LIFT_HIGHEST_ANGLE);
 
 #if defined(APPLICATION_DELAY_AND_CHECK_AVAILABLE)
     delayAndCheckByApplication(1000);
@@ -156,8 +156,8 @@ void __attribute__((weak)) doWave() {
 /*
  * Center, lean left and right lean all 4 directions and twist a random angle. Ends with a wave.
  */
-void __attribute__((weak)) doDance() {
-    sCurrentlyRunningCombinedAction = ACTION_TYPE_DANCE;
+void doDance() {
+    sCurrentlyRunningCombinedAction = COMBINED_ACTION_TYPE_DANCE;
 #if defined(LOCAL_INFO)
     Serial.print(F("Dance"));
     printQuadrupedServoSpeed();
@@ -195,20 +195,19 @@ void __attribute__((weak)) doDance() {
 
     doWave();
     centerServos();
-    sCurrentlyRunningCombinedAction = ACTION_TYPE_STOP;
+    sCurrentlyRunningCombinedAction = COMBINED_ACTION_TYPE_STOP;
 }
 
 /**
  * A demo move for tables - 2 1/2 minutes
  */
-void __attribute__((weak)) doQuadrupedDemoMove() {
+void doQuadrupedDemoMove() {
     uint16_t tOriginalSpeed = sQuadrupedServoSpeed;
+    sCurrentlyRunningCombinedAction = COMBINED_ACTION_TYPE_DEMO_MOVE;
 
 #if defined(LOCAL_INFO)
-    Serial.println(F("Start demo move sequence"));
+    Serial.print(F("Start demo move sequence"));
 #endif
-    sCurrentlyRunningCombinedAction = ACTION_TYPE_DEMO_MOVE;
-
     setQuadrupedServoSpeed(140);
     centerServos();
     // Move down and up and back to starting height
@@ -267,24 +266,28 @@ void __attribute__((weak)) doQuadrupedDemoMove() {
      */
     doDance();
 
-    sCurrentlyRunningCombinedAction = ACTION_TYPE_STOP;
+    sCurrentlyRunningCombinedAction = COMBINED_ACTION_TYPE_STOP;
     // restore speed
     setQuadrupedServoSpeed(tOriginalSpeed);
 }
 
-void __attribute__((weak)) doQuadrupedAutoMove() {
+/*
+ * Auto move, needs more space than demo move.
+ * It runs only once 40 seconds after boot if no input was detected.
+ */
+void doQuadrupedAutoMove() {
     uint16_t tOriginalSpeed = sQuadrupedServoSpeed;
 
 #if defined(LOCAL_INFO)
     Serial.println(F("Start auto move sequence"));
 #endif
-    sCurrentlyRunningCombinedAction = ACTION_TYPE_AUTO_MOVE;
+    sCurrentlyRunningCombinedAction = COMBINED_ACTION_TYPE_AUTO_MOVE;
 
     centerServos();
     QUADRUPED_RETURN_IF_STOP;
 
     // Move down and up and back to starting height
-    downAndUp(2);
+    downAndUp(4); // Do it 4 times to distinguish it from demo move
     QUADRUPED_RETURN_IF_STOP;
 
     // creep forward slow
@@ -358,7 +361,7 @@ void __attribute__((weak)) doQuadrupedAutoMove() {
 
     // dance
     doDance();
-    sCurrentlyRunningCombinedAction = ACTION_TYPE_STOP;
+    sCurrentlyRunningCombinedAction = COMBINED_ACTION_TYPE_STOP;
 
     // restore speed
     setQuadrupedServoSpeed(tOriginalSpeed);
@@ -367,11 +370,11 @@ void __attribute__((weak)) doQuadrupedAutoMove() {
 /*************************
  * Instant Commands
  *************************/
-void __attribute__((weak)) doStop() {
+void doStop() {
     setActionToStop(); // this also stops NeoPatterns
 }
 
-void __attribute__((weak)) doPauseResume() {
+void doPauseResume() {
     if (sCurrentlyRunningAction != ACTION_TYPE_STOP) {
         if (sCurrentlyRunningAction == ACTION_TYPE_PAUSE) {
 #if defined(LOCAL_INFO)
@@ -398,7 +401,7 @@ void __attribute__((weak)) doPauseResume() {
  * If IR is enabled, starts a creep if not already in a trot movement
  * This enables direction changes of a running trot.
  */
-void __attribute__((weak)) doSetDirectionForward() {
+void doSetDirectionForward() {
     sMovingDirection = MOVE_DIRECTION_FORWARD;
 #if defined(LOCAL_INFO)
     Serial.print(F("Forward"));
@@ -406,39 +409,41 @@ void __attribute__((weak)) doSetDirectionForward() {
 #endif
 #if defined(QUADRUPED_HAS_IR_CONTROL)
     // This enables to change also trot direction
-    if (sCurrentlyRunningAction != ACTION_TYPE_TROT) {
-        // If not doing trot, start a creep
+    if (sCurrentlyRunningAction != ACTION_TYPE_TROT && sCurrentlyRunningAction != ACTION_TYPE_CREEP) {
+        // If not doing trot or creep, start a creep
         IRDispatcher.setNextBlockingCommand(COMMAND_CREEP);
     }
 #endif
 }
 
-void __attribute__((weak)) doSetDirectionBack() {
+void doSetDirectionBack() {
     sMovingDirection = MOVE_DIRECTION_BACKWARD;
 #if defined(QUADRUPED_HAS_IR_CONTROL)
     // This enables to change also trot direction
-    if (sCurrentlyRunningAction != ACTION_TYPE_TROT) {
-        // If not doing trot, start a creep
+    if (sCurrentlyRunningAction != ACTION_TYPE_TROT && sCurrentlyRunningAction != ACTION_TYPE_CREEP) {
+        // If not doing trot or creep, start a creep
         IRDispatcher.setNextBlockingCommand(COMMAND_CREEP);
     }
 #endif
 }
 
-void __attribute__((weak)) doSetDirectionLeft() {
+void doSetDirectionLeft() {
     sMovingDirection = MOVE_DIRECTION_LEFT;
 #if defined(QUADRUPED_HAS_IR_CONTROL)
     // This enables to change also creep and trot direction
-    if (sCurrentlyRunningAction != ACTION_TYPE_CREEP && sCurrentlyRunningAction != ACTION_TYPE_TROT) {
+    if (sCurrentlyRunningAction != ACTION_TYPE_TROT && sCurrentlyRunningAction != ACTION_TYPE_CREEP) {
+        // If not doing trot or creep, start a turn
         IRDispatcher.setNextBlockingCommand(COMMAND_TURN);
     }
 #endif
 }
 
-void __attribute__((weak)) doSetDirectionRight() {
+void doSetDirectionRight() {
     sMovingDirection = MOVE_DIRECTION_RIGHT;
 #if defined(QUADRUPED_HAS_IR_CONTROL)
     // This enables to change also creep and trot direction
-    if (sCurrentlyRunningAction != ACTION_TYPE_CREEP && sCurrentlyRunningAction != ACTION_TYPE_TROT) {
+    if (sCurrentlyRunningAction != ACTION_TYPE_TROT && sCurrentlyRunningAction != ACTION_TYPE_CREEP) {
+        // If not doing trot or creep, start a turn
         IRDispatcher.setNextBlockingCommand(COMMAND_TURN);
     }
 #endif
@@ -447,7 +452,7 @@ void __attribute__((weak)) doSetDirectionRight() {
 /*
  * Increase moving speed by 25%
  */
-void __attribute__((weak)) doIncreaseSpeed() {
+void doIncreaseSpeed() {
     sQuadrupedServoSpeed += sQuadrupedServoSpeed / 4;
     if (sQuadrupedServoSpeed > SERVO_MAX_SPEED) {
         sQuadrupedServoSpeed = SERVO_MAX_SPEED;
@@ -461,7 +466,7 @@ void __attribute__((weak)) doIncreaseSpeed() {
 /*
  * Decrease moving speed by 25%
  */
-void __attribute__((weak)) doDecreaseSpeed() {
+void doDecreaseSpeed() {
     sQuadrupedServoSpeed -= sQuadrupedServoSpeed / 4;
     if (sQuadrupedServoSpeed < SERVO_MIN_SPEED) {
         sQuadrupedServoSpeed = SERVO_MIN_SPEED;
@@ -476,11 +481,13 @@ void __attribute__((weak)) doDecreaseSpeed() {
  * !!! The angle is inverse to the effective height !!!
  * Take two degrees to move faster
  */
-void __attribute__((weak)) doIncreaseHeight() {
+void doIncreaseHeight() {
     if (sRequestedBodyHeightAngle > (LIFT_LOWEST_ANGLE + 2)) {
         sRequestedBodyHeightAngle -= 2;
 #if defined(LOCAL_INFO)
         printBodyHeight();
+#else
+        setBodyHeight();
 #endif
         if (sCurrentlyRunningAction == ACTION_TYPE_STOP) {
             setLiftServosToBodyHeight();
@@ -488,11 +495,13 @@ void __attribute__((weak)) doIncreaseHeight() {
     }
 }
 
-void __attribute__((weak)) doDecreaseHeight() {
+void doDecreaseHeight() {
     if (sRequestedBodyHeightAngle < (LIFT_HIGHEST_ANGLE - 2)) {
         sRequestedBodyHeightAngle += 2;
 #if defined(LOCAL_INFO)
         printBodyHeight();
+#else
+        setBodyHeight();
 #endif
         if (sCurrentlyRunningAction == ACTION_TYPE_STOP) {
             setLiftServosToBodyHeight();

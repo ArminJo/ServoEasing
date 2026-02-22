@@ -23,6 +23,7 @@ YouTube video of SymmetricEasing and AsymmetricEasing example
 - [RobotArmControl](https://github.com/ArminJo/ServoEasing/tree/master/examples/RobotArmControl#robotarmcontrol-for-a-mearm-v04-robot)
 - [PCA9685_ExpanderAndServo](#pca9685_expanderandservo)
 - [PCA9685_ExpanderFor32Servos](#pca9685_expanderfor32servos)
+- [DummyServoExample](#dummyservoexample)
 - [Servo utilities](#servo-utilities)
   * [EndPositionsTest](#endpositionstest)
   * [SpeedTest](#speedtest)
@@ -99,7 +100,7 @@ On the ESP32, the I2C library interferes with the 29 millisecond timer and there
 |-|-|
 | ![mePed V2 with PCA9685 expander](https://github.com/ArminJo/ServoEasing/blob/master/pictures/mePedWithPCA9685.jpg) | ![mePed V2 with PCA9685 expander](https://github.com/ArminJo/ServoEasing/blob/master/pictures/mePed_topWithPCA9685.jpg) |
 
-### DummyServoExample
+# DummyServoExample
 [This example](https://github.com/ArminJo/ServoEasing/blob/master/examples/PCA9685_ExpanderAndServo/DummyServoExample.ino) shows how to create and use a user provided servo library, which is activated by `#define USE_USER_PROVIDED_SERVO_LIB`.
 
 <br/>

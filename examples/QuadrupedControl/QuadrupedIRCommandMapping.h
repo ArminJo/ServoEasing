@@ -2,13 +2,28 @@
  * IRCommandMapping.h
  *
  * IR remote button codes, strings, and functions to call for quadruped IR control
- *
- *  Copyright (C) 2019-2022  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
- *
  * Mapping for controlling a mePed Robot V2 with 8 servos using an IR Remote at pin A0
  * Supported IR remote are KEYES (the original mePed remote) and WM10 and ...
  * Select the one you have below or define it in the including file.
+ *
+ *  Copyright (C) 2019-2026  Armin Joachimsmeyer
+ *  armin.joachimsmeyer@gmail.com
+ *
+ *  This file is part of QuadrupedControl https://github.com/ArminJo/QuadrupedControl.
+ *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
+ *
+ *  QuadrupedControl and ServoEasing are free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program. If not, see <http://www.gnu.org/licenses/gpl.html>.
  */
 
 #ifndef _IR_COMMAND_MAPPING_H
@@ -452,34 +467,34 @@ const struct IRToCommandMappingStruct IRMapping[] = {
 #if defined(QUADRUPED_HAS_IR_CONTROL) && !defined(USE_USER_DEFINED_MOVEMENTS)
         { COMMAND_CALIBRATE, IR_COMMAND_FLAG_BLOCKING, &doCalibration, COMMAND_STRING(calibration) }, /**/
 #endif
-        { COMMAND_DANCE, IR_COMMAND_FLAG_BLOCKING, &doDance, COMMAND_STRING(dance)}, /**/
-    { COMMAND_TWIST, IR_COMMAND_FLAG_BLOCKING, &doTwist, COMMAND_STRING(twistString)}, /**/
-{ COMMAND_WAVE, IR_COMMAND_FLAG_BLOCKING, &doWave, COMMAND_STRING(wave)}, /**/
-{ COMMAND_TROT, IR_COMMAND_FLAG_BLOCKING, &doTrot, COMMAND_STRING(trot)}, /**/
-{ COMMAND_AUTO, IR_COMMAND_FLAG_BLOCKING, &doQuadrupedAutoMove, COMMAND_STRING(autoMove)}, /**/
-{ COMMAND_TEST, IR_COMMAND_FLAG_BLOCKING, &doTest, COMMAND_STRING(test)}, /**/
-{ COMMAND_CENTER, IR_COMMAND_FLAG_BLOCKING, &doCenterServos, COMMAND_STRING(center)}, /**/
+        { COMMAND_DANCE, IR_COMMAND_FLAG_BLOCKING, &doDance, COMMAND_STRING(dance) }, /**/
+        { COMMAND_TWIST, IR_COMMAND_FLAG_BLOCKING, &doTwist, COMMAND_STRING(twistString) }, /**/
+        { COMMAND_WAVE, IR_COMMAND_FLAG_BLOCKING, &doWave, COMMAND_STRING(wave) }, /**/
+        { COMMAND_TROT, IR_COMMAND_FLAG_BLOCKING, &doTrot, COMMAND_STRING(trot) }, /**/
+        { COMMAND_AUTO, IR_COMMAND_FLAG_BLOCKING, &doQuadrupedAutoMove, COMMAND_STRING(autoMove) }, /**/
+        { COMMAND_TEST, IR_COMMAND_FLAG_BLOCKING, &doTest, COMMAND_STRING(test) }, /**/
+        { COMMAND_CENTER, IR_COMMAND_FLAG_BLOCKING, &doCenterServos, COMMAND_STRING(center) }, /**/
 
-/*
- * Basic movements which can be executed always
- */
-{ COMMAND_FORWARD, IR_COMMAND_FLAG_NON_BLOCKING, &doSetDirectionForward, COMMAND_STRING(dirForward)}, /**/
-{ COMMAND_BACKWARD, IR_COMMAND_FLAG_NON_BLOCKING, &doSetDirectionBack, COMMAND_STRING(dirBack)}, /**/
-{ COMMAND_RIGHT, IR_COMMAND_FLAG_NON_BLOCKING, &doSetDirectionRight, COMMAND_STRING(dirRight)}, /**/
-{ COMMAND_LEFT, IR_COMMAND_FLAG_NON_BLOCKING, &doSetDirectionLeft, COMMAND_STRING(dirLeft)}, /**/
-{ COMMAND_CREEP, IR_COMMAND_FLAG_BLOCKING, &doCreep, COMMAND_STRING(creep)}, /* dummy IR command */
-{ COMMAND_TURN, IR_COMMAND_FLAG_BLOCKING, &doTurn, COMMAND_STRING(turn)}, /* dummy IR command */
+        /*
+         * Basic movements which can be executed always
+         */
+        { COMMAND_FORWARD, IR_COMMAND_FLAG_NON_BLOCKING, &doSetDirectionForward, COMMAND_STRING(dirForward) }, /**/
+        { COMMAND_BACKWARD, IR_COMMAND_FLAG_NON_BLOCKING, &doSetDirectionBack, COMMAND_STRING(dirBack) }, /**/
+        { COMMAND_RIGHT, IR_COMMAND_FLAG_NON_BLOCKING, &doSetDirectionRight, COMMAND_STRING(dirRight) }, /**/
+        { COMMAND_LEFT, IR_COMMAND_FLAG_NON_BLOCKING, &doSetDirectionLeft, COMMAND_STRING(dirLeft) }, /**/
+        { COMMAND_CREEP, IR_COMMAND_FLAG_BLOCKING, &doCreep, COMMAND_STRING(creep) }, /* dummy IR command */
+        { COMMAND_TURN, IR_COMMAND_FLAG_BLOCKING, &doTurn, COMMAND_STRING(turn) }, /* dummy IR command */
 
-/*
- * Commands, which can be executed always, since they are short and repeats are allowed
- */
-{ COMMAND_INCREASE_SPEED, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doIncreaseSpeed, COMMAND_STRING(speedIncrease)}, /**/
-{ COMMAND_DECREASE_SPEED, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doDecreaseSpeed, COMMAND_STRING(speedDecrease)}, /**/
-{ COMMAND_INCREASE_HEIGHT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doIncreaseHeight, COMMAND_STRING(heighIncrease)}, /**/
-{ COMMAND_DECREASE_HEIGHT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doDecreaseHeight, COMMAND_STRING(heighDecrease)}, /**/
+        /*
+         * Commands, which can be executed always, since they are short and repeats are allowed
+         */
+        { COMMAND_INCREASE_SPEED, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doIncreaseSpeed, COMMAND_STRING(speedIncrease) }, /**/
+        { COMMAND_DECREASE_SPEED, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doDecreaseSpeed, COMMAND_STRING(speedDecrease) }, /**/
+        { COMMAND_INCREASE_HEIGHT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doIncreaseHeight, COMMAND_STRING(heighIncrease) }, /**/
+        { COMMAND_DECREASE_HEIGHT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doDecreaseHeight, COMMAND_STRING(heighDecrease) }, /**/
 
 #if !defined(HAS_ADDITIONAL_REMOTE_COMMANDS)
-        { COMMAND_PAUSE_RESUME, IR_COMMAND_FLAG_BLOCKING, &doStop, COMMAND_STRING(stop)}
+        { COMMAND_PAUSE_RESUME, IR_COMMAND_FLAG_BLOCKING, &doStop, COMMAND_STRING(stop) }
 #else
         /*
          * Commands not accessible by simple remote because of lack of keys
@@ -489,6 +504,9 @@ const struct IRToCommandMappingStruct IRMapping[] = {
         { COMMAND_US_LEFT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doUSLeft, COMMAND_STRING(ultrasonicServoLeft) }, /**/
         { COMMAND_US_SCAN, IR_COMMAND_FLAG_NON_BLOCKING, &doUSScan, COMMAND_STRING(ultrasonicServoScan) }, /**/
 #  endif
+#  if defined(QUADRUPED_ENABLE_RTTTL)
+        { COMMAND_PATTERN_0, IR_COMMAND_FLAG_NON_BLOCKING, &doRandomMelody, COMMAND_STRING(melody) },
+#  endif
         { COMMAND_STOP, IR_COMMAND_FLAG_BLOCKING, &doStop, COMMAND_STRING(stop) },
         { COMMAND_PAUSE_RESUME, IR_COMMAND_FLAG_NON_BLOCKING, &doPauseResume, COMMAND_STRING(pauseResume) }, /**/
         { COMMAND_DEMO, IR_COMMAND_FLAG_BLOCKING, &doQuadrupedDemoMove, COMMAND_STRING(demo) }, /**/
@@ -496,8 +514,7 @@ const struct IRToCommandMappingStruct IRMapping[] = {
         { COMMAND_PATTERN_2, IR_COMMAND_FLAG_NON_BLOCKING, &doPattern2, COMMAND_STRING(pattern) }, /**/
         { COMMAND_PATTERN_4, IR_COMMAND_FLAG_NON_BLOCKING, &doPatternHeartbeat, COMMAND_STRING(pattern) }, /**/
         { COMMAND_PATTERN_5, IR_COMMAND_FLAG_NON_BLOCKING, &doPatternFire, COMMAND_STRING(pattern) }, /**/
-        { COMMAND_PATTERN_6, IR_COMMAND_FLAG_NON_BLOCKING, &doWipeOutPatterns, COMMAND_STRING(pattern) }, /**/
-        { COMMAND_PATTERN_0, IR_COMMAND_FLAG_NON_BLOCKING, &doRandomMelody, COMMAND_STRING(melody) }
+        { COMMAND_PATTERN_6, IR_COMMAND_FLAG_NON_BLOCKING, &doWipeOutPatterns, COMMAND_STRING(pattern) } /**/
 #endif
         };
 

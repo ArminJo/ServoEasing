@@ -39,15 +39,15 @@ uint8_t sActionType;
  * The Commands to execute
  ******************************************/
 
-void __attribute__((weak)) doGoCenter() {
+void doGoCenter() {
     goToCenter();
 }
 
-void __attribute__((weak)) doGoFolded() {
+void doGoFolded() {
     goToFolded();
 }
 
-void __attribute__((weak)) doGoForward() {
+void doGoForward() {
     if (sHorizontalServoAngle < HORIZONTAL_MAXIMUM_DEGREE - 2) {
         sHorizontalServoAngle += 2;
         HorizontalServo.easeTo(sHorizontalServoAngle);
@@ -55,7 +55,7 @@ void __attribute__((weak)) doGoForward() {
     Serial.println(sHorizontalServoAngle);
 }
 
-void __attribute__((weak)) doGoBack() {
+void doGoBack() {
     if (sHorizontalServoAngle > HORIZONTAL_MINIMUM_DEGREE + 2) {
         sHorizontalServoAngle -= 2;
         HorizontalServo.easeTo(sHorizontalServoAngle);
@@ -64,7 +64,7 @@ void __attribute__((weak)) doGoBack() {
 }
 
 // Allow to go to -92
-void __attribute__((weak)) doTurnRight() {
+void doTurnRight() {
     if (sBodyPivotAngle > -90) {
         sBodyPivotAngle -= 2;
         BasePivotServo.easeTo(sBodyPivotAngle);
@@ -73,7 +73,7 @@ void __attribute__((weak)) doTurnRight() {
 }
 
 // Allow to go to 82
-void __attribute__((weak)) doTurnLeft() {
+void doTurnLeft() {
     if (sBodyPivotAngle <= 90) {
         sBodyPivotAngle += 2;
         BasePivotServo.easeTo(sBodyPivotAngle);
@@ -81,7 +81,7 @@ void __attribute__((weak)) doTurnLeft() {
     Serial.println(sBodyPivotAngle);
 }
 
-void __attribute__((weak)) doLiftUp() {
+void doLiftUp() {
     if (sLiftServoAngle <= LIFT_MAXIMUM_DEGREE - 2) {
         sLiftServoAngle += 2;
         LiftServo.easeTo(sLiftServoAngle);
@@ -89,7 +89,7 @@ void __attribute__((weak)) doLiftUp() {
     Serial.println(sLiftServoAngle);
 }
 
-void __attribute__((weak)) doLiftDown() {
+void doLiftDown() {
     if (sLiftServoAngle > LIFT_MINIMUM_DEGREE + 2) {
         sLiftServoAngle -= 2;
         LiftServo.easeTo(sLiftServoAngle);
@@ -97,7 +97,7 @@ void __attribute__((weak)) doLiftDown() {
     Serial.println(sLiftServoAngle);
 }
 
-void __attribute__((weak)) doOpenClaw() {
+void doOpenClaw() {
     if (sClawServoAngle < CLAW_MAXIMUM_DEGREE - 4) {
         sClawServoAngle += 4;
         ClawServo.easeTo(sClawServoAngle);
@@ -105,7 +105,7 @@ void __attribute__((weak)) doOpenClaw() {
     Serial.println(sClawServoAngle);
 }
 
-void __attribute__((weak)) doCloseClaw() {
+void doCloseClaw() {
     if (sClawServoAngle >= CLAW_CLOSE_DEGREE + 4) {
         sClawServoAngle -= 4;
         ClawServo.easeTo(sClawServoAngle);
@@ -113,7 +113,7 @@ void __attribute__((weak)) doCloseClaw() {
     Serial.println(sClawServoAngle);
 }
 
-void __attribute__((weak)) doSwitchToManual() {
+void doSwitchToManual() {
 #if defined(ROBOT_ARM_HAS_IR_CONTROL)
     // this enables manual mode
     IRDispatcher.IRReceivedData.MillisOfLastCode = 0;
@@ -123,15 +123,15 @@ void __attribute__((weak)) doSwitchToManual() {
 /*
  * Switch mode between Inverse-Kinematic and normal easing
  */
-void __attribute__((weak)) doInverseKinematicOn() {
+void doInverseKinematicOn() {
     sInverseKinematicModeForCombinedMovementsIsActive = true;
 }
 
-void __attribute__((weak)) doInverseKinematicOff() {
+void doInverseKinematicOff() {
     sInverseKinematicModeForCombinedMovementsIsActive = false;
 }
 
-void __attribute__((weak)) doToggleInverseKinematic() {
+void doToggleInverseKinematic() {
 #if defined(ROBOT_ARM_HAS_IR_CONTROL)
     if (!IRDispatcher.IRReceivedData.isRepeat) {
         sInverseKinematicModeForCombinedMovementsIsActive = !sInverseKinematicModeForCombinedMovementsIsActive;
@@ -139,7 +139,7 @@ void __attribute__((weak)) doToggleInverseKinematic() {
 #endif
 }
 
-void __attribute__((weak)) doSwitchEasingType() {
+void doSwitchEasingType() {
 
     Serial.print(F("Set easing type to "));
     if (sEasingType == EASE_LINEAR) {
@@ -161,7 +161,7 @@ void __attribute__((weak)) doSwitchEasingType() {
 /*
  * Can be tested with IK (USER Easing) or with standard easings
  */
-void __attribute__((weak)) doRobotArmTestMove() {
+void doRobotArmTestMove() {
 //    testInverseAndForwardKinematic(); // just print outputs
 
     if (sInverseKinematicModeForCombinedMovementsIsActive) {
@@ -206,7 +206,7 @@ void __attribute__((weak)) doRobotArmTestMove() {
     }
 }
 
-void __attribute__((weak)) doRobotArmAutoMove() {
+void doRobotArmAutoMove() {
 
     if (sInverseKinematicModeForCombinedMovementsIsActive) {
         setEasingTypeForMultipleServos(3, EASE_USER_DIRECT); // set to IK mode but do not change easing type for claw
@@ -263,7 +263,7 @@ void __attribute__((weak)) doRobotArmAutoMove() {
 /*
  * Decrease moving speed by 25%
  */
-void __attribute__((weak)) doIncreaseSpeed() {
+void doIncreaseSpeed() {
     sRobotArmServoSpeed += sRobotArmServoSpeed / 4;
     if (sRobotArmServoSpeed > 0xBF) {
         sRobotArmServoSpeed = 0xBF;
@@ -275,7 +275,7 @@ void __attribute__((weak)) doIncreaseSpeed() {
 /*
  * Increase moving speed by 25%
  */
-void __attribute__((weak)) doDecreaseSpeed() {
+void doDecreaseSpeed() {
     sRobotArmServoSpeed -= sRobotArmServoSpeed / 4;
     if (sRobotArmServoSpeed < 4) {
         sRobotArmServoSpeed = 4;
