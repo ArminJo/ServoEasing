@@ -23,9 +23,9 @@
 #ifndef _SERVO_EASING_H
 #define _SERVO_EASING_H
 
-#define VERSION_SERVO_EASING "3.5.0"
+#define VERSION_SERVO_EASING "3.6.0"
 #define VERSION_SERVO_EASING_MAJOR 3
-#define VERSION_SERVO_EASING_MINOR 5
+#define VERSION_SERVO_EASING_MINOR 6
 #define VERSION_SERVO_EASING_PATCH 0
 // The change log is at the bottom of the file
 
@@ -798,9 +798,10 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
 
 /*
  *
- * Version 3.5.1 - 12/2025
+ * Version 3.6.0 - 02/2026
  * - Renamed macro REFRESH_INTERVAL_MILLIS to SERVO_REFRESH_INTERVAL_MICROS.
  * - Added new functions PCA9685Init(uint32_t aActualPCA9685ClockFrequencyHertz) and PCA9685InitWithExternalClock(uint32_t aExternalClockFrequencyHertz).
+ * - Added parameter bool aSynchronizeToMinimumDuration to synchronizeAllServosAndStartInterrupt().
  *
  * Version 3.5.0 - 9/2025
  * - Fixed serious bug in reattach();
