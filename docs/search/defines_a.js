@@ -1,4 +1,9 @@
 var searchData=
 [
-  ['threshold_5fvalue_5ffor_5finterpreting_5fvalue_5fas_5fmicroseconds_468',['THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS',['../ServoEasing_8h.html#a3970ba7a5837222b7139f5de1c6b70d4',1,'ServoEasing.h']]]
+  ['version_5fhex_5fvalue_471',['VERSION_HEX_VALUE',['../ServoEasing_8h.html#a8fe70c54038764ee815bb4940c58ad3c',1,'ServoEasing.h']]],
+  ['version_5fservo_5feasing_472',['VERSION_SERVO_EASING',['../ServoEasing_8h.html#aaaa89eaef276172aa9ee1a0c7db90009',1,'ServoEasing.h']]],
+  ['version_5fservo_5feasing_5fhex_473',['VERSION_SERVO_EASING_HEX',['../ServoEasing_8h.html#a2c63e5891317840642e66d7abba615b4',1,'ServoEasing.h']]],
+  ['version_5fservo_5feasing_5fmajor_474',['VERSION_SERVO_EASING_MAJOR',['../ServoEasing_8h.html#a628ba88c077709630ce31fd0de2953a8',1,'ServoEasing.h']]],
+  ['version_5fservo_5feasing_5fminor_475',['VERSION_SERVO_EASING_MINOR',['../ServoEasing_8h.html#affd3782a5d472c013125b78d2f3f651e',1,'ServoEasing.h']]],
+  ['version_5fservo_5feasing_5fpatch_476',['VERSION_SERVO_EASING_PATCH',['../ServoEasing_8h.html#a0967243f3526140d65821d3c8214f6bd',1,'ServoEasing.h']]]
 ];

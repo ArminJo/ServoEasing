@@ -1,13 +1,13 @@
 <map id="synchronizeAllServosStartAndWaitForAllServosToStop" name="synchronizeAllServosStartAndWaitForAllServosToStop">
 <area shape="rect" id="node1" title="Synchronize and blocking wait until all servos are stopped." alt="" coords="5,208,192,252"/>
-<area shape="rect" id="node2" href="$ServoEasing_8hpp.html#a7d2b265451252b889c52d8941e661ec4" title="Take the longer duration in order to move all servos synchronously." alt="" coords="240,177,438,221"/>
+<area shape="rect" id="node2" href="$ServoEasing_8hpp.html#a9e04422fc4594d4b4dd2cd27aaa64b3e" title="Take the longest duration in order to move all servos synchronously." alt="" coords="240,177,438,221"/>
 <area shape="rect" id="node21" href="$ServoEasing_8hpp.html#a6081a17da896d37eb783459e7e8e63b0" title="Blocking wait until all servos are stopped." alt="" coords="486,237,670,281"/>
 <area shape="rect" id="node3" href="$ServoEasing_8hpp.html#ad98a05e05b1349df07a2a84a6ed06ae9" title="Timer1 is used for the Arduino Servo library." alt="" coords="488,185,669,213"/>
 <area shape="rect" id="node4" href="$ServoEasing_8hpp.html#a1ca4b9e40346b216e2333971aa83b5a3" title="Update all servos from list and check if all servos have stopped." alt="" coords="718,187,893,215"/>
 <area shape="rect" id="node5" href="$ServoEasing_8hpp.html#a0327b7f8ede3426c611701579f0ba9e9" title=" " alt="" coords="941,187,1125,215"/>
 <area shape="rect" id="node6" href="$ServoEasing_8hpp.html#a12b38a954d3061ea45838d147a7cfc08" title=" " alt="" coords="975,240,1091,268"/>
 <area shape="rect" id="node7" href="$classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="1173,240,1315,268"/>
-<area shape="rect" id="node8" href="$classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1370,72,1590,116"/>
+<area shape="rect" id="node8" href="$classServoEasing.html#a73ac74e0a95214ae633658fef405f13a" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1370,72,1590,116"/>
 <area shape="rect" id="node10" href="$classServoEasing.html#a889e7f6cefd62113ac55bef58959499b" title=" " alt="" coords="1373,240,1587,268"/>
 <area shape="rect" id="node20" href="$classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="1363,292,1597,336"/>
 <area shape="rect" id="node9" href="$classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="1669,5,1842,33"/>

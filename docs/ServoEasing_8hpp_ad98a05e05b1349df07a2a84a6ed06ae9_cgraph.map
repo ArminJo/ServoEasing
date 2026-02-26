@@ -4,7 +4,7 @@
 <area shape="rect" id="node3" href="$ServoEasing_8hpp.html#a0327b7f8ede3426c611701579f0ba9e9" title=" " alt="" coords="457,188,641,216"/>
 <area shape="rect" id="node4" href="$ServoEasing_8hpp.html#a12b38a954d3061ea45838d147a7cfc08" title=" " alt="" coords="491,240,607,268"/>
 <area shape="rect" id="node5" href="$classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="689,240,832,268"/>
-<area shape="rect" id="node6" href="$classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="887,72,1106,116"/>
+<area shape="rect" id="node6" href="$classServoEasing.html#a73ac74e0a95214ae633658fef405f13a" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="887,72,1106,116"/>
 <area shape="rect" id="node8" href="$classServoEasing.html#a889e7f6cefd62113ac55bef58959499b" title=" " alt="" coords="890,240,1103,268"/>
 <area shape="rect" id="node18" href="$classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="880,292,1113,336"/>
 <area shape="rect" id="node7" href="$classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="1186,5,1358,33"/>

@@ -8,7 +8,7 @@
 <area shape="rect" id="node5" href="$ServoEasing_8hpp.html#a1ca4b9e40346b216e2333971aa83b5a3" title="Update all servos from list and check if all servos have stopped." alt="" coords="705,64,880,92"/>
 <area shape="rect" id="node6" href="$ServoEasing_8hpp.html#a0327b7f8ede3426c611701579f0ba9e9" title=" " alt="" coords="964,64,1148,92"/>
 <area shape="rect" id="node8" href="$classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="1196,99,1338,127"/>
-<area shape="rect" id="node9" href="$classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1393,85,1613,129"/>
+<area shape="rect" id="node9" href="$classServoEasing.html#a73ac74e0a95214ae633658fef405f13a" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1393,85,1613,129"/>
 <area shape="rect" id="node11" href="$classServoEasing.html#a889e7f6cefd62113ac55bef58959499b" title=" " alt="" coords="1396,240,1610,268"/>
 <area shape="rect" id="node10" href="$classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="1692,5,1864,33"/>
 <area shape="rect" id="node12" href="$classServoEasing.html#a522915dbd93915dcdf60babd7a4a07c1" title="see: https://easings.net/#easeInOutBack and https://github.com/warrenm/AHEasing/blob/master/AHEasing/..." alt="" coords="1691,57,1866,85"/>

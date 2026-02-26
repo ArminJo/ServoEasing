@@ -3,7 +3,7 @@
 <area shape="rect" id="node2" href="$classServoEasing.html#a1f3b92c4b303e63d7aed11492bd5d955" title=" " alt="" coords="1544,19,1692,47"/>
 <area shape="rect" id="node4" href="$classServoEasing.html#a3fc76128ba052768df22ac28503a6f10" title="Sets up all the values required for a smooth move to new value Lower level function with time instead..." alt="" coords="584,264,768,292"/>
 <area shape="rect" id="node10" href="$classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="1547,239,1689,267"/>
-<area shape="rect" id="node24" href="$classServoEasing.html#a04d5810d2c64ebbf6d366f1aec177300" title=" " alt="" coords="1552,96,1684,124"/>
+<area shape="rect" id="node24" href="$classServoEasing.html#a04d5810d2c64ebbf6d366f1aec177300" title="Tested value of 400 for my PCA9685 expander 10/25 (was effectively 382 us / &#45; 2 %,..." alt="" coords="1552,96,1684,124"/>
 <area shape="rect" id="node3" href="$classServoEasing.html#aa9d73d1e906ca3e61289e25f635f6921" title=" " alt="" coords="1304,5,1496,33"/>
 <area shape="rect" id="node5" href="$classServoEasing.html#ab451c457f9e08ac17061cee812936912" title=" " alt="" coords="321,108,476,136"/>
 <area shape="rect" id="node6" href="$classServoEasing.html#ae373bfcaec45e822ddd0503a2eb7f269" title="stay at the position for aMillisToWait Used as delay for callback" alt="" coords="310,160,488,188"/>
@@ -17,7 +17,7 @@
 <area shape="rect" id="node23" href="$ServoEasing_8hpp.html#a6081a17da896d37eb783459e7e8e63b0" title="Blocking wait until all servos are stopped." alt="" coords="838,455,1023,499"/>
 <area shape="rect" id="node15" href="$ServoEasing_8hpp.html#ad98a05e05b1349df07a2a84a6ed06ae9" title="Timer1 is used for the Arduino Servo library." alt="" coords="840,296,1021,324"/>
 <area shape="rect" id="node16" href="$classServoEasing.html#a99c46eac2b8dc93235eb819c38c77992" title=" " alt="" coords="562,344,790,372"/>
-<area shape="rect" id="node18" href="$ServoEasing_8hpp.html#a7d2b265451252b889c52d8941e661ec4" title="Take the longer duration in order to move all servos synchronously." alt="" coords="577,420,775,464"/>
+<area shape="rect" id="node18" href="$ServoEasing_8hpp.html#a9e04422fc4594d4b4dd2cd27aaa64b3e" title="Take the longest duration in order to move all servos synchronously." alt="" coords="577,420,775,464"/>
 <area shape="rect" id="node17" href="$ServoEasing_8hpp.html#a823207800d39c07d227819162cb4fd21" title=" " alt="" coords="298,368,500,396"/>
 <area shape="rect" id="node19" href="$ServoEasing_8hpp.html#afc99e509838b5b5cbd21942cea366e2c" title=" " alt="" coords="284,420,514,464"/>
 <area shape="rect" id="node20" href="$ServoEasing_8hpp.html#a138cfe5aec8d6a132994aedd0b7b20a1" title="Synchronize and blocking wait until all servos are stopped." alt="" coords="306,488,492,532"/>

@@ -1,5 +1,5 @@
 <map id="ServoEasing::write" name="ServoEasing::write">
-<area shape="rect" id="node1" title=" " alt="" coords="246,57,377,85"/>
+<area shape="rect" id="node1" title="Tested value of 400 for my PCA9685 expander 10/25 (was effectively 382 us / &#45; 2 %,..." alt="" coords="246,57,377,85"/>
 <area shape="rect" id="node2" href="$classServoEasing.html#a88d67f6e65bdaaa1f7babc49b4048705" title="The microseconds values at aServoLowDegree and aServoHighDegree are used to compute the microseconds ..." alt="" coords="32,5,171,33"/>
 <area shape="rect" id="node3" href="$classServoEasing.html#aa9d73d1e906ca3e61289e25f635f6921" title=" " alt="" coords="5,57,198,85"/>
 <area shape="rect" id="node4" href="$ServoEasing_8hpp.html#a9c6b28e01c0d30c1f14e31924f38d510" title=" " alt="" coords="49,109,154,137"/>

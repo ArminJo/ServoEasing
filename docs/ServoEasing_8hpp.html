@@ -187,9 +187,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a138cfe5aec8d6a132994aedd0b7b20a1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ServoEasing_8hpp.html#a138cfe5aec8d6a132994aedd0b7b20a1">synchronizeAllServosStartAndWaitForAllServosToStop</a> ()</td></tr>
 <tr class="memdesc:a138cfe5aec8d6a132994aedd0b7b20a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Synchronize and blocking wait until all servos are stopped.  <a href="ServoEasing_8hpp.html#a138cfe5aec8d6a132994aedd0b7b20a1">More...</a><br /></td></tr>
 <tr class="separator:a138cfe5aec8d6a132994aedd0b7b20a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7d2b265451252b889c52d8941e661ec4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ServoEasing_8hpp.html#a7d2b265451252b889c52d8941e661ec4">synchronizeAllServosAndStartInterrupt</a> (bool aStartUpdateByInterrupt)</td></tr>
-<tr class="memdesc:a7d2b265451252b889c52d8941e661ec4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Take the longer duration in order to move all servos synchronously.  <a href="ServoEasing_8hpp.html#a7d2b265451252b889c52d8941e661ec4">More...</a><br /></td></tr>
-<tr class="separator:a7d2b265451252b889c52d8941e661ec4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e04422fc4594d4b4dd2cd27aaa64b3e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ServoEasing_8hpp.html#a9e04422fc4594d4b4dd2cd27aaa64b3e">synchronizeAllServosAndStartInterrupt</a> (bool aStartUpdateByInterrupt, bool aSynchronizeToMinimumDuration)</td></tr>
+<tr class="memdesc:a9e04422fc4594d4b4dd2cd27aaa64b3e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Take the longest duration in order to move all servos synchronously.  <a href="ServoEasing_8hpp.html#a9e04422fc4594d4b4dd2cd27aaa64b3e">More...</a><br /></td></tr>
+<tr class="separator:a9e04422fc4594d4b4dd2cd27aaa64b3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -209,7 +209,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02736">2736</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02806">2806</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -225,7 +225,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02737">2737</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02807">2807</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -241,7 +241,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02733">2733</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02803">2803</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -257,7 +257,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02734">2734</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02804">2804</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -273,7 +273,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02732">2732</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02802">2802</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -297,7 +297,7 @@ Variables</h2></td></tr>
 <p>Clips the unsigned degree value and handles unsigned underflow. </p>
 <dl class="section return"><dt>Returns</dt><dd>0 if aDegreeToClip &gt;= 218 and 180 if 180 &lt;= aDegreeToClip &lt; 218 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l01943">1943</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l01991">1991</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -335,7 +335,7 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if all Servos reached endAngle / stopped </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02603">2603</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02662">2662</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -344,7 +344,7 @@ Here is the call graph for this function:</div>
 <area shape="rect" title=" " alt="" coords="5,232,191,276"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a12b38a954d3061ea45838d147a7cfc08" title=" " alt="" coords="239,240,355,268"/>
 <area shape="rect" href="classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="403,240,545,268"/>
-<area shape="rect" href="classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="600,72,820,116"/>
+<area shape="rect" href="classServoEasing.html#a73ac74e0a95214ae633658fef405f13a" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="600,72,820,116"/>
 <area shape="rect" href="classServoEasing.html#a889e7f6cefd62113ac55bef58959499b" title=" " alt="" coords="603,240,817,268"/>
 <area shape="rect" href="classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="593,292,827,336"/>
 <area shape="rect" href="classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="899,5,1072,33"/>
@@ -377,7 +377,7 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02204">2204</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02257">2257</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -390,7 +390,7 @@ Here is the caller graph for this function:</div>
 <area shape="rect" href="ServoEasing_8hpp.html#ad98a05e05b1349df07a2a84a6ed06ae9" title="Timer1 is used for the Arduino Servo library." alt="" coords="838,161,1020,189"/>
 <area shape="rect" href="classServoEasing.html#a99c46eac2b8dc93235eb819c38c77992" title=" " alt="" coords="562,57,790,85"/>
 <area shape="rect" href="classServoEasing.html#a3fc76128ba052768df22ac28503a6f10" title="Sets up all the values required for a smooth move to new value Lower level function with time instead..." alt="" coords="584,161,768,189"/>
-<area shape="rect" href="ServoEasing_8hpp.html#a7d2b265451252b889c52d8941e661ec4" title="Take the longer duration in order to move all servos synchronously." alt="" coords="577,317,775,361"/>
+<area shape="rect" href="ServoEasing_8hpp.html#a9e04422fc4594d4b4dd2cd27aaa64b3e" title="Take the longest duration in order to move all servos synchronously." alt="" coords="577,317,775,361"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a823207800d39c07d227819162cb4fd21" title=" " alt="" coords="298,5,500,33"/>
 <area shape="rect" href="classServoEasing.html#ab451c457f9e08ac17061cee812936912" title=" " alt="" coords="321,57,476,85"/>
 <area shape="rect" href="classServoEasing.html#ae373bfcaec45e822ddd0503a2eb7f269" title="stay at the position for aMillisToWait Used as delay for callback" alt="" coords="310,109,488,137"/>
@@ -424,7 +424,7 @@ Here is the caller graph for this function:</div>
 <p>Timer1 is used for the Arduino <a class="el" href="classServo.html">Servo</a> library. </p>
 <p>To have non blocking easing functions its unused channel B is used to generate an interrupt 100 us before the end of the 20 ms Arduino <a class="el" href="classServo.html">Servo</a> refresh period. This interrupt then updates all servo values for the next refresh period. First interrupt is triggered not directly, but after 20 ms, since we are often called here at the time of the last interrupt of the preceding servo move. </p>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l01988">1988</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02048">2048</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -435,7 +435,7 @@ Here is the call graph for this function:</div>
 <area shape="rect" href="ServoEasing_8hpp.html#a0327b7f8ede3426c611701579f0ba9e9" title=" " alt="" coords="457,188,641,216"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a12b38a954d3061ea45838d147a7cfc08" title=" " alt="" coords="491,240,607,268"/>
 <area shape="rect" href="classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="689,240,832,268"/>
-<area shape="rect" href="classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="887,72,1106,116"/>
+<area shape="rect" href="classServoEasing.html#a73ac74e0a95214ae633658fef405f13a" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="887,72,1106,116"/>
 <area shape="rect" href="classServoEasing.html#a889e7f6cefd62113ac55bef58959499b" title=" " alt="" coords="890,240,1103,268"/>
 <area shape="rect" href="classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="880,292,1113,336"/>
 <area shape="rect" href="classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="1186,5,1358,33"/>
@@ -458,7 +458,7 @@ Here is the caller graph for this function:</div>
 <area shape="rect" title="Timer1 is used for the Arduino Servo library." alt="" coords="838,161,1020,189"/>
 <area shape="rect" href="classServoEasing.html#a99c46eac2b8dc93235eb819c38c77992" title=" " alt="" coords="562,57,790,85"/>
 <area shape="rect" href="classServoEasing.html#a3fc76128ba052768df22ac28503a6f10" title="Sets up all the values required for a smooth move to new value Lower level function with time instead..." alt="" coords="584,161,768,189"/>
-<area shape="rect" href="ServoEasing_8hpp.html#a7d2b265451252b889c52d8941e661ec4" title="Take the longer duration in order to move all servos synchronously." alt="" coords="577,317,775,361"/>
+<area shape="rect" href="ServoEasing_8hpp.html#a9e04422fc4594d4b4dd2cd27aaa64b3e" title="Take the longest duration in order to move all servos synchronously." alt="" coords="577,317,775,361"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a823207800d39c07d227819162cb4fd21" title=" " alt="" coords="298,5,500,33"/>
 <area shape="rect" href="classServoEasing.html#ab451c457f9e08ac17061cee812936912" title=" " alt="" coords="321,57,476,85"/>
 <area shape="rect" href="classServoEasing.html#ae373bfcaec45e822ddd0503a2eb7f269" title="stay at the position for aMillisToWait Used as delay for callback" alt="" coords="310,109,488,137"/>
@@ -490,9 +490,9 @@ Here is the caller graph for this function:</div>
 </div><div class="memdoc">
 
 <p>Update all servos from list and check if all servos have stopped. </p>
-<p>Guarded by an macro in order to be able to overwrite it, e.g. for synchronizing with NeoPixel updates, which otherwise leads to servo twitching. See QuadrupedNeoPixel.cpp of QuadrupedControl example. We have 100 us before the next servo period starts. </p>
+<p>Guarded by an macro in order to be able to overwrite it, e.g. for synchronizing with NeoPixel updates, which otherwise leads to servo twitching. See QuadrupedNeoPixel.cpp of QuadrupedControl example. We have (at least on Uno, Nano etc.) 100 us before the next servo period starts. See also setTimer1InterruptMarginMicros(); </p>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l01963">1963</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02012">2012</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -502,7 +502,7 @@ Here is the call graph for this function:</div>
 <area shape="rect" href="ServoEasing_8hpp.html#a0327b7f8ede3426c611701579f0ba9e9" title=" " alt="" coords="228,188,412,216"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a12b38a954d3061ea45838d147a7cfc08" title=" " alt="" coords="262,240,378,268"/>
 <area shape="rect" href="classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="460,240,602,268"/>
-<area shape="rect" href="classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="657,72,877,116"/>
+<area shape="rect" href="classServoEasing.html#a73ac74e0a95214ae633658fef405f13a" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="657,72,877,116"/>
 <area shape="rect" href="classServoEasing.html#a889e7f6cefd62113ac55bef58959499b" title=" " alt="" coords="660,240,874,268"/>
 <area shape="rect" href="classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="650,292,884,336"/>
 <area shape="rect" href="classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="956,5,1128,33"/>
@@ -526,7 +526,7 @@ Here is the caller graph for this function:</div>
 <area shape="rect" href="ServoEasing_8hpp.html#ad98a05e05b1349df07a2a84a6ed06ae9" title="Timer1 is used for the Arduino Servo library." alt="" coords="838,161,1020,189"/>
 <area shape="rect" href="classServoEasing.html#a99c46eac2b8dc93235eb819c38c77992" title=" " alt="" coords="562,57,790,85"/>
 <area shape="rect" href="classServoEasing.html#a3fc76128ba052768df22ac28503a6f10" title="Sets up all the values required for a smooth move to new value Lower level function with time instead..." alt="" coords="584,161,768,189"/>
-<area shape="rect" href="ServoEasing_8hpp.html#a7d2b265451252b889c52d8941e661ec4" title="Take the longer duration in order to move all servos synchronously." alt="" coords="577,317,775,361"/>
+<area shape="rect" href="ServoEasing_8hpp.html#a9e04422fc4594d4b4dd2cd27aaa64b3e" title="Take the longest duration in order to move all servos synchronously." alt="" coords="577,317,775,361"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a823207800d39c07d227819162cb4fd21" title=" " alt="" coords="298,5,500,33"/>
 <area shape="rect" href="classServoEasing.html#ab451c457f9e08ac17061cee812936912" title=" " alt="" coords="321,57,476,85"/>
 <area shape="rect" href="classServoEasing.html#ae373bfcaec45e822ddd0503a2eb7f269" title="stay at the position for aMillisToWait Used as delay for callback" alt="" coords="310,109,488,137"/>
@@ -557,7 +557,7 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02523">2523</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02579">2579</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -585,7 +585,7 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02543">2543</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02599">2599</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -613,7 +613,7 @@ Here is the caller graph for this function:</div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02384">2384</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02440">2440</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -632,7 +632,7 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02555">2555</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02611">2611</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -645,7 +645,7 @@ Here is the call graph for this function:</div>
 <area shape="rect" href="ServoEasing_8hpp.html#a0327b7f8ede3426c611701579f0ba9e9" title=" " alt="" coords="984,188,1168,216"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a12b38a954d3061ea45838d147a7cfc08" title=" " alt="" coords="1018,240,1134,268"/>
 <area shape="rect" href="classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="1216,240,1358,268"/>
-<area shape="rect" href="classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1413,72,1633,116"/>
+<area shape="rect" href="classServoEasing.html#a73ac74e0a95214ae633658fef405f13a" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1413,72,1633,116"/>
 <area shape="rect" href="classServoEasing.html#a889e7f6cefd62113ac55bef58959499b" title=" " alt="" coords="1416,240,1630,268"/>
 <area shape="rect" href="classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="1406,292,1640,336"/>
 <area shape="rect" href="classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="1712,5,1884,33"/>
@@ -678,7 +678,7 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02563">2563</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02619">2619</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -710,7 +710,7 @@ Here is the call graph for this function:</div>
 <p>Sets target position using content of ServoEasingNextPositionArray and use aMillisForMove instead of the speed stored in mSpeed. </p>
 <p>Does not start interrupt/movement! </p><dl class="section return"><dt>Returns</dt><dd>false if one servo was still moving </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02512">2512</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02568">2568</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -726,7 +726,7 @@ Here is the call graph for this function:</div>
 <area shape="rect" href="ServoEasing_8hpp.html#a0327b7f8ede3426c611701579f0ba9e9" title=" " alt="" coords="1200,64,1384,92"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a12b38a954d3061ea45838d147a7cfc08" title=" " alt="" coords="1234,116,1350,144"/>
 <area shape="rect" href="classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="1432,99,1575,127"/>
-<area shape="rect" href="classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1630,85,1849,129"/>
+<area shape="rect" href="classServoEasing.html#a73ac74e0a95214ae633658fef405f13a" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1630,85,1849,129"/>
 <area shape="rect" href="classServoEasing.html#a889e7f6cefd62113ac55bef58959499b" title=" " alt="" coords="1633,240,1846,268"/>
 <area shape="rect" href="classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="1928,5,2101,33"/>
 <area shape="rect" href="classServoEasing.html#a522915dbd93915dcdf60babd7a4a07c1" title="see: https://easings.net/#easeInOutBack and https://github.com/warrenm/AHEasing/blob/master/AHEasing/..." alt="" coords="1928,57,2102,85"/>
@@ -764,7 +764,7 @@ Here is the call graph for this function:</div>
 <p>Sets target position using content of ServoEasingNextPositionArray. </p>
 <p>Does not start interrupt/movement! </p><dl class="section return"><dt>Returns</dt><dd>false if one servo was still moving </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02479">2479</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02535">2535</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -808,7 +808,7 @@ Here is the caller graph for this function:</div>
 <p>Sets target position using content of ServoEasingNextPositionArray and use aDegreesPerSecond instead of the one stored in mSpeed. </p>
 <p>Does not start interrupt/movement! </p><dl class="section return"><dt>Returns</dt><dd>false if one servo was still moving </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02496">2496</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02552">2552</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -837,7 +837,7 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02346">2346</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02402">2402</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -845,7 +845,7 @@ Here is the call graph for this function:</div>
 <map name="ServoEasing_8hpp_afc99e509838b5b5cbd21942cea366e2c_cgraph" id="ServoEasing_8hpp_afc99e509838b5b5cbd21942cea366e2c_cgraph">
 <area shape="rect" title=" " alt="" coords="5,177,236,221"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a6e84acc192dfce2c901a25acf2744eb7" title="Sets target position using content of ServoEasingNextPositionArray." alt="" coords="304,155,462,183"/>
-<area shape="rect" href="ServoEasing_8hpp.html#a7d2b265451252b889c52d8941e661ec4" title="Take the longer duration in order to move all servos synchronously." alt="" coords="284,207,482,251"/>
+<area shape="rect" href="ServoEasing_8hpp.html#a9e04422fc4594d4b4dd2cd27aaa64b3e" title="Take the longest duration in order to move all servos synchronously." alt="" coords="284,207,482,251"/>
 <area shape="rect" href="classServoEasing.html#af68aa2d7a932d834cf7b377867352801" title=" " alt="" coords="538,155,703,183"/>
 <area shape="rect" href="classServoEasing.html#a90c8018913929af305f4d5f4a82e51ef" title=" " alt="" coords="760,155,933,183"/>
 <area shape="rect" href="ServoEasing_8hpp.html#ad98a05e05b1349df07a2a84a6ed06ae9" title="Timer1 is used for the Arduino Servo library." alt="" coords="530,215,711,243"/>
@@ -853,7 +853,7 @@ Here is the call graph for this function:</div>
 <area shape="rect" href="ServoEasing_8hpp.html#a0327b7f8ede3426c611701579f0ba9e9" title=" " alt="" coords="982,188,1166,216"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a12b38a954d3061ea45838d147a7cfc08" title=" " alt="" coords="1016,240,1132,268"/>
 <area shape="rect" href="classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="1214,240,1356,268"/>
-<area shape="rect" href="classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1411,72,1631,116"/>
+<area shape="rect" href="classServoEasing.html#a73ac74e0a95214ae633658fef405f13a" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1411,72,1631,116"/>
 <area shape="rect" href="classServoEasing.html#a889e7f6cefd62113ac55bef58959499b" title=" " alt="" coords="1414,240,1628,268"/>
 <area shape="rect" href="classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="1404,292,1638,336"/>
 <area shape="rect" href="classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="1710,5,1882,33"/>
@@ -887,7 +887,7 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02351">2351</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02407">2407</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -895,7 +895,7 @@ Here is the call graph for this function:</div>
 <map name="ServoEasing_8hpp_a146432b60fa1a4bb94560504b41987c0_cgraph" id="ServoEasing_8hpp_a146432b60fa1a4bb94560504b41987c0_cgraph">
 <area shape="rect" title=" " alt="" coords="5,177,236,221"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a6e84acc192dfce2c901a25acf2744eb7" title="Sets target position using content of ServoEasingNextPositionArray." alt="" coords="304,155,462,183"/>
-<area shape="rect" href="ServoEasing_8hpp.html#a7d2b265451252b889c52d8941e661ec4" title="Take the longer duration in order to move all servos synchronously." alt="" coords="284,207,482,251"/>
+<area shape="rect" href="ServoEasing_8hpp.html#a9e04422fc4594d4b4dd2cd27aaa64b3e" title="Take the longest duration in order to move all servos synchronously." alt="" coords="284,207,482,251"/>
 <area shape="rect" href="classServoEasing.html#af68aa2d7a932d834cf7b377867352801" title=" " alt="" coords="538,155,703,183"/>
 <area shape="rect" href="classServoEasing.html#a90c8018913929af305f4d5f4a82e51ef" title=" " alt="" coords="760,155,933,183"/>
 <area shape="rect" href="ServoEasing_8hpp.html#ad98a05e05b1349df07a2a84a6ed06ae9" title="Timer1 is used for the Arduino Servo library." alt="" coords="530,215,711,243"/>
@@ -903,7 +903,7 @@ Here is the call graph for this function:</div>
 <area shape="rect" href="ServoEasing_8hpp.html#a0327b7f8ede3426c611701579f0ba9e9" title=" " alt="" coords="982,188,1166,216"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a12b38a954d3061ea45838d147a7cfc08" title=" " alt="" coords="1016,240,1132,268"/>
 <area shape="rect" href="classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="1214,240,1356,268"/>
-<area shape="rect" href="classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1411,72,1631,116"/>
+<area shape="rect" href="classServoEasing.html#a73ac74e0a95214ae633658fef405f13a" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1411,72,1631,116"/>
 <area shape="rect" href="classServoEasing.html#a889e7f6cefd62113ac55bef58959499b" title=" " alt="" coords="1414,240,1628,268"/>
 <area shape="rect" href="classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="1404,292,1638,336"/>
 <area shape="rect" href="classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="1710,5,1882,33"/>
@@ -938,7 +938,7 @@ Here is the call graph for this function:</div>
 
 <p>Synchronize and blocking wait until all servos are stopped Take the longer duration in order to move all servos synchronously. </p>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02360">2360</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02416">2416</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -949,14 +949,14 @@ Here is the call graph for this function:</div>
 <area shape="rect" href="ServoEasing_8hpp.html#a138cfe5aec8d6a132994aedd0b7b20a1" title="Synchronize and blocking wait until all servos are stopped." alt="" coords="284,176,470,220"/>
 <area shape="rect" href="classServoEasing.html#af68aa2d7a932d834cf7b377867352801" title=" " alt="" coords="534,124,700,152"/>
 <area shape="rect" href="classServoEasing.html#a90c8018913929af305f4d5f4a82e51ef" title=" " alt="" coords="768,124,942,152"/>
-<area shape="rect" href="ServoEasing_8hpp.html#a7d2b265451252b889c52d8941e661ec4" title="Take the longer duration in order to move all servos synchronously." alt="" coords="518,176,716,220"/>
+<area shape="rect" href="ServoEasing_8hpp.html#a9e04422fc4594d4b4dd2cd27aaa64b3e" title="Take the longest duration in order to move all servos synchronously." alt="" coords="518,176,716,220"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a6081a17da896d37eb783459e7e8e63b0" title="Blocking wait until all servos are stopped." alt="" coords="994,236,1178,280"/>
 <area shape="rect" href="ServoEasing_8hpp.html#ad98a05e05b1349df07a2a84a6ed06ae9" title="Timer1 is used for the Arduino Servo library." alt="" coords="764,184,946,212"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a1ca4b9e40346b216e2333971aa83b5a3" title="Update all servos from list and check if all servos have stopped." alt="" coords="999,184,1173,212"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a0327b7f8ede3426c611701579f0ba9e9" title=" " alt="" coords="1226,184,1410,212"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a12b38a954d3061ea45838d147a7cfc08" title=" " alt="" coords="1260,240,1376,268"/>
 <area shape="rect" href="classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="1458,240,1601,268"/>
-<area shape="rect" href="classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1656,72,1875,116"/>
+<area shape="rect" href="classServoEasing.html#a73ac74e0a95214ae633658fef405f13a" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1656,72,1875,116"/>
 <area shape="rect" href="classServoEasing.html#a889e7f6cefd62113ac55bef58959499b" title=" " alt="" coords="1659,240,1872,268"/>
 <area shape="rect" href="classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="1649,292,1882,336"/>
 <area shape="rect" href="classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="1954,5,2127,33"/>
@@ -990,7 +990,7 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02365">2365</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02421">2421</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1001,14 +1001,14 @@ Here is the call graph for this function:</div>
 <area shape="rect" href="ServoEasing_8hpp.html#a138cfe5aec8d6a132994aedd0b7b20a1" title="Synchronize and blocking wait until all servos are stopped." alt="" coords="284,176,470,220"/>
 <area shape="rect" href="classServoEasing.html#af68aa2d7a932d834cf7b377867352801" title=" " alt="" coords="534,124,700,152"/>
 <area shape="rect" href="classServoEasing.html#a90c8018913929af305f4d5f4a82e51ef" title=" " alt="" coords="768,124,942,152"/>
-<area shape="rect" href="ServoEasing_8hpp.html#a7d2b265451252b889c52d8941e661ec4" title="Take the longer duration in order to move all servos synchronously." alt="" coords="518,176,716,220"/>
+<area shape="rect" href="ServoEasing_8hpp.html#a9e04422fc4594d4b4dd2cd27aaa64b3e" title="Take the longest duration in order to move all servos synchronously." alt="" coords="518,176,716,220"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a6081a17da896d37eb783459e7e8e63b0" title="Blocking wait until all servos are stopped." alt="" coords="994,236,1178,280"/>
 <area shape="rect" href="ServoEasing_8hpp.html#ad98a05e05b1349df07a2a84a6ed06ae9" title="Timer1 is used for the Arduino Servo library." alt="" coords="764,184,946,212"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a1ca4b9e40346b216e2333971aa83b5a3" title="Update all servos from list and check if all servos have stopped." alt="" coords="999,184,1173,212"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a0327b7f8ede3426c611701579f0ba9e9" title=" " alt="" coords="1226,184,1410,212"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a12b38a954d3061ea45838d147a7cfc08" title=" " alt="" coords="1260,240,1376,268"/>
 <area shape="rect" href="classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="1458,240,1601,268"/>
-<area shape="rect" href="classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1656,72,1875,116"/>
+<area shape="rect" href="classServoEasing.html#a73ac74e0a95214ae633658fef405f13a" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1656,72,1875,116"/>
 <area shape="rect" href="classServoEasing.html#a889e7f6cefd62113ac55bef58959499b" title=" " alt="" coords="1659,240,1872,268"/>
 <area shape="rect" href="classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="1649,292,1882,336"/>
 <area shape="rect" href="classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="1954,5,2127,33"/>
@@ -1044,7 +1044,7 @@ Here is the call graph for this function:</div>
 
 <p>60 us for single servo + 160 us per servo if using I2C e.g.for PCA9685 expander at 400 kHz or + 100 at 800 kHz 20 us for last interrupt The first servo pulse starts just after this interrupt routine has finished </p>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02330">2330</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02386">2386</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1085,7 +1085,7 @@ Here is the call graph for this function:</div>
 
 <p>Sets easing type aEasingType for the first aNumberOfServos in ServoEasingArray[]. </p>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02337">2337</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02393">2393</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -1114,7 +1114,7 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02419">2419</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02475">2475</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 
 </div>
 </div>
@@ -1133,7 +1133,7 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02532">2532</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02588">2588</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1146,8 +1146,8 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a id="a7d2b265451252b889c52d8941e661ec4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7d2b265451252b889c52d8941e661ec4">&#9670;&nbsp;</a></span>synchronizeAllServosAndStartInterrupt()</h2>
+<a id="a9e04422fc4594d4b4dd2cd27aaa64b3e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9e04422fc4594d4b4dd2cd27aaa64b3e">&#9670;&nbsp;</a></span>synchronizeAllServosAndStartInterrupt()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1156,27 +1156,43 @@ Here is the call graph for this function:</div>
           <td class="memname">void synchronizeAllServosAndStartInterrupt </td>
           <td>(</td>
           <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>aStartUpdateByInterrupt</em></td><td>)</td>
+          <td class="paramname"><em>aStartUpdateByInterrupt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>aSynchronizeToMinimumDuration</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Take the longer duration in order to move all servos synchronously. </p>
+<p>Take the longest duration in order to move all servos synchronously. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">aSynchronizeToMinimumDuration</td><td>- Take the shortest duration for synchronizing </td></tr>
+  </table>
+  </dd>
+</dl>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02631">2631</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02691">2691</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="ServoEasing_8hpp_a7d2b265451252b889c52d8941e661ec4_cgraph.png" border="0" usemap="#ServoEasing_8hpp_a7d2b265451252b889c52d8941e661ec4_cgraph" alt=""/></div>
-<map name="ServoEasing_8hpp_a7d2b265451252b889c52d8941e661ec4_cgraph" id="ServoEasing_8hpp_a7d2b265451252b889c52d8941e661ec4_cgraph">
-<area shape="rect" title="Take the longer duration in order to move all servos synchronously." alt="" coords="5,207,204,251"/>
+<div class="center"><img src="ServoEasing_8hpp_a9e04422fc4594d4b4dd2cd27aaa64b3e_cgraph.png" border="0" usemap="#ServoEasing_8hpp_a9e04422fc4594d4b4dd2cd27aaa64b3e_cgraph" alt=""/></div>
+<map name="ServoEasing_8hpp_a9e04422fc4594d4b4dd2cd27aaa64b3e_cgraph" id="ServoEasing_8hpp_a9e04422fc4594d4b4dd2cd27aaa64b3e_cgraph">
+<area shape="rect" title="Take the longest duration in order to move all servos synchronously." alt="" coords="5,207,204,251"/>
 <area shape="rect" href="ServoEasing_8hpp.html#ad98a05e05b1349df07a2a84a6ed06ae9" title="Timer1 is used for the Arduino Servo library." alt="" coords="252,215,433,243"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a1ca4b9e40346b216e2333971aa83b5a3" title="Update all servos from list and check if all servos have stopped." alt="" coords="481,215,655,243"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a0327b7f8ede3426c611701579f0ba9e9" title=" " alt="" coords="703,188,888,216"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a12b38a954d3061ea45838d147a7cfc08" title=" " alt="" coords="737,240,854,268"/>
 <area shape="rect" href="classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="936,240,1078,268"/>
-<area shape="rect" href="classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1133,72,1352,116"/>
+<area shape="rect" href="classServoEasing.html#a73ac74e0a95214ae633658fef405f13a" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1133,72,1352,116"/>
 <area shape="rect" href="classServoEasing.html#a889e7f6cefd62113ac55bef58959499b" title=" " alt="" coords="1136,240,1349,268"/>
 <area shape="rect" href="classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="1126,292,1359,336"/>
 <area shape="rect" href="classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="1432,5,1604,33"/>
@@ -1194,9 +1210,9 @@ Here is the call graph for this function:</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="ServoEasing_8hpp_a7d2b265451252b889c52d8941e661ec4_icgraph.png" border="0" usemap="#ServoEasing_8hpp_a7d2b265451252b889c52d8941e661ec4_icgraph" alt=""/></div>
-<map name="ServoEasing_8hpp_a7d2b265451252b889c52d8941e661ec4_icgraph" id="ServoEasing_8hpp_a7d2b265451252b889c52d8941e661ec4_icgraph">
-<area shape="rect" title="Take the longer duration in order to move all servos synchronously." alt="" coords="562,40,760,84"/>
+<div class="center"><img src="ServoEasing_8hpp_a9e04422fc4594d4b4dd2cd27aaa64b3e_icgraph.png" border="0" usemap="#ServoEasing_8hpp_a9e04422fc4594d4b4dd2cd27aaa64b3e_icgraph" alt=""/></div>
+<map name="ServoEasing_8hpp_a9e04422fc4594d4b4dd2cd27aaa64b3e_icgraph" id="ServoEasing_8hpp_a9e04422fc4594d4b4dd2cd27aaa64b3e_icgraph">
+<area shape="rect" title="Take the longest duration in order to move all servos synchronously." alt="" coords="562,40,760,84"/>
 <area shape="rect" href="ServoEasing_8hpp.html#afc99e509838b5b5cbd21942cea366e2c" title=" " alt="" coords="284,5,514,49"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a138cfe5aec8d6a132994aedd0b7b20a1" title="Synchronize and blocking wait until all servos are stopped." alt="" coords="306,73,492,117"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a1b5872f39331d279ca84e9c4d1eaa980" title="Synchronize and blocking wait until all servos are stopped Take the longer duration in order to move ..." alt="" coords="5,39,236,83"/>
@@ -1223,21 +1239,21 @@ Here is the caller graph for this function:</div>
 
 <p>Synchronize and blocking wait until all servos are stopped. </p>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02623">2623</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02682">2682</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="ServoEasing_8hpp_a138cfe5aec8d6a132994aedd0b7b20a1_cgraph.png" border="0" usemap="#ServoEasing_8hpp_a138cfe5aec8d6a132994aedd0b7b20a1_cgraph" alt=""/></div>
 <map name="ServoEasing_8hpp_a138cfe5aec8d6a132994aedd0b7b20a1_cgraph" id="ServoEasing_8hpp_a138cfe5aec8d6a132994aedd0b7b20a1_cgraph">
 <area shape="rect" title="Synchronize and blocking wait until all servos are stopped." alt="" coords="5,208,192,252"/>
-<area shape="rect" href="ServoEasing_8hpp.html#a7d2b265451252b889c52d8941e661ec4" title="Take the longer duration in order to move all servos synchronously." alt="" coords="240,177,438,221"/>
+<area shape="rect" href="ServoEasing_8hpp.html#a9e04422fc4594d4b4dd2cd27aaa64b3e" title="Take the longest duration in order to move all servos synchronously." alt="" coords="240,177,438,221"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a6081a17da896d37eb783459e7e8e63b0" title="Blocking wait until all servos are stopped." alt="" coords="486,237,670,281"/>
 <area shape="rect" href="ServoEasing_8hpp.html#ad98a05e05b1349df07a2a84a6ed06ae9" title="Timer1 is used for the Arduino Servo library." alt="" coords="488,185,669,213"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a1ca4b9e40346b216e2333971aa83b5a3" title="Update all servos from list and check if all servos have stopped." alt="" coords="718,187,893,215"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a0327b7f8ede3426c611701579f0ba9e9" title=" " alt="" coords="941,187,1125,215"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a12b38a954d3061ea45838d147a7cfc08" title=" " alt="" coords="975,240,1091,268"/>
 <area shape="rect" href="classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="1173,240,1315,268"/>
-<area shape="rect" href="classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1370,72,1590,116"/>
+<area shape="rect" href="classServoEasing.html#a73ac74e0a95214ae633658fef405f13a" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1370,72,1590,116"/>
 <area shape="rect" href="classServoEasing.html#a889e7f6cefd62113ac55bef58959499b" title=" " alt="" coords="1373,240,1587,268"/>
 <area shape="rect" href="classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="1363,292,1597,336"/>
 <area shape="rect" href="classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="1669,5,1842,33"/>
@@ -1280,7 +1296,7 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02370">2370</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02426">2426</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1291,14 +1307,14 @@ Here is the call graph for this function:</div>
 <area shape="rect" href="ServoEasing_8hpp.html#a138cfe5aec8d6a132994aedd0b7b20a1" title="Synchronize and blocking wait until all servos are stopped." alt="" coords="243,176,429,220"/>
 <area shape="rect" href="classServoEasing.html#af68aa2d7a932d834cf7b377867352801" title=" " alt="" coords="494,124,659,152"/>
 <area shape="rect" href="classServoEasing.html#a90c8018913929af305f4d5f4a82e51ef" title=" " alt="" coords="727,124,901,152"/>
-<area shape="rect" href="ServoEasing_8hpp.html#a7d2b265451252b889c52d8941e661ec4" title="Take the longer duration in order to move all servos synchronously." alt="" coords="477,176,675,220"/>
+<area shape="rect" href="ServoEasing_8hpp.html#a9e04422fc4594d4b4dd2cd27aaa64b3e" title="Take the longest duration in order to move all servos synchronously." alt="" coords="477,176,675,220"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a6081a17da896d37eb783459e7e8e63b0" title="Blocking wait until all servos are stopped." alt="" coords="953,236,1137,280"/>
 <area shape="rect" href="ServoEasing_8hpp.html#ad98a05e05b1349df07a2a84a6ed06ae9" title="Timer1 is used for the Arduino Servo library." alt="" coords="723,184,905,212"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a1ca4b9e40346b216e2333971aa83b5a3" title="Update all servos from list and check if all servos have stopped." alt="" coords="958,184,1132,212"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a0327b7f8ede3426c611701579f0ba9e9" title=" " alt="" coords="1185,184,1369,212"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a12b38a954d3061ea45838d147a7cfc08" title=" " alt="" coords="1219,240,1335,268"/>
 <area shape="rect" href="classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="1417,240,1560,268"/>
-<area shape="rect" href="classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1615,72,1834,116"/>
+<area shape="rect" href="classServoEasing.html#a73ac74e0a95214ae633658fef405f13a" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1615,72,1834,116"/>
 <area shape="rect" href="classServoEasing.html#a889e7f6cefd62113ac55bef58959499b" title=" " alt="" coords="1618,240,1831,268"/>
 <area shape="rect" href="classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="1608,292,1841,336"/>
 <area shape="rect" href="classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="1914,5,2086,33"/>
@@ -1332,7 +1348,7 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02375">2375</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02431">2431</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1343,14 +1359,14 @@ Here is the call graph for this function:</div>
 <area shape="rect" href="ServoEasing_8hpp.html#a138cfe5aec8d6a132994aedd0b7b20a1" title="Synchronize and blocking wait until all servos are stopped." alt="" coords="243,176,429,220"/>
 <area shape="rect" href="classServoEasing.html#af68aa2d7a932d834cf7b377867352801" title=" " alt="" coords="494,124,659,152"/>
 <area shape="rect" href="classServoEasing.html#a90c8018913929af305f4d5f4a82e51ef" title=" " alt="" coords="727,124,901,152"/>
-<area shape="rect" href="ServoEasing_8hpp.html#a7d2b265451252b889c52d8941e661ec4" title="Take the longer duration in order to move all servos synchronously." alt="" coords="477,176,675,220"/>
+<area shape="rect" href="ServoEasing_8hpp.html#a9e04422fc4594d4b4dd2cd27aaa64b3e" title="Take the longest duration in order to move all servos synchronously." alt="" coords="477,176,675,220"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a6081a17da896d37eb783459e7e8e63b0" title="Blocking wait until all servos are stopped." alt="" coords="953,236,1137,280"/>
 <area shape="rect" href="ServoEasing_8hpp.html#ad98a05e05b1349df07a2a84a6ed06ae9" title="Timer1 is used for the Arduino Servo library." alt="" coords="723,184,905,212"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a1ca4b9e40346b216e2333971aa83b5a3" title="Update all servos from list and check if all servos have stopped." alt="" coords="958,184,1132,212"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a0327b7f8ede3426c611701579f0ba9e9" title=" " alt="" coords="1185,184,1369,212"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a12b38a954d3061ea45838d147a7cfc08" title=" " alt="" coords="1219,240,1335,268"/>
 <area shape="rect" href="classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="1417,240,1560,268"/>
-<area shape="rect" href="classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1615,72,1834,116"/>
+<area shape="rect" href="classServoEasing.html#a73ac74e0a95214ae633658fef405f13a" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="1615,72,1834,116"/>
 <area shape="rect" href="classServoEasing.html#a889e7f6cefd62113ac55bef58959499b" title=" " alt="" coords="1618,240,1831,268"/>
 <area shape="rect" href="classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="1608,292,1841,336"/>
 <area shape="rect" href="classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="1914,5,2086,33"/>
@@ -1384,7 +1400,7 @@ Here is the call graph for this function:</div>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>true if all Servos reached endAngle / stopped </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02574">2574</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02630">2630</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1392,7 +1408,7 @@ Here is the call graph for this function:</div>
 <map name="ServoEasing_8hpp_a12b38a954d3061ea45838d147a7cfc08_cgraph" id="ServoEasing_8hpp_a12b38a954d3061ea45838d147a7cfc08_cgraph">
 <area shape="rect" title=" " alt="" coords="5,240,122,268"/>
 <area shape="rect" href="classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="170,240,312,268"/>
-<area shape="rect" href="classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="367,72,586,116"/>
+<area shape="rect" href="classServoEasing.html#a73ac74e0a95214ae633658fef405f13a" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="367,72,586,116"/>
 <area shape="rect" href="classServoEasing.html#a889e7f6cefd62113ac55bef58959499b" title=" " alt="" coords="370,240,583,268"/>
 <area shape="rect" href="classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="360,292,593,336"/>
 <area shape="rect" href="classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="666,5,838,33"/>
@@ -1421,7 +1437,7 @@ Here is the caller graph for this function:</div>
 <area shape="rect" href="ServoEasing_8hpp.html#ad98a05e05b1349df07a2a84a6ed06ae9" title="Timer1 is used for the Arduino Servo library." alt="" coords="840,224,1021,252"/>
 <area shape="rect" href="classServoEasing.html#a99c46eac2b8dc93235eb819c38c77992" title=" " alt="" coords="562,255,790,283"/>
 <area shape="rect" href="classServoEasing.html#a3fc76128ba052768df22ac28503a6f10" title="Sets up all the values required for a smooth move to new value Lower level function with time instead..." alt="" coords="584,177,768,205"/>
-<area shape="rect" href="ServoEasing_8hpp.html#a7d2b265451252b889c52d8941e661ec4" title="Take the longer duration in order to move all servos synchronously." alt="" coords="577,333,775,377"/>
+<area shape="rect" href="ServoEasing_8hpp.html#a9e04422fc4594d4b4dd2cd27aaa64b3e" title="Take the longest duration in order to move all servos synchronously." alt="" coords="577,333,775,377"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a823207800d39c07d227819162cb4fd21" title=" " alt="" coords="298,281,500,309"/>
 <area shape="rect" href="classServoEasing.html#ae373bfcaec45e822ddd0503a2eb7f269" title="stay at the position for aMillisToWait Used as delay for callback" alt="" coords="310,73,488,101"/>
 <area shape="rect" href="classServoEasing.html#ac5d085c2eb06b4fa2a3bdc3d914c740b" title="Sets easing parameter, but does not start." alt="" coords="311,125,486,153"/>
@@ -1453,7 +1469,7 @@ Here is the caller graph for this function:</div>
 
 <p>Blocking wait until all servos are stopped. </p>
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02591">2591</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02650">2650</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1462,7 +1478,7 @@ Here is the call graph for this function:</div>
 <area shape="rect" title="Blocking wait until all servos are stopped." alt="" coords="5,232,190,276"/>
 <area shape="rect" href="ServoEasing_8hpp.html#a12b38a954d3061ea45838d147a7cfc08" title=" " alt="" coords="238,240,354,268"/>
 <area shape="rect" href="classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="402,240,544,268"/>
-<area shape="rect" href="classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="599,72,819,116"/>
+<area shape="rect" href="classServoEasing.html#a73ac74e0a95214ae633658fef405f13a" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="599,72,819,116"/>
 <area shape="rect" href="classServoEasing.html#a889e7f6cefd62113ac55bef58959499b" title=" " alt="" coords="602,240,816,268"/>
 <area shape="rect" href="classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="592,292,826,336"/>
 <area shape="rect" href="classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="898,5,1070,33"/>
@@ -1507,15 +1523,15 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02411">2411</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ServoEasing_8hpp_source.html#l02467">2467</a> of file <a class="el" href="ServoEasing_8hpp_source.html">ServoEasing.hpp</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="ServoEasing_8hpp_a9c6b28e01c0d30c1f14e31924f38d510_cgraph.png" border="0" usemap="#ServoEasing_8hpp_a9c6b28e01c0d30c1f14e31924f38d510_cgraph" alt=""/></div>
 <map name="ServoEasing_8hpp_a9c6b28e01c0d30c1f14e31924f38d510_cgraph" id="ServoEasing_8hpp_a9c6b28e01c0d30c1f14e31924f38d510_cgraph">
 <area shape="rect" title=" " alt="" coords="5,48,111,76"/>
-<area shape="rect" href="classServoEasing.html#a04d5810d2c64ebbf6d366f1aec177300" title=" " alt="" coords="159,48,290,76"/>
-<area shape="rect" href="classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="345,5,564,49"/>
+<area shape="rect" href="classServoEasing.html#a04d5810d2c64ebbf6d366f1aec177300" title="Tested value of 400 for my PCA9685 expander 10/25 (was effectively 382 us / &#45; 2 %,..." alt="" coords="159,48,290,76"/>
+<area shape="rect" href="classServoEasing.html#a73ac74e0a95214ae633658fef405f13a" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="345,5,564,49"/>
 <area shape="rect" href="classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="338,73,571,117"/>
 <area shape="rect" href="classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="619,13,792,41"/>
 </map>
@@ -1546,7 +1562,7 @@ Here is the call graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="ServoEasing_8hpp.html">ServoEasing.hpp</a></li>
-    <li class="footer">Generated on Sun Aug 24 2025 18:03:48 for ServoEasing by
+    <li class="footer">Generated on Thu Feb 26 2026 12:47:43 for ServoEasing by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.18 </li>
   </ul>

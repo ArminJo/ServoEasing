@@ -2,7 +2,7 @@ var classServoEasing =
 [
     [ "ServoEasing", "classServoEasing.html#a8e45a2aac3f2857d9af9a0820b27c237", null ],
     [ "_setTrimMicrosecondsOrUnits", "classServoEasing.html#a5943393ae68c437d5b5f48a235565749", null ],
-    [ "_writeMicrosecondsOrUnits", "classServoEasing.html#a231511782a5051166434c33c4deb39dc", null ],
+    [ "_writeMicrosecondsOrUnits", "classServoEasing.html#a73ac74e0a95214ae633658fef405f13a", null ],
     [ "applyTrimAndReverseToTargetMicrosecondsOrUnits", "classServoEasing.html#ac38d29a080553c0c6a3e2b0678150360", null ],
     [ "areInterruptsActive", "classServoEasing.html#a1d69c1030cc20045467532633d3df26e", null ],
     [ "attach", "classServoEasing.html#aa2bbc3d405836ba6a1b466caaa349a27", null ],
@@ -49,6 +49,7 @@ var classServoEasing =
     [ "print", "classServoEasing.html#a61415b921c9d15ce7aebd8425e1b4e7f", null ],
     [ "printDynamic", "classServoEasing.html#a08f9f4edf145eef15a5a7d7f04858925", null ],
     [ "printEasingType", "classServoEasing.html#a94909317b9b32832aecc7204e445e148", null ],
+    [ "printExtra", "classServoEasing.html#a2aa8d17d77af46e08a348a23669fd514", null ],
     [ "printStatic", "classServoEasing.html#a6d11dcb885fceb6a6d0eedaae19ba5b0", null ],
     [ "QuadraticEaseIn", "classServoEasing.html#a855a7ff6b05f3008f6f63bc141b2b260", null ],
     [ "QuarticEaseIn", "classServoEasing.html#a14bfa59cd2c5f80815fbfd09b9fa0f9f", null ],

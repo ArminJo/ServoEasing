@@ -1,4 +1,4 @@
 <map id="ServoEasing::detach" name="ServoEasing::detach">
-<area shape="rect" id="node1" title="No servo signal is generated for a detached servo." alt="" coords="5,5,148,33"/>
+<area shape="rect" id="node1" title="No servo signal is generated for a detached servo / the output is constant LOW." alt="" coords="5,5,148,33"/>
 <area shape="rect" id="node2" href="$classServo.html#a0b69ccc5c8b348ebaa84be91d973a362" title=" " alt="" coords="196,5,298,33"/>
 </map>

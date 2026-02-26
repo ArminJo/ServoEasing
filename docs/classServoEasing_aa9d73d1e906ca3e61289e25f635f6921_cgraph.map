@@ -2,9 +2,9 @@
 <area shape="rect" id="node1" title=" " alt="" coords="5,57,198,85"/>
 <area shape="rect" id="node2" href="$classServoEasing.html#aa2bbc3d405836ba6a1b466caaa349a27" title="Specify the microseconds values for 0 and 180 degree for the servo." alt="" coords="250,5,389,33"/>
 <area shape="rect" id="node3" href="$classServoEasing.html#a1f3b92c4b303e63d7aed11492bd5d955" title=" " alt="" coords="246,57,393,85"/>
-<area shape="rect" id="node8" href="$classServoEasing.html#a04d5810d2c64ebbf6d366f1aec177300" title=" " alt="" coords="254,109,385,137"/>
+<area shape="rect" id="node8" href="$classServoEasing.html#a04d5810d2c64ebbf6d366f1aec177300" title="Tested value of 400 for my PCA9685 expander 10/25 (was effectively 382 us / &#45; 2 %,..." alt="" coords="254,109,385,137"/>
 <area shape="rect" id="node4" href="$classServoEasing.html#a5943393ae68c437d5b5f48a235565749" title=" " alt="" coords="441,7,676,51"/>
 <area shape="rect" id="node7" href="$classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="442,75,675,119"/>
-<area shape="rect" id="node5" href="$classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="724,71,944,115"/>
+<area shape="rect" id="node5" href="$classServoEasing.html#a73ac74e0a95214ae633658fef405f13a" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="724,71,944,115"/>
 <area shape="rect" id="node6" href="$classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="992,79,1164,107"/>
 </map>

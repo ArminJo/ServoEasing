@@ -3,7 +3,7 @@
 <area shape="rect" id="node2" href="$ServoEasing_8hpp.html#ad98a05e05b1349df07a2a84a6ed06ae9" title="Timer1 is used for the Arduino Servo library." alt="" coords="838,161,1020,189"/>
 <area shape="rect" id="node3" href="$classServoEasing.html#a99c46eac2b8dc93235eb819c38c77992" title=" " alt="" coords="562,57,790,85"/>
 <area shape="rect" id="node5" href="$classServoEasing.html#a3fc76128ba052768df22ac28503a6f10" title="Sets up all the values required for a smooth move to new value Lower level function with time instead..." alt="" coords="584,161,768,189"/>
-<area shape="rect" id="node11" href="$ServoEasing_8hpp.html#a7d2b265451252b889c52d8941e661ec4" title="Take the longer duration in order to move all servos synchronously." alt="" coords="577,317,775,361"/>
+<area shape="rect" id="node11" href="$ServoEasing_8hpp.html#a9e04422fc4594d4b4dd2cd27aaa64b3e" title="Take the longest duration in order to move all servos synchronously." alt="" coords="577,317,775,361"/>
 <area shape="rect" id="node4" href="$ServoEasing_8hpp.html#a823207800d39c07d227819162cb4fd21" title=" " alt="" coords="298,5,500,33"/>
 <area shape="rect" id="node6" href="$classServoEasing.html#ab451c457f9e08ac17061cee812936912" title=" " alt="" coords="321,57,476,85"/>
 <area shape="rect" id="node7" href="$classServoEasing.html#ae373bfcaec45e822ddd0503a2eb7f269" title="stay at the position for aMillisToWait Used as delay for callback" alt="" coords="310,109,488,137"/>

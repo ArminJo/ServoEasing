@@ -49,7 +49,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "DummyServo_8h.html",
-"classServoEasing.html#a855a7ff6b05f3008f6f63bc141b2b260"
+"classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

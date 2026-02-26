@@ -2,7 +2,7 @@
 <area shape="rect" id="node1" title="Blocking wait until all servos are stopped." alt="" coords="5,232,190,276"/>
 <area shape="rect" id="node2" href="$ServoEasing_8hpp.html#a12b38a954d3061ea45838d147a7cfc08" title=" " alt="" coords="238,240,354,268"/>
 <area shape="rect" id="node3" href="$classServoEasing.html#a8b62e174e0aa645dc3a507ee53c82fd4" title=" " alt="" coords="402,240,544,268"/>
-<area shape="rect" id="node4" href="$classServoEasing.html#a231511782a5051166434c33c4deb39dc" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="599,72,819,116"/>
+<area shape="rect" id="node4" href="$classServoEasing.html#a73ac74e0a95214ae633658fef405f13a" title="Internal function Before sending the value to the underlying Servo library, trim and reverse is appli..." alt="" coords="599,72,819,116"/>
 <area shape="rect" id="node6" href="$classServoEasing.html#a889e7f6cefd62113ac55bef58959499b" title=" " alt="" coords="602,240,816,268"/>
 <area shape="rect" id="node16" href="$classServoEasing.html#a824313fe58b55a34f876c8ff19b6e912" title="We have around 10 us per degree Used to convert (external) provided degree values to internal microse..." alt="" coords="592,292,826,336"/>
 <area shape="rect" id="node5" href="$classServo.html#ac7fe3d6d2ea285ead98814bcfc417029" title=" " alt="" coords="898,5,1070,33"/>
