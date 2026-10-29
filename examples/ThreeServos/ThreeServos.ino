@@ -5,7 +5,6 @@
  *  Demonstrates the use of ServoEasingArray and ServoEasingNextPositionArray.
  *
  *  Copyright (C) 2019-2024  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
  *

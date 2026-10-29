@@ -4,7 +4,6 @@
  * list of functions implemented, which can e.g. be called by IR remote
  *
  *  Copyright (C) 2019-2026  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of QuadrupedControl https://github.com/ArminJo/QuadrupedControl.
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -29,21 +28,28 @@
 #define SERVO_MIN_SPEED       4 // degree per seconds
 #define SERVO_MAX_SPEED     400 // degree per seconds
 
-// The code for the called command is available in variable sCurrentIRCode
-
 void doTrot();
 void doCreep();
 void doTurn();
 
 // Combined moves
-void doDance();
+void doDanceAndWave();
 void doWave();
 void doTwist();
-void doQuadrupedDemoMove();
-void doQuadrupedAutoMove();
+void doQuadrupedLongDemoMove();
+void doQuadrupedDemoMoves(bool aDoLongDemo);
+void doQuadrupedFeatureMove();
 
 // Moves not on the remote
 void doAttention();
+
+#define DEMO_MOVE_DOWN_AND_UP   0
+#define DEMO_MOVE_TWIST         1
+#define DEMO_MOVE_TURN          2
+#define DEMO_MOVE_LEAN          3
+#define DEMO_MOVE_WAVE          4
+#define DEMO_MOVE_MAX_VALUE     4
+void doOneQuadrupedDemoMove(uint8_t aIndexOfDemoMove);
 
 // Special commands
 void doCenterServos();

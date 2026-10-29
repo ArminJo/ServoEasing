@@ -9,8 +9,10 @@
  *
  *  The AVR Servo library supports only one timer, which means not more than 12 servos are supported using this library.
  *
+ *  Internally we use microsecond or PCA9685 units (4.88 us).
+ *  So 0 degree is 544 us or 111 units and 180 degree is 2400 us or 491 units.
+ *
  *  Copyright (C) 2019-2026  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
  *
@@ -216,6 +218,9 @@ ServoEasing::ServoEasing(uint8_t aPCA9685I2CAddress, TwoWire *aI2CClass) // @sup
     mServoMoves = false;
     mOperateServoReverse = false;
 
+#if !defined(DISABLE_PAUSE_RESUME)
+    mServoIsPaused = false;
+#endif
 #if defined(USE_SERVO_LIB)
     mServoIsConnectedToExpander = true;
 #endif
@@ -292,7 +297,7 @@ void ServoEasing::PCA9685InitWithExternalClock(uint32_t aExternalClockFrequencyH
 }
 
 /**
- * Specify the actual internal PCA9685 clock frequency to get a correct 20m ms period.
+ * Specify the actual internal PCA9685 clock frequency to get a correct 20 ms period.
  * 25 MHz is the default clock frequency of the PCA9685.
  * See https://github.com/adafruit/Adafruit-PWM-Servo-Driver-Library/blob/master/examples/oscillator/oscillator.ino
  *
@@ -466,12 +471,10 @@ ServoEasing::ServoEasing() // @suppress("Class members should be properly initia
  * If USE_LIGHTWEIGHT_SERVO_LIBRARY is enabled:
  *      Return 0/false if not pin 9 or 10 else return aPin
  *      Pin number != 9 results in using pin 10.
- * If USE_PCA9685_SERVO_EXPANDER is enabled:
- *      Return true only if channel number is between 0 and 15 since PCA9685 has only 16 channels, else returns false
- * Else return servoIndex / internal channel number
+ * Else return servoIndex / internal channel number / INVALID_SERVO (255)
  */
 uint8_t ServoEasing::attach(int aPin) {
-    return attach(aPin, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
+    return attach(aPin, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, 0, 180);
 }
 
 // Here no units accepted, only microseconds!
@@ -498,7 +501,7 @@ uint8_t ServoEasing::attachWithTrim(int aPin, int aTrimDegreeOrMicrosecond, int 
  * Combination of attach with initial write().
  * Specify the start value written to the servo and the microseconds values for 0 and 180 degree for the servo.
  * The values can be determined by the EndPositionsTest example.
- * By modifying the Micoseconds* parameter values you can also provide an initial trim.
+ * By modifying the microseconds* parameter values you can also provide an initial trim.
  * Initial trim is the behavior for mTrimMicrosecondsOrUnits == 0.
  */
 uint8_t ServoEasing::attach(int aPin, int aInitialDegreeOrMicrosecond, int aMicrosecondsForServo0Degree,
@@ -550,7 +553,7 @@ uint8_t ServoEasing::reattach() {
      */
     mServoIndex = INVALID_SERVO; // flag indicating an invalid servo index
     for (uint_fast8_t tServoIndex = 0; tServoIndex < MAX_EASING_SERVOS; ++tServoIndex) {
-        if (ServoEasingArray[tServoIndex] == nullptr) {
+        if (ServoEasingArray[tServoIndex] == nullptr || ServoEasingArray[tServoIndex] == this) {
             ServoEasingArray[tServoIndex] = this;
             mServoIndex = tServoIndex;
             if (sServoArrayMaxIndex < tServoIndex) {
@@ -593,10 +596,20 @@ uint8_t ServoEasing::reattach() {
  * @return  If USE_LIGHTWEIGHT_SERVO_LIBRARY is enabled:
  *             Return 0/false if not pin 9 or 10 else return aPin
  *             Pin number != 9 results in using pin 10.
- *         Else return servoIndex / internal channel number
+ *         Else return servoIndex / internal channel number / INVALID_SERVO (255)
  */
 uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aMicrosecondsForServoHighDegree, int aServoLowDegree,
         int aServoHighDegree) {
+
+#if defined(USE_LIGHTWEIGHT_SERVO_LIBRARY)
+    if (aPin != LIGHTWEIGHT_SERVO_CHANNEL_A_PIN && aPin != LIGHTWEIGHT_SERVO_CHANNEL_B_PIN
+#  if defined(LIGHTWEIGHT_SERVO_CHANNEL_C_PIN)
+            && aPin != LIGHTWEIGHT_SERVO_CHANNEL_C_PIN
+#  endif
+                    ) {
+        return false; // fail fast :-)
+    }
+#endif
 
     /*
      * Reset trim and reverse
@@ -637,10 +650,11 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
 
     /*
      * Now put this servo instance into list of servos
+     * If a servo is attached twice, it gets the same servo index
      */
     mServoIndex = INVALID_SERVO; // flag indicating an invalid servo index
     for (uint_fast8_t tServoIndex = 0; tServoIndex < MAX_EASING_SERVOS; ++tServoIndex) {
-        if (ServoEasingArray[tServoIndex] == nullptr) {
+        if (ServoEasingArray[tServoIndex] == nullptr || ServoEasingArray[tServoIndex] == this) {
             ServoEasingArray[tServoIndex] = this;
             mServoIndex = tServoIndex;
             if (sServoArrayMaxIndex < tServoIndex) {
@@ -675,9 +689,10 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
     mLastTargetMicrosecondsOrUnits = DEFAULT_PCA9685_UNITS_FOR_90_DEGREE; // The start value if we forget the initial write()
 #  if defined(USE_SERVO_LIB)
     if (mServoIsConnectedToExpander) {
-        if (mServoIndex == 0) {
-            I2CInit();          // init only once
-            PCA9685Reset();     // reset only once
+        if (!mI2CIsInitializedAndExpanderIsReset) {
+            I2CInit();
+            PCA9685Reset();
+            mI2CIsInitializedAndExpanderIsReset = true; // do it only once
         }
         PCA9685Init(); // initialize at every attach is simpler but initializing once for every board would be sufficient.
         return mServoIndex;
@@ -699,13 +714,6 @@ uint8_t ServoEasing::attach(int aPin, int aMicrosecondsForServoLowDegree, int aM
     mLastTargetMicrosecondsOrUnits = DEFAULT_PULSE_WIDTH; // The start value if we forget the initial write() after attach()
 
 #  if defined(USE_LIGHTWEIGHT_SERVO_LIBRARY)
-    if (aPin != LIGHTWEIGHT_SERVO_CHANNEL_A_PIN && aPin != LIGHTWEIGHT_SERVO_CHANNEL_B_PIN
-#if defined(LIGHTWEIGHT_SERVO_CHANNEL_C_PIN)
-            && aPin != LIGHTWEIGHT_SERVO_CHANNEL_C_PIN
-#endif
-                    ) {
-        return false;
-    }
     return aPin;
 #  else
     /*
@@ -855,7 +863,7 @@ void ServoEasing::setUserDataPointer(void *aUserDataPointer) {
 
 /**
  * Tested value of 400 for my PCA9685 expander 10/25 (was effectively 382 us / - 2 %, maybe due to deviation of internal clock frequency)
- * @param aTargetDegreeOrMicrosecond treat values less than 400 as angles in degrees, others are handled as microseconds
+ * @param aTargetDegreeOrMicrosecond treat values less than THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS (360) as angles in degrees, others are handled as microseconds
  */
 void ServoEasing::write(int aTargetDegreeOrMicrosecond) {
 #if defined(LOCAL_TRACE)
@@ -980,7 +988,7 @@ void ServoEasing::_writeMicrosecondsOrUnits(int aTargetMicrosecondsOrUnits) {
         Servo::writeMicroseconds(aTargetMicrosecondsOrUnits); // requires 7 us
 #    endif
     }
-#  else
+#  else // USE_SERVO_LIB
     /*
      * Distribute the servo start time over the 20 ms period.
      * Unexpectedly this even saves 20 bytes Flash for an ATmega328P
@@ -1500,7 +1508,7 @@ void ServoEasing::pause() {
 
 void ServoEasing::resumeWithInterrupts() {
 #if !defined(DISABLE_PAUSE_RESUME)
-    mMillisAtStartMove += millis() - mMillisAtStopMove; // adjust the start time in order to continue the position of the stop() command.
+    mMillisAtStartMove += millis() - mMillisAtStopMove; // adjust the start time in order to continue the position of the pause() command.
     mServoIsPaused = false;
 #endif
     enableServoEasingInterrupt();
@@ -1508,7 +1516,7 @@ void ServoEasing::resumeWithInterrupts() {
 
 void ServoEasing::resumeWithoutInterrupts() {
 #if !defined(DISABLE_PAUSE_RESUME)
-    mMillisAtStartMove += millis() - mMillisAtStopMove; // adjust the start time in order to continue the position of the stop() command.
+    mMillisAtStartMove += millis() - mMillisAtStopMove; // adjust the start time in order to continue the position of the pause() command.
     mServoIsPaused = false;
 #endif
 }
@@ -1527,6 +1535,12 @@ bool ServoEasing::update() {
         return true;
     }
 
+#if !defined(DISABLE_PAUSE_RESUME)
+    if (mServoIsPaused) {
+        return false; // do not really move but still request next update
+    }
+#endif
+
     uint32_t tMillisSinceStart = millis() - mMillisAtStartMove;
     if (tMillisSinceStart >= mMillisForCompleteMove) {
         // end of time reached -> write end position and return true
@@ -1544,7 +1558,7 @@ bool ServoEasing::update() {
      * 40 us to compute
      */
     int_fast16_t tNewMicrosecondsOrUnits = mStartMicrosecondsOrUnits
-    + ((mDeltaMicrosecondsOrUnits * (int32_t) tMillisSinceStart) / mMillisForCompleteMove);
+    + ((mDeltaMicrosecondsOrUnits * (int32_t) tMillisSinceStart) / (int32_t) mMillisForCompleteMove);
     /*
      * Write new position only if changed
      */
@@ -1674,7 +1688,7 @@ bool ServoEasing::update() {
         if (tFactorOfMovementCompletion >= EASE_FUNCTION_DEGREE_THRESHOLD) {
             // Here we have called an easing function, which returns degree instead of the factor of completion (0.0 to 1.0)
             tNewMicrosecondsOrUnits = DegreeOrMicrosecondToMicrosecondsOrUnits(
-                    (float) (tFactorOfMovementCompletion - EASE_FUNCTION_DEGREE_INDICATOR_OFFSET + 0.5));
+                    (float) (tFactorOfMovementCompletion - EASE_FUNCTION_DEGREE_INDICATOR_OFFSET));
         } else
 #endif
         {
@@ -1989,7 +2003,7 @@ void ServoEasing::printExtra(Print *aSerial) {
  * @return 0 if aDegreeToClip >= 218 and 180 if 180 <= aDegreeToClip < 218
  */
 int clipDegreeSpecial(uint_fast8_t aDegreeToClip) {
-    if (aDegreeToClip) {
+    if (aDegreeToClip <= 180) {
         return aDegreeToClip;
     }
     if (aDegreeToClip < 218) {
@@ -2001,14 +2015,14 @@ int clipDegreeSpecial(uint_fast8_t aDegreeToClip) {
 /**
  * Update all servos from list and check if all servos have stopped.
  * Guarded by an macro in order to be able to overwrite it, e.g. for synchronizing with NeoPixel updates,
- * which otherwise leads to servo twitching. See QuadrupedNeoPixel.cpp of QuadrupedControl example.
+ * which otherwise leads to servo twitching. See QuadrupedNeoPixel.hpp of QuadrupedControl example.
  * We have (at least on Uno, Nano etc.) 100 us before the next servo period starts.
  * See also setTimer1InterruptMarginMicros();
  */
 #if !defined(ENABLE_EXTERNAL_SERVO_TIMER_HANDLER)
 #  if defined(STM32F1xx) && STM32_CORE_VERSION_MAJOR == 1 &&  STM32_CORE_VERSION_MINOR <= 8 // for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
 void handleServoTimerInterrupt(HardwareTimer *aDummy __attribute__((unused))) // changed in stm32duino 1.9 - 5/2020
-#else
+#  else
 void handleServoTimerInterrupt()
 #  endif
 {
@@ -2025,14 +2039,13 @@ void handleServoTimerInterrupt()
 }
 #endif // !defined(ENABLE_EXTERNAL_SERVO_TIMER_HANDLER)
 
-
 #if defined(OCR1B)
 /**
  * To have more time for overwritten interrupt routine to handle its task.
  */
-void setTimer1InterruptMarginMicros(uint16_t aInterruptMarginMicros){
+void setTimer1InterruptMarginMicros(uint16_t aInterruptMarginMicros) {
     // Generate interrupt aInterruptMarginMicros us before a new servo period starts
-    OCR1B = ((clockCyclesPerMicrosecond() * SERVO_REFRESH_INTERVAL_MICROS) / 8) - aInterruptMarginMicros;
+    OCR1B = ((clockCyclesPerMicrosecond() * (SERVO_REFRESH_INTERVAL_MICROS - aInterruptMarginMicros)) / 8);
 }
 #endif
 
@@ -2053,7 +2066,7 @@ void enableServoEasingInterrupt() {
 #  if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
 #    if defined(USE_PCA9685_SERVO_EXPANDER) && !defined(USE_SERVO_LIB)
 // set timer 5 to 20 ms, since the servo library does not do this for us
-    TCCR5A = _BV(WGM11);// FastPWM Mode mode TOP (20 ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
+    TCCR5A = _BV(WGM11);// FastPWM Mode mode TOP (20 ms) determined by ICR1
     TCCR5B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);// set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
     ICR5 = (F_CPU / 8) / SERVO_REFRESH_FREQUENCY; // 40000 - set period to 50 Hz / 20 ms
 #    endif
@@ -2064,7 +2077,7 @@ void enableServoEasingInterrupt() {
      * Calling of enableServoEasingInterrupt() disconnects pin 44 to avoid a wrong servo signal
      */
     TIFR5 |= _BV(OCF5C);    // clear any pending interrupts;
-    TIMSK5 |= _BV(OCIE5C);  // enable the output compare B interrupt
+    TIMSK5 |= _BV(OCIE5C);  // enable the output compare C interrupt
 #    if defined(USE_LIGHTWEIGHT_SERVO_LIBRARY)
     // disable output on pin 44 to avoid a wrong servo signal by setting OCR5C
     DDRL &= ~(_BV(DDL5));
@@ -2096,7 +2109,7 @@ void enableServoEasingInterrupt() {
      */
 #    if defined(USE_PCA9685_SERVO_EXPANDER) && !defined(USE_SERVO_LIB)
 //    // set timer 1 to 20 ms, since the servo library or lightweight_servo library does not do this for us
-    TCCR1A = _BV(WGM11);     // FastPWM Mode mode TOP (20 ms) determined by ICR1 - non-inverting Compare Output mode OC1A+OC1B
+    TCCR1A = _BV(WGM11);     // FastPWM Mode mode TOP (20 ms) determined by ICR1
     TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);     // set prescaler to 8, FastPWM mode mode bits WGM13 + WGM12
     ICR1 = (F_CPU / 8) / SERVO_REFRESH_FREQUENCY; // 40000 - set period to 50 Hz / 20 ms
 #    endif
@@ -2249,7 +2262,7 @@ void enableServoEasingInterrupt() {
     Timer20ms.begin(handleServoTimerInterrupt, SERVO_REFRESH_INTERVAL_MICROS);
 
 #else
-#warning Board / CPU is not covered by definitions using pre-processor symbols -> no timer available. Please extend ServoEasing.cpp.
+#warning Board / CPU is not covered by definitions using pre-processor symbols -> no timer available. Please extend ServoEasing.hpp.
 #endif
     ServoEasing::sInterruptsAreActive = true;
 }
@@ -2265,7 +2278,7 @@ void disableServoEasingInterrupt() {
 #  elif defined(__AVR_ATmega4808__) || defined(__AVR_ATmega4809__) || defined(__AVR_ATtiny3217__) // Thinary Nano Every with MegaCoreX, Uno WiFi Rev 2, Nano Every, Tiny Core 32 Dev Board
     TCA0.SINGLE.INTCTRL &= ~(TCA_SINGLE_OVF_bm); // disable the overflow interrupt
 
-#  elif defined(TIMSK1)// defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
+#  elif defined(TIMSK1)
     TIMSK1 &= ~(_BV(OCIE1B)); // disable the output compare B interrupt
 
 #  else
@@ -2329,7 +2342,7 @@ ISR(TCA0_OVF_vect) {
     handleServoTimerInterrupt();
 }
 
-#  else // defined(__AVR__)
+#  else // defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
 ISR(TIMER1_COMPB_vect) {
 #    if defined(MEASURE_SERVO_EASING_INTERRUPT_TIMING)
     digitalWriteFast(TIMING_OUTPUT_PIN, HIGH);
@@ -2384,14 +2397,14 @@ void TC5_Handler(void) {
 
 #if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
 void setEasingTypeForAllServos(uint_fast8_t aEasingType) {
-    setEasingTypeForMultipleServos(ServoEasing::sServoArrayMaxIndex, aEasingType);
+    setEasingTypeForMultipleServos(ServoEasing::sServoArrayMaxIndex + 1, aEasingType);
 }
 
 /**
  * Sets easing type aEasingType for the first aNumberOfServos in ServoEasingArray[]
  */
 void setEasingTypeForMultipleServos(uint_fast8_t aNumberOfServos, uint_fast8_t aEasingType) {
-    for (uint_fast8_t tServoIndex = 0; tServoIndex <= aNumberOfServos; ++tServoIndex) {
+    for (uint_fast8_t tServoIndex = 0; tServoIndex < aNumberOfServos; ++tServoIndex) {
         if (ServoEasing::ServoEasingArray[tServoIndex] != nullptr) {
             ServoEasing::ServoEasingArray[tServoIndex]->mEasingType = aEasingType;
         }
@@ -2533,15 +2546,15 @@ void setFloatDegreeForAllServos(uint_fast8_t aNumberOfServos, ...) {
  * @return false if one servo was still moving
  */
 bool setEaseToForAllServos() {
-    bool tOneServoIsMoving = false;
+    bool tOneServoIsNotMoving = true;
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
         if (ServoEasing::ServoEasingArray[tServoIndex] != nullptr) {
-            tOneServoIsMoving = ServoEasing::ServoEasingArray[tServoIndex]->setEaseTo(
+            tOneServoIsNotMoving = ServoEasing::ServoEasingArray[tServoIndex]->setEaseTo(
                     ServoEasing::ServoEasingNextPositionArray[tServoIndex], ServoEasing::ServoEasingArray[tServoIndex]->mSpeed)
-                    || tOneServoIsMoving;
+                    && tOneServoIsNotMoving;
         }
     }
-    return tOneServoIsMoving;
+    return tOneServoIsNotMoving;
 }
 
 /**
@@ -2550,14 +2563,14 @@ bool setEaseToForAllServos() {
  * @return false if one servo was still moving
  */
 bool setEaseToForAllServos(uint_fast16_t aDegreesPerSecond) {
-    bool tOneServoIsMoving = false;
+    bool tOneServoIsNotMoving = true;
     for (uint_fast8_t tServoIndex = 0; tServoIndex <= ServoEasing::sServoArrayMaxIndex; ++tServoIndex) {
         if (ServoEasing::ServoEasingArray[tServoIndex] != nullptr) {
-            tOneServoIsMoving = ServoEasing::ServoEasingArray[tServoIndex]->setEaseTo(
-                    ServoEasing::ServoEasingNextPositionArray[tServoIndex], aDegreesPerSecond) || tOneServoIsMoving;
+            tOneServoIsNotMoving = ServoEasing::ServoEasingArray[tServoIndex]->setEaseTo(
+                    ServoEasing::ServoEasingNextPositionArray[tServoIndex], aDegreesPerSecond) && tOneServoIsNotMoving;
         }
     }
-    return tOneServoIsMoving;
+    return tOneServoIsNotMoving;
 }
 
 /**
@@ -2802,15 +2815,14 @@ float ServoEasing::ElasticEaseIn(float aFactorOfTimeCompletion) {
 #define PART_OF_BOUNCE_MOVEMENT         (1.0 - PART_OF_LINEAR_MOVEMENT)
 #define PART_OF_BOUNCE_MOVEMENT_HALF    ((1.0 - PART_OF_LINEAR_MOVEMENT) / 2) // 0.1
 
-#define OVERSHOOT_AMOUNT_MILLIS         50 // around 5 degree
-#define OVERSHOOT_AMOUNT_UNITS          10 // around 5 degree
+#define OVERSHOOT_AMOUNT_MICROS         50 // around 5 degree
 
 /**
  * PRECISION (LinearWithQuadraticBounce) is like linear, but adds a 5 degree bounce in the last 20 % of the movement time at one direction.
  * So the target position is always approached from one side. This enables it to taken out the slack/backlash of any hardware moved by the servo.
  * IN = Negative bounce for movings from above (go in to origin)
  * OUT = Positive bounce for movings from below (go out from origin) we are called with 1.0 to 0.0
- * @return For non bounce phase of movement, return float value. For bouncing phase, return microseconds or units.
+ * @return For non bounce phase of movement, return float value. For bouncing phase, return microseconds.
  */
 float ServoEasing::LinearWithQuadraticBounce(float aFactorOfTimeCompletion) {
     if (((mEasingType & CALL_STYLE_OUT) && mDeltaMicrosecondsOrUnits < 0)
@@ -2850,20 +2862,9 @@ float ServoEasing::LinearWithQuadraticBounce(float aFactorOfTimeCompletion) {
                 tRemainingFactor = tRemainingFactor * (1 / PART_OF_BOUNCE_MOVEMENT_HALF); // tRemainingFactor is 0.0 to 1.0 -> quadratic in
             }
 
-            uint_fast8_t tBumpMicrosecondsOrUnits = OVERSHOOT_AMOUNT_MILLIS;
-#if defined(USE_PCA9685_SERVO_EXPANDER)
-#  if defined(USE_SERVO_LIB)
-            if (mServoIsConnectedToExpander) {
-                tBumpMicrosecondsOrUnits = OVERSHOOT_AMOUNT_UNITS;
-            } else {
-                tBumpMicrosecondsOrUnits = OVERSHOOT_AMOUNT_MILLIS;
-            }
-#  else
-            tBumpMicrosecondsOrUnits = OVERSHOOT_AMOUNT_UNITS;
-#  endif
-#else
-            tBumpMicrosecondsOrUnits = OVERSHOOT_AMOUNT_MILLIS;
-#endif
+            uint_fast8_t tBumpMicrosecondsOrUnits = OVERSHOOT_AMOUNT_MICROS;
+            tBumpMicrosecondsOrUnits = OVERSHOOT_AMOUNT_MICROS;
+
             // return direct microseconds or units values for constant bump
             if (mEasingType & CALL_STYLE_OUT) {
                 /*
@@ -2934,14 +2935,24 @@ bool ServoEasing::initializeAndCheckI2CConnection(Stream *aSerial) // Print has 
 #if !defined(USE_SOFT_I2C_MASTER)
     // Initialize wire before checkI2CConnection()
     I2CInit();
-#endif
+    return checkI2CConnection(mPCA9685I2CAddress, aSerial, mI2CClass);
+#else
     return checkI2CConnection(mPCA9685I2CAddress, aSerial);
+#endif
 }
 
-#if defined(__AVR__)
+#if defined(USE_SOFT_I2C_MASTER)
+#  if defined(__AVR__)
 bool checkI2CConnection(uint8_t aI2CAddress, Print *aSerial) // Print instead of Stream saves 95 bytes flash
-#else
+#  else
 bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial) // Print has no flush(), so we must take Stream
+#  endif
+#else
+#  if defined(__AVR__)
+bool checkI2CConnection(uint8_t aI2CAddress, Print *aSerial, TwoWire *aI2CClass)
+#  else
+bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial, TwoWire *aI2CClass)
+#  endif
 #endif
         {
 
@@ -2970,20 +2981,20 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial) // Print has no fl
 
 #  if defined (ARDUINO_ARCH_AVR) // Other platforms do not have this new function
     do {
-        Wire.beginTransmission(aI2CAddress);
-        if (Wire.getWireTimeoutFlag()) {
+        aI2CClass->beginTransmission(aI2CAddress);
+        if (aI2CClass->getWireTimeoutFlag()) {
             aSerial->println(F("Timeout accessing I2C bus. Wait for bus becoming available"));
-            Wire.clearWireTimeoutFlag();
+            aI2CClass->clearWireTimeoutFlag();
             delay(100);
         } else {
             break;
         }
     } while (true);
 #  else
-    Wire.beginTransmission(aI2CAddress);
+    aI2CClass->beginTransmission(aI2CAddress);
 #  endif
 
-    uint8_t tWireReturnCode = Wire.endTransmission(true);
+    uint8_t tWireReturnCode = aI2CClass->endTransmission(true);
     if (tWireReturnCode == 0) {
         aSerial->print(F("Found"));
     } else {

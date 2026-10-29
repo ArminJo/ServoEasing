@@ -3,8 +3,7 @@
  *
  *  Shows asymmetric (end movement is different from start movement) user defined non linear movements for 3 servos synchronously.
  *
- *  Copyright (C) 2019-2022  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
+ *  Copyright (C) 2019-2026  Armin Joachimsmeyer
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
  *
@@ -27,7 +26,6 @@
 // Must specify this before the include of "ServoEasing.hpp"
 //#define USE_PCA9685_SERVO_EXPANDER    // Activating this enables the use of the PCA9685 I2C expander chip/board.
 //#define USE_SERVO_LIB                 // If USE_PCA9685_SERVO_EXPANDER is defined, Activating this enables force additional using of regular servo library.
-//#define PROVIDE_ONLY_LINEAR_MOVEMENT  // Activating this disables all but LINEAR movement. Saves up to 1540 bytes program memory.
 //#define DISABLE_COMPLEX_FUNCTIONS     // Activating this disables the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory.
 //#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
 //#define DISABLE_MIN_AND_MAX_CONSTRAINTS    // Activating this disables constraints. Saves 4 bytes RAM per servo but strangely enough no program memory.
@@ -190,7 +188,7 @@ void loop() {
 
     do {
         // here you can call your own program
-        delay(SERVO_REFRESH_INTERVAL_MILLIS); // optional 20 ms delay - REFRESH_INTERVAL is in Microseconds
+        delay(SERVO_REFRESH_INTERVAL_MILLIS); // optional 20 ms delay
     } while (!updateAllServos());
 
     /*

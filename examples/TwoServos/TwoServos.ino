@@ -5,8 +5,7 @@
  *  It operates the first servo from -90 to +90 degree using setTrim(90).
  *  This example uses the LightweightServo library. This saves 640 bytes program memory compared to using Arduino Servo library.
  *
- *  Copyright (C) 2019-2024  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
+ *  Copyright (C) 2019-2026  Armin Joachimsmeyer
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
  *
@@ -188,7 +187,9 @@ void loop() {
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
     Serial.println(F("Move to 0/90 degree with up to 90 degree per second using interrupts. Use cubic easing for first servo."));
 #endif
+#if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
     Servo1.setEasingType(EASE_CUBIC_IN_OUT);
+#endif
     /*
      * Another method to specify moves
      * Use the ServoEasingNextPositionArray and then call the appropriate function
@@ -210,7 +211,10 @@ void loop() {
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
     Serial.println(F("Move independently to -90/0 degree with 60/80 degree per second using interrupts"));
 #endif
+#if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
     Servo1.setEasingType(EASE_LINEAR);
+#endif
+
     Servo1.setEaseTo(-90.0f, 60);
     Servo2.startEaseTo(0.0f, 80); // This start interrupt for all servos, we check the end with areInterruptsActive()
 

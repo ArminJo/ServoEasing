@@ -12,7 +12,6 @@
  * which is evaluated in handleQuadrupedNeoPixelUpdate() in ISR context.
  *
  *  Copyright (C) 2019-2026  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of QuadrupedControl https://github.com/ArminJo/QuadrupedControl.
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -76,7 +75,7 @@ DISABLE_CALLING_SHOW_OF_PARENT, &QuadrupedOnPatternCompleteHandler, SHOW_ONLY_AT
 
 // The color background for front distance bar
 color32_t sBarBackgroundColorArrayForDistance[PIXELS_ON_ONE_BAR] = { COLOR32_RED_QUARTER, COLOR32_RED_QUARTER, COLOR32_RED_QUARTER,
-COLOR32_YELLOW, COLOR32_YELLOW, COLOR32_GREEN_QUARTER, COLOR32_GREEN_QUARTER, COLOR32_GREEN_QUARTER };
+COLOR32_YELLOW, COLOR32_YELLOW, COLOR32_YELLOW, COLOR32_YELLOW, COLOR32_GREEN_QUARTER };
 
 /*
  * @brief This function checks all patterns for update and calls show() of the parent 24 pixel bar if required.
@@ -93,7 +92,7 @@ void handleQuadrupedNeoPixelUpdate() {
          * Update patterns if active, do not call child patterns if parent pattern for 24 pixel is active
          */
         if (sAtLeastOnePatternsIsActive
-#if defined(QUADRUPED_HAS_US_DISTANCE)
+#if defined(QUADRUPED_HAS_US_DISTANCE_SENSOR)
                 && !sUSDistanceMeasurmentIsRunning
 #endif
         ) {
@@ -137,6 +136,7 @@ void handleAutomaticMovementPattern() {
     Serial.print(F("NeoPatterns current action="));
     Serial.print(sCurrentlyRunningAction);
     Serial.print('|');
+    printCurrentActionString(&Serial);
 #endif
 
     sAtLeastOnePatternsIsActive = true;
@@ -145,13 +145,12 @@ void handleAutomaticMovementPattern() {
     NeoPatterns *tScannerBar = &FrontNeoPixelBar; // let scanner run on virtual front of quadruped
 
     if (sCurrentlyRunningAction == ACTION_TYPE_STOP) {
-#if defined(LOCAL_INFO)
-        Serial.print(F("Stop"));
+        // Run rainbow pattern
+        RightNeoPixelBar.RainbowCycle(tDelayFromSpeed / 8, DIRECTION_DOWN, 100);
+        LeftNeoPixelBar.RainbowCycle(tDelayFromSpeed / 8, DIRECTION_UP, 100);
+#if defined(QUADRUPED_HAS_US_DISTANCE_SENSOR)
+        sLastBarLength = 0; // Force display of distance
 #endif
-        // Run 4 times rainbow pattern and then stop
-        RightNeoPixelBar.RainbowCycle(tDelayFromSpeed / 8, DIRECTION_DOWN, 4);
-        LeftNeoPixelBar.RainbowCycle(tDelayFromSpeed / 8, DIRECTION_UP, 4);
-
     } else {
         /*
          * First stop all running patterns
@@ -177,9 +176,6 @@ void handleAutomaticMovementPattern() {
         }
         switch (sCurrentlyRunningAction) {
         case ACTION_TYPE_CREEP:
-#if defined(LOCAL_INFO)
-            Serial.print(F("Creep"));
-#endif
             if (!(sMovingDirection & MOVE_DIRECTION_SIDE_MASK)) {
                 // only for forward and backward movement
                 RightNeoPixelBar.ColorWipe(tColorRight, tDelayFromSpeed, 0, sMovingDirection);
@@ -187,35 +183,27 @@ void handleAutomaticMovementPattern() {
                         (sMovingDirection + MOVE_DIRECTION_BACKWARD) & MOVE_DIRECTION_MASK);
             } else if (sMovingDirection == MOVE_DIRECTION_LEFT) {
                 tScannerBar = &LeftNeoPixelBar; // let scanner be at virtual front of quadruped
-#if !defined(QUADRUPED_HAS_US_DISTANCE)
+#if !defined(QUADRUPED_HAS_US_DISTANCE_SENSOR)
                 FrontNeoPixelBar.clear(); // clear old front pattern
 #endif
             } else if (sMovingDirection == MOVE_DIRECTION_RIGHT) {
                 tScannerBar = &RightNeoPixelBar;
-#if !defined(QUADRUPED_HAS_US_DISTANCE)
+#if !defined(QUADRUPED_HAS_US_DISTANCE_SENSOR)
                 FrontNeoPixelBar.clear(); // clear old front pattern
 #endif
             }
             break;
 
         case ACTION_TYPE_TURN:
-#if defined(LOCAL_INFO)
-            Serial.print(F("Turn"));
-#endif
-            QuadrupedNeoPixelBar.Stripes(COLOR32_RED_HALF, 2, COLOR32_GREEN_HALF, 2, 100, tDelayFromSpeed, sMovingDirection);
+            QuadrupedNeoPixelBar.Stripes(COLOR32_RED_HALF, 2, COLOR32_GREEN_HALF, 2, 200, tDelayFromSpeed, sMovingDirection);
             break;
 
+        case ACTION_TYPE_LEAN:
         case ACTION_TYPE_TWIST:
-#if defined(LOCAL_INFO)
-            Serial.print(F("Twist"));
-#endif
             QuadrupedNeoPixelBar.Stripes(COLOR32_RED_HALF, 2, COLOR32_GREEN_HALF, 2, 30, tDelayFromSpeed, sMovingDirection);
             break;
 
         case ACTION_TYPE_TROT:
-#if defined(LOCAL_INFO)
-            Serial.print(F("Trot"));
-#endif
             RightNeoPixelBar.ScannerExtended(tColorRight, 3, tDelayFromSpeed, 0, FLAG_SCANNER_EXT_ROCKET, sMovingDirection);
             LeftNeoPixelBar.ScannerExtended(tColorLeft, 3, tDelayFromSpeed, 0, FLAG_SCANNER_EXT_ROCKET,
                     (sMovingDirection + MOVE_DIRECTION_BACKWARD) & MOVE_DIRECTION_MASK);
@@ -223,27 +211,19 @@ void handleAutomaticMovementPattern() {
 
         case ACTION_TYPE_SHUTDOWN:
         case ACTION_TYPE_DOWN_UP:
-#if defined(LOCAL_INFO)
-            Serial.print(F("Attention / Down and up"));
-#endif
             RightNeoPixelBar.Flash(COLOR32_GREEN_HALF, 200, COLOR32_BLACK, 200, 5);
             FrontNeoPixelBar.Flash(COLOR32_BLUE_HALF, 200, COLOR32_BLACK, 200, 5);
             LeftNeoPixelBar.Flash(COLOR32_RED_HALF, 200, COLOR32_BLACK, 200, 5);
             break;
 
         case ACTION_TYPE_PAUSE:
-#if defined(LOCAL_INFO)
-            Serial.print(F("Pause"));
-#endif
+        case ACTION_TYPE_WAVE:
             QuadrupedNeoPixelBar.Heartbeat(COLOR32_BLUE_QUARTER, tDelayFromSpeed / 2, 2, FLAG_DO_NOT_CLEAR);
             break;
 
         case ACTION_TYPE_TEST:
         case ACTION_TYPE_MELODY:
-#if defined(LOCAL_INFO)
-            Serial.print(F("Melody"));
-#endif
-#if !defined(QUADRUPED_HAS_US_DISTANCE)
+#if !defined(QUADRUPED_HAS_US_DISTANCE_SENSOR)
             QuadrupedNeoPixelBar.Twinkle(COLOR32_SPECIAL, 6, tDelayFromSpeed / 2, 200); // 6 is aAverageNumberOfActivePixel
 #else
             RightNeoPixelBar.Twinkle(COLOR32_SPECIAL, 2, tDelayFromSpeed / 2, 200); // 2 is aAverageNumberOfActivePixel
@@ -253,13 +233,10 @@ void handleAutomaticMovementPattern() {
 
         default:
             sAtLeastOnePatternsIsActive = false;
-#if defined(LOCAL_INFO)
-            Serial.print(F("Not yet implemented"));
-#endif
             break;
         }
     }
-#if !defined(QUADRUPED_HAS_US_DISTANCE)
+#if !defined(QUADRUPED_HAS_US_DISTANCE_SENSOR)
     if (QuadrupedNeoPixelBar.ActivePattern == PATTERN_NONE && tScannerBar->ActivePattern == PATTERN_NONE
             && sMovingDirection != MOVE_DIRECTION_BACKWARD) {
         // No scanner for backward movement
@@ -268,21 +245,21 @@ void handleAutomaticMovementPattern() {
     }
 #else
     if (tScannerBar != &FrontNeoPixelBar) {
-    // run only for sidewards creeps
-    tScannerBar->ScannerExtended(COLOR32_BLUE_HALF, 2, tDelayFromSpeed, 4,
-    FLAG_SCANNER_EXT_ROCKET | FLAG_SCANNER_EXT_START_AT_BOTH_ENDS);
+        // run only for sidewards creeps
+        tScannerBar->ScannerExtended(COLOR32_BLUE_HALF, 2, tDelayFromSpeed, 3, FLAG_SCANNER_EXT_ROCKET | FLAG_SCANNER_EXT_START_AT_BOTH_ENDS);
     }
 #endif
 
 #if defined(LOCAL_INFO)
     Serial.print(F(" -> Left:"));
-    LeftNeoPixelBar.printPattern(&Serial);
-    Serial.print(F("Front:"));
-    FrontNeoPixelBar.printPattern(&Serial);
-    Serial.print(F("Right:"));
-    RightNeoPixelBar.printPattern(&Serial);
-    Serial.print(F("All:"));
-    QuadrupedNeoPixelBar.printlnPattern(&Serial);
+    LeftNeoPixelBar.printPatternName(&Serial);
+    Serial.print(F(" Front:"));
+    FrontNeoPixelBar.printPatternName(&Serial);
+    Serial.print(F(" Right:"));
+    RightNeoPixelBar.printPatternName(&Serial);
+    Serial.print(F(" All:"));
+    QuadrupedNeoPixelBar.printPatternName(&Serial);
+    Serial.println();
 #endif
 }
 
@@ -294,7 +271,7 @@ void QuadrupedOnPatternCompleteHandler(NeoPatterns *aLedsPtr) {
     Serial.print(F("Offset="));
     Serial.print(aLedsPtr->PixelOffset);
     Serial.print(F(" Pattern \""));
-    aLedsPtr->printPatternName(aLedsPtr->ActivePattern, &Serial);
+    aLedsPtr->printPatternName(&Serial, aLedsPtr->ActivePattern);
     Serial.println(F("\" finished"));
 #endif
     // Reset ActivePattern if no new one will be started.

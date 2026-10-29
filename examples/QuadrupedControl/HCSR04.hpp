@@ -34,7 +34,6 @@
  *  3 Pin mode is difficult since it retriggers itself at distances below 7 cm.
  *
  *  Copyright (C) 2018-2020  Armin Joachimsmeyer
- *  Email: armin.joachimsmeyer@gmail.com
  *
  *  This file is part of Arduino-Utils https://github.com/ArminJo/Arduino-Utils.
  *
@@ -102,7 +101,7 @@ uint8_t sHCSR04Mode = HCSR04_MODE_UNITITIALIZED;
 unsigned long sLastUSDistanceMeasurementMillis; // Only written by getUSDistanceAsCentimeterWithCentimeterTimeoutPeriodicallyAndPrintIfChanged()
 unsigned int sLastUSDistanceCentimeter; // Only written by getUSDistanceAsCentimeterWithCentimeterTimeoutPeriodicallyAndPrintIfChanged()
 unsigned int sUSDistanceMicroseconds;
-unsigned int sUSDistanceCentimeter;
+unsigned int sUSDistanceCentimeter; // On timeout it contains DISTANCE_TIMEOUT_RESULT (0)
 uint8_t sUsedMillisForUSDistanceMeasurement;
 
 /*
@@ -219,15 +218,16 @@ uint8_t getMillisFromUSCentimeter(unsigned int aDistanceCentimeter) {
 
 /**
  * @param aTimeoutMicros timeout of 5825 micros is equivalent to 1 meter, 10000 is 1.71 m, default timeout of 20000 micro seconds is 3.43 meter
- * @return  Distance in centimeter @20 degree celsius (time in us/58.25)
- *          0 / DISTANCE_TIMEOUT_RESULT if timeout or pins are not initialized
+ * @return  Distance in centimeter @20 degree celsius (time in us/58.25) - DISTANCE_TIMEOUT_RESULT (0) if timeout or pins are not initialized
  */
 unsigned int getUSDistanceAsCentimeter(unsigned int aTimeoutMicros) {
     sUSDistanceCentimeter = getCentimeterFromUSMicroSeconds(getUSDistance(aTimeoutMicros));
     return sUSDistanceCentimeter;
 }
 
-// 58,23 us per centimeter (forth and back)
+/**
+ * @return  Distance in centimeter @20 degree celsius (time in us/58.25) - DISTANCE_TIMEOUT_RESULT (0) if timeout or pins are not initialized
+ */
 unsigned int getUSDistanceAsCentimeterWithCentimeterTimeout(unsigned int aTimeoutCentimeter) {
 // The reciprocal of formula in getCentimeterFromUSMicroSeconds()
     unsigned int tTimeoutMicros = ((aTimeoutCentimeter * 233L) + 2) / 4; // = * 58.25 (rounded by using +1)
@@ -235,13 +235,16 @@ unsigned int getUSDistanceAsCentimeterWithCentimeterTimeout(unsigned int aTimeou
 }
 
 /**
- * @return  HCSR04_DISTANCE_NO_MEASUREMENT, HCSR04_MEASUREMENT_AND_DISTANCE_HAS_CHANGED or HCSR04_MEASUREMENT_AND_DISTANCE_HAS_NOT_CHANGED
+ * @return  HCSR04_DISTANCE_NO_MEASUREMENT if periodically timeout not reached
+ *          HCSR04_MEASUREMENT_AND_DISTANCE_HAS_CHANGED or HCSR04_MEASUREMENT_AND_DISTANCE_HAS_NOT_CHANGED
+ *          if measurement was taken
  */
 uint8_t getUSDistanceAsCentimeterWithCentimeterTimeoutPeriodicallyAndPrintIfChanged(unsigned int aTimeoutCentimeter,
         unsigned int aMillisBetweenMeasurements, Print *aSerial) {
     if ((millis() - sLastUSDistanceMeasurementMillis) >= aMillisBetweenMeasurements) {
         sLastUSDistanceMeasurementMillis = millis();
-        getUSDistanceAsCentimeterWithCentimeterTimeout(aTimeoutCentimeter);
+
+        getUSDistanceAsCentimeterWithCentimeterTimeout(aTimeoutCentimeter); // sets sUSDistanceCentimeter
         unsigned int tDeltaDistance;
         if (sLastUSDistanceCentimeter > sUSDistanceCentimeter) {
             tDeltaDistance = sLastUSDistanceCentimeter - sUSDistanceCentimeter;
@@ -254,7 +257,7 @@ uint8_t getUSDistanceAsCentimeterWithCentimeterTimeoutPeriodicallyAndPrintIfChan
          */
         if (tDeltaDistance > (sLastUSDistanceCentimeter / 30)) {
             sLastUSDistanceCentimeter = sUSDistanceCentimeter;
-            if (sUSDistanceCentimeter == 0) {
+            if (sUSDistanceCentimeter == DISTANCE_TIMEOUT_RESULT) {
                 aSerial->println(F("Distance timeout"));
             } else {
                 aSerial->print(F("Distance="));

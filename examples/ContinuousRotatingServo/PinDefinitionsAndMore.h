@@ -5,7 +5,6 @@
  *  as well as includes and definitions for LED_BUILTIN
  *
  *  Copyright (C) 2020-20232  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
  *

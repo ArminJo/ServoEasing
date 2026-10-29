@@ -7,7 +7,6 @@
  *  It uses a callback handler and specification arrays to generate the movement cycle.
  *
  *  Copyright (C) 2022-2023  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
  *

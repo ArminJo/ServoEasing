@@ -5,7 +5,6 @@
  * See also: https://www.instructables.com/id/4-DOF-Mechanical-Arm-Robot-Controlled-by-Arduino
  *
  *  Copyright (C) 2019-2022  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
  *
@@ -251,7 +250,7 @@ bool delayAndCheckForRobotArm(uint16_t aDelayMillis) {
  * If isVCCTooLowMultipleTimes() returns true clear all pattern and activate only 2 MultipleFallingStars pattern on the 2 bars
  */
 void checkAndHandleVCCUndervoltage() {
-    if (isVCCUndervoltageMultipleTimes()) {
+    if (isVCCUndervoltageMultipleTimes(&Serial)) {
         goToFolded(); // Afterwards only auto move is disabled
 #if defined(ROBOT_ARM_HAS_IR_CONTROL)
         sActionType = ACTION_TYPE_STOP;

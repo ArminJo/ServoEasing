@@ -5,7 +5,6 @@
  *  This example does not use interrupts and should therefore run on any platform where the Arduino Servo library is available.
  *
  *  Copyright (C) 2019-2022  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
  *

@@ -14,7 +14,7 @@
  *
  *
  *  This file is part of Arduino-IRremote https://github.com/Arduino-IRremote/Arduino-IRremote.
- *  This file is also part of IRMP https://github.com/IRMP-org/IRMP.
+ *  This file is part of IRMP https://github.com/IRMP-org/IRMP.
  *
  ************************************************************************************
  * MIT License
@@ -66,12 +66,16 @@
 #endif
 
 /*
- * Generate 38 kHz IR signal by bit banging
+ * Generate 38 kHz IR signal by bit banging and using delayMicroseconds() and micros()
  */
 void sendMark(uint8_t aSendPin, unsigned int aMarkMicros) {
-    unsigned long tStartMicros = micros();
-    unsigned long tNextPeriodEnding = tStartMicros;
-    unsigned long tMicros;
+    unsigned long tMicros = micros();
+    unsigned long tNextPeriodEnding = tMicros;
+#if defined(F_CPU)
+    unsigned long tEndMicros = tMicros + (112 / (F_CPU / MICROS_IN_ONE_SECOND)) + aMarkMicros; // To compensate for call duration - 112 is an empirical value
+#else
+    unsigned long tEndMicros = tMicros + aMarkMicros;
+#endif
     do {
         /*
          * Generate pulse
@@ -86,19 +90,13 @@ void sendMark(uint8_t aSendPin, unsigned int aMarkMicros) {
          * PWM pause timing and end check
          * Minimal pause duration is 4.3 us
          */
-        tNextPeriodEnding += 26; // for 38 kHz
+        tNextPeriodEnding += 26; // 26.3 us period for 38 kHz; 26 us -> 38.48 kHz
         do {
             tMicros = micros(); // we have only 4 us resolution for AVR @16MHz
             /*
              * Exit the forever loop if aMarkMicros has reached
              */
-            unsigned int tDeltaMicros = tMicros - tStartMicros;
-#if defined(__AVR__)
-            // Just getting variables and check for end condition takes minimal 3.8 us
-            if (tDeltaMicros >= aMarkMicros - (112 / (F_CPU / MICROS_IN_ONE_SECOND))) { // To compensate for call duration - 112 is an empirical value
-#else
-                if (tDeltaMicros >= aMarkMicros) {
-    #endif
+            if (tMicros >= tEndMicros) {
                 return;
             }
         } while (tMicros < tNextPeriodEnding);

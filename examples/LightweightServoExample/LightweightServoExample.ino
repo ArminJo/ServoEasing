@@ -3,8 +3,7 @@
  *
  *  Moves 2 servos attached at pin 9 and 10 using the LightweightServo library for ATmega328*.
  *
- *  Copyright (C) 2020-2024  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
+ *  Copyright (C) 2020-2026  Armin Joachimsmeyer
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
  *

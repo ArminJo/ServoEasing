@@ -4,7 +4,6 @@
  *  This example shows the usage of a callback function for multiple moves independent of the main loop function.
  *
  *  Copyright (C) 2022  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
  *

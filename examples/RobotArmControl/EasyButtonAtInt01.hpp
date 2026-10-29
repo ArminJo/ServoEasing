@@ -15,8 +15,7 @@
  *  #include "EasyButtonAtInt01.hpp"
  *  EasyButton Button0AtPin2(true);
  *
- *  Copyright (C) 2018-2024  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
+ *  Copyright (C) 2018-2026  Armin Joachimsmeyer
  *
  *  This file is part of EasyButtonAtInt01 https://github.com/ArminJo/EasyButtonAtInt01.
  *
@@ -41,7 +40,7 @@
  * - USE_BUTTON_0                   Enables code for button at INT0 (pin2 on 328P, PB6 on ATtiny167, PB2 on ATtinyX5).
  * - USE_BUTTON_1                   Enables code for button at INT1 (pin3 on 328P, PA3 on ATtiny167, PCINT0 / PCx for ATtinyX5).
  * - INT1_PIN                       It overrides the usage of pin at the processors INT1 pin. Thus, it is the pin number of the pin for button 1 to use with Pin Change Interrupts.
- * - NO_INITIALIZE_IN_CONSTRUCTOR   Disables the auto initializing in all constructors without the aIsButtonAtINT0 parameter.
+ * - NO_INITIALIZE_IN_CONSTRUCTOR   Disables the auto initializing in all constructors not having the aIsButtonAtINT0 parameter.
  * - BUTTON_IS_ACTIVE_HIGH          Enable this if your buttons are active high.
  * - USE_ATTACH_INTERRUPT           This forces use of the arduino function attachInterrupt(). It is required if you get the error "multiple definition of __vector_1".
  * - NO_BUTTON_RELEASE_CALLBACK     Disables the code for release callback. This saves 2 bytes RAM and 64 bytes program memory.

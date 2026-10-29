@@ -1,5 +1,5 @@
 /*
- * IRCommandMapping.h
+ * QuadrupedIRCommandMapping.h
  *
  * IR remote button codes, strings, and functions to call for quadruped IR control
  * Mapping for controlling a mePed Robot V2 with 8 servos using an IR Remote at pin A0
@@ -7,7 +7,6 @@
  * Select the one you have below or define it in the including file.
  *
  *  Copyright (C) 2019-2026  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of QuadrupedControl https://github.com/ArminJo/QuadrupedControl.
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -85,13 +84,13 @@
 #define COMMAND_LEFT        IR_LEFT
 
 #define COMMAND_CENTER      IR_OK
-#define COMMAND_PAUSE_RESUME IR_HASH
+#define COMMAND_STOP        IR_HASH
 #define COMMAND_CALIBRATE   IR_0
 #define COMMAND_DANCE       IR_1
 #define COMMAND_WAVE        IR_3
 #define COMMAND_TWIST       IR_7
 #define COMMAND_TROT        IR_9
-#define COMMAND_AUTO        IR_5
+#define COMMAND_FEATURE     IR_5
 #define COMMAND_TEST        IR_STAR
 
 #define COMMAND_INCREASE_SPEED  IR_6
@@ -147,13 +146,13 @@
 #define COMMAND_LEFT        IR_LEFT
 
 #define COMMAND_CENTER      IR_OK
-#define COMMAND_PAUSE_RESUME IR_HASH
+#define COMMAND_STOP        IR_HASH
 #define COMMAND_CALIBRATE   IR_0
 #define COMMAND_DANCE       IR_1
 #define COMMAND_WAVE        IR_3
 #define COMMAND_TWIST       IR_7
 #define COMMAND_TROT        IR_9
-#define COMMAND_AUTO        IR_5
+#define COMMAND_FEATURE     IR_5
 #define COMMAND_TEST        IR_STAR
 
 #define COMMAND_INCREASE_SPEED  IR_6
@@ -210,13 +209,13 @@
 #define COMMAND_LEFT        IR_LEFT
 
 #define COMMAND_CENTER      IR_ENTER
-#define COMMAND_PAUSE_RESUME IR_ON_OFF
+#define COMMAND_STOP        IR_ON_OFF
 #define COMMAND_CALIBRATE   IR_MUTE
 #define COMMAND_DANCE       IR_SRC
 #define COMMAND_WAVE        IR_RETURN
 #define COMMAND_TWIST       COMMAND_EMPTY // not on this remote
 #define COMMAND_TROT        IR_PLAY_PAUSE
-#define COMMAND_AUTO        COMMAND_EMPTY // not on this remote
+#define COMMAND_FEATURE     COMMAND_EMPTY // not on this remote
 #define COMMAND_TEST        COMMAND_EMPTY // not on this remote
 
 #define COMMAND_INCREASE_SPEED  IR_VOL_PLUS
@@ -275,30 +274,30 @@
  * SECOND:
  * IR button to command mapping for better reading. IR buttons should only referenced here.
  */
-#define COMMAND_FORWARD     IR_UP
-#define COMMAND_BACKWARD    IR_DOWN
-#define COMMAND_RIGHT       IR_RIGHT
-#define COMMAND_LEFT        IR_LEFT
+#define COMMAND_FORWARD     IR_CH_PLUS
+#define COMMAND_BACKWARD    IR_CH_MINUS
+#define COMMAND_RIGHT       IR_VOL_PLUS
+#define COMMAND_LEFT        IR_VOL_MINUS
 
-#define COMMAND_CENTER      IR_ENTER
-#define COMMAND_PAUSE_RESUME IR_ON_OFF
+#define COMMAND_CENTER      IR_FULLSCREEN
+#define COMMAND_STOP        IR_ON_OFF
 #define COMMAND_CALIBRATE   IR_MUTE
-#define COMMAND_DANCE       IR_SRC
-#define COMMAND_WAVE        IR_RETURN
-#define COMMAND_TWIST       COMMAND_EMPTY // not on this remote
-#define COMMAND_TROT        IR_PLAY_PAUSE
-#define COMMAND_AUTO        COMMAND_EMPTY // not on this remote
-#define COMMAND_TEST        COMMAND_EMPTY // not on this remote
+#define COMMAND_DANCE       IR_1
+#define COMMAND_WAVE        IR_3
+#define COMMAND_TWIST       IR_7
+#define COMMAND_TROT        IR_9
+#define COMMAND_FEATURE     IR_RECALL
+#define COMMAND_TEST        IR_RECORD
 
-#define COMMAND_INCREASE_SPEED  IR_VOL_PLUS
-#define COMMAND_DECREASE_SPEED  IR_VOL_MINUS
-#define COMMAND_INCREASE_HEIGHT IR_FAST_FORWARD
-#define COMMAND_DECREASE_HEIGHT IR_FAST_BACK
+#define COMMAND_INCREASE_SPEED  IR_6
+#define COMMAND_DECREASE_SPEED  IR_4
+#define COMMAND_INCREASE_HEIGHT IR_2
+#define COMMAND_DECREASE_HEIGHT IR_8
 
 // locally for doCalibration
-#define COMMAND_ENTER       IR_ENTER
-#define COMMAND_UP          IR_UP
-#define COMMAND_DOWN        IR_DOWN
+#define COMMAND_ENTER       IR_FULLSCREEN
+#define COMMAND_UP          IR_CH_PLUS
+#define COMMAND_DOWN        IR_CH_MINUS
 
 #  endif // defined(IR_REMOTE_NAME)
 #endif // defined(USE_DVBT_STICK_REMOTE)
@@ -308,7 +307,9 @@
 #error "Please choose only one remote for compile"
 #  else
 #define IR_REMOTE_NAME "WHITE_DVD"
+#    if defined(QUADRUPED_HAS_NEOPIXEL)
 #define HAS_ADDITIONAL_REMOTE_COMMANDS
+#    endif
 
 // Codes for white remote control for an old DVD Player
 #define IR_ADDRESS 0x80 // The real address is 0x7B80 so we get an parity error but we ignore it :-)
@@ -375,7 +376,7 @@
 #define COMMAND_WAVE        IR_3
 #define COMMAND_TWIST       IR_7
 #define COMMAND_TROT        IR_9
-#define COMMAND_AUTO        IR_5
+#define COMMAND_FEATURE     IR_5
 #define COMMAND_DEMO        IR_MENU
 
 #define COMMAND_INCREASE_SPEED  IR_6
@@ -416,6 +417,7 @@
 
 // IR strings of functions for output in alphabetical order
 static const char autoMove[] PROGMEM ="auto move";
+static const char featureMove[] PROGMEM ="feature move";
 static const char back[] PROGMEM ="back";
 static const char beep[] PROGMEM ="beep";
 static const char calibration[] PROGMEM ="calibration";
@@ -455,8 +457,8 @@ static const char unknown[] PROGMEM ="unknown";
 static const char wave[] PROGMEM ="wave";
 static const char pauseResume[] PROGMEM ="pause/resume";
 
-#define COMMAND_TURN   0xFD // Command is used by doSetDirectionForward to start a turn if not creep or trot is running
-#define COMMAND_CREEP   0xFE // Command is used by doSetDirectionForward to start a creep if not trot is running
+#define COMMAND_TURN    0xFD // Command is used by doTurn to start a turn if not creep or trot is running
+#define COMMAND_CREEP   0xFE // Command is used by doCreep to start a creep if not trot is running
 /*
  * Main mapping array of commands to C functions and command strings
  */
@@ -464,14 +466,14 @@ const struct IRToCommandMappingStruct IRMapping[] = {
 /*
  * Commands, which must run exclusively and therefore must first stop other commands running.
  */
-#if defined(QUADRUPED_HAS_IR_CONTROL) && !defined(USE_USER_DEFINED_MOVEMENTS)
+#if defined(QUADRUPED_HAS_IR_CONTROL)
         { COMMAND_CALIBRATE, IR_COMMAND_FLAG_BLOCKING, &doCalibration, COMMAND_STRING(calibration) }, /**/
 #endif
-        { COMMAND_DANCE, IR_COMMAND_FLAG_BLOCKING, &doDance, COMMAND_STRING(dance) }, /**/
+        { COMMAND_DANCE, IR_COMMAND_FLAG_BLOCKING, &doDanceAndWave, COMMAND_STRING(dance) }, /**/
         { COMMAND_TWIST, IR_COMMAND_FLAG_BLOCKING, &doTwist, COMMAND_STRING(twistString) }, /**/
         { COMMAND_WAVE, IR_COMMAND_FLAG_BLOCKING, &doWave, COMMAND_STRING(wave) }, /**/
         { COMMAND_TROT, IR_COMMAND_FLAG_BLOCKING, &doTrot, COMMAND_STRING(trot) }, /**/
-        { COMMAND_AUTO, IR_COMMAND_FLAG_BLOCKING, &doQuadrupedAutoMove, COMMAND_STRING(autoMove) }, /**/
+        { COMMAND_FEATURE, IR_COMMAND_FLAG_BLOCKING, &doQuadrupedFeatureMove, COMMAND_STRING(featureMove) }, /**/
         { COMMAND_TEST, IR_COMMAND_FLAG_BLOCKING, &doTest, COMMAND_STRING(test) }, /**/
         { COMMAND_CENTER, IR_COMMAND_FLAG_BLOCKING, &doCenterServos, COMMAND_STRING(center) }, /**/
 
@@ -494,12 +496,12 @@ const struct IRToCommandMappingStruct IRMapping[] = {
         { COMMAND_DECREASE_HEIGHT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doDecreaseHeight, COMMAND_STRING(heighDecrease) }, /**/
 
 #if !defined(HAS_ADDITIONAL_REMOTE_COMMANDS)
-        { COMMAND_PAUSE_RESUME, IR_COMMAND_FLAG_BLOCKING, &doStop, COMMAND_STRING(stop) }
+        { COMMAND_STOP, IR_COMMAND_FLAG_BLOCKING, &doStop, COMMAND_STRING(stop) }
 #else
         /*
          * Commands not accessible by simple remote because of lack of keys
          */
-# if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
+# if defined(QUADRUPED_HAS_US_DISTANCE_SENSOR_SERVO)
         { COMMAND_US_RIGHT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doUSRight, COMMAND_STRING(ultrasonicServoRight) }, /**/
         { COMMAND_US_LEFT, IR_COMMAND_FLAG_REPEATABLE_NON_BLOCKING, &doUSLeft, COMMAND_STRING(ultrasonicServoLeft) }, /**/
         { COMMAND_US_SCAN, IR_COMMAND_FLAG_NON_BLOCKING, &doUSScan, COMMAND_STRING(ultrasonicServoScan) }, /**/
@@ -509,12 +511,14 @@ const struct IRToCommandMappingStruct IRMapping[] = {
 #  endif
         { COMMAND_STOP, IR_COMMAND_FLAG_BLOCKING, &doStop, COMMAND_STRING(stop) },
         { COMMAND_PAUSE_RESUME, IR_COMMAND_FLAG_NON_BLOCKING, &doPauseResume, COMMAND_STRING(pauseResume) }, /**/
-        { COMMAND_DEMO, IR_COMMAND_FLAG_BLOCKING, &doQuadrupedDemoMove, COMMAND_STRING(demo) }, /**/
+        { COMMAND_DEMO, IR_COMMAND_FLAG_BLOCKING, &doQuadrupedLongDemoMove, COMMAND_STRING(demo) }, /**/
+#  if defined(QUADRUPED_HAS_NEOPIXEL)
         { COMMAND_PATTERN_1, IR_COMMAND_FLAG_NON_BLOCKING, &doPattern1, COMMAND_STRING(pattern) }, /**/
         { COMMAND_PATTERN_2, IR_COMMAND_FLAG_NON_BLOCKING, &doPattern2, COMMAND_STRING(pattern) }, /**/
         { COMMAND_PATTERN_4, IR_COMMAND_FLAG_NON_BLOCKING, &doPatternHeartbeat, COMMAND_STRING(pattern) }, /**/
         { COMMAND_PATTERN_5, IR_COMMAND_FLAG_NON_BLOCKING, &doPatternFire, COMMAND_STRING(pattern) }, /**/
         { COMMAND_PATTERN_6, IR_COMMAND_FLAG_NON_BLOCKING, &doWipeOutPatterns, COMMAND_STRING(pattern) } /**/
+#  endif
 #endif
         };
 

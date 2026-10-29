@@ -5,7 +5,6 @@
  * for the PIVOT_MICROS_AT_*, LIFT_MICROS_AT_*, HORIZONTAL_MICROS_AT_* and CLAW_MICROS_AT_* positions below.
  *
  *  Copyright (C) 2019-2022  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
  *

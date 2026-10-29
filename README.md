@@ -6,7 +6,7 @@ It uses the standard Arduino Servo library and therefore has its restrictions re
 
 [![Badge License: GPLv3](https://img.shields.io/badge/License-GPLv3-brightgreen.svg)](https://www.gnu.org/licenses/gpl-3.0)
  &nbsp; &nbsp;
-[![Badge Version](https://img.shields.io/github/v/release/ArminJo/ServoEasing?include_prereleases&color=yellow&logo=DocuSign&logoColor=white)](https://github.com/ArminJo/ServoEasing/releases/latest)
+[![Badge Version](https://img.shields.io/github/v/release/ArminJo/ServoEasing?color=yellow&logo=DocuSign&logoColor=white)](https://github.com/ArminJo/ServoEasing/releases/latest)
  &nbsp; &nbsp;
 [![Badge Commits since latest](https://img.shields.io/github/commits-since/ArminJo/ServoEasing/latest?color=yellow)](https://github.com/ArminJo/ServoEasing/commits/master)
  &nbsp; &nbsp;
@@ -91,7 +91,7 @@ For instructions how to enable these alternatives, see [Compile options / macros
 - **Linear** and 9 other ease movements are provided.
 - All servos can move **synchronized** or **independently**.
 - **Non blocking** movements are implemented by the **startEaseTo\* functions** by using a timer. This functions are not available for all platforms.
-- A degree value of 400 or more is taken as a microsecond value for the servo pulse, which allows for fine-grained control.
+- A degree value of 361 or more is taken as a microsecond value for the servo pulse, which allows for fine-grained control.
 - **Float angels** are supported to allow **fine-grained servo control** comparable to using microseconds.
 - **User-specified callback function at "servo arrived" enables movement control independent of main loop**.
 - **Stop and resume** of servo movement.
@@ -471,7 +471,7 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 # Revision History
 ### Version 3.6.0
 - Added parameter bool aSynchronizeToMinimumDuration to `synchronizeAllServosAndStartInterrupt()`.
-- Renamed macro `REFRESH_INTERVAL_MILLIS` to `SERVO_REFRESH_INTERVAL_MICROS`.
+- Renamed macro `REFRESH_INTERVAL_MILLIS` to `SERVO_REFRESH_INTERVAL_MILLIS`.
 - Added new functions` PCA9685Init(uint32_t aActualPCA9685ClockFrequencyHertz)` and `PCA9685InitWithExternalClock(uint32_t aExternalClockFrequencyHertz)`.
 
 ### Version 3.5.0
@@ -520,7 +520,7 @@ This will print internal information visible in the Arduino *Serial Monitor* whi
 - Easing functions are converted to static member functions now.
 - Easing types can be disabled individually.
 - Improved PCA9685 handling / support for SoftI2CMaster.
-- Changed default for parameter `doWrite` for `setTrim()` from `false` to `true`.
+- Changed default for parameter `doWrite` for `setTrim()` to `false`.
 - Added min and max constraints for servo write() and `DISABLE_MIN_AND_MAX_CONSTRAINTS`.
 
 ### Version 2.4.1

@@ -4,11 +4,9 @@
  * Contains all the servo related functions and data.
  *
  * Program for controlling a mePed Robot V2 with 8 servos using an IR Remote at pin A0
- * Supported IR remote are KEYES (the original mePed remote) and WM10
- * Select the one you have in QuadrupedConfiguration.h
+ * Select the IR remote you have in QuadrupedConfiguration.h
  *
  *  Copyright (C) 2019-2026  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of QuadrupedControl https://github.com/ArminJo/QuadrupedControl.
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -32,12 +30,22 @@
 
 #include <Arduino.h>
 
-#include "QuadrupedServoControl.h"  // Contains macros to configure the ServoEasing library
-#include "ServoEasing.hpp"          // include source
+#include "QuadrupedServoConfiguration.h"
 
-// This block must be located after the includes of other *.hpp files
-//#define LOCAL_INFO  // This enables info output only for this file
-#include "LocalDebugLevelStart.h"
+// Must specify this before the include of "ServoEasing.hpp"
+//#define USE_PCA9685_SERVO_EXPANDER    // Activate this to enables the use of the PCA9685 I2C expander chip/board.
+//#define USE_SERVO_LIB                 // If USE_PCA9685_SERVO_EXPANDER is defined, activate this to force additional using of regular servo library.
+//#define PROVIDE_ONLY_LINEAR_MOVEMENT  // Activate this to disable all but LINEAR movement. Saves up to 1540 bytes program memory.
+#define DISABLE_COMPLEX_FUNCTIONS     // Activate this to disable the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings. Saves up to 1850 bytes program memory.
+#define MAX_EASING_SERVOS   NUMBER_OF_SERVOS // 8 or 9 if QUADRUPED_HAS_US_DISTANCE_SENSOR_SERVO
+//#define DISABLE_MICROS_AS_DEGREE_PARAMETER // Activating this disables microsecond values as (target angle) parameter. Saves 128 bytes program memory.
+//#define DISABLE_MIN_AND_MAX_CONSTRAINTS    // Activating this disables constraints. Saves 4 bytes RAM per servo but strangely enough no program memory.
+//#define DISABLE_PAUSE_RESUME               // Activating this disables pause and resume functions. Saves 5 bytes RAM per servo.
+//#define DEBUG                              // Activate this to generate lots of lovely debug output for this library.
+//#define PRINT_FOR_SERIAL_PLOTTER           // Activate this to generate the Arduino plotter output
+
+#include "ServoEasing.hpp"    // include ServoEasing library source code
+#include "QuadrupedServoControl.h" // must be after ServoEasing.hpp
 
 // Indexes of Servos: 0 = Front Left Pivot Servo, 1 = Front Left Lift Servo, 2 = Back Left Pivot, 3 = Back Left Lift, 4 + 5 = Back Right, 6 + 7 = Front Right
 ServoEasing frontLeftPivotServo;    // 0 - Front Left Pivot Servo
@@ -55,12 +63,18 @@ uint8_t sBodyHeight;            // normalized body height from 0 (low) to 255 (h
 uint8_t sBodyHeightPercent;     // normalized body height from 0% (low) to 100% (high), only used for printing
 
 #if !E2END
-# warning "Device does not have EEPROM available. No support for persistent storage of correction trim angels."
+# warning "Device does not have EEPROM available. No support for persistent storage of correction trim angles."
 #else
 // Arrays of trim angles stored in EEPROM
-EEMEM int8_t sServoTrimAnglesEEPROM[NUMBER_OF_LEG_SERVOS]; // The one which resides in EEPROM and IR read out at startup - filled by eepromWriteServoTrim
+EEMEM int8_t sServoTrimAnglesEEPROM[NUMBER_OF_LEG_SERVOS]; // The one which resides in EEPROM and is read out at startup - filled by eepromWriteServoTrim
 #endif
 int8_t sServoTrimAngles[NUMBER_OF_LEG_SERVOS]; // RAM copy for easy setting trim angles by remote, filled by eepromReadServoTrim
+
+#include "QuadrupedControlCommands.hpp"
+
+// This block must be located after the includes of other *.hpp files
+//#define LOCAL_INFO  // This enables info output only for this file
+#include "LocalDebugLevelStart.h"
 
 void attachAllQuadrupedServos() {
     // Attach servos to Arduino Pins in exact this order!
@@ -78,7 +92,7 @@ void attachAllQuadrupedServos() {
     backLeftLiftServo.setReverseOperation(true);
     frontRightLiftServo.setReverseOperation(true);
 
-#if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
+#if defined(QUADRUPED_HAS_US_DISTANCE_SENSOR_SERVO)
     USServo.attach(PIN_US_SERVO);
 #endif
 }
@@ -116,7 +130,7 @@ void shutdownServos() {
 
 void centerServos() {
     uint8_t tRequestedBodyHeightAngle = sRequestedBodyHeightAngle; // sRequestedBodyHeightAngle is volatile
-#if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
+#if defined(QUADRUPED_HAS_US_DISTANCE_SENSOR_SERVO)
     ServoEasing::ServoEasingNextPositionArray[INDEX_OF_US_DISTANCE_SERVO] = 90;
 #endif
     moveAllServosToNextPositionsAndCheckInputAndWait(90, 90, 90, 90, tRequestedBodyHeightAngle, tRequestedBodyHeightAngle,
@@ -152,7 +166,8 @@ void resetServosTo90Degree() {
 
 #if E2END
 /*
- * Copy calibration array from EEPROM to RAM and set uninitialized values to 0
+ * Copy calibration array from EEPROM to RAM
+ * Uninitialized EEPROM values of 0xFF results in trim of -1 degree
  */
 void eepromReadAndSetServoTrim() {
     INFO_PRINTLN(F("eepromReadAndSetServoTrim()"));
@@ -231,7 +246,7 @@ uint8_t transformOneServoIndex(uint8_t aServoIndexToTransform, uint8_t aDirectio
  * Direction forward changes nothing.
  * Direction backward swaps forward and backward servos / increases index by NUMBER_OF_LEGS/2
  * Direction left increases index by 1 and right by 3.
- * Mirroring swaps left and right (XOR with 0x06) and invert all angles.
+ * Mirroring swaps left and right (XOR with 0x06) or forth and back (XOR with 0x02) depending on aDirection and invert all angles.
  *
  * @param aFrontLeftPivot, aBackLeftPivot etc. degree values for corresponding servo
  * @param aDirection MOVE_DIRECTION_FORWARD (0, no change), MOVE_DIRECTION_LEFT etc.
@@ -402,7 +417,7 @@ void setLiftServosToBodyHeight() {
     }
 }
 
-void setBodyHeight(){
+void setBodyHeight() {
     sBodyHeight = map(sRequestedBodyHeightAngle, LIFT_HIGHEST_ANGLE, LIFT_LOWEST_ANGLE, 0, 255);
     sBodyHeightPercent = map(sRequestedBodyHeightAngle, LIFT_HIGHEST_ANGLE, LIFT_LOWEST_ANGLE, 0, 100);
 }
@@ -445,7 +460,7 @@ void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree, uint16_t
     ServoEasing::ServoEasingArray[aServoIndex]->startEaseTo(aDegree, aDegreesPerSecond, false);
     do {
 #if defined(_QUADRUPED_HELPER_HPP)
-        if (delayAndCheckByApplication(SERVO_REFRESH_INTERVAL_MILLIS - 1)) { // 19 ms - REFRESH_INTERVAL is in Microseconds
+        if (delayAndCheckByApplication(SERVO_REFRESH_INTERVAL_MILLIS - 1)) { // 19 ms - REFRESH_INTERVAL is in Milliseconds
             return;
         }
 #else
@@ -457,7 +472,7 @@ void moveOneServoAndCheckInputAndWait(uint8_t aServoIndex, int aDegree, uint16_t
 void updateAndCheckInputAndWaitForAllServosToStop() {
     do {
 #if defined(_QUADRUPED_HELPER_HPP)
-        if (delayAndCheckByApplication(SERVO_REFRESH_INTERVAL_MILLIS - 1)) { // 19 ms - REFRESH_INTERVAL is in Microseconds
+        if (delayAndCheckByApplication(SERVO_REFRESH_INTERVAL_MILLIS - 1)) { // 19 ms - REFRESH_INTERVAL is in Milliseconds
             return;
         }
 #else

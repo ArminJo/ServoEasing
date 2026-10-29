@@ -4,8 +4,7 @@
  * The NeopPixel updates must be synchronized with the ServoEasing updates in order not to interfere with the servo pulse generation.
  * Therefore we have a function handleServoTimerInterrupt() which replaces the disabled function of ServoEasing.
  *
- *  Copyright (C) 2022-2926  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
+ *  Copyright (C) 2022-2026  Armin Joachimsmeyer
  *
  *  This file is part of QuadrupedControl https://github.com/ArminJo/QuadrupedControl.
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -27,8 +26,10 @@
 #include <Arduino.h>
 
 #include "QuadrupedConfiguration.h"
+
 //#define QUADRUPED_HAS_NEOPIXEL        // Requires additionally 6300 to 6600 bytes
 #if defined(QUADRUPED_HAS_NEOPIXEL)
+#include "QuadrupedNeoPixel.h" // for handleQuadrupedNeoPixelUpdate();
 
 #define SUPPRESS_HPP_WARNING
 #include "ServoEasing.h"
@@ -40,7 +41,8 @@
 /*
  * Called every 20 ms.
  * The modified overwritten ServoEasing ISR handling function extended for NeoPixel handling.
- * We have 4 ms for our processing until servo interrupt starts again by call of setTimer1InterruptMarginMicros(4000) above.
+ * We have 4 ms for our processing until servo interrupt starts again.
+ * This is specified by call of setTimer1InterruptMarginMicros(4000) during initialization.
  *
  * NeoPixels are handled here, since their show() function blocks interrupts
  * and must therefore be synchronized with the servo pulse generation.

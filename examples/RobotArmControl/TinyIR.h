@@ -3,10 +3,9 @@
  *
  *
  *  Copyright (C) 2021-2025  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of Arduino-IRremote https://github.com/Arduino-IRremote/Arduino-IRremote.
- *  This file is also part of IRMP https://github.com/IRMP-org/IRMP.
+ *  This file is part of IRMP https://github.com/IRMP-org/IRMP.
  *
  *  TinyIRReceiver is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,13 +29,13 @@
 
 #include "LongUnion.h"
 
-/** \addtogroup TinyReceiver Minimal receiver for NEC and FAST protocol
+/** \addtogroup TinyIRReceiver Minimal receiver for NEC and FAST protocol
  * @{
  */
 
-#define VERSION_TINYIR "2.2.0"
+#define VERSION_TINYIR "2.3.0"
 #define VERSION_TINYIR_MAJOR 2
-#define VERSION_TINYIR_MINOR 2
+#define VERSION_TINYIR_MINOR 3
 #define VERSION_TINYIR_PATCH 0
 // The change log is at the bottom of the file
 
@@ -198,7 +197,7 @@ extern void handleReceivedTinyIRData();
 #define IR_RECEIVER_STATE_WAITING_FOR_DATA_MARK         4
 #define IR_RECEIVER_STATE_WAITING_FOR_STOP_MARK         5
 /**
- * Control and data variables of the state machine for TinyReceiver
+ * Control and data variables of the state machine for TinyIRReceiver
  */
 struct TinyIRReceiverStruct {
     /*
@@ -247,7 +246,7 @@ struct TinyIRReceiverCallbackDataStruct {
     uint8_t Command;
 #endif
     uint8_t Flags; // Bit coded flags. Can contain one of the bits: IRDATA_FLAGS_IS_REPEAT and IRDATA_FLAGS_PARITY_FAILED
-    bool justWritten; ///< Is set true if new data is available. Used by the main loop / TinyReceiverDecode(), to avoid multiple evaluations of the same IR frame.
+    bool justWritten; ///< Is set true if new data is available. Used by the main loop / TinyIRReceiverDecode(), to avoid multiple evaluations of the same IR frame.
 };
 extern volatile TinyIRReceiverCallbackDataStruct TinyIRReceiverData;
 
@@ -258,6 +257,15 @@ void disablePCIInterruptForTinyReceiver();
 bool isTinyReceiverIdle();
 bool TinyReceiverDecode();
 void printTinyReceiverResultMinimal(Print *aSerial);
+
+bool isIRReceiverAttachedForTinyIRReceiver();
+bool initPCIInterruptForTinyIRReceiver();
+bool enablePCIInterruptForTinyIRReceiver();
+void disablePCIInterruptForTinyIRReceiver();
+bool isTinyIRReceiverIdle();
+bool TinyIRReceiverDecode();
+void printTinyIRReceiverResultMinimal(Print *aSerial);
+
 
 void sendFAST(uint8_t aSendPin, uint16_t aCommand, uint_fast8_t aNumberOfRepeats = 0);
 void sendFast8BitAndParity(uint8_t aSendPin, uint8_t aCommand, uint_fast8_t aNumberOfRepeats = 0);
@@ -281,6 +289,9 @@ void sendExtendedNEC(uint8_t aSendPin, uint16_t aAddress, uint16_t aCommand, uin
 #endif
 
 /*
+ *  Version 2.3.0 - 3/2026
+ *  - Renamed TinyReceiver*() functions to TinyIRReceiver*().
+ *
  *  Version 2.2.0 - 7/2024
  *  - New TinyReceiverDecode() function to be used as drop in for IrReceiver.decode().
  *

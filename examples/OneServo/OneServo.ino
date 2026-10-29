@@ -3,8 +3,7 @@
  *
  *  Shows smooth linear movement from one servo position to another in different flavors.
  *
- *  Copyright (C) 2019-2025  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
+ *  Copyright (C) 2019-2026  Armin Joachimsmeyer
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
  *
@@ -180,7 +179,9 @@ void loop() {
 #if !defined(PRINT_FOR_SERIAL_PLOTTER)
     Serial.println(F("Move to 135 degree and back nonlinear in one second each using interrupts"));
 #endif
+#if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
     Servo1.setEasingType(EASE_CUBIC_IN_OUT); // EASE_LINEAR is default
+#endif
 
     for (int i = 0; i < 2; ++i) {
         Servo1.startEaseToD(135, MILLIS_IN_ONE_SECOND);
@@ -206,7 +207,9 @@ void loop() {
 #endif
         }
     }
+#if !defined(PROVIDE_ONLY_LINEAR_MOVEMENT)
     Servo1.setEasingType(EASE_LINEAR);
+#endif
 
     delay(DELAY_BETWEEN_ACTIONS_MILLIS);
 

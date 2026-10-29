@@ -4,7 +4,6 @@
  *   Contains the feature definitions as well as the pin layout
  *
  *  Copyright (C) 2019-2026  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of QuadrupedControl https://github.com/ArminJo/QuadrupedControl.
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -29,8 +28,8 @@
 //#define QUADRUPED_HAS_IR_CONTROL      // Requires additionally 8600 bytes (including the movements)
 //#define QUADRUPED_ENABLE_RTTTL        // Requires additionally 1300 bytes for Short + Down
 //#define QUADRUPED_HAS_NEOPIXEL        // Requires additionally 6300 to 6600 bytes
-//#define QUADRUPED_HAS_US_DISTANCE     // Requires additionally 800 bytes
-//#define QUADRUPED_HAS_US_DISTANCE_SERVO // Requires additionally 710 bytes
+//#define QUADRUPED_HAS_US_DISTANCE_SENSOR     // Requires additionally 800 bytes
+//#define QUADRUPED_HAS_US_DISTANCE_SENSOR_SERVO // Requires additionally 710 bytes
 //#define INFO                          // Requires additionally 2850 bytes
 
 /*
@@ -52,8 +51,8 @@
 #define QUADRUPED_HAS_IR_CONTROL
 #define QUADRUPED_ENABLE_RTTTL
 #define QUADRUPED_HAS_NEOPIXEL
-#define QUADRUPED_HAS_US_DISTANCE
-#define QUADRUPED_HAS_US_DISTANCE_SERVO
+#define QUADRUPED_HAS_US_DISTANCE_SENSOR
+#define QUADRUPED_HAS_US_DISTANCE_SENSOR_SERVO
 //#define INFO
 
 // This patterns only accessible by DVD remote
@@ -66,7 +65,7 @@
 #define QUADRUPED_HAS_IR_CONTROL
 #define QUADRUPED_ENABLE_RTTTL
 #define QUADRUPED_HAS_NEOPIXEL
-#define QUADRUPED_HAS_US_DISTANCE
+#define QUADRUPED_HAS_US_DISTANCE_SENSOR
 #define INFO
 #endif
 
@@ -78,25 +77,23 @@
 #define INFO
 #endif
 
-//#define USE_USER_DEFINED_MOVEMENTS
-
-#define PIN_BUZZER                              3
+#define BUZZER_PIN                               3
 
 #if defined(QUADRUPED_HAS_IR_CONTROL)
 #define USE_TINY_IR_RECEIVER // must be specified before including IRCommandDispatcher.hpp to define which IR library to use
 #define IR_RECEIVE_PIN                          A0
 #endif
 
-#if defined(QUADRUPED_HAS_US_DISTANCE)
+#define SHORT_DEMO_MODE_PIN                     A2
+
+#if defined(QUADRUPED_HAS_US_DISTANCE_SENSOR)
 #define TRIGGER_OUT_PIN                         A3
 #define ECHO_IN_PIN                             A4
 #endif
 
-#if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
-#include "QuadrupedServoControl.h"
+#if defined(QUADRUPED_HAS_US_DISTANCE_SENSOR_SERVO)
 #define PIN_US_SERVO                            13
 #define NO_LED_FEEDBACK_CODE // Disable IR LED feedback because servo is at the same pin. Must be included before IRCommandDispatcher.hpp
-extern ServoEasing USServo;
 #endif
 
 #if defined(QUADRUPED_HAS_NEOPIXEL)
@@ -112,12 +109,6 @@ extern ServoEasing USServo;
 #define ENABLE_PATTERN_SCANNER_EXTENDED
 #define ENABLE_PATTERN_RAINBOW_CYCLE
 #define ENABLE_PATTERN_TWINKLE
-#include "QuadrupedNeoPixel.h" // for handleQuadrupedNeoPixelUpdate();
 #endif
-
-/*
- * Is used by the library
- */
-bool delayAndCheckForLowVoltageAndStop(uint16_t aDelayMillis);
 
 #endif // _QUADRUPED_CONFIGURATION_H

@@ -2,7 +2,6 @@
  * QuadrupedNeoPixel.h
  *
  *  Copyright (C) 2019-2026  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of QuadrupedControl https://github.com/ArminJo/QuadrupedControl.
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -38,13 +37,11 @@
 
 void initNeoPatterns();
 
-//#if defined(HAS_ADDITIONAL_REMOTE_COMMANDS)
 void doPattern1();
 void doPattern2();
 void doPatternStripes();
 void doPatternHeartbeat();
 void doPatternFire();
-//#endif
 
 void doWipeOutPatterns();
 

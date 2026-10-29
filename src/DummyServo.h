@@ -5,7 +5,6 @@
  *  which is activated by #define USE_USER_PROVIDED_SERVO_LIB.
  *
  *  Copyright (C) 2024  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
  *

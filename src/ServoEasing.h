@@ -1,8 +1,7 @@
 /*
  * ServoEasing.h
  *
- *  Copyright (C) 2019-2025  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
+ *  Copyright (C) 2019-2026  Armin Joachimsmeyer
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
  *
@@ -89,7 +88,7 @@
 /*
  * If defined, the void handleServoTimerInterrupt() function must be provided by the user program.
  * This enables the reuse of the Servo timer interrupt e.g. for synchronizing with NeoPixel updates,
- * which otherwise leads to servo twitching. See QuadrupedNeoPixel.cpp of QuadrupedControl example.
+ * which otherwise leads to servo twitching. See QuadrupedNeoPixel.hpp of QuadrupedControl example.
  * This interrupt routine is called in an ISR context and (at least on Uno, Nano etc.) 100 microseconds
  * before a new servo period starts to leave the first servo signals undisturbed.
  * See also setTimer1InterruptMarginMicros()
@@ -181,10 +180,10 @@ extern void handleServoTimerInterrupt();
 #if !defined(DEFAULT_PULSE_WIDTH)
 #define DEFAULT_PULSE_WIDTH 1500     // default pulse width when servo is attached (from Servo.h)
 #endif
-#if !defined(SERVO_REFRESH_INTERVAL) && defined(REFRESH_INTERVAL)
+#if !defined(SERVO_REFRESH_INTERVAL_MICROS) && defined(REFRESH_INTERVAL)
 #define SERVO_REFRESH_INTERVAL_MICROS REFRESH_INTERVAL   // // minimum time to refresh servos in microseconds (from Servo.h)
 #endif
-#if !defined(SERVO_REFRESH_INTERVAL) && defined(REFRESH_USEC)
+#if !defined(SERVO_REFRESH_INTERVAL_MICROS) && defined(REFRESH_USEC)
 #define SERVO_REFRESH_INTERVAL_MICROS REFRESH_USEC   // // minimum time to refresh servos in microseconds (from ESP32Servo.h)
 #endif
 #if !defined(SERVO_REFRESH_INTERVAL_MICROS)
@@ -201,7 +200,7 @@ extern void handleServoTimerInterrupt();
  * It disables the SINE, CIRCULAR, BACK, ELASTIC, BOUNCE and PRECISION easings.
  * The saving comes mainly from avoiding the sin() cos() sqrt() and pow() library functions in this code.
  * If you need only a single complex easing function and want to save space,
- * you can specify it any time as a user function. See EaseQuadraticInQuarticOut() function in AsymmetricEasing example line 206.
+ * you can specify it any time as a user function. See EaseQuadraticInQuarticOut() function in AsymmetricEasing example line 220.
  */
 #if !defined(DISABLE_COMPLEX_FUNCTIONS)
 //#define DISABLE_COMPLEX_FUNCTIONS
@@ -220,7 +219,7 @@ extern void handleServoTimerInterrupt();
 //#define DISABLE_MICROS_AS_DEGREE_PARAMETER
 
 #if !defined(THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS)
-#define THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS  360  // treat values less than 360 as angles in degrees, others are handled as microseconds
+#define THRESHOLD_VALUE_FOR_INTERPRETING_VALUE_AS_MICROSECONDS  360  // treat values up to 360 as angles in degrees, others are handled as microseconds
 #endif
 
 #if !defined(va_arg)
@@ -253,7 +252,7 @@ extern void handleServoTimerInterrupt();
 #define DEFAULT_PCA9685_UNITS_FOR_0_DEGREE    111 // 111.411 = 544 us
 #define DEFAULT_PCA9685_UNITS_FOR_45_DEGREE  (111 + ((491 - 111) / 4)) // 206
 #define DEFAULT_PCA9685_UNITS_FOR_90_DEGREE  (111 + ((491 - 111) / 2)) // 301 = 1472 us
-#define DEFAULT_PCA9685_UNITS_FOR_135_DEGREE (491 - ((491 - 111) / 4)) // 369
+#define DEFAULT_PCA9685_UNITS_FOR_135_DEGREE (491 - ((491 - 111) / 4)) // 396
 #define DEFAULT_PCA9685_UNITS_FOR_180_DEGREE  491 // 491.52 = 2400 us
 
 /*
@@ -316,7 +315,7 @@ extern void handleServoTimerInterrupt();
 // Offset to decide if the user function returns degrees instead of 0.0 to 1.0.
 #define EASE_FUNCTION_DEGREE_INDICATOR_OFFSET       200 // Returns 20 for -180 degree, 110 for -90 degree, 200 for 0 degree and 380 for 180 degree.
 #define EASE_FUNCTION_DEGREE_THRESHOLD              (EASE_FUNCTION_DEGREE_INDICATOR_OFFSET - 180) // allows -180 degree.
-#define EASE_FUNCTION_MICROSECONDS_INDICATOR_OFFSET (EASE_FUNCTION_DEGREE_INDICATOR_OFFSET + 200) // Offset to decide if the user function returns microseconds instead of 0.0 to 1.0. => returns 256 for 0 degree.
+#define EASE_FUNCTION_MICROSECONDS_INDICATOR_OFFSET (EASE_FUNCTION_DEGREE_INDICATOR_OFFSET + 200) // Offset to decide if the user function returns microseconds instead of 0.0 to 1.0. => returns 400 for 0 degree.
 
 /*
  * Values for provided EaseTypes
@@ -628,7 +627,7 @@ public:
     bool InitializeAndCheckI2CConnection(Print *aSerial) __attribute__ ((deprecated ("Use initializeAndCheckI2CConnection()")));
     bool initializeAndCheckI2CConnection(Print *aSerial); // Using Print class saves 95 bytes flash
 #  else
-    bool InitializeAndCheckI2CConnection(Stream *aSerial); __attribute__ ((deprecated ("Use initializeAndCheckI2CConnection()")));
+    bool InitializeAndCheckI2CConnection(Stream *aSerial) __attribute__ ((deprecated ("Use initializeAndCheckI2CConnection()")));
     bool initializeAndCheckI2CConnection(Stream *aSerial); // Print class has no flush() here
 #  endif
 #endif
@@ -666,6 +665,7 @@ public:
 #  if defined(USE_SERVO_LIB)
     // Here we can have both types of servo connections
     bool mServoIsConnectedToExpander; // to distinguish between different using microseconds or PWM units and appropriate write functions
+    bool mI2CIsInitializedAndExpanderIsReset; // to do it only once
 #  endif
     uint8_t mPCA9685I2CAddress;
 #  if !defined(USE_SOFT_I2C_MASTER)
@@ -677,7 +677,7 @@ public:
     uint8_t mServoIndex; ///< Index in sServoArray or INVALID_SERVO if error while attach() or if detached
 
     uint32_t mMillisAtStartMove;
-    uint_fast16_t mMillisForCompleteMove;
+    uint32_t mMillisForCompleteMove;
 #if !defined(DISABLE_PAUSE_RESUME)
     bool mServoIsPaused;
     uint32_t mMillisAtStopMove;
@@ -762,20 +762,21 @@ void updateAndWaitForAllServosToStop();
 bool delayAndUpdateAndWaitForAllServosToStop(unsigned long aMillisDelay, bool aTerminateDelayIfAllServosStopped = false);
 void setEaseToForAllServosSynchronizeAndWaitForAllServosToStop();
 void setEaseToForAllServosSynchronizeAndWaitForAllServosToStop(uint_fast16_t aDegreesPerSecond);
-void synchronizeAndEaseToArrayPositions() __attribute__ ((deprecated ("Please use setEaseToForAllServosSynchronizeAndWait().")));
+void synchronizeAndEaseToArrayPositions() __attribute__ ((deprecated ("Please use setEaseToForAllServosSynchronizeAndWaitForAllServosToStop().")));
 void synchronizeAndEaseToArrayPositions(uint_fast16_t aDegreesPerSecond)
-        __attribute__ ((deprecated ("Please use setEaseToForAllServosSynchronizeAndWait().")));
+        __attribute__ ((deprecated ("Please use setEaseToForAllServosSynchronizeAndWaitForAllServosToStop().")));
 void synchronizeAllServosStartAndWaitForAllServosToStop();
 
 void printArrayPositions(Print *aSerial);
 bool isOneServoMoving();
 void stopAllServos();
+void pauseAllServos();
 void resumeWithInterruptsAllServos();
 void resumeWithoutInterruptsAllServos();
 bool updateAllServos();
 
 void enableServoEasingInterrupt();
-#if defined(__AVR_ATmega328P__)
+#if defined(OCR1B)
 void setTimer1InterruptMarginMicros(uint16_t aInterruptMarginMicros);
 #endif
 void disableServoEasingInterrupt();
@@ -784,11 +785,21 @@ int clipDegreeSpecial(uint_fast8_t aDegreeToClip);
 
 //extern float (*sEaseFunctionArray[])(float aPercentageOfCompletion);
 
+#if defined(USE_PCA9685_SERVO_EXPANDER)
 // Static convenience function
-#if defined(__AVR__)
-bool checkI2CConnection(uint8_t aI2CAddress, Print *aSerial); // Using Print class saves 95 bytes flash
+#if defined(USE_SOFT_I2C_MASTER)
+#  if defined(__AVR__)
+bool checkI2CConnection(uint8_t aI2CAddress, Print *aSerial);
+#  else
+bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial);
+#  endif
 #else
-bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class has no flush() here
+#  if defined(__AVR__)
+bool checkI2CConnection(uint8_t aI2CAddress, Print *aSerial, TwoWire *aI2CClass = &Wire);
+#  else
+bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial, TwoWire *aI2CClass = &Wire);
+#  endif
+#endif
 #endif
 
 #if !defined(STR_HELPER) && !defined(STR)
@@ -799,7 +810,7 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
 /*
  *
  * Version 3.6.0 - 02/2026
- * - Renamed macro REFRESH_INTERVAL_MILLIS to SERVO_REFRESH_INTERVAL_MICROS.
+ * - Renamed macro REFRESH_INTERVAL_MILLIS to SERVO_REFRESH_INTERVAL_MILLIS.
  * - Added new functions PCA9685Init(uint32_t aActualPCA9685ClockFrequencyHertz) and PCA9685InitWithExternalClock(uint32_t aExternalClockFrequencyHertz).
  * - Added parameter bool aSynchronizeToMinimumDuration to synchronizeAllServosAndStartInterrupt().
  *
@@ -849,7 +860,7 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial); // Print class ha
  * - Easing functions are converted to static member functions now.
  * - Easing types can be disabled individually.
  * - Improved PCA9685 handling / support for SoftI2CMaster.
- * - Changed default for parameter `doWrite` for `setTrim()` from `false` to `true`.
+ * - Changed default for parameter `doWrite` for `setTrim()` to `false`.
  * - Added min and max constraints for servo write() and `DISABLE_MIN_AND_MAX_CONSTRAINTS`.
  *
  * Version 2.4.1 - 02/2022

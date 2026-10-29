@@ -14,7 +14,6 @@
  *  The macros INT0_PIN and INT1_PIN are set after the include.
  *
  *  Copyright (C) 2018-2024  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of EasyButtonAtInt01 https://github.com/ArminJo/EasyButtonAtInt01.
  *
@@ -35,10 +34,10 @@
 #ifndef _EASY_BUTTON_AT_INT01_H
 #define _EASY_BUTTON_AT_INT01_H
 
-#define VERSION_EASY_BUTTON "3.4.0"
+#define VERSION_EASY_BUTTON "3.4.1"
 #define VERSION_EASY_BUTTON_MAJOR 3
 #define VERSION_EASY_BUTTON_MINOR 4
-#define VERSION_EASY_BUTTON_PATCH 0
+#define VERSION_EASY_BUTTON_PATCH 1
 // The change log is at the bottom of the file
 
 /*
@@ -391,7 +390,7 @@ void __attribute__ ((weak)) handleINT1Interrupt();
 
 #endif // defined(__AVR__)
 
-/*  Version 3.4.1 - 12/2023
+/*  Version 3.4.1 - 4/2026
  *  - Avoid wrong double press detection if calling checkForDoublePress() after release of button.
  *  - Hack for ATmega 644.
  *

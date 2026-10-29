@@ -2,7 +2,6 @@
  * QuadrupedServoConfiguration.h
  *
  *  Copyright (C) 2019-2026  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of QuadrupedControl https://github.com/ArminJo/QuadrupedControl.
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -94,7 +93,7 @@
 #define TROT_BASE_ANGLE_BL_FR 45
 #define TROT_MOVE_ANGLE 30
 
-#if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
+#if defined(QUADRUPED_HAS_US_DISTANCE_SENSOR_SERVO)
 #define INDEX_OF_US_DISTANCE_SERVO  NUMBER_OF_LEG_SERVOS
 #define NUMBER_OF_SERVOS (NUMBER_OF_LEG_SERVOS + 1)
 #else

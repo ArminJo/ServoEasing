@@ -4,7 +4,6 @@
  *   Contains miscellaneous function for the quadruped
  *
  *  Copyright (C) 2019-2026  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of QuadrupedControl https://github.com/ArminJo/QuadrupedControl.
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -26,12 +25,11 @@
 #ifndef _QUADRUPED_HELPER_H
 #define _QUADRUPED_HELPER_H
 
-void checkForVCCUnderVoltageAndShutdown();
-bool checkForVCCUnderVoltage();
+void checkForVCCUnderVoltageAndShutdownPeriodically();
 void playShutdownMelody();
 void doBeep();
 
-#if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
+#if defined(QUADRUPED_HAS_US_DISTANCE_SENSOR_SERVO)
 void doUSRight();
 void doUSLeft();
 void doUSScan();

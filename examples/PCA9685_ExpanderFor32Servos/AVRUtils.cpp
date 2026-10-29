@@ -4,8 +4,7 @@
  *  Stack, Ram and Heap utilities.
  *  Sleep utilities.
  *
- *  Copyright (C) 2016-2024  Armin Joachimsmeyer
- *  Email: armin.joachimsmeyer@gmail.com
+ *  Copyright (C) 2016-2026  Armin Joachimsmeyer
  *
  *  This file is part of Arduino-Utils https://github.com/ArminJo/Arduino-Utils.
  *
@@ -39,7 +38,6 @@
  Serial.print(F("AvailableHeapStart=0x"));
  Serial.println((uint16_t) getStartOfAvailableHeap(), HEX);
  */
-
 uint8_t* getStartOfAvailableHeap(void) {
     if (__brkval == 0) {
 // __brkval is 0 if no malloc() has happened before
@@ -69,7 +67,8 @@ void initStackFreeMeasurement() {
 /*
  * @param aStackUnusedSizePointer points to variable which is written with amount of stack/heap not used/touched.
  * @return The amount of stack/heap touched since the last call to initStackFreeMeasurement()
- *          -1 if stack was completely used
+ *          -1 if no HEAP_STACK_UNTOUCHED_VALUE value was found,
+ *          i.e. stack above current heap was completely used or overwritten by released heap before.
  * A downward search fails, because it finds an allocated variable / array on stack, which was unused!
  * An upward search may be wrong, and claiming too much stack used, because malloc does not initialize the memory
  * and the search fails with multiple mallocs and partial writing of allocated regions.
@@ -113,19 +112,24 @@ void printStackMaxUsedAndUnusedSizes(Print *aSerial) {
 }
 
 /*
- * Search upwards the first two HEAP_STACK_UNTOUCHED_VALUE values after current begin of heap
- * If stack uses total heap, we see the current available stack size here :-(
+ * Starting at current begin of new heap search upwards the first two HEAP_STACK_UNTOUCHED_VALUE values
+ * until found or current SP is reached.
+ * If stack overwrites the HEAP_STACK_UNTOUCHED_VALUE values, we see the current available stack size here :-(
+ * @return -1 If no two HEAP_STACK_UNTOUCHED_VALUE values can be found below current stackpointer.
+ *            i.e. stack or old heap had formerly used/overwritten the region available for current new heap.
+ *  !!! If application stores 2 HEAP_STACK_UNTOUCHED_VALUE values in heap or stack, the return value is wrong!!!
  */
 int16_t getHeapMaxUsedSize() {
     uint8_t *tHeapPtr = getStartOfAvailableHeap();
-    while (*tHeapPtr != HEAP_STACK_UNTOUCHED_VALUE && *(tHeapPtr + 1) != HEAP_STACK_UNTOUCHED_VALUE && tHeapPtr <= (uint8_t*) SP) {
+    while (*tHeapPtr != HEAP_STACK_UNTOUCHED_VALUE && *(tHeapPtr + 1) != HEAP_STACK_UNTOUCHED_VALUE && tHeapPtr < (uint8_t*) SP) {
         tHeapPtr++;
     }
 //    Serial.print(F("tHeapPtr=0x"));
 //    Serial.print((uint16_t)tHeapPtr, HEX);
 //    Serial.print(F(" SP=0x"));
-//    Serial.println((uint16_t)SP, HEX);
-    if ((tHeapPtr-1) == (uint8_t*) SP) {
+//    Serial.print((uint16_t)SP, HEX);
+//    Serial.print(' ');
+    if ((tHeapPtr) == (uint8_t*) SP) {
         return -1;
     }
     // tHeapPtr points now to lowest untouched stack position or to lowest current stack byte
@@ -261,11 +265,12 @@ void printBaseRAMData(Print *aSerial) {
  * The STACK required for this function is 8 bytes, so available numbers are 8 less than for caller.
  *
  * Sample output:
- * Data+BSS=445. Heap: used=770, max used=1096, available=663. Stack: available=791, used=42, max used=319, unused=188 of current total 833
+ * Data+BSS=445. Heap: used=770, max written=1096, max available=663. Stack: available=791, used=42, max used=319, min unused=188 of current total 833
  * Formulas:
  * Stack available + used = current total
- * Heap available + __malloc_margin (128) = Stack available
- * Data+BSS + Heap max used + Stack unused + Stack max used = RAMSIZE
+ * Stack max used + min unused = current total
+ * Heap max available + __malloc_margin (128) = Stack current total
+ * Data+BSS + Heap used + Stack current total = RAMSIZE
  */
 void printRAMAndStackInfo(Print *aSerial) {
 
@@ -281,15 +286,15 @@ void printRAMAndStackInfo(Print *aSerial) {
 
     aSerial->print(F(". Stack: available="));
     aSerial->print((SP + 1) - (int16_t) getStartOfAvailableHeap());
-    aSerial->print(F(", used="));
+    aSerial->print(F(" + used="));
     aSerial->print(RAMEND - SP);
 
     uint16_t tStackUnusedBytes;
     aSerial->print(F(", max used="));
     aSerial->print(getStackMaxUsedAndUnusedSizes(&tStackUnusedBytes));
-    aSerial->print(F(", unused="));
+    aSerial->print(F(" + min unused="));
     aSerial->print(tStackUnusedBytes);
-    aSerial->print(F(" of current total "));
+    aSerial->print(F(" = current total "));
     aSerial->print((RAMEND + 1) - (int16_t) getStartOfAvailableHeap()); // getStartOfAvailableHeap()
 
     aSerial->println();

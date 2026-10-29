@@ -11,7 +11,6 @@
  *                   Z = HORIZONTAL_ARM_LENGTH_MILLIMETER
  *
  *  Copyright (C) 2019-2022  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
  *

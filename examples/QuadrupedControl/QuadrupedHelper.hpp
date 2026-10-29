@@ -4,7 +4,6 @@
  *  Contains miscellaneous function for the quadruped
  *
  *  Copyright (C) 2022-2026  Armin Joachimsmeyer
- *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of QuadrupedControl https://github.com/ArminJo/QuadrupedControl.
  *  This file is part of ServoEasing https://github.com/ArminJo/ServoEasing.
@@ -41,6 +40,10 @@
 #include "QuadrupedBasicMovements.h" // for sCurrentlyRunningAction
 #include "QuadrupedControlCommands.h"
 
+#if defined(ADC_UTILS_ARE_AVAILABLE)
+bool isShutDownByUndervoltage = false;
+#endif
+
 #if defined(QUADRUPED_HAS_NEOPIXEL)
 #include "QuadrupedNeoPixel.h"
 #endif
@@ -49,101 +52,77 @@
 #include "IRCommandDispatcher.h"
 #endif
 
-uint32_t sLastVolageMeasurementMillis;
-
 #include "QuadrupedServoControl.h"
-
-bool isShutDownByUndervoltage = false;
 
 void playShutdownMelody() {
 #if defined(QUADRUPED_ENABLE_RTTTL)
-    playRtttlBlockingPGM(PIN_BUZZER, Down);
+    playRtttlBlockingPGM(BUZZER_PIN, Down);
 #else
-    tone(PIN_BUZZER, 2000, 200);
+    tone(BUZZER_PIN, 2000, 200);
     delay(400);
-    tone(PIN_BUZZER, 1400, 300);
+    tone(BUZZER_PIN, 1400, 300);
     delay(600);
-    tone(PIN_BUZZER, 1000, 400);
+    tone(BUZZER_PIN, 1000, 400);
     delay(800);
-    tone(PIN_BUZZER, 700, 600);
+    tone(BUZZER_PIN, 700, 600);
 #endif
 }
 
 #if defined(QUADRUPED_ENABLE_RTTTL)
 void doRandomMelody() {
-    randomSeed(millis());
+    randomSeed(sVCCVoltageMillivolt);
     sCurrentlyRunningAction = ACTION_TYPE_MELODY; // to make melody stoppable with stop command of IR
-    startPlayRandomRtttlFromArrayPGMAndPrintName(PIN_BUZZER, RTTTLMelodiesSmall, ARRAY_SIZE_MELODIES_SMALL, &Serial, nullptr);
+    startPlayRandomRtttlFromArrayPGMAndPrintName(&Serial, BUZZER_PIN, RTTTLMelodiesSmall, ARRAY_SIZE_MELODIES_SMALL, nullptr);
+#  if defined(QUADRUPED_HAS_NEOPIXEL)
     sAtLeastOnePatternsIsActive = false; // disable any pattern, which disturbs the melody
+#  endif
 }
 #endif
 
 #if defined(ADC_UTILS_ARE_AVAILABLE)
 /*
- * Stop servos if voltage gets low
- * @return  true - if voltage too low
- */
-bool checkForVCCUnderVoltage() {
-    sVCCVoltageMillivolt = getVCCVoltageMillivoltSimple();
-    return (sVCCVoltageMillivolt <= VCC_STOP_THRESHOLD_MILLIVOLT);
-}
-
-/*
  * Called exclusively by main loop
+ * Stop servos if voltage gets low
  */
-void checkForVCCUnderVoltageAndShutdown() {
-    if ((millis() - sLastVolageMeasurementMillis) <= MILLIS_BETWEEN_VOLTAGE_MEASUREMENTS) {
-        return;
-    }
-
+void checkForVCCUnderVoltageAndShutdownPeriodically() {
     // Reset shutdown and enable new check, if a new command is running
     if (isShutDownByUndervoltage && sCurrentlyRunningAction != ACTION_TYPE_STOP) {
         isShutDownByUndervoltage = false;
-        sShutdownCount = 0;
+        sVCCTooLowCounter = 0;
         Serial.println(F("Command is running, reset shutdown flag"));
-
     }
 
-    if (!checkForVCCUnderVoltage()) {
-        isShutDownByUndervoltage = false;
-        sShutdownCount--;
-    } else if (!isShutDownByUndervoltage) {
-        sShutdownCount++;
-        if (sShutdownCount == NUMBER_OF_VOLTAGE_LOW_FOR_SHUTDOWN) {
-            /*
-             * Transition to low voltage here
-             */
-            // print message
-            Serial.print(F("VCC "));
-            Serial.print(sVCCVoltageMillivolt);
-            Serial.println(F(" is below " STR(VCC_STOP_THRESHOLD_MILLIVOLT) " Millivolt"));
-
+    if (isVCCUndervoltageMultipleTimes(&Serial)) { // makes periodically checks
+        /*
+         * Transition to low voltage here
+         */
 #if defined(QUADRUPED_HAS_NEOPIXEL)
-            doWipeOutPatterns(); // to save power
+        doWipeOutPatterns(); // to save power
 #endif
-
 #if defined(QUADRUPED_HAS_IR_CONTROL)
-            IRDispatcher.setRequestToStopReceived(false); // This enables shutdown move and new moves
+        IRDispatcher.setRequestToStopReceived(false); // This enables shutdown move and new moves
 #endif
-
-            shutdownServos();
-            playShutdownMelody();
-            isShutDownByUndervoltage = true; // Do it only once. Next (IR) command resets this flag
-        }
+        shutdownServos();
+        playShutdownMelody();
+        isShutDownByUndervoltage = true; // Only Next (IR) command resets this flag
     }
 }
 #endif
 
 /*
  * Special delay function for the quadruped control.
+ * It does not check for melody or undervoltage
  * It returns prematurely if requestToStopReceived is set
  * @return  true - if stop received
  */
 #define APPLICATION_DELAY_AND_CHECK_AVAILABLE
 bool delayAndCheckByApplication(uint16_t aDelayMillis) {
-#if defined(QUADRUPED_HAS_US_DISTANCE)
+#if defined(QUADRUPED_HAS_US_DISTANCE_SENSOR)
     handleUSDistanceSensor();
-    // adjust delay value. we know, that delay is <= 10 and aDelayMillis is > =19, so we have no underflow
+    /*
+     * Adjust delay value.
+     * and that sUsedMillisForUSDistanceMeasurement is <= 12 and aDelayMillis is > =19, so we have no underflow
+     */
     aDelayMillis -= sUsedMillisForUSDistanceMeasurement;
 #endif
 #if defined(QUADRUPED_HAS_IR_CONTROL)
@@ -158,27 +137,26 @@ bool delayAndCheckByApplication(uint16_t aDelayMillis) {
 }
 
 #if defined(QUADRUPED_HAS_IR_CONTROL)
-#  if defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
+#  if defined(QUADRUPED_HAS_US_DISTANCE_SENSOR_SERVO)
 #define SERVO_INCREMENT     5
 void doUSRight() {
     int tServoPosition = ServoEasing::ServoEasingNextPositionArray[INDEX_OF_US_DISTANCE_SERVO];
     if (tServoPosition >= SERVO_INCREMENT) {
+        // Subtract SERVO_INCREMENT if possible
         USServo.write(tServoPosition - SERVO_INCREMENT);
     }
 }
 void doUSLeft() {
     int tServoPosition = ServoEasing::ServoEasingNextPositionArray[INDEX_OF_US_DISTANCE_SERVO];
     if (tServoPosition <= (180 - SERVO_INCREMENT)) {
+        // Add SERVO_INCREMENT if possible
         USServo.write(tServoPosition + SERVO_INCREMENT);
     }
 }
 void doUSScan() {
     USServo.write(90);
 }
-#  endif // defined(QUADRUPED_HAS_US_DISTANCE_SERVO)
-
-#  if !defined(USE_USER_DEFINED_MOVEMENTS)
-// Disable doCalibration() also for user defined movements, since just testing the remote may lead to accidental wrong calibration
+#  endif // defined(QUADRUPED_HAS_US_DISTANCE_SENSOR_SERVO)
 
 #include "QuadrupedIRCommandMapping.h" // for COMMAND_* definitions in doCalibration()
 
@@ -261,28 +239,29 @@ void doCalibration() {
             tGotExitCommand = true;
             break;
         }
-        INFO_PRINT(F("ServoTrimAngles["));
-        INFO_PRINT(tPivotServoIndex);
-        INFO_PRINT(F("]="));
-        INFO_PRINT(sServoTrimAngles[tPivotServoIndex]);
-        INFO_PRINT(F(" ["));
-        INFO_PRINT(tPivotServoIndex + LIFT_SERVO_OFFSET);
-        INFO_PRINT(F("]="));
-        INFO_PRINTLN(sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET]);
-        ServoEasing::ServoEasingArray[tPivotServoIndex]->print(&Serial);
-        ServoEasing::ServoEasingArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->print(&Serial);
+        if (!tGotExitCommand) { // on tGotExitCommand the index might be too high
+            INFO_PRINT(F("ServoTrimAngles["));
+            INFO_PRINT(tPivotServoIndex);
+            INFO_PRINT(F("]="));
+            INFO_PRINT(sServoTrimAngles[tPivotServoIndex]);
+            INFO_PRINT(F(" ["));
+            INFO_PRINT(tPivotServoIndex + LIFT_SERVO_OFFSET);
+            INFO_PRINT(F("]="));
+            INFO_PRINTLN(sServoTrimAngles[tPivotServoIndex + LIFT_SERVO_OFFSET]);
+            ServoEasing::ServoEasingArray[tPivotServoIndex]->print(&Serial);
+            ServoEasing::ServoEasingArray[tPivotServoIndex + LIFT_SERVO_OFFSET]->print(&Serial);
+        }
         delay(200);
     }
     IRDispatcher.doNotUseDispatcher = false; // re enable dispatcher by mapping table
 #    endif // E2END
 }
-#  endif // !defined(USE_USER_DEFINED_MOVEMENTS)
 #endif // defined(QUADRUPED_HAS_IR_CONTROL)
 
 void doBeep() {
-    tone(PIN_BUZZER, 2000, 200);
+    tone(BUZZER_PIN, 2000, 200);
     delay(400);
-    tone(PIN_BUZZER, 2000, 200);
+    tone(BUZZER_PIN, 2000, 200);
 }
 
 #include "LocalDebugLevelEnd.h"
