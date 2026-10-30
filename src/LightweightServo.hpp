@@ -144,11 +144,8 @@ void writeMicrosecondsLightweightServo(int aMicroseconds, bool aUsePin9, bool aU
     }
 #endif
     // since the resolution is 1/2 of microsecond for 16 MHz CPU clock and prescaler of 8
-#if (F_CPU == 16000000L)
-    aMicroseconds *= 2;
-#elif (F_CPU < 8000000L) // for 8 MHz resolution is exactly 1 microsecond :-)
-    aMicroseconds /= (8000000L / F_CPU);
-#endif
+    aMicroseconds = ((uint32_t) aMicroseconds * (F_CPU / 1000000L)) / 8;
+
     if (aUpdateFast) {
         uint16_t tTimerCount = TCNT1;
         if (tTimerCount > ISR_COUNT_FOR_2_5_MILLIS) {
@@ -178,11 +175,7 @@ void writeMicroseconds9(int aMicroseconds, bool aUpdateFast) {
  * Without auto initialize!
  */
 void writeMicroseconds9Direct(int aMicroseconds) {
-#if (F_CPU == 16000000L)
-    aMicroseconds *= 2;
-#elif (F_CPU < 8000000L) // for 8 MHz resolution is exactly 1 microsecond :-)
-    aMicroseconds /= (8000000L / F_CPU);
-#endif
+    aMicroseconds = ((uint32_t) aMicroseconds * (F_CPU / 1000000L)) / 8;
     OCR1A = aMicroseconds;
 }
 
@@ -201,11 +194,7 @@ void writeMicroseconds10(int aMicroseconds, bool aUpdateFast) {
  * Without auto initialize!
  */
 void writeMicroseconds10Direct(int aMicroseconds) {
-#if (F_CPU == 16000000L)
-    aMicroseconds *= 2;
-#elif (F_CPU < 8000000L) // for 8 MHz resolution is exactly 1 microsecond :-)
-    aMicroseconds /= (8000000L / F_CPU);
-#endif
+    aMicroseconds = ((uint32_t) aMicroseconds * (F_CPU / 1000000L)) / 8;
     OCR1B = aMicroseconds;
 }
 #endif
@@ -217,8 +206,8 @@ void writeMicroseconds10Direct(int aMicroseconds) {
  * 32 bytes code size
  * Assume, that PRR1 PRTIM5 bit is low, which enables timer 5
  *  Supported pins:
- *  ATmega328: pin 44 = OC5C/PL5, 45 = OC5B/PL4 and 46 = OC5A/PL3 using only timer5 hardware
- *  ATmega2560 pin 9 = OC1A and 10 = OC1B on 328 using only timer1 hardware
+ *  ATmega328:  pin 9 = OC1A and 10 = OC1B on 328 using only timer1 hardware
+ *  ATmega2560: pin 44 = OC5C/PL5, 45 = OC5B/PL4 and 46 = OC5A/PL3 using only timer5 hardware
  */
 void initLightweightServoPins() {
 #if defined(__AVR_ATmega2560__)
@@ -356,7 +345,7 @@ int writeLightweightServoPin(int aDegree, uint8_t aPin, bool aUpdateFast) {
 
 void writeMicrosecondsLightweightServoPin(int aMicroseconds, uint8_t aPin, bool aUpdateFast, bool aDoAutoInit) {
 #if defined(LOCAL_DEBUG)
-    Serial.print(F(" Micros=")); // trailing space required if called by _writeMicrosecondsOrUnits()
+    Serial.print(F(" Micros=")); // trailing space required if called by _writeMicroseconds()
     Serial.print(aMicroseconds);
     Serial.print(F(" pin="));
     Serial.println(aPin);
@@ -406,10 +395,9 @@ if (aPin == LIGHTWEIGHT_SERVO_CHANNEL_A_PIN) {
 void setLightweightServoRefreshRate(unsigned int aRefreshPeriodMicroseconds) {
     // Timer runs with prescaler 8 -> F_CPU / 8 counts per second
 #if defined(__AVR_ATmega2560__)
-    ICR5 = ((uint32_t) aRefreshPeriodMicroseconds * (F_CPU / 1000000L)) / 8;;
+    ICR5 = ((uint32_t) aRefreshPeriodMicroseconds * (F_CPU / 1000000L)) / 8;
 #else
     ICR1 = ((uint32_t) aRefreshPeriodMicroseconds * (F_CPU / 1000000L)) / 8;
-    ;
 #endif
 }
 /*

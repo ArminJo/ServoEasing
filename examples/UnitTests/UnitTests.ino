@@ -170,7 +170,7 @@ void setup() {
 void loop() {
     // Move to one end
     Serial.print(F("--- Move to 135 degree with 90 degree | "));
-    Serial.print(Servo1.DegreeOrMicrosecondToMicrosecondsOrUnits(135));
+    Serial.print(Servo1.DegreeOrMicrosecondToMicroseconds(135));
     Serial.println(F(" us with 90 degree per second blocking -> lasting 1 second"));
     Servo1.setSpeed(90); // This speed is taken if no speed argument is given.
     Servo1.easeTo(135);
@@ -179,7 +179,7 @@ void loop() {
 
     // Now move to the other end
     Serial.print(F("--- Move to 45 degree | "));
-    Serial.print(Servo1.DegreeOrMicrosecondToMicrosecondsOrUnits(45));
+    Serial.print(Servo1.DegreeOrMicrosecondToMicroseconds(45));
     Serial.println(F(" us with 30 degree per second -> lasting 3 seconds"));
     Servo1.easeTo(45, 30);
 
@@ -355,18 +355,18 @@ void testAttachParameters() {
     Serial.print(F("Full virtual scale is now 0 to 135. Attach with initial move to virtual 135 degree -> "));
     Servo1.attach(SERVO1_PIN, 135, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, 0, 135);
     Serial.print(F("0="));
-    Serial.print(Servo1.DegreeOrMicrosecondToMicrosecondsOrUnits(0));
+    Serial.print(Servo1.DegreeOrMicrosecondToMicroseconds(0));
     Serial.print(F(" | 135="));
-    Serial.println(Servo1.DegreeOrMicrosecondToMicrosecondsOrUnits(135));
+    Serial.println(Servo1.DegreeOrMicrosecondToMicroseconds(135));
     Serial.println(F("--- Move to physical 180 degree | virtual 135 degree"));
     delay(2000);
     Serial.print(F("Full virtual scale is now 0 to 90 -> "));
     Servo1.detach();
     Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, 0, 90);
     Serial.print(F("0="));
-    Serial.print(Servo1.DegreeOrMicrosecondToMicrosecondsOrUnits(0));
+    Serial.print(Servo1.DegreeOrMicrosecondToMicroseconds(0));
     Serial.print(F(" | 90="));
-    Serial.println(Servo1.DegreeOrMicrosecondToMicrosecondsOrUnits(90));
+    Serial.println(Servo1.DegreeOrMicrosecondToMicroseconds(90));
     Servo1.write(45);
     Serial.println(F("--- Move to physical 90 degree | virtual 45 degree"));
     delay(3000);
@@ -375,9 +375,9 @@ void testAttachParameters() {
     Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
     Servo1.setTrim(90, true);
     Serial.print(F("-90="));
-    Serial.print(Servo1.DegreeOrMicrosecondToMicrosecondsOrUnits(-90));
+    Serial.print(Servo1.DegreeOrMicrosecondToMicroseconds(-90));
     Serial.print(F(" | 90="));
-    Serial.println(Servo1.DegreeOrMicrosecondToMicrosecondsOrUnits(90));
+    Serial.println(Servo1.DegreeOrMicrosecondToMicroseconds(90));
     Servo1.write(90);
     Serial.println(F("--- Move to physical 180 degree | virtual 90 degree"));
     delay(3000);
@@ -385,9 +385,9 @@ void testAttachParameters() {
     Servo1.detach();
     Servo1.attachWithTrim(SERVO1_PIN, -45, 10, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
     Serial.print(F("45="));
-    Serial.print(Servo1.DegreeOrMicrosecondToMicrosecondsOrUnits(-45));
+    Serial.print(Servo1.DegreeOrMicrosecondToMicroseconds(-45));
     Serial.print(F(" | 225="));
-    Serial.println(Servo1.DegreeOrMicrosecondToMicrosecondsOrUnits(135));
+    Serial.println(Servo1.DegreeOrMicrosecondToMicroseconds(135));
     Servo1.write(135);
     Serial.println(F("--- Move to physical 90 degree | virtual 135 degree"));
     delay(3000);
@@ -395,9 +395,9 @@ void testAttachParameters() {
     Servo1.detach();
     Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, 60, -120);
     Serial.print(F("60="));
-    Serial.print(Servo1.DegreeOrMicrosecondToMicrosecondsOrUnits(60));
+    Serial.print(Servo1.DegreeOrMicrosecondToMicroseconds(60));
     Serial.print(F(" | -120="));
-    Serial.println(Servo1.DegreeOrMicrosecondToMicrosecondsOrUnits(-120));
+    Serial.println(Servo1.DegreeOrMicrosecondToMicroseconds(-120));
     Servo1.write(-120);
     Serial.println(F("--- Move to physical 180 degree | virtual -120 degree"));
     delay(3000);
@@ -405,9 +405,9 @@ void testAttachParameters() {
     Servo1.detach();
     Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, -45, 90);
     Serial.print(F("-45="));
-    Serial.print(Servo1.DegreeOrMicrosecondToMicrosecondsOrUnits(-45));
+    Serial.print(Servo1.DegreeOrMicrosecondToMicroseconds(-45));
     Serial.print(F(" | 90="));
-    Serial.println(Servo1.DegreeOrMicrosecondToMicrosecondsOrUnits(90));
+    Serial.println(Servo1.DegreeOrMicrosecondToMicroseconds(90));
     Servo1.write(22);
     Serial.println(F("--- Move to physical 90 degree | virtual 22.5 degree"));
     delay(3000);
@@ -415,9 +415,9 @@ void testAttachParameters() {
     Servo1.detach();
     Servo1.attach(SERVO1_PIN, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE, 90, -45);
     Serial.print(F("90="));
-    Serial.print(Servo1.DegreeOrMicrosecondToMicrosecondsOrUnits(90));
+    Serial.print(Servo1.DegreeOrMicrosecondToMicroseconds(90));
     Serial.print(F(" -45="));
-    Serial.println(Servo1.DegreeOrMicrosecondToMicrosecondsOrUnits(-45));
+    Serial.println(Servo1.DegreeOrMicrosecondToMicroseconds(-45));
     Servo1.write(-45);
     Serial.println(F("--- Move to physical 180 degree | virtual -45 degree"));
     Servo1.write(90);
@@ -488,18 +488,18 @@ void testDetachAndReatttach() {
     Serial.print(F("Reattach, servo moves to last position before detach (135 degree) -> "));
     Servo1.reattach();
     Serial.print(F("0 (default)="));
-    Serial.print(Servo1.DegreeOrMicrosecondToMicrosecondsOrUnits(0));
+    Serial.print(Servo1.DegreeOrMicrosecondToMicroseconds(0));
     Serial.print(F(" | 180 (default)="));
-    Serial.println(Servo1.DegreeOrMicrosecondToMicrosecondsOrUnits(180));
+    Serial.println(Servo1.DegreeOrMicrosecondToMicroseconds(180));
     delay(5000);
     Serial.print(F("The same with reverse -> "));
     Servo1.detach();
     Servo1.reattach(); // Servo should not move back to former position (135 degree) on attach
     Servo1.setReverseOperation(true);
     Serial.print(F("0="));
-    Serial.print(Servo1.DegreeOrMicrosecondToMicrosecondsOrUnits(0));
+    Serial.print(Servo1.DegreeOrMicrosecondToMicroseconds(0));
     Serial.print(F(" | 180="));
-    Serial.println(Servo1.DegreeOrMicrosecondToMicrosecondsOrUnits(180));
+    Serial.println(Servo1.DegreeOrMicrosecondToMicroseconds(180));
     Servo1.write(135);
     Serial.println(F("--- Move to physical 45 degree"));
     delay(5000);

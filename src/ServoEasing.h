@@ -22,9 +22,9 @@
 #ifndef _SERVO_EASING_H
 #define _SERVO_EASING_H
 
-#define VERSION_SERVO_EASING "3.6.0"
-#define VERSION_SERVO_EASING_MAJOR 3
-#define VERSION_SERVO_EASING_MINOR 6
+#define VERSION_SERVO_EASING "4.0.0"
+#define VERSION_SERVO_EASING_MAJOR 4
+#define VERSION_SERVO_EASING_MINOR 0
 #define VERSION_SERVO_EASING_PATCH 0
 // The change log is at the bottom of the file
 
@@ -52,7 +52,6 @@
  * USE_PCA9685_SERVO_EXPANDER is for use with e.g. the Adafruit PCA9685 16-Channel Servo Driver board.
  * It has a resolution of 4096 per 20 ms => 4.88 us per step/unit.
  * One PCA9685 has 16 outputs. You must modify MAX_EASING_SERVOS below, if you have more than one PCA9685 attached!
- * All internal values *MicrosecondsOrUnits now contains no more microseconds but PCA9685 units!!!
  */
 //#define USE_PCA9685_SERVO_EXPANDER
 /*
@@ -440,13 +439,16 @@ extern const char *const easeTypeStrings[] PROGMEM;
 #define PCA9685_ACTUAL_CLOCK_FREQUENCY   25000000L // 25 MHz this is the default frequency
 #endif
 
+#define PCA9685_UNITS_INVALID   0xFFFF // forces next setPWM() in _writeMicroseconds()
+
 #define PCA9685_PRESCALER_FOR_20_MS ((PCA9685_ACTUAL_CLOCK_FREQUENCY /(4096L * 50)) - 1) //for 25 MHz it is: 121 / 0x79 for 20 ms or 50 Hz
 
 // to be used as values for parameter bool aStartUpdateByInterrupt
 #define START_UPDATE_BY_INTERRUPT           true
 #define DO_NOT_START_UPDATE_BY_INTERRUPT    false
 
-#define mCurrentMicrosecondsOrUnits         mLastTargetMicrosecondsOrUnits // to be backwards compatible
+#define mCurrentMicrosecondsOrUnits         mLastTargetMicroseconds // to be backwards compatible
+#define mCurrentMicroseconds                mLastTargetMicroseconds // to be backwards compatible
 /*
  * Size is 46 bytes RAM per servo
  */
@@ -502,7 +504,7 @@ public:
     void setReverseOperation(bool aOperateServoReverse); // You should call it before using setTrim, or better use attach function with 6 parameters
 
     void setTrim(int aTrimDegreeOrMicrosecond, bool aDoWrite = false);
-    void _setTrimMicrosecondsOrUnits(int aTrimMicrosecondsOrUnits, bool aDoWrite = false);
+    void _setTrimMicroseconds(int aTrimMicroseconds, bool aDoWrite = false);
 
 #if defined(ENABLE_MIN_AND_MAX_CONSTRAINTS)
     void setMaxConstraint(int aMaxDegreeOrMicrosecond);
@@ -524,11 +526,11 @@ public:
 #endif
 
     void write(int aTargetDegreeOrMicrosecond);     // Apply trim and reverse to the value and write it direct to the Servo library.
-    void _writeMicrosecondsOrUnits(int aTargetMicrosecondsOrUnits);
+    void _writeMicroseconds(int aTargetMicroseconds);
 
     void easeTo(int aTargetDegreeOrMicrosecond);                                   // blocking move to new position using mLastSpeed
     void easeTo(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);  // blocking move to new position using speed
-    void easeToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove);    // blocking move to new position using duration
+    void easeToD(int aTargetDegreeOrMicrosecond, uint32_t aMillisForMove);    // blocking move to new position using duration
 
     bool setEaseTo(int aTargetDegreeOrMicrosecond);              // shortcut for startEaseTo(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
     bool setEaseTo(unsigned int aTargetDegreeOrMicrosecond);     // shortcut for startEaseTo(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
@@ -539,26 +541,26 @@ public:
     START_UPDATE_BY_INTERRUPT);
     bool startEaseTo(unsigned int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt =
     START_UPDATE_BY_INTERRUPT);
-    bool setEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond); // shortcut for startEaseToD(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
-    bool setEaseToD(unsigned int aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond); // shortcut for startEaseToD(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
-    bool startEaseToD(int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt =
+    bool setEaseToD(int aTargetDegreeOrMicrosecond, uint32_t aMillisForMove); // shortcut for startEaseToD(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
+    bool setEaseToD(unsigned int aTargetDegreeOrMicrosecond, uint32_t aMillisForMove); // shortcut for startEaseToD(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
+    bool startEaseToD(int aTargetDegreeOrMicrosecond, uint32_t aMillisForMove, bool aStartUpdateByInterrupt =
     START_UPDATE_BY_INTERRUPT);
-    bool startEaseToD(unsigned int aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt =
+    bool startEaseToD(unsigned int aTargetDegreeOrMicrosecond, uint32_t aMillisForMove, bool aStartUpdateByInterrupt =
     START_UPDATE_BY_INTERRUPT);
     // The float versions
     void write(float aTargetDegreeOrMicrosecond);   // Apply trim and reverse to the value and write it direct to the Servo library.
 
     void easeTo(float aTargetDegreeOrMicrosecond);                                 // blocking move to new position using mLastSpeed
     void easeTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond);  // blocking move to new position using speed
-    void easeToD(float aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove);    // blocking move to new position using duration
+    void easeToD(float aTargetDegreeOrMicrosecond, uint32_t aMillisForMove);    // blocking move to new position using duration
 
     bool setEaseTo(float aTargetDegreeOrMicrosecond);            // shortcut for startEaseTo(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
     bool setEaseTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond); // shortcut for startEaseTo(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
     bool startEaseTo(float aTargetDegreeOrMicrosecond);      // shortcut for startEaseTo(aDegree, mSpeed, START_UPDATE_BY_INTERRUPT)
     bool startEaseTo(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond, bool aStartUpdateByInterrupt =
     START_UPDATE_BY_INTERRUPT);
-    bool setEaseToD(float aTargetDegreeOrMicrosecond, uint_fast16_t aDegreesPerSecond); // shortcut for startEaseToD(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
-    bool startEaseToD(float aTargetDegreeOrMicrosecond, uint_fast16_t aMillisForMove, bool aStartUpdateByInterrupt =
+    bool setEaseToD(float aTargetDegreeOrMicrosecond, uint32_t aMillisForMove); // shortcut for startEaseToD(..,..,DO_NOT_START_UPDATE_BY_INTERRUPT)
+    bool startEaseToD(float aTargetDegreeOrMicrosecond, uint32_t aMillisForMove, bool aStartUpdateByInterrupt =
     START_UPDATE_BY_INTERRUPT);
 
     bool noMovement(uint_fast16_t aMillisToWait);                                       // stay at the position for aMillisToWait
@@ -580,23 +582,22 @@ public:
 
     int getCurrentAngle();
     int getCurrentMicroseconds();
-    int getDeltaMicrosecondsOrUnits();
-    int getEndMicrosecondsOrUnits();
-    int getEndMicrosecondsOrUnitsWithTrim();
-    int getMillisForCompleteMove();
+    int getDeltaMicroseconds();
+    int getEndMicroseconds();
+    int getEndMicrosecondsWithTrim();
+    uint32_t getMillisForCompleteMove();
     bool isMoving();
     bool isMovingAndCallYield()
             __attribute__ ((deprecated ("Replaced by isMoving(). Often better to use areInterruptsActive() instead.")));
 
-    int MicrosecondsOrUnitsToDegree(int aMicrosecondsOrUnits);
+    int MicrosecondsOrUnitsToDegree(int aMicroseconds) __attribute__ ((deprecated ("Replaced by MicrosecondsToDegree().")));
     int MicrosecondsToDegree(int aMicroseconds);
-    int MicrosecondsOrUnitsToMicroseconds(int aMicrosecondsOrUnits);
-    int DegreeOrMicrosecondToMicrosecondsOrUnits(int aDegreeOrMicrosecond);
-    int DegreeOrMicrosecondToMicrosecondsOrUnits(float aDegreeOrMicrosecond);
-//    int DegreeToMicrosecondsOrUnits(float aDegree);
-    int DegreeToMicrosecondsOrUnitsWithTrimAndReverse(int aDegree);
+    int DegreeOrMicrosecondToMicrosecondsOrUnits(int aDegreeOrMicrosecond) __attribute__ ((deprecated ("Replaced by DegreeOrMicrosecondToMicroseconds().")));
+    int DegreeOrMicrosecondToMicroseconds(int aDegreeOrMicrosecond);
+    int DegreeOrMicrosecondToMicroseconds(float aDegreeOrMicrosecond);
+    int DegreeToMicrosecondsWithTrimAndReverse(int aDegree);
 
-    int applyTrimAndReverseToTargetMicrosecondsOrUnits(int aTargetMicrosecondsOrUnits);
+    int applyTrimAndReverseToTargetMicroseconds(int aTargetMicroseconds);
     void print(Print *aSerial, bool doExtendedOutput = true); // Print dynamic and static info
     void printDynamic(Print *aSerial, bool doExtendedOutput = true);
     void printStatic(Print *aSerial);
@@ -641,10 +642,16 @@ public:
      * Internally only microseconds (or units (= 4.88 us) if using PCA9685 expander) and not degree are used to speed up things.
      * Other expander or libraries can therefore easily be added.
      */
-    volatile int mLastTargetMicrosecondsOrUnits; ///< Only set by _writeMicrosecondsOrUnits() without trim and reverse applied. Required as start for next move and to avoid unnecessary writes.
-    int mStartMicrosecondsOrUnits;  ///< Only used with millisAtStartMove to compute currentMicrosecondsOrUnits in update()
-    int mEndMicrosecondsOrUnits;    ///< Only used once as last value if movement was finished to provide exact end position.
-    int mDeltaMicrosecondsOrUnits;  ///< end - start
+    union { // For backwards compatibility. mLastTargetMicrosecondsOrUnits is used in some examples
+        volatile int mLastTargetMicroseconds; ///< Only set by _writeMicroseconds() without trim and reverse applied. Required as start for next move and to avoid unnecessary writes.
+        volatile int mLastTargetMicrosecondsOrUnits __attribute__((deprecated("Use mLastTargetMicroseconds. Contains microseconds, not PCA9685 units!")));; ///< Deprecated alias of mLastTargetMicroseconds for backward compatibility. Contains microseconds, not units!
+    };
+    int mStartMicroseconds;  ///< Only used with millisAtStartMove to compute currentMicroseconds in update()
+    union { // For backwards compatibility. mLastTargetMicrosecondsOrUnits is used in some examples
+        int mEndMicroseconds;    ///< Only used once as last value if movement was finished to provide exact end position.
+        int mEndMicrosecondsOrUnits __attribute__((deprecated("Use mEndMicroseconds. Contains microseconds, not PCA9685 units!")));;    ///< Deprecated alias of mEndMicroseconds for backward compatibility. Contains microseconds, not units!
+    };
+    int mDeltaMicroseconds;  ///< end - start
 
     /**
      * max speed is 450 degree/sec for SG90 and 540 degree/second for MG90 servos -> see speedTest.cpp
@@ -665,9 +672,10 @@ public:
 #  if defined(USE_SERVO_LIB)
     // Here we can have both types of servo connections
     bool mServoIsConnectedToExpander; // to distinguish between different using microseconds or PWM units and appropriate write functions
-    bool mI2CIsInitializedAndExpanderIsReset; // to do it only once
+    static bool sI2CIsInitializedAndExpanderIsReset; // to do it only once for all instances
 #  endif
     uint8_t mPCA9685I2CAddress;
+    uint16_t mLastPCA9685Units; ///< Last value sent by setPWM(). 0xFFFF forces the next write.
 #  if !defined(USE_SOFT_I2C_MASTER)
     TwoWire *mI2CClass;
 #  endif
@@ -684,23 +692,23 @@ public:
 #endif
 
     /**
-     * Reverse means, that values for 180 and 0 degrees are swapped by: aValue = mServo180DegreeMicrosecondsOrUnits - (aValue - mServo0DegreeMicrosecondsOrUnits)
+     * Reverse means, that values for 180 and 0 degrees are swapped by: aValue = mServo180DegreeMicroseconds - (aValue - mServo0DegreeMicroseconds)
      * Be careful, if you specify different end values, it may not behave, as you expect.
      * For this case better use the attach function with 5 parameter.
      */
     bool mOperateServoReverse; ///< true -> direction is reversed
 #if defined(ENABLE_MIN_AND_MAX_CONSTRAINTS)
-    int mMaxMicrosecondsOrUnits; ///< Max value checked at _writeMicrosecondsOrUnits(), before trim and reverse is applied
-    int mMinMicrosecondsOrUnits; ///< Min value checked at _writeMicrosecondsOrUnits(), before trim and reverse is applied
+    int mMaxMicroseconds; ///< Max value checked at _writeMicroseconds(), before trim and reverse is applied
+    int mMinMicroseconds; ///< Min value checked at _writeMicroseconds(), before trim and reverse is applied
 #endif
-    int mTrimMicrosecondsOrUnits; ///< This value is always added by the function _writeMicrosecondsOrUnits() to the requested degree/units/microseconds value. Reset at attach().
+    int mTrimMicroseconds; ///< This value is always added by the function _writeMicroseconds() to the requested degree/units/microseconds value. Reset at attach().
 
     /**
      * Values contain always microseconds except for servos connected to a PCA9685 expander, where they contain PWM units.
      * Values are set exclusively by attach(), and here it is determined if they contain microseconds or PWM units.
      */
-    int mServo0DegreeMicrosecondsOrUnits;   // default is DEFAULT_MICROSECONDS_FOR_0_DEGREE (544)
-    int mServo180DegreeMicrosecondsOrUnits; // default is DEFAULT_MICROSECONDS_FOR_180_DEGREE (2400)
+    int mServo0DegreeMicroseconds;   // default is DEFAULT_MICROSECONDS_FOR_0_DEGREE (544)
+    int mServo180DegreeMicroseconds; // default is DEFAULT_MICROSECONDS_FOR_180_DEGREE (2400)
 
     void (*TargetPositionReachedHandler)(ServoEasing*);  ///< Is called any time when target servo position is reached
 
@@ -747,7 +755,7 @@ void setFloatDegreeForAllServos(uint_fast8_t aNumberOfValues, ...);
 
 bool setEaseToForAllServos();
 bool setEaseToForAllServos(uint_fast16_t aDegreesPerSecond);
-bool setEaseToDForAllServos(uint_fast16_t aMillisForMove);
+bool setEaseToDForAllServos(uint32_t aMillisForMove);
 void setEaseToForAllServosSynchronizeAndStartInterrupt();
 void setEaseToForAllServosSynchronizeAndStartInterrupt(uint_fast16_t aDegreesPerSecond);
 void synchronizeAllServosAndStartInterrupt(bool aStartUpdateByInterrupt = START_UPDATE_BY_INTERRUPT, bool aSynchronizeToMinimumDuration = false);
@@ -809,6 +817,9 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial, TwoWire *aI2CClass
 
 /*
  *
+ * Version 4.0.0 - 11/2026
+ * - PCA9685 now uses microseconds internally, so "OrUnits" was removed from all variable and function names.
+ *
  * Version 3.6.0 - 02/2026
  * - Renamed macro REFRESH_INTERVAL_MILLIS to SERVO_REFRESH_INTERVAL_MILLIS.
  * - Added new functions PCA9685Init(uint32_t aActualPCA9685ClockFrequencyHertz) and PCA9685InitWithExternalClock(uint32_t aExternalClockFrequencyHertz).
@@ -822,7 +833,7 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial, TwoWire *aI2CClass
  *
  * Version 3.4.0 - 10/2024
  * - LightweightServo support for ATmega2560.
- * - Renamed mCurrentMicrosecondsOrUnits to mLastTargetMicrosecondsOrUnits to make clear, that trim and reverse is NOT applied to this value.
+ * - Renamed mCurrentMicrosecondsOrUnits to mLastTargetMicroseconds to make clear, that trim and reverse is NOT applied to this value.
  * - Changed DISABLE_MIN_AND_MAX_CONSTRAINTS to ENABLE_MIN_AND_MAX_CONSTRAINTS. Constraint checking is now disabled by default.
  * - candorgander fixed a bug in printEasingType() for non AVR platforms.
  *
@@ -971,7 +982,7 @@ bool checkI2CConnection(uint8_t aI2CAddress, Stream *aSerial, TwoWire *aI2CClass
  * - added setSpeed(), getSpeed(), setSpeedForAllServos().
  * - added easeTo(uint8_t aDegree) and setEaseTo(uint8_t aDegree).
  * - added setEaseToForAllServos(), setEaseToForAllServosSynchronizeAndStartInterrupt(), synchronizeAndEaseToArrayPositions().
- * - added getEndMicrosecondsOrUnits(), getDeltaMicrosecondsOrUnits().
+ * - added getEndMicroseconds(), getDeltaMicrosecondsOrUnits().
  * - added setDegreeForAllServos(uint8_t aNumberOfValues, va_list * aDegreeValues),setDegreeForAllServos(uint8_t aNumberOfValues, ...).
  * - added compile switch PROVIDE_ONLY_LINEAR_MOVEMENT to save additional 1500 bytes program memory if enabled.
  * - added convenience function clipDegreeSpecial().

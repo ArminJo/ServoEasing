@@ -150,7 +150,7 @@ void setup() {
 
 void loop() {
 
-    if (Servo1.mLastTargetMicrosecondsOrUnits != Servo1.mEndMicrosecondsOrUnits) {
+    if (Servo1.mLastTargetMicroseconds != Servo1.mEndMicroseconds) {
         // real moving here
         digitalWrite(LED_BUILTIN, HIGH);
     } else {

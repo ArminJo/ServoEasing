@@ -336,7 +336,7 @@ void handleManualControl() {
             moveOneServoAndCheckInputAndWait(SERVO_BASE_PIVOT, tTargetAngle, sRobotArmServoSpeed);
 
             Serial.print(F("BasePivotServo: micros="));
-            Serial.print(BasePivotServo.getEndMicrosecondsOrUnits()); // we have an initial trim, this is transparent.
+            Serial.print(BasePivotServo.getEndMicroseconds()); // we have an initial trim, this is transparent.
         }
 
         int tHorizontal = analogRead(HORIZONTAL_INPUT_PIN);
@@ -351,7 +351,7 @@ void handleManualControl() {
             moveOneServoAndCheckInputAndWait(SERVO_HORIZONTAL, tTargetAngle, sRobotArmServoSpeed);
 
             Serial.print(F("HorizontalServo: micros="));
-            Serial.print(HorizontalServo.getEndMicrosecondsOrUnits());
+            Serial.print(HorizontalServo.getEndMicroseconds());
         }
 
         int tLift = analogRead(LIFT_INPUT_PIN);
@@ -366,7 +366,7 @@ void handleManualControl() {
             moveOneServoAndCheckInputAndWait(SERVO_LIFT, tTargetAngle, sRobotArmServoSpeed);
 
             Serial.print(F("LiftServo: micros="));
-            Serial.print(LiftServo.getEndMicrosecondsOrUnits());
+            Serial.print(LiftServo.getEndMicroseconds());
         }
 
         int tClaw = analogRead(CLAW_INPUT_PIN);
@@ -382,7 +382,7 @@ void handleManualControl() {
             moveOneServoAndCheckInputAndWait(SERVO_CLAW, tTargetAngle, sRobotArmServoSpeed * 2);
 
             Serial.print(F("ClawServo: micros="));
-            Serial.print(ClawServo.getEndMicrosecondsOrUnits());
+            Serial.print(ClawServo.getEndMicroseconds());
         }
 
         if (tValueChanged) {

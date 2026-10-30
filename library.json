@@ -1,6 +1,6 @@
 {
   "name": "ServoEasing",
-  "version": "3.6.0",
+  "version": "4.0.0",
   "keywords": "Servo",
   "description": "Arduino library to enable smooth servo movement.",
   "homepage": "https://github.com/ArminJo/ServoEasing",
